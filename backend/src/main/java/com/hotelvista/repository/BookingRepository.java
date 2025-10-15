@@ -1,4 +1,9 @@
 package com.hotelvista.repository;
 
-public class BookingRepository {
+import com.hotelvista.model.Booking;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface BookingRepository extends JpaRepository<Booking, String> {
+
+
 }
