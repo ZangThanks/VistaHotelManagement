@@ -26,7 +26,25 @@ const Home: FC = () => {
                     <h2 className="text-3xl md:text-4xl lg:text-4xl font-serif text-gray-800 mb-6 leading-relaxed">
                         The Art of Luxury, The Science of Service
                     </h2>
-                    <div className="h-0.5 w-32 mx-auto mb-8 bg-gradient-to-r from-transparent via-luxury-gold to-transparent" />
+
+                    {/* Enhanced decorative separator with visible gold fallback and z-index */}
+                    <div
+                        className="relative mx-auto mb-8 w-fit"
+                        aria-hidden="true"
+                    >
+                        {/* blurred glow behind the bar */}
+                        <div
+                            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-56 h-2 rounded-full
+                                        bg-gradient-to-r from-transparent via-[#CCBDA3] to-transparent
+                                        blur-xl opacity-30 pointer-events-none z-0"
+                        />
+                        {/* main crisp bar (on top) */}
+                        <hr
+                            className="relative w-32 md:w-48 lg:w-56 h-0.5 border-0 rounded-full
+                                       bg-gradient-to-r from-transparent via-[#CCBDA3] to-transparent
+                                       drop-shadow-[0_6px_16px_rgba(204,189,163,0.12)] z-10"
+                        />
+                    </div>
                     <p className="text-gray-600 text-lg md:text-xl font-light leading-relaxed max-w-3xl mx-auto">
                         Experience unparalleled hospitality where every detail
                         is crafted to perfection, and every moment becomes an
@@ -50,7 +68,25 @@ const Home: FC = () => {
                             <h3 className="text-4xl font-serif font-semibold mb-4 tracking-wide">
                                 Landscape
                             </h3>
-                            <div className="h-0.5 w-20 mb-4 bg-gradient-to-r from-luxury-gold to-transparent" />
+                            {/* Enhanced decorative separator with visible gold fallback and z-index */}
+                            <div
+                                className="relative mb-8 w-fit"
+                                aria-hidden="true"
+                            >
+                                {/* blurred glow behind the bar */}
+                                <div
+                                    className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-56 h-2 rounded-full
+                                        bg-gradient-to-r from-transparent via-[#CCBDA3] to-transparent
+                                        blur-xl opacity-30 pointer-events-none z-0"
+                                />
+                                {/* main crisp bar (on top) */}
+                                <hr
+                                    className="relative w-32 md:w-48 lg:w-56 h-0.5 border-0 rounded-full
+                                       bg-gradient-to-r from-transparent via-[#CCBDA3] to-transparent
+                                       drop-shadow-[0_6px_16px_rgba(204,189,163,0.12)] z-10"
+                                />
+                            </div>
+
                             <p className="text-base font-light leading-relaxed opacity-0 group-hover:opacity-100 transition-opacity duration-700 delay-100">
                                 Where all limits fade, leaving only the beauty
                                 of creation and the generosity of the human
@@ -71,7 +107,25 @@ const Home: FC = () => {
                             <h3 className="text-4xl font-serif font-semibold mb-4 tracking-wide">
                                 Architecture
                             </h3>
-                            <div className="h-0.5 w-20 mb-4 bg-gradient-to-r from-luxury-gold to-transparent" />
+                            {/* Enhanced decorative separator with visible gold fallback and z-index */}
+                            <div
+                                className="relative mb-8 w-fit"
+                                aria-hidden="true"
+                            >
+                                {/* blurred glow behind the bar */}
+                                <div
+                                    className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-56 h-2 rounded-full
+                                        bg-gradient-to-r from-transparent via-[#CCBDA3] to-transparent
+                                        blur-xl opacity-30 pointer-events-none z-0"
+                                />
+                                {/* main crisp bar (on top) */}
+                                <hr
+                                    className="relative w-32 md:w-48 lg:w-56 h-0.5 border-0 rounded-full
+                                       bg-gradient-to-r from-transparent via-[#CCBDA3] to-transparent
+                                       drop-shadow-[0_6px_16px_rgba(204,189,163,0.12)] z-10"
+                                />
+                            </div>
+
                             <p className="text-base font-light leading-relaxed opacity-0 group-hover:opacity-100 transition-opacity duration-700 delay-100">
                                 A Manifesto of Pride and Creativity Reaching for
                                 the Endless Blue Ocean Horizon
@@ -91,7 +145,25 @@ const Home: FC = () => {
                             <h3 className="text-4xl font-serif font-semibold mb-4 tracking-wide">
                                 Amenity
                             </h3>
-                            <div className="h-0.5 w-20 mb-4 bg-gradient-to-r from-luxury-gold to-transparent" />
+                            {/* Enhanced decorative separator with visible gold fallback and z-index */}
+                            <div
+                                className="relative mb-8 w-fit"
+                                aria-hidden="true"
+                            >
+                                {/* blurred glow behind the bar */}
+                                <div
+                                    className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-56 h-2 rounded-full
+                                        bg-gradient-to-r from-transparent via-[#CCBDA3] to-transparent
+                                        blur-xl opacity-30 pointer-events-none z-0"
+                                />
+                                {/* main crisp bar (on top) */}
+                                <hr
+                                    className="relative w-28 md:w-12 lg:w-48 h-0.5 border-0 rounded-full
+                                       bg-gradient-to-r from-transparent via-[#CCBDA3] to-transparent
+                                       drop-shadow-[0_6px_16px_rgba(204,189,163,0.12)] z-10"
+                                />
+                            </div>
+
                             <p className="text-base font-light leading-relaxed opacity-0 group-hover:opacity-100 transition-opacity duration-700 delay-100">
                                 Embracing the ocean, losing yourself in the
                                 water, and living in the moment
@@ -112,7 +184,21 @@ const Home: FC = () => {
                     <h2 className="text-4xl md:text-4xl lg:text-5xl font-serif font-light mb-6 tracking-wider drop-shadow-[2px_4px_12px_rgba(0,0,0,0.4)]">
                         Retreat
                     </h2>
-                    <div className="h-0.5 w-24 mb-8 bg-gradient-to-r from-transparent via-luxury-gold to-transparent" />
+                    <div className="relative mb-8 w-fit" aria-hidden="true">
+                        {/* blurred glow behind the bar */}
+                        <div
+                            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-56 h-2 rounded-full
+                                        bg-gradient-to-r from-transparent via-[#CCBDA3] to-transparent
+                                        blur-xl opacity-30 pointer-events-none z-0"
+                        />
+                        {/* main crisp bar (on top) */}
+                        <hr
+                            className="relative w-32 md:w-48 lg:w-56 h-0.5 border-0 rounded-full
+                                       bg-gradient-to-r from-transparent via-[#CCBDA3] to-transparent
+                                       drop-shadow-[0_6px_16px_rgba(204,189,163,0.12)] z-10"
+                        />
+                    </div>
+
                     <p className="text-lg md:text-lg font-light mb-12 max-w-lg leading-relaxed drop-shadow-[2px_4px_12px_rgba(0,0,0,0.4)]">
                         Emotions are soothed, and the soul rests and rejuvenates
                     </p>
@@ -136,7 +222,23 @@ const Home: FC = () => {
                                 <h2 className="text-4xl md:text-3xl lg:text-4xl font-serif text-gray-900 mb-6 leading-tight">
                                     Vista Membership
                                 </h2>
-                                <div className="h-0.5 w-24 mb-8 bg-gradient-to-r from-luxury-gold to-transparent" />
+                                <div
+                                    className="relative mb-8 w-fit"
+                                    aria-hidden="true"
+                                >
+                                    {/* blurred glow behind the bar */}
+                                    <div
+                                        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-56 h-2 rounded-full
+                                        bg-gradient-to-r from-transparent via-[#CCBDA3] to-transparent
+                                        blur-xl opacity-30 pointer-events-none z-0"
+                                    />
+                                    {/* main crisp bar (on top) */}
+                                    <hr
+                                        className="relative w-32 md:w-48 lg:w-56 h-0.5 border-0 rounded-full
+                                       bg-gradient-to-r from-transparent via-[#CCBDA3] to-transparent
+                                       drop-shadow-[0_6px_16px_rgba(204,189,163,0.12)] z-10"
+                                    />
+                                </div>
                             </div>
 
                             <p className="text-gray-600 text-sm md:text-lg leading-relaxed max-w-lg">

@@ -2,14 +2,16 @@
 import './index.css';
 
 import './App.css'
-import Home from './pages/customer/Home'
+
+import ServiceList from './pages/customer/ServiceList';
 
 function App() {
 
 
   return (
     <>
-      <Home />
+      {/* <Home /> */}
+      <ServiceList />
     </>
   )
 }
