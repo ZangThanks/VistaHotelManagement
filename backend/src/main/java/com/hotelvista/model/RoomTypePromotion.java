@@ -3,6 +3,7 @@ package com.hotelvista.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 
 @Entity
@@ -10,6 +11,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "room_type_promotions")
+@IdClass(RoomTypePromotion.RoomTypePromotionId.class)
 public class RoomTypePromotion {
     @Id
     @ManyToOne
@@ -33,8 +35,9 @@ public class RoomTypePromotion {
     @EqualsAndHashCode
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class RoomTypePromotionId {
+    public static class RoomTypePromotionId implements Serializable {
         private Promotion promotion;
         private RoomType roomType;
+
     }
 }
