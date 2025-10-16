@@ -3,6 +3,8 @@ package com.hotelvista.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.io.Serializable;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -25,7 +27,7 @@ public class CustomerVoucher {
     @EqualsAndHashCode
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class CustomerVoucherId {
+    public static class CustomerVoucherId implements Serializable {
         private Customer customer;
         private Voucher voucher;
     }
