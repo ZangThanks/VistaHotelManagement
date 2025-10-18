@@ -3,12 +3,14 @@ package com.hotelvista.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 
 @Entity
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@IdClass(RoomTypePromotion.RoomTypePromotionId.class)
 @Table(name = "room_type_promotions")
 public class RoomTypePromotion {
     @Id
@@ -33,8 +35,9 @@ public class RoomTypePromotion {
     @EqualsAndHashCode
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class RoomTypePromotionId {
+    public static class RoomTypePromotionId implements Serializable {
         private Promotion promotion;
         private RoomType roomType;
+
     }
 }

@@ -3,6 +3,7 @@ package com.hotelvista.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.io.Serializable;
 import java.util.List;
 
 @Entity
@@ -33,7 +34,7 @@ public class BookingDetail {
     @EqualsAndHashCode
     @AllArgsConstructor
     @NoArgsConstructor
-    public class BookingDetailId {
+    public static class BookingDetailId implements Serializable {
         private Room room;
         private Booking booking;
     }

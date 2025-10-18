@@ -9,6 +9,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
 @Entity
 @Data
 @AllArgsConstructor
@@ -43,7 +45,7 @@ public class BookingService {
     @EqualsAndHashCode
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class BookingServiceId {
+    public static class BookingServiceId implements Serializable {
         private Service service;
         private Booking booking;
     }
