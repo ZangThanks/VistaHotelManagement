@@ -1,20 +1,17 @@
+
 import './index.css';
 
 import './App.css'
-import Header from './components/Header';
-import Footer from './components/Footer';
-import HeaderHome from './components/HeaderHome';
+
+import ServiceList from './pages/customer/ServiceList';
 
 function App() {
 
 
   return (
     <>
-      <div>
-        <Header />
-        <HeaderHome />
-        <Footer />
-      </div>
+      {/* <Home /> */}
+      <ServiceList />
     </>
   )
 }

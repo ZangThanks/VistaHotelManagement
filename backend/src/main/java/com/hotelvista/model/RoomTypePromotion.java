@@ -12,6 +12,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @IdClass(RoomTypePromotion.RoomTypePromotionId.class)
 @Table(name = "room_type_promotions")
+@IdClass(RoomTypePromotion.RoomTypePromotionId.class)
 public class RoomTypePromotion {
     @Id
     @ManyToOne
@@ -38,5 +39,6 @@ public class RoomTypePromotion {
     public static class RoomTypePromotionId implements Serializable {
         private Promotion promotion;
         private RoomType roomType;
+
     }
 }
