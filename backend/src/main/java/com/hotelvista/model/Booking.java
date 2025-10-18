@@ -29,7 +29,7 @@ public class Booking {
     private LocalDateTime checkOutDate;
 
     @Column(name = "number_of_guests")
-    private int numberOfGuests;
+    private Integer numberOfGuests;
 
     @Enumerated(EnumType.STRING)
     private BookingStatus status;
@@ -44,15 +44,15 @@ public class Booking {
     private LocalDateTime cancellationDate;
 
     @Column(name = "hourly_rate")
-    private double hourlyRate;
+    private Double hourlyRate;
 
-    private int duration;
+    private Integer duration;
 
     @Column(name = "package_type")
     private String packageType;
 
     @Column(name = "total_amount")
-    private double totalAmount;
+    private Double totalAmount;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "payment_status")
@@ -62,7 +62,7 @@ public class Booking {
     private InvoiceType invoiceType;
 
     @Column(name = "total_cost")
-    private double totalCost;
+    private Double totalCost;
 
     @ManyToOne
     @JoinColumn(name = "customer_id")
@@ -75,6 +75,10 @@ public class Booking {
     @ToString.Exclude
     @OneToMany(mappedBy = "booking")
     private List<BookingDetail> bookingDetails;
+
+    @ToString.Exclude
+    @OneToMany(mappedBy = "booking")
+    private List<BookingService> bookingServices;
 
     @ToString.Exclude
     @OneToMany(mappedBy = "booking")
