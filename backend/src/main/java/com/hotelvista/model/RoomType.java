@@ -39,6 +39,8 @@ public class RoomType {
     @Column(name = "base_price")
     private double basePrice;
 
+
+
     @ElementCollection
     @CollectionTable(name = "room_type_images", joinColumns = @JoinColumn(name = "room_type_id"))
     @Column(name = "images_url")
