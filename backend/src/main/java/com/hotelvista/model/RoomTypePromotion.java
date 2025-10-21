@@ -10,6 +10,7 @@ import java.time.LocalDate;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@IdClass(RoomTypePromotion.RoomTypePromotionId.class)
 @Table(name = "room_type_promotions")
 @IdClass(RoomTypePromotion.RoomTypePromotionId.class)
 public class RoomTypePromotion {
