@@ -5,6 +5,7 @@ import com.hotelvista.model.BookingDetail;
 import com.hotelvista.repository.BookingRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -22,26 +23,27 @@ public class BookingService {
         return repo.findById(id).orElse(null);
     }
 
-    public boolean add(Booking booking) {
+    @Transactional(rollbackFor = Exception.class)
+    public boolean save(Booking booking) {
         try {
             Booking savedBooking = repo.save(booking);
-            for (BookingDetail detail : savedBooking.getBookingDetails()) {
-                detail.setBooking(booking);
+            if (savedBooking.getBookingDetails() != null) {
+                for (BookingDetail detail : savedBooking.getBookingDetails()) {
+                    detail.setBooking(booking);
+                }
             }
-            for (com.hotelvista.model.BookingService bs : savedBooking.getBookingServices()) {
-                bs.setBooking(booking);
+            if (savedBooking.getBookingServices() != null) {
+                for (com.hotelvista.model.BookingService bs : savedBooking.getBookingServices()) {
+                    bs.setBooking(booking);
+                }
             }
+
             repo.save(booking);
             return true;
         } catch (Exception e) {
             e.printStackTrace();
         }
         return false;
-    }
-
-    public boolean deleteById(String id) {
-        repo.deleteById(id);
-        return repo.findById(id).orElse(null) == null;
     }
 
     public List<Booking> findAllByBookingDateBetween(LocalDateTime bookingDateAfter, LocalDateTime bookingDateBefore) {
