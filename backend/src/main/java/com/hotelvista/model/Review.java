@@ -1,5 +1,6 @@
 package com.hotelvista.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -47,6 +48,7 @@ public class Review {
     @Column(name = "images_url")
     private List<String> images;
 
+    @JsonIgnore
     @OneToOne(mappedBy = "review")
     private BookingDetail bookingDetail;
 }

@@ -7,10 +7,10 @@ import { getAll } from "../../../services/bookingService";
 export default function BookingTable() {
   const [currentPage, setCurrentPage] = useState(1);
   const [bookings, setBookings] = useState([]);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const itemsPerPage = 10;
-  const totalPages = Math.ceil(bookings.length / itemsPerPage);
+  const totalPages = Math.ceil(25 / itemsPerPage);
 
   const fetchedBookings = async () => {
     try {
@@ -18,10 +18,9 @@ export default function BookingTable() {
       const data = await getAll();
       setBookings(data);
       setLoading(false);
-      setError(null);
+      setError("");
     } catch (err) {
-      setError("Failed to fetch bookings");
-      console.error("Error fetching bookings:", err);
+      setError("Failed to fetch bookings: " + err);
     } finally {
       setLoading(false);
     }
@@ -47,7 +46,7 @@ export default function BookingTable() {
             Export
           </button>
           <button className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition text-sm font-medium">
-            Add Promotion
+            Add Booking
           </button>
         </div>
       </div>
@@ -102,6 +101,9 @@ export default function BookingTable() {
                 </td>
                 <td className="px-6 py-4 text-sm text-gray-700">
                   {booking.checkOutDate}
+                </td>
+                <td className="px-6 py-4 text-sm text-gray-700">
+                  {booking.bookingDate}
                 </td>
                 <td className="px-6 py-4 text-sm">
                   <span

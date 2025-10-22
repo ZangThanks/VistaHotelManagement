@@ -1,5 +1,6 @@
 package com.hotelvista.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hotelvista.model.enums.BookingStatus;
 import com.hotelvista.model.enums.InvoiceType;
 import com.hotelvista.model.enums.PaymentStatus;
@@ -64,23 +65,26 @@ public class Booking {
     @Column(name = "total_cost")
     private Double totalCost;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "customer_id")
     private Customer customer;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "employee_id")
     private Employee employee;
 
     @ToString.Exclude
+    @JsonIgnore
     @OneToMany(mappedBy = "booking")
     private List<BookingDetail> bookingDetails;
 
     @ToString.Exclude
+    @JsonIgnore
     @OneToMany(mappedBy = "booking")
     private List<BookingService> bookingServices;
 
     @ToString.Exclude
+    @JsonIgnore
     @OneToMany(mappedBy = "booking")
     private List<MaintenanceRequest> maintenanceRequests;
 }
