@@ -1,6 +1,7 @@
 package com.hotelvista.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.hotelvista.model.enums.RoomStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -39,7 +40,5 @@ public class Room {
     @ToString.Exclude
     @JsonIgnore
     @OneToMany(mappedBy = "room")
-    @JsonManagedReference
-    @JsonIgnore
     private List<BookingDetail> bookingDetails;
 }

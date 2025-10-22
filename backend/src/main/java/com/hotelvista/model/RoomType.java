@@ -47,13 +47,11 @@ public class RoomType {
     private List<String> images;
 
     @ToString.Exclude
-    @JsonIgnore
     @OneToMany(mappedBy = "roomType")
     @JsonIgnore
     private List<Room> rooms;
 
     @ToString.Exclude
-    @JsonIgnore
     @OneToMany(mappedBy = "roomType")
     @JsonIgnore
     private List<RoomTypePromotion> roomTypePromotions;

@@ -81,14 +81,14 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
       >
         {isExpanded ? (
           <div>
-            <h2 className="text-2xl font-playfair font-bold text-black">
+            <h2 className="text-2xl font-playfair font-bold text-black h-10">
               VISTA
             </h2>
-            <p className="text-xs text-black">Hotel Management</p>
+            {/* <p className="text-xs text-black">Hotel-Management</p> */}
           </div>
         ) : (
           <img
-            className="text-2xl font-playfair font-bold text-black"
+            className="text-2xl font-playfair font-bold text-black h-10"
             src="../../src/assets/images/logo.png"
           ></img>
         )}

@@ -17,7 +17,6 @@ public class BookingDetail {
     @Id
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "room_id")
-    @JsonBackReference
     private Room room;
 
     @Id
