@@ -19,22 +19,22 @@ import java.io.Serializable;
 @Table(name = "booking_services")
 public class BookingService {
     @Id
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "service_id")
     private Service service;
 
     @Id
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "booking_id")
     private Booking booking;
 
     @Column(name = "service_price")
-    private double servicePrice;
+    private Double servicePrice;
 
-    private int quantity;
+    private Integer quantity;
 
     @Column(name = "total_amount")
-    private double totalAmount;
+    private Double totalAmount;
 
     @Enumerated(EnumType.STRING)
     private OrderStatus orderStatus;

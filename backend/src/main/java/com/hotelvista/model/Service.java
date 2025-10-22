@@ -1,10 +1,14 @@
 package com.hotelvista.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hotelvista.model.enums.ServiceCategory;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
+
+import java.util.List;
 
 @Entity
 @Data
@@ -21,7 +25,7 @@ public class Service {
 
     private String description;
 
-    private double price;
+    private Double price;
 
     private boolean availability;
 
@@ -30,4 +34,9 @@ public class Service {
 
     @Enumerated(EnumType.STRING)
     private ServiceCategory serviceCategory;
+
+    @ToString.Exclude
+    @JsonIgnore
+    @OneToMany(mappedBy = "service")
+    private List<BookingService> bookingServices;
 }

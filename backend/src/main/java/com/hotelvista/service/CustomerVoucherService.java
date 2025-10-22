@@ -17,7 +17,7 @@ public class CustomerVoucherService {
         return repo.findAll();
     }
 
-    public boolean add(CustomerVoucher customerVoucher) {
+    public boolean save(CustomerVoucher customerVoucher) {
         return repo.save(customerVoucher) != null;
     }
 

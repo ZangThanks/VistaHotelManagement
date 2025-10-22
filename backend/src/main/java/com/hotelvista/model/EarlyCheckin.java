@@ -35,7 +35,7 @@ public class EarlyCheckin {
     @Column(name = "request_date")
     private LocalDateTime requestDate;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "customer_id")
     private Customer customer;
 }

@@ -45,7 +45,7 @@ public class MaintenanceRequest {
     @Column(name = "actual_cost")
     private double actualCost;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "booking_id")
     private Booking booking;
 }

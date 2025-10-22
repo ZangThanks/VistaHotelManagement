@@ -8,6 +8,13 @@ import java.util.List;
 
 public interface VoucherRepository extends JpaRepository<Voucher, String> {
 
+    /**
+     * Tìm tất cả voucher từ startDate đến endDate
+     *
+     * @param startDateAfter
+     * @param endDateBefore
+     * @return
+     */
     List<Voucher> findAllByStartDateAfterAndEndDateBefore(LocalDate startDateAfter, LocalDate endDateBefore);
 
 }

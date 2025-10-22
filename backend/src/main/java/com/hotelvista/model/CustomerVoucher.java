@@ -13,12 +13,12 @@ import java.io.Serializable;
 @Table(name = "customer_vouchers")
 public class CustomerVoucher {
     @Id
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "customer_id")
     private Customer customer;
 
     @Id
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "vouchers_id")
     private Voucher voucher;
 

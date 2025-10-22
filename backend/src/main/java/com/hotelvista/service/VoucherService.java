@@ -5,6 +5,7 @@ import com.hotelvista.model.Voucher;
 import com.hotelvista.repository.VoucherRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -22,11 +23,14 @@ public class VoucherService {
         return repo.findById(id).orElse(null);
     }
 
-    public boolean add(Voucher voucher) {
+    @Transactional(rollbackFor = Exception.class)
+    public boolean save(Voucher voucher) {
         try {
             Voucher savedVoucher = repo.save(voucher);
-            for (CustomerVoucher cv : voucher.getCustomerVouchers()) {
-                cv.setVoucher(savedVoucher);
+            if (savedVoucher.getCustomerVouchers() != null) {
+                for (CustomerVoucher cv : voucher.getCustomerVouchers()) {
+                    cv.setVoucher(savedVoucher);
+                }
             }
 
             repo.save(voucher);

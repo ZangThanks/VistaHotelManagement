@@ -1,38 +1,41 @@
 package com.hotelvista.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.util.List;
 
 @Entity
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties
 @ToString(callSuper = true)
 @AttributeOverride(name = "id", column = @Column(name = "employee_id"))
 @Table(name = "employees")
-public class Employee extends User{
+public class Employee extends User {
     @Column(columnDefinition = "NVARCHAR(255)")
     private String department;
 
     @Column(columnDefinition = "NVARCHAR(255)")
     private String position;
 
-    private double salary;
+    private Double salary;
 
     @Column(name = "hire_date")
     private LocalDate hireDate;
 
     @ToString.Exclude
+    @JsonIgnore
     @OneToMany(mappedBy = "employee")
     private List<Report> reports;
 
     @ToString.Exclude
+    @JsonIgnore
     @OneToMany(mappedBy = "employee")
     private List<Booking> bookings;
 }

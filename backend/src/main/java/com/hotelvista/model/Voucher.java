@@ -1,5 +1,6 @@
 package com.hotelvista.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -41,6 +42,7 @@ public class Voucher {
     private boolean isActive;
 
     @ToString.Exclude
+    @JsonIgnore
     @OneToMany(mappedBy = "voucher")
     private List<CustomerVoucher> customerVouchers;
 }
