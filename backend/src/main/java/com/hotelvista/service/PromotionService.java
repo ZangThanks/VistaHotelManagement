@@ -1,5 +1,6 @@
 package com.hotelvista.service;
 
+import com.hotelvista.dto.PromotionRoomTypeDTO;
 import com.hotelvista.model.Promotion;
 import com.hotelvista.model.RoomTypePromotion;
 import com.hotelvista.repository.PromotionRepository;
@@ -43,5 +44,20 @@ public class PromotionService {
 
     public List<Promotion> findAllByPromotionNameContainingIgnoreCase(String promotionName) {
         return repo.findAllByPromotionNameContainingIgnoreCase(promotionName);
+    }
+
+    public Double findAllByFirstBookingForStandard() {
+        return repo.findFirstBookingDiscountForStandard();
+    }
+    public Double findAllByFirstBookingForDeluxe() {
+        return repo.findFirstBookingDiscountForDeluxe();
+    }
+
+    public Double findAllByFirstBookingForSuite() {
+        return repo.findFirstBookingDiscountForSuite();
+    }
+
+    public List<PromotionRoomTypeDTO> findAllCommonPromotionsByRoomType(String roomTypeID) {
+        return repo.findAllByPromotionTypeForRoomType(roomTypeID);
     }
 }
