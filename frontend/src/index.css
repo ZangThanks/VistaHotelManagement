@@ -88,4 +88,31 @@
   h6 {
     font-family: var(--font-heading);
   }
+
+  @import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap");
+
+  @keyframes modalFadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Custom styles for checkboxes, etc. */
+  input[type="checkbox"] {
+    @apply appearance-none w-5 h-5 border-2 border-cream rounded-sm relative cursor-pointer transition-colors;
+  }
+
+  input[type="checkbox"]:checked {
+    @apply bg-gold border-gold;
+  }
+
+  input[type="checkbox"]:checked::before {
+    content: "✓";
+    @apply absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-white text-xs;
+  }
 }

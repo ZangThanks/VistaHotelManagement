@@ -9,6 +9,9 @@ import {
   FaCog,
   FaChevronRight,
 } from "react-icons/fa";
+import { RiInfoCardFill } from "react-icons/ri";
+import { IoBagCheckOutline } from "react-icons/io5";
+import { LuMapPinCheckInside } from "react-icons/lu";
 import { cn } from "../utils/cn";
 import { MdRoomService } from "react-icons/md";
 
@@ -25,7 +28,21 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
 
   const menuItems = [
     { icon: <FaTachometerAlt />, label: "Dashboard", path: "/" },
-    { icon: <FaBed />, label: "Room Management", path: "/info-management" },
+    {
+      icon: <RiInfoCardFill />,
+      label: "Information Management",
+      path: "/info-management",
+    },
+    {
+      icon: <LuMapPinCheckInside />,
+      label: "Check-in Management",
+      path: "/checkin-management",
+    },
+    {
+      icon: <IoBagCheckOutline />,
+      label: "Check-out Management",
+      path: "/checkout-management",
+    },
     { icon: <FaCalendarAlt />, label: "Reservations", path: "/reservations" },
     { icon: <FaUsers />, label: "Guests", path: "/guests" },
     { icon: <MdRoomService />, label: "Services", path: "/services" },
