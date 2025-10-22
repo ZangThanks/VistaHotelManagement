@@ -39,4 +39,8 @@ public class Promotion {
     @JsonIgnore
     @OneToMany(mappedBy = "promotion")
     private List<RoomTypePromotion> roomTypePromotions;
+
+    @ManyToOne(fetch =  FetchType.EAGER)
+    @JoinColumn(name = "promotion_type_id")
+    private PromotionType promotionType;
 }

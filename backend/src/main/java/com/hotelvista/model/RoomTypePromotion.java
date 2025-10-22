@@ -38,5 +38,6 @@ public class RoomTypePromotion {
     public static class RoomTypePromotionId implements Serializable {
         private Promotion promotion;
         private RoomType roomType;
+
     }
 }
