@@ -1,4 +1,4 @@
-import React, { FC } from 'react';
+import React from 'react';
 
 export interface Service {
     id?: string | number;
@@ -11,7 +11,7 @@ export interface Service {
     buttonHref?: string;
 }
 
-const ServiceCard: FC<{ service: Service }> = ({ service }) => {
+const ServiceCard: React.FC<{ service: Service }> = ({ service }) => {
     return (
         <article className="service-card bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow duration-300">
             <img

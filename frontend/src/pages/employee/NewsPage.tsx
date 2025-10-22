@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import HeaderHome from '../../components/HeaderHome';
-import Header from '../../components/HeaderEmployee';
+import Header from '../../components/Header';
 import bannerImg from '../../assets/images/bg_newPage.png'; // ✅ Import ảnh chuẩn
 
 const NewsPage: React.FC = () => {
