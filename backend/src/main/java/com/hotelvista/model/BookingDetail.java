@@ -1,5 +1,6 @@
 package com.hotelvista.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -14,20 +15,20 @@ import java.util.List;
 @Table(name = "booking_details")
 public class BookingDetail {
     @Id
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "room_id")
     private Room room;
 
     @Id
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "booking_id")
     private Booking booking;
 
     @Column(name = "room_price")
-    private double roomPrice;
+    private Double roomPrice;
 
     @ToString.Exclude
-    @OneToOne
+    @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "review_id")
     private Review review;
 

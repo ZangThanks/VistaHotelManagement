@@ -14,17 +14,17 @@ import java.time.LocalDate;
 @Table(name = "room_type_promotions")
 public class RoomTypePromotion {
     @Id
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "room_type_id")
     private RoomType roomType;
 
     @Id
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "promotion_id")
     private Promotion promotion;
 
     @Column(name = "discount_value")
-    private double discountValue;
+    private Double discountValue;
 
     @Column(name = "start_date")
     private LocalDate startDate;

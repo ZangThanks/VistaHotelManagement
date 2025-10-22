@@ -1,5 +1,6 @@
 package com.hotelvista.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -24,11 +25,11 @@ public class RoomType {
 
     private String description;
 
-    private double area;
+    private Double area;
 
     //Số lượng người lưu trú tối đa
     @Column(name = "max_occupancy")
-    private int maxOccupancy;
+    private Integer maxOccupancy;
 
     //Tiện nghi (máy lạnh, nước nóng, ...)
     @ElementCollection
@@ -37,7 +38,7 @@ public class RoomType {
     private List<String> amenties;
 
     @Column(name = "base_price")
-    private double basePrice;
+    private Double basePrice;
 
     @ElementCollection
     @CollectionTable(name = "room_type_images", joinColumns = @JoinColumn(name = "room_type_id"))
@@ -45,10 +46,12 @@ public class RoomType {
     private List<String> images;
 
     @ToString.Exclude
+    @JsonIgnore
     @OneToMany(mappedBy = "roomType")
     private List<Room> rooms;
 
     @ToString.Exclude
+    @JsonIgnore
     @OneToMany(mappedBy = "roomType")
     private List<RoomTypePromotion> roomTypePromotions;
 }

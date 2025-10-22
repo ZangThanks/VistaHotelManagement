@@ -1,14 +1,17 @@
 import Footer from "../../../components/Footer";
 import Header from "../../../components/Header";
 import Dashboard from "../Dashboard";
+import BookingTable from "./BookingTable";
 
 function BookingManagement() {
   return (
-    <div>
+    <div className="flex flex-col min-h-screen">
       <Header />
-      <div className="flex justify-around items-start">
+      <div className="flex flex-1">
         <Dashboard />
-        <div className="content"></div>
+        <main className="flex-1 bg-[#d4c5b9] p-6">
+          <BookingTable />
+        </main>
       </div>
       <Footer />
     </div>

@@ -1,22 +1,22 @@
-import './index.css';
+import "./index.css";
 
-import './App.css'
-import Header from './components/Header';
-import Footer from './components/Footer';
-import HeaderHome from './components/HeaderHome';
+import "./App.css";
+import Header from "./components/Header";
+import Footer from "./components/Footer";
+import HeaderHome from "./components/HeaderHome";
+import BookingManagement from "./pages/admin/booking/BookingManagement";
 
 function App() {
-
-
   return (
     <>
       <div>
-        <Header />
+        {/* <Header />
         <HeaderHome />
-        <Footer />
+        <Footer /> */}
+        <BookingManagement />
       </div>
     </>
-  )
+  );
 }
 
-export default App
+export default App;

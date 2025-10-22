@@ -1,5 +1,6 @@
 package com.hotelvista.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hotelvista.model.enums.Gender;
 import com.hotelvista.model.enums.MemberShipLevel;
 import jakarta.persistence.*;
@@ -26,22 +27,28 @@ public class Customer extends User{
     @Enumerated(EnumType.STRING)
     private Gender gender;
 
+    @Column(name = "joined_date")
+    private LocalDate joinedDate;
+
     @Column(name = "loyalty_points")
-    private int loyaltyPoints;
+    private Integer loyaltyPoints;
 
     @Column(name = "membership_level")
     @Enumerated(EnumType.STRING)
     private MemberShipLevel memberShipLevel;
 
     @ToString.Exclude
+    @JsonIgnore
     @OneToMany(mappedBy = "customer")
     private List<CustomerVoucher> customerVouchers;
 
     @ToString.Exclude
+    @JsonIgnore
     @OneToMany(mappedBy = "customer")
     private List<Booking> bookings;
 
     @ToString.Exclude
+    @JsonIgnore
     @OneToMany(mappedBy = "customer")
     private List<EarlyCheckin> earlyCheckin;
 }
