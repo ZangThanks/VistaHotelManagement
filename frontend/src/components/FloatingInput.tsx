@@ -67,6 +67,7 @@ const FloatingInput: React.FC<FloatingInputProps> = ({
         onBlur={() => setFocused(false)}
         className={`peer w-full bg-transparent border-0 border-b ${borderColor} ${focusBorderColor}
                     outline-none transition-colors duration-200 ${sizePad} ${leftPadding}
+                    text-white placeholder-white/50
                     ${disabled ? "opacity-60 cursor-not-allowed" : ""}`}
         aria-labelledby={`${inputId}-label`}
         autoComplete="off"
@@ -76,7 +77,7 @@ const FloatingInput: React.FC<FloatingInputProps> = ({
       {iconLeft && (
         <FontAwesomeIcon
           icon={iconLeft}
-          className="absolute left-0 top-1/2 -translate-y-1/2 text-gray-400"
+          className="absolute left-0 top-1/2 -translate-y-1/2 text-white/70"
         />
       )}
 

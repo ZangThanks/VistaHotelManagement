@@ -8,11 +8,13 @@ const AuthLayout: React.FC = () => {
       className="fixed inset-0 bg-cover bg-center bg-no-repeat flex items-center justify-center"
       style={{ backgroundImage: `url(${bgImage})` }}
     >
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-[1px]"></div>
+      <div className="absolute inset-0 bg-black/45 backdrop-blur-[1px]"></div>
 
-      {/* Main content - no scroll here */}
-      <div className="relative z-10 w-full max-w-md bg-white rounded-xl shadow-lg p-8 m-4">
-        <Outlet />
+      {/* Main content - with opacity to see background */}
+      <div className="relative z-10 w-full max-w-lg bg-gray-600/45 backdrop-blur-sm rounded-2xl shadow-2xl overflow-hidden max-h-[95vh] m-4">
+        <div className="h-full overflow-y-auto scrollbar-thin p-10">
+          <Outlet />
+        </div>
       </div>
     </div>
   );
