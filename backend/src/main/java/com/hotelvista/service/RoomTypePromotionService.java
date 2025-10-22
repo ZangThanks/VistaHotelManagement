@@ -14,7 +14,8 @@ public class RoomTypePromotionService {
     private RoomTypePromotionRepository repo;
 
     public boolean add(RoomTypePromotion roomTypePromotion) {
-        return repo.save(roomTypePromotion) != null;
+        repo.save(roomTypePromotion);
+        return true;
     }
 
     public List<RoomTypePromotion> findAll() {
@@ -23,5 +24,12 @@ public class RoomTypePromotionService {
 
     public List<RoomTypePromotion> findAllByStartDateAfterAndEndDateBefore(LocalDate startDateAfter, LocalDate endDateBefore) {
         return repo.findAllByStartDateAfterAndEndDateBefore(startDateAfter, endDateBefore);
+    }
+
+    public RoomTypePromotion findById(RoomTypePromotion.RoomTypePromotionId id) {
+        return repo.findById(id).orElse(null);
+    }
+    public void deleteById(RoomTypePromotion.RoomTypePromotionId id) {
+        repo.deleteById(id);
     }
 }

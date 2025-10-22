@@ -98,5 +98,7 @@ public interface PromotionRepository extends JpaRepository<Promotion, String> {
      * @return
      */
     Promotion getPromotionByPromotionID(@Param("promotionID") String promotionID);
-    
+
+
+
 }
