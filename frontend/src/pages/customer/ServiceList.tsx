@@ -1,4 +1,4 @@
-import React, { FC } from 'react';
+import React from 'react';
 import ServiceCard, { type Service } from '../../components/ServiceCard';
 
 interface ServiceListProps {
@@ -6,7 +6,7 @@ interface ServiceListProps {
     foodServices?: Service[];
 }
 
-const ServiceList: FC<ServiceListProps> = ({
+const ServiceList: React.FC<ServiceListProps> = ({
     laundryServices = [],
     foodServices = [],
 }) => {

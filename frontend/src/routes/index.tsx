@@ -5,10 +5,11 @@ import AuthLayout from "../layouts/AuthLayout";
 import Login from "../pages/auth/Login";
 import EmployeeLayout from '../layouts/EmployeeLayout';
 import CustomerList from '../pages/employee/CustumerList';
+import NewsPage from '../pages/employee/NewsPage';
 
 export const router = createBrowserRouter([
     {
-        path: '',
+        path: 'auth',
         element: <AuthLayout />,
         children: [
             { path: 'login', element: <Login /> },
@@ -20,9 +21,31 @@ export const router = createBrowserRouter([
     },
     {
         path: 'employee',
-        element: <EmployeeLayout/>,
+        element: <EmployeeLayout />,
         children: [
             { path: 'customer/list', element: <CustomerList /> },
+
+            //   { path: "register", element: <Register /> },
+            //   { path: "forgot-password", element: <ForgotPassword /> },
+            //   { path: "reset-password", element: <ResetPassword /> },
+        ],
+    },
+    {
+        path: 'admin',
+        element: <EmployeeLayout />,
+        children: [
+            { path: 'customer/list', element: <CustomerList /> },
+
+            //   { path: "register", element: <Register /> },
+            //   { path: "forgot-password", element: <ForgotPassword /> },
+            //   { path: "reset-password", element: <ResetPassword /> },
+        ],
+    },
+    {
+        path: '',
+        element: <EmployeeLayout />,
+        children: [
+            { path: '/newsPage', element: <NewsPage /> },
 
             //   { path: "register", element: <Register /> },
             //   { path: "forgot-password", element: <ForgotPassword /> },
