@@ -14,13 +14,17 @@ public class PromotionService {
     @Autowired
     private PromotionRepository repo;
 
+    @Transactional(rollbackFor = Exception.class)
     public boolean save(Promotion promotion) {
         try {
             Promotion savedPromotion = repo.save(promotion);
 
-            for (RoomTypePromotion rtp : savedPromotion.getRoomTypePromotions()) {
-                rtp.setPromotion(promotion);
+            if (savedPromotion.getRoomTypePromotions() != null) {
+                for (RoomTypePromotion rtp : savedPromotion.getRoomTypePromotions()) {
+                    rtp.setPromotion(promotion);
+                }
             }
+
             repo.save(savedPromotion);
             return true;
         } catch (Exception e) {

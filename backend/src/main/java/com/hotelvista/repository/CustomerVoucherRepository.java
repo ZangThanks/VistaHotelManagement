@@ -10,6 +10,14 @@ import java.util.List;
 
 public interface CustomerVoucherRepository extends JpaRepository<CustomerVoucher, CustomerVoucher.CustomerVoucherId> {
 
+    /**
+     * Tìm những voucher, customer và state tương ứng theo customerId với startDate - endDate
+     *
+     * @param startDate
+     * @param endDate
+     * @param customerId
+     * @return
+     */
     @Query("SELECT cv FROM CustomerVoucher cv " +
             "WHERE cv.voucher.startDate >= :startDate " +
             "AND cv.voucher.endDate <= :endDate AND cv.customer.id = :customerId")
