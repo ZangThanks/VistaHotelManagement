@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
+@CrossOrigin(origins = "*")
 @RequestMapping("/bookings")
 public class BookingController {
     @Autowired
@@ -19,6 +20,22 @@ public class BookingController {
         return service.findAll();
     }
 
+    @PostMapping("/save")
+    public boolean save(@RequestBody Booking booking) {
+        return service.save(booking);
+    }
+
+    @PutMapping("/edit")
+    public boolean update(@RequestBody Booking booking) {
+        return service.save(booking);
+    }
+
+    @GetMapping("/{id}")
+    public Booking findById(@PathVariable("id") String id) {
+        return service.findById(id);
+    }
+
+    //http://localhost:8080/bookings/booking-date?dateAfter=2024-06-10&dateBefore=2024-06-15
     @GetMapping("/booking-date")
     public List<Booking> findAllByBookingDateBetween(@RequestParam LocalDateTime dateAfter, @RequestParam LocalDateTime dateBefore) {
         return service.findAllByBookingDateBetween(dateAfter, dateBefore);

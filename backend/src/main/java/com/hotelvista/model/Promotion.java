@@ -1,5 +1,6 @@
 package com.hotelvista.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -30,11 +31,16 @@ public class Promotion {
     @Column(name = "is_active")
     private boolean isActive;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "admin_id")
     private Admin admin;
 
     @ToString.Exclude
+    @JsonIgnore
     @OneToMany(mappedBy = "promotion")
     private List<RoomTypePromotion> roomTypePromotions;
+
+    @ManyToOne(fetch =  FetchType.EAGER)
+    @JoinColumn(name = "promotion_type_id")
+    private PromotionType promotionType;
 }

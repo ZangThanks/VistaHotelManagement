@@ -12,7 +12,7 @@ import lombok.ToString;
 public enum ReportType {
     REVENUE("REVENUE"),
     OCCUPANCY("OCCUPANCY"),
-    CUSSTOMER("CUSTOMER"),
+    CUSTOMER("CUSTOMER"),
     SERVICE("SERVICE"),
     MAINTENANCE("MAINTENANCE");
 
