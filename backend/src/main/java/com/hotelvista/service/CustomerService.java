@@ -29,8 +29,8 @@ public class CustomerService {
         repo.deleteById(id);
     }
 
-    public List<Customer> findByCustomerName(String name) {
-        return repo.findByCustomerName(name);
+    public List<Customer> findAllByFullNameContainingIgnoreCase(String name) {
+        return repo.findAllByFullNameContainingIgnoreCase(name);
     }
 
 }
