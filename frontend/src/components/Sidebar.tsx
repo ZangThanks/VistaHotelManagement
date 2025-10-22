@@ -84,7 +84,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
       ref={sidebarRef}
       className={cn(
         "h-screen bg-gradient-to-b from-[#F8EBD6] to-white flex flex-col fixed z-30 transition-all duration-300 shadow-md",
-        isExpanded ? "w-64" : "w-20",
+        isExpanded ? "w-65" : "w-12",
         className
       )}
       onMouseEnter={handleMouseEnter}
@@ -92,20 +92,20 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
     >
       <div
         className={cn(
-          "p-6 border-b border-white/20 flex items-center justify-center overflow-hidden",
+          "p-6 border-b border-white/20 flex items-center justify-center overflow-hidden relative",
           isExpanded ? "justify-start" : "justify-center"
         )}
       >
         {isExpanded ? (
           <div>
-            <h2 className="text-2xl font-playfair font-bold text-black h-10">
+            <h2 className="text-2xl font-playfair font-bold text-black h-10 absolute">
               VISTA
             </h2>
             {/* <p className="text-xs text-black">Hotel-Management</p> */}
           </div>
         ) : (
           <img
-            className="text-2xl font-playfair font-bold text-black h-10"
+            className="text-2xl font-playfair font-bold text-black h-10 absolute"
             src="../../src/assets/images/logo.png"
           ></img>
         )}
@@ -120,8 +120,8 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
                 <Link
                   to={item.path}
                   className={cn(
-                    "flex items-center px-6 py-4 hover:bg-white/10 transition-all duration-200 relative group",
-                    isActive ? "bg-white/10 border-l-4 border-white" : "",
+                    "flex items-center px-6 py-4 hover:bg-white/80 transition-all duration-200 relative group",
+                    isActive ? "bg-white/80 border-l-4 border-black" : "",
                     !isExpanded && "justify-center"
                   )}
                 >
@@ -156,7 +156,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
           isExpanded ? "block" : "hidden"
         )}
       >
-        <p className="text-xs text-white/80">© 2023 Vista Hotel</p>
+        <p className="text-xs text-white/80">© 2025 Vista Hotel</p>
       </div>
 
       <button
