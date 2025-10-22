@@ -1,1 +1,31 @@
 @import "tailwindcss";
+
+/* Custom scrollbar */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: #d1d5db;
+  border-radius: 6px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background-color: #9ca3af;
+}
+
+/* Google Icon Color */
+.btn-google svg {
+  color: #4285f4;
+}
+
+/* Facebook Icon Color */
+.btn-facebook svg {
+  color: #1877f2;
+}
