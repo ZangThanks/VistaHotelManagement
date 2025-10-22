@@ -10,7 +10,7 @@ import './index.css';
 import './App.css'
 // >>>>>>> PPH
 
-import ServiceList from './pages/customer/ServiceList';
+// import ServiceList from './pages/customer/ServiceList';
 
 function App() {
 // <<<<<<< HEAD
