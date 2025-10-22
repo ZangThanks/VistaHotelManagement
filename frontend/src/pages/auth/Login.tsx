@@ -28,18 +28,15 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="w-full h-full flex flex-col overflow-y-auto scrollbar-thin">
-      <form
-        onSubmit={handleLogin}
-        className="flex flex-col space-y-6 py-4 px-2"
-      >
+    <div className="w-full flex flex-col">
+      <form onSubmit={handleLogin} className="flex flex-col space-y-4 pb-6">
         {/* Logo Section */}
-        <div className="flex justify-center mb-3">
-          <img src={logoImage} alt="Logo Vista" className="h-20 w-auto" />
+        <div className="flex justify-center mb-1">
+          <img src={logoImage} alt="Logo Vista" className="h-16 w-auto" />
         </div>
 
         {/* Title Section */}
-        <div className="text-center mb-4">
+        <div className="text-center mb-2">
           <h1 className="text-2xl font-bold text-yellow-50 mb-2">Đăng nhập</h1>
           <p className="text-sm text-yellow-50">
             Chào mừng bạn trở lại với Vista Hotel
@@ -47,7 +44,7 @@ const Login: React.FC = () => {
         </div>
 
         {/* Email Input with Error */}
-        <div>
+        <div className="min-h-[65px] mt-6">
           <FloatingInput
             label="Email hoặc Số điện thoại"
             type="email"
@@ -61,7 +58,7 @@ const Login: React.FC = () => {
             }
             labelColor={emailError ? "text-red-500" : "text-white"}
             focusLabelColor={emailError ? "text-red-500" : "text-amber-400"}
-            className="bg-transparent mt-2"
+            className="bg-transparent"
           />
           {emailError && (
             <p className="text-red-500 text-xs mt-1">{emailError}</p>
@@ -69,7 +66,7 @@ const Login: React.FC = () => {
         </div>
 
         {/* Password Input with Error */}
-        <div>
+        <div className="min-h-[65px]">
           <FloatingInput
             label="Mật khẩu"
             type="password"
@@ -83,7 +80,7 @@ const Login: React.FC = () => {
             }
             labelColor={passwordError ? "text-red-500" : "text-white"}
             focusLabelColor={passwordError ? "text-red-500" : "text-amber-400"}
-            className="bg-transparent mt-2"
+            className="bg-transparent"
           />
           {passwordError && (
             <p className="text-red-500 text-xs mt-1">{passwordError}</p>
@@ -91,7 +88,7 @@ const Login: React.FC = () => {
         </div>
 
         {/* Forgot Password Link */}
-        <div className="flex justify-end">
+        <div className="flex justify-end -mt-1">
           <button
             type="button"
             onClick={handleForgotPassword}
@@ -115,7 +112,7 @@ const Login: React.FC = () => {
         />
 
         {/* Divider */}
-        <div className="flex items-center gap-3 my-2">
+        <div className="flex items-center gap-3 mt-5">
           <div className="flex-1 h-px bg-white/30"></div>
           <span className="text-white/70 text-xs">Hoặc tiếp tục với</span>
           <div className="flex-1 h-px bg-white/30"></div>

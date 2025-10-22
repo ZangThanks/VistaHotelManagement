@@ -11,7 +11,7 @@ const AuthLayout: React.FC = () => {
       <div className="absolute inset-0 bg-black/45 backdrop-blur-[1px]"></div>
 
       {/* Main content - with opacity to see background */}
-      <div className="relative z-10 w-full max-w-lg bg-gray-600/45 backdrop-blur-sm rounded-2xl shadow-2xl overflow-hidden max-h-[95vh] m-4">
+      <div className="relative z-10 w-full max-w-[550px] h-[95vh] bg-gray-600/45 backdrop-blur-sm rounded-2xl shadow-2xl overflow-hidden m-4">
         <div className="h-full overflow-y-auto scrollbar-thin p-10">
           <Outlet />
         </div>
