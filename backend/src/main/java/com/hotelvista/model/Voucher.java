@@ -23,10 +23,10 @@ public class Voucher {
     private String voucherName;
 
     @Column(name = "discount_percentage")
-    private double discountPercentage;
+    private Double discountPercentage;
 
     @Column(name = "discount_value")
-    private double discountValue;
+    private Double discountValue;
 
     @Column(name = "start_date")
     private LocalDate startDate;

@@ -1,19 +1,17 @@
+import "./index.css";
 
-import './index.css';
+import "./App.css";
 
-import './App.css'
-
-import ServiceList from './pages/customer/ServiceList';
+import AppAdmin from "./pages/admin/appAdmin";
 
 function App() {
-
-
   return (
     <>
       {/* <Home /> */}
-      <ServiceList />
+      {/* <ServiceList /> */}
+      <AppAdmin />
     </>
-  )
+  );
 }
 
-export default App
+export default App;

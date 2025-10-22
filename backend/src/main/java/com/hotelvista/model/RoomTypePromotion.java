@@ -24,7 +24,7 @@ public class RoomTypePromotion {
     private Promotion promotion;
 
     @Column(name = "discount_value")
-    private double discountValue;
+    private Double discountValue;
 
     @Column(name = "start_date")
     private LocalDate startDate;

@@ -1,5 +1,7 @@
 package com.hotelvista.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -39,8 +41,6 @@ public class RoomType {
     @Column(name = "base_price")
     private double basePrice;
 
-
-
     @ElementCollection
     @CollectionTable(name = "room_type_images", joinColumns = @JoinColumn(name = "room_type_id"))
     @Column(name = "images_url")
@@ -48,9 +48,11 @@ public class RoomType {
 
     @ToString.Exclude
     @OneToMany(mappedBy = "roomType")
+    @JsonIgnore
     private List<Room> rooms;
 
     @ToString.Exclude
     @OneToMany(mappedBy = "roomType")
+    @JsonIgnore
     private List<RoomTypePromotion> roomTypePromotions;
 }
