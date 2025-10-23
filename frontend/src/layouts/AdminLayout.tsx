@@ -1,4 +1,3 @@
-// src/components/Layout.tsx
 import React, { useState, useEffect } from "react";
 import { Outlet } from "react-router-dom";
 import HeaderAdmin from "../components/HeaderAdmin";
@@ -26,13 +25,6 @@ const AdminLayout = () => {
 
   return (
     <div className="flex h-screen bg-light">
-      {isSidebarOpen && isMobile && (
-        <div
-          className="fixed inset-0 bg-black/50 z-20"
-          onClick={toggleSidebar}
-        ></div>
-      )}
-      {/* Sidebar */}
       <Sidebar
         className={
           isMobile
@@ -43,14 +35,21 @@ const AdminLayout = () => {
         }
       />
 
-      {/* Main content */}
-      <div className="flex flex-col flex-grow ml-20 transition-all duration-300 ease-in-out">
+      {isSidebarOpen && isMobile && (
+        <div
+          className="fixed inset-0 bg-black/50 z-20"
+          onClick={toggleSidebar}
+          style={{ pointerEvents: "auto" }}
+        ></div>
+      )}
+
+      <div className="flex flex-col flex-grow ml-13 transition-all duration-300 ease-in-out">
         <HeaderAdmin
           toggleSidebar={toggleSidebar}
           isSidebarOpen={isSidebarOpen}
         />
 
-        <main className="flex-grow p-6 overflow-auto bg-light">
+        <main className="flex-grow p-5 overflow-auto bg-light">
           <Outlet />
         </main>
       </div>
