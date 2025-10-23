@@ -1,38 +1,66 @@
 import React from "react";
 import { FaCheck, FaEye, FaConciergeBell } from "react-icons/fa";
 
-const todayCheckins = [
-  {
-    id: "VH-23062501",
+// Helper function to format date from ISO string to readable time
+const formatCheckInTime = (dateString) => {
+  if (!dateString) return "N/A";
+  const date = new Date(dateString);
+  return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+};
+
+// Helper to determine trust score based on loyalty points
+const getTrustScore = (loyaltyPoints) => {
+  if (!loyaltyPoints) return { value: 50, level: "medium" };
+  if (loyaltyPoints >= 10000) return { value: 85, level: "high" };
+  if (loyaltyPoints >= 5000) return { value: 65, level: "medium" };
+  return { value: 40, level: "low" };
+};
+
+// Helper to determine status
+const getStatus = (status) => {
+  if (status === "CHECKED_IN") return "completed";
+  if (status === "CHECKED_OUT") return "completed";
+  return "pending";
+};
+
+// Helper to determine payment status object
+const getPaymentStatus = (status) => {
+  switch (status) {
+    case "COMPLETED":
+      return { type: "complete", label: "Paid in Full" };
+    case "PARTIAL":
+      return { type: "partial", label: "Partial (30%)" };
+    case "PENDING":
+      return { type: "checkout", label: "Pay at Checkout" };
+    default:
+      return { type: "checkout", label: "Not Paid" };
+  }
+};
+
+function TodayTab({ onViewDetails, bookings = [] }) {
+  // Transform API data into the format needed for display
+  const todayCheckins = bookings.map((booking) => ({
+    id: booking.bookingID,
     guest: {
-      name: "John Anderson",
-      email: "john.a@example.com",
+      name: booking.customer?.fullName || "Guest",
+      email: booking.customer?.email || "No email",
+      // Using a placeholder image since the API doesn't provide images
       image: "https://randomuser.me/api/portraits/men/42.jpg",
     },
-    room: "301 - Deluxe King",
-    checkInTime: "14:00 PM",
-    status: "pending",
-    trustScore: { value: 85, level: "high" },
-    paymentStatus: { type: "complete", label: "Paid in Full" },
-    actions: ["checkin", "view"],
-  },
-  {
-    id: "VH-23062502",
-    guest: {
-      name: "Sarah Johnson",
-      email: "sarah.j@example.com",
-      image: "https://randomuser.me/api/portraits/women/28.jpg",
-    },
-    room: "212 - Standard Twin",
-    checkInTime: "15:30 PM",
-    status: "completed",
-    trustScore: { value: 63, level: "medium" },
-    paymentStatus: { type: "partial", label: "Partial (30%)" },
-    actions: ["view", "services"],
-  },
-];
+    room: `${booking.bookingDetails[0]?.room?.roomNumber || "N/A"} - ${
+      booking.bookingDetails[0]?.room?.roomType?.typeName || "Standard"
+    }`,
+    checkInTime: formatCheckInTime(booking.checkInDate),
+    status: getStatus(booking.status),
+    trustScore: getTrustScore(booking.customer?.loyaltyPoints),
+    paymentStatus: getPaymentStatus(booking.paymentStatus),
+    // Determine available actions based on status
+    actions:
+      booking.status === "CHECKED_IN"
+        ? ["view", "services"]
+        : ["checkin", "view"],
+  }));
 
-function TodayTab({ onViewDetails }) {
   const renderStatusBadge = (status) => {
     const statusClasses = {
       pending: "bg-amber-50 text-amber-700",
@@ -87,6 +115,14 @@ function TodayTab({ onViewDetails }) {
       </span>
     );
   };
+
+  if (todayCheckins.length === 0) {
+    return (
+      <div className="p-10 text-center">
+        <p className="text-gray-500">No check-ins found for today.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="overflow-x-auto">

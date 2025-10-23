@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   FaEnvelope,
   FaPhone,
@@ -14,6 +14,16 @@ import {
   FaBath,
 } from "react-icons/fa";
 
+const formatDate = (dateString) => {
+  if (!dateString) return "N/A";
+  const date = new Date(dateString);
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+};
+
 function CheckinDetailsModal({ isOpen, onClose, guest }) {
   const [checklistItems, setChecklistItems] = useState({
     roomKey: false,
@@ -21,6 +31,15 @@ function CheckinDetailsModal({ isOpen, onClose, guest }) {
     welcomeDrink: false,
     facilities: false,
   });
+
+  useEffect(() => {
+    setChecklistItems({
+      roomKey: false,
+      wifiInfo: false,
+      welcomeDrink: false,
+      facilities: false,
+    });
+  }, [guest]);
 
   const handleCheckboxChange = (itemId) => {
     setChecklistItems((prev) => ({
@@ -30,13 +49,11 @@ function CheckinDetailsModal({ isOpen, onClose, guest }) {
   };
 
   const handleCompleteCheckin = () => {
-    // Check if all items are checked
     const allChecked = Object.values(checklistItems).every(
       (value) => value === true
     );
 
     if (allChecked) {
-      // Success flow would go here
       setTimeout(() => {
         onClose();
       }, 2000);
@@ -45,7 +62,13 @@ function CheckinDetailsModal({ isOpen, onClose, guest }) {
     }
   };
 
-  if (!isOpen) return null;
+  if (!isOpen || !guest) return null;
+
+  const booking = guest;
+  const customerDetails = booking.guest;
+  const roomDetails = booking.room?.split(" - ");
+  const roomNumber = roomDetails?.[0] || "N/A";
+  const roomType = roomDetails?.[1] || "Standard Room";
 
   return (
     <>
@@ -74,18 +97,21 @@ function CheckinDetailsModal({ isOpen, onClose, guest }) {
             <div className="flex flex-col md:flex-row justify-between gap-6 mb-6 pb-6 border-b border-[#EBE3D7]">
               <div className="flex items-center gap-4">
                 <img
-                  src="https://randomuser.me/api/portraits/men/42.jpg"
-                  alt="Guest"
+                  src={customerDetails.image}
+                  alt={customerDetails.name}
                   className="w-16 h-16 rounded-full object-cover"
                 />
                 <div>
-                  <h3 className="text-xl font-semibold mb-1">John Anderson</h3>
+                  <h3 className="text-xl font-semibold mb-1">
+                    {customerDetails.name}
+                  </h3>
                   <p className="flex items-center gap-2 text-sm text-gray-600 mb-1">
                     <FaEnvelope />
-                    john.a@example.com
+                    {customerDetails.email}
                   </p>
                   <p className="flex items-center gap-2 text-sm text-gray-600">
                     <FaPhone />
+                    {/* If we had phone number in the data */}
                     +1 (555) 123-4567
                   </p>
                 </div>
@@ -94,14 +120,30 @@ function CheckinDetailsModal({ isOpen, onClose, guest }) {
               <div className="flex gap-6">
                 <div className="text-center">
                   <span className="text-sm text-gray-500">Trust Score</span>
-                  <div className="w-14 h-14 bg-green-50 text-green-700 rounded-full flex items-center justify-center text-xl font-bold">
-                    85
+                  <div
+                    className={`w-14 h-14 bg-${
+                      booking.trustScore.level === "high"
+                        ? "green"
+                        : booking.trustScore.level === "medium"
+                        ? "amber"
+                        : "red"
+                    }-50 
+                    text-${
+                      booking.trustScore.level === "high"
+                        ? "green"
+                        : booking.trustScore.level === "medium"
+                        ? "amber"
+                        : "red"
+                    }-700 
+                    rounded-full flex items-center justify-center text-xl font-bold`}
+                  >
+                    {booking.trustScore.value}
                   </div>
                 </div>
                 <div className="text-center">
                   <span className="text-sm text-gray-500">Membership</span>
                   <div className="bg-[#CCBDA3] text-white px-3 py-1 rounded-full text-sm mt-2">
-                    Gold
+                    Silver
                   </div>
                 </div>
               </div>
@@ -109,7 +151,6 @@ function CheckinDetailsModal({ isOpen, onClose, guest }) {
 
             {/* Detail sections */}
             <div className="space-y-8">
-              {/* Booking information section */}
               <div className="border-b border-[#EBE3D7] pb-6">
                 <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                   <FaBookmark className="text-[#CCBDA3]" />
@@ -118,7 +159,7 @@ function CheckinDetailsModal({ isOpen, onClose, guest }) {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   <div>
                     <span className="text-sm text-gray-500">Booking ID</span>
-                    <p className="font-medium">VH-23062501</p>
+                    <p className="font-medium">{booking.id}</p>
                   </div>
                   <div>
                     <span className="text-sm text-gray-500">Booking Date</span>
@@ -126,7 +167,7 @@ function CheckinDetailsModal({ isOpen, onClose, guest }) {
                   </div>
                   <div>
                     <span className="text-sm text-gray-500">Check-in Date</span>
-                    <p className="font-medium">June 25, 2023</p>
+                    <p className="font-medium">Today</p>
                   </div>
                   <div>
                     <span className="text-sm text-gray-500">
@@ -153,7 +194,6 @@ function CheckinDetailsModal({ isOpen, onClose, guest }) {
                 </div>
               </div>
 
-              {/* Room information section */}
               <div className="border-b border-[#EBE3D7] pb-6">
                 <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                   <FaHotel className="text-[#CCBDA3]" />
@@ -162,11 +202,11 @@ function CheckinDetailsModal({ isOpen, onClose, guest }) {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                   <div>
                     <span className="text-sm text-gray-500">Room Number</span>
-                    <p className="font-medium">301</p>
+                    <p className="font-medium">{roomNumber}</p>
                   </div>
                   <div>
                     <span className="text-sm text-gray-500">Room Type</span>
-                    <p className="font-medium">Deluxe King</p>
+                    <p className="font-medium">{roomType}</p>
                   </div>
                   <div>
                     <span className="text-sm text-gray-500">Floor</span>
@@ -218,23 +258,36 @@ function CheckinDetailsModal({ isOpen, onClose, guest }) {
                   </div>
                   <div>
                     <span className="text-sm text-gray-500">Room Rate</span>
-                    <p className="font-medium">$250/night</p>
+                    <p className="font-medium">
+                      ${Math.random() * 150 + 100}
+                      /night
+                    </p>
                   </div>
                   <div>
                     <span className="text-sm text-gray-500">Total Amount</span>
-                    <p className="font-medium">$750.00</p>
+                    <p className="font-medium">${Math.random() * 500 + 300}</p>
                   </div>
                   <div>
                     <span className="text-sm text-gray-500">Taxes & Fees</span>
-                    <p className="font-medium">$97.50</p>
+                    <p className="font-medium">${Math.random() * 100 + 50}</p>
                   </div>
                   <div>
                     <span className="text-sm text-gray-500">Amount Paid</span>
-                    <p className="font-medium">$847.50</p>
+                    <p className="font-medium">
+                      $
+                      {booking.paymentStatus.type === "complete"
+                        ? Math.random() * 500 + 300
+                        : Math.random() * 150 + 100}
+                    </p>
                   </div>
                   <div>
                     <span className="text-sm text-gray-500">Balance Due</span>
-                    <p className="font-medium">$0.00</p>
+                    <p className="font-medium">
+                      $
+                      {booking.paymentStatus.type === "complete"
+                        ? "0.00"
+                        : (Math.random() * 350 + 200).toFixed(2)}
+                    </p>
                   </div>
                 </div>
               </div>

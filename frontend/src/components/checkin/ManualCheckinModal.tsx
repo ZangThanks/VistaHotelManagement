@@ -38,28 +38,23 @@ function ManualCheckinModal({ isOpen, onClose }) {
     }
   }, [roomType]);
 
-  // Calculate checkout time based on checkin time and duration
   useEffect(() => {
     if (checkInTime && duration) {
       const startTime = new Date(`2000-01-01T${checkInTime}`);
       const hours = parseInt(duration);
       const endTime = new Date(startTime.getTime() + hours * 60 * 60 * 1000);
 
-      // Format to HH:MM
       const formattedTime = endTime.toTimeString().substring(0, 5);
       setCheckOutTime(formattedTime);
 
-      // Update hourly rate
       updateHourlyRate(hours);
     }
   }, [checkInTime, duration]);
 
-  // Update hourly rate based on duration
   const updateHourlyRate = (hours) => {
     const baseRate = 100;
     let percentage;
 
-    // Calculate percentage based on hours
     switch (parseInt(hours)) {
       case 1:
         percentage = 15;
@@ -103,7 +98,6 @@ function ManualCheckinModal({ isOpen, onClose }) {
           className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-xl animate-[modalFadeIn_0.3s]"
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Modal header */}
           <div className="p-5 border-b border-[#EBE3D7] sticky top-0 bg-white z-10 flex justify-between items-center">
             <h2 className="text-2xl font-playfair font-semibold">
               Manual Check-in
@@ -116,9 +110,7 @@ function ManualCheckinModal({ isOpen, onClose }) {
             </button>
           </div>
 
-          {/* Modal body */}
           <div className="p-6">
-            {/* Check-in method selection */}
             <div className="mb-6">
               <h3 className="text-lg font-semibold mb-3">Check-in Method</h3>
               <div className="flex flex-wrap gap-3">
@@ -172,7 +164,6 @@ function ManualCheckinModal({ isOpen, onClose }) {
               </div>
             </div>
 
-            {/* Content based on selected option */}
             {activeOption === "booking" && (
               <div>
                 <div className="mb-6">
@@ -626,7 +617,6 @@ function ManualCheckinModal({ isOpen, onClose }) {
             )}
           </div>
 
-          {/* Modal footer */}
           <div className="p-5 border-t border-[#EBE3D7] bg-[#F5F0EB]/30 flex justify-end gap-3">
             <button
               onClick={onClose}

@@ -1,34 +1,47 @@
 import React from "react";
 import { FaCalendarCheck, FaKey, FaClock, FaCalendarDay } from "react-icons/fa";
 
-function StatusCards() {
+function StatusCards({ bookings = [] }) {
+  // Calculate booking stats
+  const totalToday = bookings.length;
+  const completedCheckins = bookings.filter(
+    (booking) => booking.status === "CHECKED_IN"
+  ).length;
+  const pendingCheckins = bookings.filter(
+    (booking) => booking.status === "CONFIRMED" || booking.status === "PENDING"
+  ).length;
+  const earlyRequests = bookings.filter((booking) => {
+    // Assume early check-ins have some indicator in the booking data
+    return booking.specialRequests?.toLowerCase().includes("early");
+  }).length;
+
   const cards = [
     {
       icon: <FaCalendarCheck />,
       iconColor: "#00C853",
       bgColor: "rgba(0, 200, 83, 0.1)",
-      count: 12,
+      count: totalToday || 0,
       title: "Today's Check-ins",
     },
     {
       icon: <FaKey />,
       iconColor: "#2196F3",
       bgColor: "rgba(33, 150, 243, 0.1)",
-      count: 8,
+      count: completedCheckins || 0,
       title: "Completed Check-ins",
     },
     {
       icon: <FaClock />,
       iconColor: "#FF9800",
       bgColor: "rgba(255, 152, 0, 0.1)",
-      count: 4,
+      count: pendingCheckins || 0,
       title: "Pending Check-ins",
     },
     {
       icon: <FaCalendarDay />,
       iconColor: "#CCBDA3",
       bgColor: "rgba(204, 189, 163, 0.1)",
-      count: 3,
+      count: earlyRequests || 0,
       title: "Early Check-in Requests",
     },
   ];

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaPlus } from "react-icons/fa";
 import useModal from "../../hooks/Checkin/useModal";
 import StatusCards from "../../components/checkin/StatusCards";
@@ -10,10 +10,14 @@ import ManualCheckinModal from "../../components/checkin/ManualCheckinModal";
 import TomorrowTab from "../../components/checkin/TomorrowTab";
 import EarlyTab from "../../components/checkin/EarlyTab";
 import HourlyTab from "../../components/checkin/HourlyTab";
+import { getAll } from "../../services/bookingService";
 
 const CheckInManager: React.FC = () => {
   const [activeTab, setActiveTab] = useState("today");
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [bookings, setBookings] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const {
     isOpen: isDetailsModalOpen,
     openModal: openDetailsModal,
@@ -25,6 +29,23 @@ const CheckInManager: React.FC = () => {
     closeModal: closeCheckinModal,
   } = useModal();
   const [selectedGuest, setSelectedGuest] = useState(null);
+
+  const fetchedBookings = async () => {
+    try {
+      setLoading(true);
+      const data = await getAll();
+      setBookings(data);
+      setLoading(false);
+      setError("");
+    } catch (err) {
+      setError("Failed to fetch bookings: " + err);
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchedBookings();
+  }, []);
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
@@ -48,6 +69,37 @@ const CheckInManager: React.FC = () => {
       year: "numeric",
     });
   };
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="bg-[#F5F0EB] min-h-screen flex justify-center items-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#CCBDA3] mx-auto"></div>
+          <p className="mt-3 text-gray-600">Loading bookings...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="bg-[#F5F0EB] min-h-screen flex justify-center items-center">
+        <div className="bg-white p-6 rounded-lg shadow-md max-w-md w-full text-center">
+          <div className="text-red-500 text-5xl mb-4">⚠️</div>
+          <h2 className="text-2xl font-semibold mb-2">Error</h2>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <button
+            onClick={() => fetchedBookings()}
+            className="px-4 py-2 bg-[#CCBDA3] text-white rounded-md hover:bg-[#b8ac94]"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-[#F5F0EB] min-h-screen">
@@ -108,7 +160,7 @@ const CheckInManager: React.FC = () => {
           </div>
 
           <div className="mb-8">
-            <StatusCards />
+            <StatusCards bookings={bookings} />
           </div>
 
           <div className="mb-6">
@@ -119,16 +171,28 @@ const CheckInManager: React.FC = () => {
             <CheckinTabs activeTab={activeTab} onTabChange={handleTabChange} />
 
             {activeTab === "today" && (
-              <TodayTab onViewDetails={handleOpenDetailsModal} />
+              <TodayTab
+                onViewDetails={handleOpenDetailsModal}
+                bookings={bookings}
+              />
             )}
             {activeTab === "tomorrow" && (
-              <TomorrowTab onViewDetails={handleOpenDetailsModal} />
+              <TomorrowTab
+                onViewDetails={handleOpenDetailsModal}
+                bookings={bookings}
+              />
             )}
             {activeTab === "early" && (
-              <EarlyTab onViewDetails={handleOpenDetailsModal} />
+              <EarlyTab
+                onViewDetails={handleOpenDetailsModal}
+                bookings={bookings}
+              />
             )}
             {activeTab === "hourly" && (
-              <HourlyTab onViewDetails={handleOpenDetailsModal} />
+              <HourlyTab
+                onViewDetails={handleOpenDetailsModal}
+                bookings={bookings}
+              />
             )}
           </div>
         </div>

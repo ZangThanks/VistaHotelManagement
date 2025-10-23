@@ -102,7 +102,6 @@
     }
   }
 
-  /* Custom styles for checkboxes, etc. */
   input[type="checkbox"] {
     @apply appearance-none w-5 h-5 border-2 border-cream rounded-sm relative cursor-pointer transition-colors;
   }
@@ -114,5 +113,15 @@
   input[type="checkbox"]:checked::before {
     content: "✓";
     @apply absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-white text-xs;
+  }
+}
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none; /* IE và Edge */
+    scrollbar-width: none; /* Firefox */
   }
 }

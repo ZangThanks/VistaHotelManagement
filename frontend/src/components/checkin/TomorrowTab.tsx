@@ -1,178 +1,208 @@
 import React from "react";
+import { FaEye, FaComment } from "react-icons/fa";
 
-const TomorrowTab = ({ onViewDetails }) => {
+const formatCheckInTime = (dateString) => {
+  if (!dateString) return "N/A";
+  const date = new Date(dateString);
+  return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+};
+
+const getTrustScore = (loyaltyPoints) => {
+  if (!loyaltyPoints) return { value: 50, level: "medium" };
+  if (loyaltyPoints >= 10000) return { value: 85, level: "high" };
+  if (loyaltyPoints >= 5000) return { value: 65, level: "medium" };
+  return { value: 40, level: "low" };
+};
+
+const getPaymentStatus = (status) => {
+  switch (status) {
+    case "COMPLETED":
+      return { type: "complete", label: "Paid in Full" };
+    case "PARTIAL":
+      return { type: "partial", label: "Partial (30%)" };
+    case "PENDING":
+      return { type: "checkout", label: "Pay at Checkout" };
+    default:
+      return { type: "checkout", label: "Not Paid" };
+  }
+};
+
+const isTomorrowBooking = (booking) => {
+  if (!booking.checkInDate) return false;
+
+  const today = new Date();
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+
+  const checkInDate = new Date(booking.checkInDate);
+
+  return (
+    checkInDate.getDate() === tomorrow.getDate() &&
+    checkInDate.getMonth() === tomorrow.getMonth() &&
+    checkInDate.getFullYear() === tomorrow.getFullYear()
+  );
+};
+
+const TomorrowTab = ({ onViewDetails, bookings = [] }) => {
+  const tomorrowBookings = bookings
+    .filter((booking) => isTomorrowBooking(booking))
+    .map((booking) => ({
+      id: booking.bookingID,
+      guest: {
+        name: booking.customer?.fullName || "Guest",
+        email: booking.customer?.email || "No email",
+        image: "https://randomuser.me/api/portraits/men/22.jpg", // Placeholder image
+      },
+      room: `${booking.bookingDetails[0]?.room?.roomNumber || "N/A"} - ${
+        booking.bookingDetails[0]?.room?.roomType?.typeName || "Standard"
+      }`,
+      checkInTime: formatCheckInTime(booking.checkInDate),
+      trustScore: getTrustScore(booking.customer?.loyaltyPoints),
+      paymentStatus: getPaymentStatus(booking.paymentStatus),
+    }));
+
+  // TODO GET API
+  const displayBookings =
+    tomorrowBookings.length > 0
+      ? tomorrowBookings
+      : [
+          {
+            id: "VH-23062601",
+            guest: {
+              name: "David Miller",
+              email: "david.m@example.com",
+              image: "https://randomuser.me/api/portraits/men/22.jpg",
+            },
+            room: "305 - Deluxe King",
+            checkInTime: "14:00 PM",
+            trustScore: { value: 75, level: "medium" },
+            paymentStatus: { type: "partial", label: "Partial (30%)" },
+          },
+          {
+            id: "VH-23062602",
+            guest: {
+              name: "Jessica Brown",
+              email: "jessica.b@example.com",
+              image: "https://randomuser.me/api/portraits/women/36.jpg",
+            },
+            room: "410 - Suite",
+            checkInTime: "15:00 PM",
+            trustScore: { value: 95, level: "high" },
+            paymentStatus: { type: "checkout", label: "Pay at Checkout" },
+          },
+        ];
+
+  if (tomorrowBookings.length === 0 && bookings.length > 0) {
+    return (
+      <div className="p-10 text-center">
+        <p className="text-gray-500">No check-ins scheduled for tomorrow.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full bg-white">
         <thead>
-          <tr className="bg-cream-100">
-            <th className="p-4 text-left font-semibold">Booking ID</th>
-            <th className="p-4 text-left font-semibold">Guest Name</th>
-            <th className="p-4 text-left font-semibold">Room</th>
-            <th className="p-4 text-left font-semibold">Check-in Time</th>
-            <th className="p-4 text-left font-semibold">Status</th>
-            <th className="p-4 text-left font-semibold">Trust Score</th>
-            <th className="p-4 text-left font-semibold">Payment Status</th>
-            <th className="p-4 text-left font-semibold">Actions</th>
+          <tr className="bg-[#EBE3D7]/30 text-left">
+            <th className="py-4 px-4 font-semibold">Booking ID</th>
+            <th className="py-4 px-4 font-semibold">Guest Name</th>
+            <th className="py-4 px-4 font-semibold">Room</th>
+            <th className="py-4 px-4 font-semibold">Check-in Time</th>
+            <th className="py-4 px-4 font-semibold">Status</th>
+            <th className="py-4 px-4 font-semibold">Trust Score</th>
+            <th className="py-4 px-4 font-semibold">Payment Status</th>
+            <th className="py-4 px-4 font-semibold">Actions</th>
           </tr>
         </thead>
         <tbody>
-          <tr className="border-b border-cream-100 hover:bg-cream-50">
-            <td className="p-4">VH-23062601</td>
-            <td className="p-4">
-              <div className="flex items-center gap-3">
-                <img
-                  src="https://randomuser.me/api/portraits/men/22.jpg"
-                  alt="Guest"
-                  className="w-10 h-10 rounded-full object-cover border-2 border-gold-300"
-                />
-                <div className="flex flex-col">
-                  <span className="font-medium">David Miller</span>
-                  <span className="text-sm text-gray-500">
-                    david.m@example.com
-                  </span>
+          {displayBookings.map((booking) => (
+            <tr
+              key={booking.id}
+              className="border-b border-[#EBE3D7]/50 hover:bg-[#EBE3D7]/10"
+            >
+              <td className="py-4 px-4">{booking.id}</td>
+              <td className="py-4 px-4">
+                <div className="flex items-center gap-3">
+                  <img
+                    src={booking.guest.image}
+                    alt={booking.guest.name}
+                    className="w-10 h-10 rounded-full object-cover"
+                  />
+                  <div className="flex flex-col">
+                    <span className="font-medium">{booking.guest.name}</span>
+                    <span className="text-sm text-gray-500">
+                      {booking.guest.email}
+                    </span>
+                  </div>
                 </div>
-              </div>
-            </td>
-            <td className="p-4">305 - Deluxe King</td>
-            <td className="p-4">14:00 PM</td>
-            <td className="p-4">
-              <span className="px-3 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-600">
-                Upcoming
-              </span>
-            </td>
-            <td className="p-4">
-              <div className="relative">
-                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-yellow-100">
-                  <span className="text-sm font-semibold">75</span>
+              </td>
+              <td className="py-4 px-4">{booking.room}</td>
+              <td className="py-4 px-4">{booking.checkInTime}</td>
+              <td className="py-4 px-4">
+                <span className="px-3 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-600">
+                  Upcoming
+                </span>
+              </td>
+              <td className="py-4 px-4">
+                <div className="relative">
+                  <div
+                    className={`flex items-center justify-center w-10 h-10 rounded-full bg-${
+                      booking.trustScore.level === "high"
+                        ? "green"
+                        : booking.trustScore.level === "medium"
+                        ? "yellow"
+                        : "red"
+                    }-100`}
+                  >
+                    <span className="text-sm font-semibold">
+                      {booking.trustScore.value}
+                    </span>
+                  </div>
+                  <div className="text-xs text-center mt-1">
+                    {booking.trustScore.level.charAt(0).toUpperCase() +
+                      booking.trustScore.level.slice(1)}
+                  </div>
                 </div>
-                <div className="text-xs text-center mt-1">Medium</div>
-              </div>
-            </td>
-            <td className="p-4">
-              <span className="px-3 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-600">
-                Partial (30%)
-              </span>
-            </td>
-            <td className="p-4">
-              <div className="flex gap-1">
-                <button
-                  onClick={() => onViewDetails()}
-                  className="p-2 rounded-full hover:bg-cream-100"
-                  title="View Details"
+              </td>
+              <td className="py-4 px-4">
+                <span
+                  className={`px-3 py-1 text-xs font-medium rounded-full bg-${
+                    booking.paymentStatus.type === "complete"
+                      ? "green"
+                      : booking.paymentStatus.type === "partial"
+                      ? "yellow"
+                      : "purple"
+                  }-100 text-${
+                    booking.paymentStatus.type === "complete"
+                      ? "green"
+                      : booking.paymentStatus.type === "partial"
+                      ? "yellow"
+                      : "purple"
+                  }-600`}
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
+                  {booking.paymentStatus.label}
+                </span>
+              </td>
+              <td className="py-4 px-4">
+                <div className="flex gap-1">
+                  <button
+                    onClick={() => onViewDetails(booking)}
+                    className="w-8 h-8 rounded-full bg-[#F5F0EB] hover:bg-[#EBE3D7] transition flex items-center justify-center"
+                    title="View Details"
                   >
-                    <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                    <path
-                      fillRule="evenodd"
-                      d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </button>
-                <button
-                  className="p-2 rounded-full hover:bg-cream-100"
-                  title="Send Message"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
+                    <FaEye size={14} />
+                  </button>
+                  <button
+                    className="w-8 h-8 rounded-full bg-[#F5F0EB] hover:bg-[#EBE3D7] transition flex items-center justify-center"
+                    title="Send Message"
                   >
-                    <path
-                      fillRule="evenodd"
-                      d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </button>
-              </div>
-            </td>
-          </tr>
-          <tr className="border-b border-cream-100 hover:bg-cream-50">
-            <td className="p-4">VH-23062602</td>
-            <td className="p-4">
-              <div className="flex items-center gap-3">
-                <img
-                  src="https://randomuser.me/api/portraits/women/36.jpg"
-                  alt="Guest"
-                  className="w-10 h-10 rounded-full object-cover border-2 border-gold-300"
-                />
-                <div className="flex flex-col">
-                  <span className="font-medium">Jessica Brown</span>
-                  <span className="text-sm text-gray-500">
-                    jessica.b@example.com
-                  </span>
+                    <FaComment size={14} />
+                  </button>
                 </div>
-              </div>
-            </td>
-            <td className="p-4">410 - Suite</td>
-            <td className="p-4">15:00 PM</td>
-            <td className="p-4">
-              <span className="px-3 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-600">
-                Upcoming
-              </span>
-            </td>
-            <td className="p-4">
-              <div className="relative">
-                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-green-100">
-                  <span className="text-sm font-semibold">95</span>
-                </div>
-                <div className="text-xs text-center mt-1">High</div>
-              </div>
-            </td>
-            <td className="p-4">
-              <span className="px-3 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-600">
-                Pay at Checkout
-              </span>
-            </td>
-            <td className="p-4">
-              <div className="flex gap-1">
-                <button
-                  onClick={() => onViewDetails()}
-                  className="p-2 rounded-full hover:bg-cream-100"
-                  title="View Details"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                    <path
-                      fillRule="evenodd"
-                      d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </button>
-                <button
-                  className="p-2 rounded-full hover:bg-cream-100"
-                  title="Send Message"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </button>
-              </div>
-            </td>
-          </tr>
+              </td>
+            </tr>
+          ))}
         </tbody>
       </table>
     </div>

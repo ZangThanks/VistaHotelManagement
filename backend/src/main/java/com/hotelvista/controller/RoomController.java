@@ -17,7 +17,7 @@ public class RoomController {
     public RoomController(RoomService service) {
         this.service = service;
     }
-    @GetMapping("/all")
+    @GetMapping("")
     public List<Room> selectAll() {
         return service.selectAll();
     }
