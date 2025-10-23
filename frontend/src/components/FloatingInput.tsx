@@ -1,5 +1,6 @@
 import React, { useId, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 
 interface FloatingInputProps {
@@ -46,8 +47,14 @@ const FloatingInput: React.FC<FloatingInputProps> = ({
   const [focused, setFocused] = useState(false);
   const active = focused || currentValue.length > 0;
 
+  // Password visibility toggle
+  const [showPassword, setShowPassword] = useState(false);
+  const isPasswordField = type === "password";
+  const inputType = isPasswordField && showPassword ? "text" : type;
+
   const sizePad = size === "sm" ? "py-1.5" : size === "lg" ? "py-3" : "py-2";
   const leftPadding = iconLeft ? "pl-7" : "";
+  const rightPadding = isPasswordField ? "pr-10" : "";
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const v = e.target.value;
@@ -59,14 +66,14 @@ const FloatingInput: React.FC<FloatingInputProps> = ({
     <div className={`relative w-full ${className}`}>
       <input
         id={inputId}
-        type={type}
+        type={inputType}
         value={currentValue}
         onChange={handleChange}
         disabled={disabled}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
         className={`peer w-full bg-transparent border-0 border-b ${borderColor} ${focusBorderColor}
-                    outline-none transition-colors duration-200 ${sizePad} ${leftPadding}
+                    outline-none transition-colors duration-200 ${sizePad} ${leftPadding} ${rightPadding}
                     text-white placeholder-white/50
                     ${disabled ? "opacity-60 cursor-not-allowed" : ""}`}
         aria-labelledby={`${inputId}-label`}
@@ -79,6 +86,18 @@ const FloatingInput: React.FC<FloatingInputProps> = ({
           icon={iconLeft}
           className="absolute left-0 top-1/2 -translate-y-1/2 text-white/70"
         />
+      )}
+
+      {isPasswordField && (
+        <button
+          type="button"
+          onClick={() => setShowPassword(!showPassword)}
+          className="absolute right-0 top-1/2 -translate-y-1/2 text-white/70 hover:text-white transition-colors cursor-pointer p-1"
+          aria-label={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+          tabIndex={-1}
+        >
+          <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
+        </button>
       )}
 
       <label
