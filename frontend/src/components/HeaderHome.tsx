@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Header: React.FC = () => {
+const HeaderHome : React.FC = () => {
     return (
         <header className="fixed top-0 left-0 w-full z-[9999]">
             {/* Top Section */}
@@ -102,4 +102,4 @@ const Header: React.FC = () => {
     );
 };
 
-export default Header;
+export default HeaderHome;

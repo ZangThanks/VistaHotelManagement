@@ -15,5 +15,4 @@ public interface BookingDetailRepository extends JpaRepository<BookingDetail, Bo
      */
     List<BookingDetail> findAllByBooking_BookingID(String bookingBookingID);
 
-
 }
