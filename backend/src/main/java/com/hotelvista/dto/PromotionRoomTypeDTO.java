@@ -10,7 +10,6 @@ import lombok.Data;
 @Data
 public class PromotionRoomTypeDTO {
     private Promotion promotion;
-    private PromotionType promotionType;
     private RoomType roomType;
 
 
