@@ -22,6 +22,7 @@ public class BookingDetail {
     @Id
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "booking_id")
+    @JsonIgnore
     private Booking booking;
 
     @Column(name = "room_price")
@@ -30,6 +31,7 @@ public class BookingDetail {
     @ToString.Exclude
     @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "review_id")
+    @JsonIgnore
     private Review review;
 
     @EqualsAndHashCode
