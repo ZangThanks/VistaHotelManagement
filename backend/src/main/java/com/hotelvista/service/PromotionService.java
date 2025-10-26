@@ -34,8 +34,9 @@ public class PromotionService {
         return false;
     }
 
-    public void deleteById(String id) {
+    public boolean deleteById(String id) {
         repo.deleteById(id);
+        return repo.findById(id).orElse(null) != null;
     }
 
     public List<Promotion> findAll() {
@@ -53,6 +54,7 @@ public class PromotionService {
     public Double findAllByFirstBookingForStandard() {
         return repo.findFirstBookingDiscountForStandard();
     }
+
     public Double findAllByFirstBookingForDeluxe() {
         return repo.findFirstBookingDiscountForDeluxe();
     }

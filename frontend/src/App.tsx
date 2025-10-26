@@ -1,10 +1,7 @@
 import "./index.css";
 
 import "./App.css";
-import Header from "./components/Header";
-import Footer from "./components/Footer";
-import HeaderHome from "./components/HeaderHome";
-import BookingManagement from "./pages/admin/booking/BookingManagement";
+import BookingPage from "./pages/admin/booking/BookingPage";
 
 function App() {
   return (
@@ -13,7 +10,7 @@ function App() {
         {/* <Header />
         <HeaderHome />
         <Footer /> */}
-        <BookingManagement />
+        <BookingPage />
       </div>
     </>
   );

@@ -4,16 +4,14 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hotelvista.model.enums.Gender;
 import com.hotelvista.model.enums.MemberShipLevel;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.util.List;
 
 @Entity
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString(callSuper = true)
