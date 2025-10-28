@@ -1,9 +1,11 @@
 import { createBrowserRouter } from "react-router-dom";
+
+// Layouts
 import AuthLayout from "../layouts/AuthLayout";
+import EmployeeLayout from "../layouts/EmployeeLayout";
 
 // Auth pages
 import Login from "../pages/auth/Login";
-import EmployeeLayout from '../layouts/EmployeeLayout';
 import CustomerList from '../pages/employee/CustumerList';
 import NewsPage from '../pages/employee/NewsPage';
 

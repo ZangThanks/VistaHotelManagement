@@ -33,4 +33,12 @@ public class CustomerService {
         return repo.findAllByFullNameContainingIgnoreCase(name);
     }
 
+    public Customer findByEmail(String email) {
+        return repo.findByEmail(email).orElse(null);
+    }
+
+    public Customer findByPhone(String phone) {
+        return repo.findByPhone(phone).orElse(null);
+    }
+
 }

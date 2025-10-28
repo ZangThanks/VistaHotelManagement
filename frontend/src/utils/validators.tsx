@@ -1,0 +1,171 @@
+/**
+ * Kiểm tra định dạng Email hợp lệ.
+ *
+ * @param {string} email - Chuỗi email cần kiểm tra.
+ * @returns {string} Trả về chuỗi lỗi nếu email không hợp lệ, ngược lại trả về chuỗi rỗng "".
+ *
+ * @example
+ * validateEmail("test@gmail.com"); // ""
+ * validateEmail("abc"); // "Email không hợp lệ"
+ */
+export const validateEmail = (email: string): string => {
+  if (!email) return "Email không được để trống";
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) return "Email không hợp lệ";
+
+  return "";
+};
+
+/**
+ * Kiểm tra định dạng số điện thoại Việt Nam hợp lệ.
+ *
+ * @param {string} phone - Chuỗi số điện thoại cần kiểm tra.
+ * @returns {string} Thông báo lỗi nếu không hợp lệ, ngược lại là chuỗi rỗng.
+ *
+ * @example
+ * validatePhone("0987654321"); // ""
+ * validatePhone("12345"); // "Số điện thoại không hợp lệ"
+ */
+export const validatePhone = (phone: string): string => {
+  if (!phone) return "Số điện thoại không được để trống";
+
+  const phoneRegex = /^(0|\+84)[3|5|7|8|9][0-9]{8}$/;
+  if (!phoneRegex.test(phone)) return "Số điện thoại không hợp lệ";
+
+  return "";
+};
+
+/**
+ * Kiểm tra đầu vào có phải là email hoặc số điện thoại hợp lệ hay không.
+ *
+ * @param {string} value - Chuỗi cần kiểm tra.
+ * @returns {string} Trả về thông báo lỗi nếu không hợp lệ, ngược lại là chuỗi rỗng.
+ *
+ * @example
+ * validateEmailOrPhone("test@gmail.com"); // ""
+ * validateEmailOrPhone("0987654321"); // ""
+ * validateEmailOrPhone("abc"); // "Email hoặc số điện thoại không hợp lệ"
+ */
+export const validateEmailOrPhone = (value: string): string => {
+  if (!value) return "Email hoặc số điện thoại không được để trống";
+
+  const phoneRegex = /^(0|\+84)[3|5|7|8|9][0-9]{8}$/;
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  if (phoneRegex.test(value) || emailRegex.test(value)) return "";
+
+  return "Email hoặc số điện thoại không hợp lệ";
+};
+
+/**
+ * Kiểm tra độ mạnh của mật khẩu theo quy tắc bảo mật.
+ *
+ * @param {string} password - Mật khẩu cần kiểm tra.
+ * @returns {string} Chuỗi lỗi nếu không hợp lệ, ngược lại là chuỗi rỗng.
+ *
+ * @example
+ * validatePassword("Abc@1234"); // ""
+ * validatePassword("abc123"); // "Mật khẩu phải có ít nhất một ký tự in hoa"
+ */
+export const validatePassword = (password: string): string => {
+  if (!password) return "Mật khẩu không được để trống";
+  if (password.length < 8) return "Mật khẩu phải có ít nhất 8 ký tự";
+  if (password.length > 50) return "Mật khẩu không được quá 50 ký tự";
+
+  if (!/[A-Z]/.test(password))
+    return "Mật khẩu phải có ít nhất một ký tự in hoa";
+  if (!/[a-z]/.test(password))
+    return "Mật khẩu phải có ít nhất một ký tự thường";
+  if (!/[0-9]/.test(password)) return "Mật khẩu phải có ít nhất một số";
+  if (!/[!@#$%^&*(),.?":{}|<>]/.test(password))
+    return "Mật khẩu phải có ít nhất một ký tự đặc biệt";
+
+  return "";
+};
+
+/**
+ * Kiểm tra xác nhận mật khẩu trùng khớp với mật khẩu chính.
+ *
+ * @param {string} password - Mật khẩu chính.
+ * @param {string} confirmPassword - Mật khẩu nhập lại để xác nhận.
+ * @returns {string} Trả về lỗi nếu không khớp hoặc bị trống, ngược lại là chuỗi rỗng.
+ *
+ * @example
+ * validateConfirmPassword("Abc@1234", "Abc@1234"); // ""
+ * validateConfirmPassword("Abc@1234", "Abc1234"); // "Mật khẩu xác nhận không khớp"
+ */
+export const validateConfirmPassword = (
+  password: string,
+  confirmPassword: string
+): string => {
+  if (!confirmPassword) return "Xác nhận mật khẩu không được để trống";
+  if (password !== confirmPassword) return "Mật khẩu xác nhận không khớp";
+  return "";
+};
+
+/**
+ * Kiểm tra tính hợp lệ của họ và tên người dùng.
+ *
+ * @param {string} fullName - Họ và tên cần kiểm tra.
+ * @returns {string} Thông báo lỗi nếu không hợp lệ, ngược lại là chuỗi rỗng.
+ *
+ * @example
+ * validateFullName("Nguyễn Văn A"); // ""
+ * validateFullName("A"); // "Họ và tên phải có ít nhất 2 ký tự"
+ */
+export const validateFullName = (fullName: string): string => {
+  if (!fullName) return "Họ và tên không được để trống";
+
+  const trimmed = fullName.trim();
+  if (trimmed.length < 2) return "Họ và tên phải có ít nhất 2 ký tự";
+  if (trimmed.length > 100) return "Họ và tên không được quá 100 ký tự";
+
+  const nameRegex = /^[a-zA-ZÀ-ỹ\s]+$/;
+  if (!nameRegex.test(trimmed)) return "Họ và tên chỉ được chứa chữ cái";
+
+  return "";
+};
+
+/**
+ * Kiểm tra hợp lệ của tên đăng nhập.
+ *
+ * @param {string} userName - Tên đăng nhập người dùng.
+ * @returns {string} Thông báo lỗi nếu không hợp lệ, ngược lại là chuỗi rỗng.
+ *
+ * @example
+ * validateUserName("tranlongvu"); // ""
+ * validateUserName("ab"); // "Tên đăng nhập phải có ít nhất 6 ký tự"
+ */
+export const validateUserName = (userName: string): string => {
+  if (!userName) return "Tên đăng nhập không được để trống";
+
+  const trimmed = userName.trim();
+  if (trimmed.length < 6) return "Tên đăng nhập phải có ít nhất 6 ký tự";
+  if (trimmed.length > 30) return "Tên đăng nhập không được quá 30 ký tự";
+
+  return "";
+};
+
+/**
+ * Xác định kiểu dữ liệu người dùng nhập vào là Email, Số điện thoại hay không hợp lệ.
+ *
+ * @param {string} value - Chuỗi đầu vào.
+ * @returns {"email" | "phone" | "unknown"} Kiểu dữ liệu nhận diện được.
+ *
+ * @example
+ * detectInputType("test@gmail.com"); // "email"
+ * detectInputType("0987654321"); // "phone"
+ * detectInputType("abc"); // "unknown"
+ */
+export const detectInputType = (
+  value: string
+): "email" | "phone" | "unknown" => {
+  const phoneRegex = /^(0|\+84)[3|5|7|8|9][0-9]{8}$/;
+  if (phoneRegex.test(value)) return "phone";
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (emailRegex.test(value)) return "email";
+
+  return "unknown";
+};

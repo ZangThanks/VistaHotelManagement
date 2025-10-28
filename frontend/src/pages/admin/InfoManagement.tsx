@@ -1,4 +1,3 @@
-// src/pages/InfoManagement.tsx
 import React, { useState } from "react";
 import {
   FaPlus,
@@ -12,11 +11,11 @@ import {
   FaAngleLeft,
   FaAngleRight,
 } from "react-icons/fa";
-import PageHeader from "../../components/InfoManagement/PageHeader";
-import StatCard from "../../components/InfoManagement/StatCard";
-import InfoCard from "../../components/InfoManagement/InfoCard";
-import { Dialog } from "../../components/InfoManagement/Dialog";
-import AddInfoForm from "../../components/InfoManagement/AddInfoForm";
+import PageHeader from "../../components/info_management/PageHeader";
+import StatCard from "../../components/info_management/StatCard";
+import InfoCard from "../../components/info_management/InfoCard";
+import { Dialog } from "../../components/info_management/Dialog";
+import AddInfoForm from "../../components/info_management/AddInfoForm";
 
 interface InfoItem {
   id: string;
