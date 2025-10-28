@@ -1,6 +1,11 @@
+'use client';
+
 /* eslint-disable */
-import React, { useEffect, useState } from 'react';
+import type React from 'react';
+import { useEffect, useState } from 'react';
 import { getAll } from '../../services/CustomerService';
+import AddCustomerModal from '../../components/customer/AddCustomerModal';
+import EditCustomerModal from '../../components/customer/EditCustomerModal';
 
 // Component thống kê nhỏ
 type StatCardProps = {
@@ -17,26 +22,25 @@ export interface Customer {
     phone: string;
     fullName: string;
     address: string;
-    userRole: string; 
+    userRole: string;
     birthDate: string;
-    gender: string; 
+    gender: string;
     joinedDate: string;
     loyaltyPoints: number;
-    memberShipLevel: string; 
+    memberShipLevel: string;
 }
 
-
 const StatCard: React.FC<StatCardProps> = ({ icon, label, value, color }) => (
-    <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 hover:shadow-lg transition duration-300">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition duration-300">
         <div className="flex items-start justify-between">
             <div>
                 <p className="text-gray-600 text-sm font-medium mb-2">
                     {label}
                 </p>
-                <p className="text-3xl font-bold text-gray-900">{value}</p>
+                <p className="text-2xl font-bold text-gray-900">{value}</p>
             </div>
             <div
-                className={`w-14 h-14 rounded-xl flex items-center justify-center text-white text-xl ${color}`}
+                className={`w-12 h-12 rounded-lg flex items-center justify-center text-white text-lg ${color}`}
             >
                 <i className={`fa-solid ${icon}`}></i>
             </div>
@@ -52,18 +56,18 @@ const FilterSection: React.FC<FilterSectionProps> = ({ onFilterChange }) => {
     const [active, setActive] = useState('all');
     const filters = [
         { id: 'all', label: 'Tất cả', icon: 'fa-list' },
-        { id: 'silver', label: 'Silver', icon: 'fa-medal' },
+        { id: 'bronze', label: 'Bronze', icon: 'fa-medal' },
+        { id: 'silver', label: 'Silver', icon: 'fa-certificate' },
         { id: 'gold', label: 'Gold', icon: 'fa-star' },
         { id: 'platinum', label: 'Platinum', icon: 'fa-gem' },
-        { id: 'new', label: 'Mới', icon: 'fa-user-plus' },
     ];
 
     return (
-        <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 mb-8">
-            <h3 className="text-lg font-bold text-gray-900 mb-4">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+            <h3 className="text-sm font-bold text-gray-900 mb-3">
                 Lọc khách hàng
             </h3>
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap gap-2">
                 {filters.map((f) => (
                     <button
                         key={f.id}
@@ -71,10 +75,10 @@ const FilterSection: React.FC<FilterSectionProps> = ({ onFilterChange }) => {
                             setActive(f.id);
                             onFilterChange(f.id);
                         }}
-                        className={`flex items-center gap-2 px-5 py-3 rounded-xl font-medium transition duration-200 ${
+                        className={`flex items-center gap-1 px-4 py-2 rounded-lg font-semibold transition duration-200 text-xs ${
                             active === f.id
-                                ? 'bg-gradient-to-r from-amber-600 to-amber-700 text-white shadow-lg hover:from-amber-700 hover:to-amber-800'
-                                : 'bg-[#F5F0EB] text-gray-700 hover:bg-[#EDE5DB] hover:text-amber-700 border border-[#E8DFD5]'
+                                ? 'bg-gray-900 text-white shadow-md hover:bg-gray-800'
+                                : 'bg-[#F5F0EB] text-gray-700 hover:bg-gray-200 border border-gray-300'
                         }`}
                     >
                         <i className={`fa-solid ${f.icon}`}></i>
@@ -92,8 +96,47 @@ export default function CustomerList() {
     const [filter, setFilter] = useState('all');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [showModal, setShowModal] = useState(false);
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
+        null,
+    );
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 5;
 
-    // Gọi API thật
+    const handleEditCustomer = (customer: Customer) => {
+        setSelectedCustomer(customer);
+        setShowEditModal(true);
+    };
+
+    const handleSaveEdit = (updated: Customer) => {
+        setCustomers((prev) =>
+            prev.map((c) => (c.id === updated.id ? updated : c)),
+        );
+    };
+
+    const handleAddCustomer = (data: Partial<Customer>) => {
+        const newId =
+            'CUST' + (customers.length + 1).toString().padStart(3, '0');
+        const newCustomer: Customer = {
+            id: newId,
+            userName: data.email?.split('@')[0] || 'user' + newId,
+            password: '123456',
+            email: data.email ?? '',
+            phone: data.phone ?? '',
+            fullName: data.fullName ?? '',
+            address: data.address ?? '',
+            userRole: 'CUSTOMER',
+            birthDate: data.birthDate ?? '',
+            gender: data.gender ?? '',
+            joinedDate: new Date().toISOString().split('T')[0],
+            loyaltyPoints: data.loyaltyPoints ?? 0,
+            memberShipLevel: data.memberShipLevel ?? 'SILVER',
+        };
+        setCustomers((prev) => [...prev, newCustomer]);
+        setShowModal(false);
+    };
+
     useEffect(() => {
         const fetchCustomers = async () => {
             try {
@@ -108,7 +151,6 @@ export default function CustomerList() {
         fetchCustomers();
     }, []);
 
-    // Lọc dữ liệu theo search + filter
     const filtered = customers.filter((c) => {
         const name = c.fullName ?? '';
         const email = c.email ?? '';
@@ -118,49 +160,73 @@ export default function CustomerList() {
             email.toLowerCase().includes(search.toLowerCase()) ||
             id.toLowerCase().includes(search.toLowerCase());
         if (filter === 'all') return matchSearch;
-        if (filter === 'new')
-            return matchSearch && c.joinedDate === '2025-10-20';
         return (
             matchSearch && (c.memberShipLevel ?? '').toLowerCase() === filter
         );
     });
 
+    // Tính toán phân trang
+    const totalPages = Math.ceil(filtered.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const currentCustomers = filtered.slice(startIndex, endIndex);
+
+    // Reset về trang 1 khi filter hoặc search thay đổi
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [search, filter]);
+
     if (loading)
         return (
-            <div className="flex justify-center items-center h-screen text-gray-700 text-lg">
+            <div className="flex justify-center items-center h-screen text-gray-700 text-xl">
                 Đang tải dữ liệu khách hàng...
             </div>
         );
 
     if (error)
         return (
-            <div className="flex justify-center items-center h-screen text-red-600 text-lg">
+            <div className="flex justify-center items-center h-screen text-red-600 text-xl">
                 {error}
             </div>
         );
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-white via-[#FDFBF8] to-[#F5F0EB]">
-            <div className="pt-28 px-8 pb-12">
+        <div className="min-h-screen">
+            <div className="pt-6 px-4 pb-8">
                 <div className="max-w-7xl mx-auto">
-                    {/* Tiêu đề */}
-                    <div className="mb-10">
-                        <h1 className="text-4xl font-bold text-gray-900 mb-3 tracking-tight">
+                    <div className="mb-6">
+                        <h1 className="text-3xl font-bold text-gray-900 mb-2 tracking-tight">
                             Quản lý khách hàng
                         </h1>
-                        <p className="text-base text-gray-600 font-light">
+                        <p className="text-sm text-gray-600 font-light">
                             Quản lý thông tin và dữ liệu khách hàng một cách
                             hiệu quả
                         </p>
                     </div>
 
                     {/* Thống kê */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 mb-6">
                         <StatCard
                             icon="fa-users"
                             label="Tổng khách hàng"
                             value={customers.length.toString()}
-                            color="bg-gradient-to-br from-blue-500 to-blue-600"
+                            color="bg-gray-900"
+                        />
+                        <StatCard
+                            icon="fa-medal"
+                            label="Thành viên Bronze"
+                            value={customers
+                                .filter((c) => c.memberShipLevel === 'BRONZE')
+                                .length.toString()}
+                            color="bg-orange-700"
+                        />
+                        <StatCard
+                            icon="fa-certificate"
+                            label="Thành viên Silver"
+                            value={customers
+                                .filter((c) => c.memberShipLevel === 'SILVER')
+                                .length.toString()}
+                            color="bg-gray-500"
                         />
                         <StatCard
                             icon="fa-star"
@@ -168,7 +234,7 @@ export default function CustomerList() {
                             value={customers
                                 .filter((c) => c.memberShipLevel === 'GOLD')
                                 .length.toString()}
-                            color="bg-gradient-to-br from-amber-500 to-amber-600"
+                            color="bg-yellow-600"
                         />
                         <StatCard
                             icon="fa-gem"
@@ -176,21 +242,7 @@ export default function CustomerList() {
                             value={customers
                                 .filter((c) => c.memberShipLevel === 'PLATINUM')
                                 .length.toString()}
-                            color="bg-gradient-to-br from-purple-500 to-purple-600"
-                        />
-                        <StatCard
-                            icon="fa-coins"
-                            label="Tổng điểm tích lũy"
-                            value={
-                                (
-                                    customers.reduce(
-                                        (sum, c) =>
-                                            sum + (c.loyaltyPoints || 0),
-                                        0,
-                                    ) / 1000
-                                ).toFixed(1) + 'K'
-                            }
-                            color="bg-gradient-to-br from-green-500 to-green-600"
+                            color="bg-gray-700"
                         />
                     </div>
 
@@ -198,115 +250,117 @@ export default function CustomerList() {
                     <FilterSection onFilterChange={setFilter} />
 
                     {/* Thanh tìm kiếm */}
-                    <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-7 mb-8">
-                        <div className="flex flex-col md:flex-row gap-5 items-center justify-between">
+                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+                        <div className="flex flex-col md:flex-row gap-3 items-center justify-between">
                             <div className="relative flex-1 w-full">
-                                <i className="fa-solid fa-magnifying-glass absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 text-lg"></i>
+                                <i className="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
                                 <input
                                     type="text"
                                     placeholder="Tìm kiếm khách hàng theo tên, mã, email..."
                                     value={search}
                                     onChange={(e) => setSearch(e.target.value)}
-                                    className="w-full pl-14 pr-5 py-4 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition bg-gray-50 hover:bg-white text-sm"
+                                    className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition bg-gray-50 hover:bg-white text-sm"
                                 />
                             </div>
-                            <button className="bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white px-8 py-4 rounded-xl font-semibold transition duration-200 flex items-center gap-3 shadow-lg hover:shadow-xl transform hover:scale-105 text-sm">
-                                <i className="fa-solid fa-plus text-lg"></i>{' '}
+                            <button
+                                onClick={() => setShowModal(true)}
+                                className="bg-gray-900 hover:bg-gray-800 text-white px-4 py-2 rounded-lg font-semibold transition duration-200 flex items-center gap-2 shadow-md hover:shadow-lg text-sm whitespace-nowrap"
+                            >
+                                <i className="fa-solid fa-plus text-sm"></i>{' '}
                                 Thêm khách hàng
                             </button>
                         </div>
                     </div>
 
                     {/* Bảng dữ liệu */}
-                    <div className="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
+                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
                         <div className="overflow-x-auto">
                             <table className="w-full">
-                                <thead className="bg-gradient-to-r from-[#F5F0EB] via-[#FDFBF8] to-white border-b-2 border-gray-200">
+                                <thead className="bg-[#F5F0EB] border-b border-gray-300">
                                     <tr>
-                                        <th className="px-8 py-5 text-left text-sm font-bold text-gray-800 uppercase tracking-widest">
+                                        <th className="px-4 py-3 text-left text-xs font-bold text-gray-900 uppercase tracking-wide">
                                             Mã KH
                                         </th>
-                                        <th className="px-8 py-5 text-left text-sm font-bold text-gray-800 uppercase tracking-widest">
+                                        <th className="px-4 py-3 text-left text-xs font-bold text-gray-900 uppercase tracking-wide">
                                             Họ tên
                                         </th>
-                                        <th className="px-8 py-5 text-left text-sm font-bold text-gray-800 uppercase tracking-widest">
+                                        <th className="px-4 py-3 text-left text-xs font-bold text-gray-900 uppercase tracking-wide">
                                             Email
                                         </th>
-                                        <th className="px-8 py-5 text-left text-sm font-bold text-gray-800 uppercase tracking-widest">
+                                        <th className="px-4 py-3 text-left text-xs font-bold text-gray-900 uppercase tracking-wide">
                                             Điện thoại
                                         </th>
-                                        <th className="px-8 py-5 text-left text-sm font-bold text-gray-800 uppercase tracking-widest">
+                                        <th className="px-4 py-3 text-left text-xs font-bold text-gray-900 uppercase tracking-wide">
                                             Hạng thành viên
                                         </th>
-                                        <th className="px-8 py-5 text-left text-sm font-bold text-gray-800 uppercase tracking-widest">
-                                            Điểm tích lũy
-                                        </th>
-                                        <th className="px-8 py-5 text-center text-sm font-bold text-gray-800 uppercase tracking-widest">
+                                        <th className="px-4 py-3 text-center text-xs font-bold text-gray-900 uppercase tracking-wide">
                                             Thao tác
                                         </th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-gray-100">
-                                    {filtered.map((c) => (
+                                <tbody className="divide-y divide-gray-200">
+                                    {currentCustomers.map((c) => (
                                         <tr
                                             key={c.id}
-                                            className="hover:bg-gradient-to-r hover:from-[#FDFBF8] hover:to-[#F5F0EB] transition duration-150 group"
+                                            className="hover:bg-[#F5F0EB] transition duration-150 group"
                                         >
-                                            <td className="px-8 py-5 font-bold text-gray-900 text-sm">
+                                            <td className="px-4 py-3 font-bold text-gray-900 text-sm">
                                                 {c.id}
                                             </td>
-                                            <td className="px-8 py-5 flex items-center gap-4">
-                                                <div className="w-11 h-11 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-white font-bold shadow-md text-base">
+                                            <td className="px-4 py-3 flex items-center gap-2">
+                                                <div className="w-8 h-8 rounded-full bg-gray-900 flex items-center justify-center text-white font-bold shadow-sm text-xs">
                                                     {(c.fullName ?? '?').charAt(
                                                         0,
                                                     )}
                                                 </div>
                                                 <div>
-                                                    <div className="font-semibold text-gray-900 text-sm">
+                                                    <div className="font-semi text-gray-900 text-sm">
                                                         {c.fullName}
-                                                    </div>
-                                                    <div className="text-xs text-gray-500 font-light">
-                                                        {c.userName}
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td className="px-8 py-5 text-sm text-gray-600 font-medium">
+                                            <td className="px-4 py-3 text-sm text-gray-600 font-medium">
                                                 {c.email}
                                             </td>
-                                            <td className="px-8 py-5 text-sm text-gray-600 font-medium">
+                                            <td className="px-4 py-3 text-sm text-gray-600 font-medium">
                                                 {c.phone}
                                             </td>
-                                            <td className="px-8 py-5">
+                                            <td className="px-4 py-3">
                                                 <span
-                                                    className={`px-4 py-2 rounded-full text-xs font-bold inline-block ${
+                                                    className={`px-3 py-1 rounded-full text-xs font-bold inline-block ${
                                                         c.memberShipLevel ===
                                                         'PLATINUM'
-                                                            ? 'bg-purple-100 text-purple-800'
+                                                            ? 'bg-gray-200 text-gray-900'
                                                             : c.memberShipLevel ===
                                                               'GOLD'
-                                                            ? 'bg-amber-100 text-amber-800'
-                                                            : 'bg-gray-100 text-gray-800'
+                                                            ? 'bg-yellow-100 text-yellow-900'
+                                                            : c.memberShipLevel ===
+                                                              'SILVER'
+                                                            ? 'bg-gray-100 text-gray-700'
+                                                            : 'bg-orange-100 text-orange-900'
                                                     }`}
                                                 >
                                                     {c.memberShipLevel}
                                                 </span>
                                             </td>
-                                            <td className="px-8 py-5 text-sm font-bold text-gray-900">
-                                                <i className="fa-solid fa-star text-amber-500 mr-2"></i>
-                                                {(
-                                                    c.loyaltyPoints ?? 0
-                                                ).toLocaleString()}
-                                            </td>
-                                            <td className="px-8 py-5 text-center">
-                                                <div className="flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100 transition duration-200">
-                                                    <button className="p-2.5 text-amber-600 hover:bg-amber-100 rounded-lg transition hover:scale-110">
-                                                        <i className="fa-solid fa-eye text-lg"></i>
+                                            <td className="px-4 py-3 text-center">
+                                                <div className="flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition duration-200">
+                                                    <button className="p-2 text-gray-900 hover:bg-gray-100 rounded-lg transition hover:scale-110">
+                                                        <i className="fa-solid fa-eye text-sm"></i>
                                                     </button>
-                                                    <button className="p-2.5 text-amber-600 hover:bg-amber-100 rounded-lg transition hover:scale-110">
-                                                        <i className="fa-solid fa-pen text-lg"></i>
+                                                    <button
+                                                        onClick={() =>
+                                                            handleEditCustomer(
+                                                                c,
+                                                            )
+                                                        }
+                                                        className="p-2 text-gray-900 hover:bg-gray-100 rounded-lg transition hover:scale-110"
+                                                    >
+                                                        <i className="fa-solid fa-pen text-sm"></i>
                                                     </button>
-                                                    <button className="p-2.5 text-red-600 hover:bg-red-100 rounded-lg transition hover:scale-110">
-                                                        <i className="fa-solid fa-trash text-lg"></i>
+
+                                                    <button className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition hover:scale-110">
+                                                        <i className="fa-solid fa-trash text-sm"></i>
                                                     </button>
                                                 </div>
                                             </td>
@@ -316,11 +370,66 @@ export default function CustomerList() {
                             </table>
                         </div>
 
-                        <div className="px-8 py-6 border-t-2 border-gray-200 bg-gradient-to-r from-[#FDFBF8] to-white text-xs text-gray-700 font-medium flex justify-between">
+                        <div className="px-4 py-3 border-t border-gray-200 bg-[#F5F0EB] text-sm text-gray-700 font-medium flex justify-between items-center">
                             <span>
-                                Hiển thị {filtered.length} / {customers.length}{' '}
-                                khách hàng
+                                Hiển thị {startIndex + 1}-
+                                {Math.min(endIndex, filtered.length)} /{' '}
+                                {filtered.length} khách hàng
                             </span>
+
+                            {/* Phân trang */}
+                            {totalPages > 1 && (
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        onClick={() =>
+                                            setCurrentPage((prev) =>
+                                                Math.max(1, prev - 1),
+                                            )
+                                        }
+                                        disabled={currentPage === 1}
+                                        className={`w-10 h-10 rounded-full flex items-center justify-center transition border-2 ${
+                                            currentPage === 1
+                                                ? 'bg-white border-gray-300 text-gray-400 cursor-not-allowed'
+                                                : 'bg-white border-white text-gray-900 hover:bg-gray-100'
+                                        }`}
+                                    >
+                                        <i className="fa-solid fa-chevron-left text-sm"></i>
+                                    </button>
+
+                                    {Array.from(
+                                        { length: totalPages },
+                                        (_, i) => i + 1,
+                                    ).map((page) => (
+                                        <button
+                                            key={page}
+                                            onClick={() => setCurrentPage(page)}
+                                            className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition border-2 ${
+                                                currentPage === page
+                                                    ? 'bg-gray-900 text-white border-gray-900 shadow-md'
+                                                    : 'bg-white text-gray-900 border-white hover:bg-gray-100'
+                                            }`}
+                                        >
+                                            {page}
+                                        </button>
+                                    ))}
+
+                                    <button
+                                        onClick={() =>
+                                            setCurrentPage((prev) =>
+                                                Math.min(totalPages, prev + 1),
+                                            )
+                                        }
+                                        disabled={currentPage === totalPages}
+                                        className={`w-10 h-10 rounded-full flex items-center justify-center transition border-2 ${
+                                            currentPage === totalPages
+                                                ? 'bg-white border-gray-300 text-gray-400 cursor-not-allowed'
+                                                : 'bg-white border-white text-gray-900 hover:bg-gray-100'
+                                        }`}
+                                    >
+                                        <i className="fa-solid fa-chevron-right text-sm"></i>
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -329,6 +438,17 @@ export default function CustomerList() {
             <link
                 rel="stylesheet"
                 href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+            />
+            <AddCustomerModal
+                show={showModal}
+                onClose={() => setShowModal(false)}
+                onSave={handleAddCustomer}
+            />
+            <EditCustomerModal
+                show={showEditModal}
+                customer={selectedCustomer}
+                onClose={() => setShowEditModal(false)}
+                onSave={handleSaveEdit}
             />
         </div>
     );

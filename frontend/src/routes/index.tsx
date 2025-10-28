@@ -24,10 +24,6 @@ export const router = createBrowserRouter([
         element: <EmployeeLayout />,
         children: [
             { path: 'customer/list', element: <CustomerList /> },
-
-            //   { path: "register", element: <Register /> },
-            //   { path: "forgot-password", element: <ForgotPassword /> },
-            //   { path: "reset-password", element: <ResetPassword /> },
         ],
     },
     {
@@ -35,10 +31,6 @@ export const router = createBrowserRouter([
         element: <EmployeeLayout />,
         children: [
             { path: 'customer/list', element: <CustomerList /> },
-
-            //   { path: "register", element: <Register /> },
-            //   { path: "forgot-password", element: <ForgotPassword /> },
-            //   { path: "reset-password", element: <ResetPassword /> },
         ],
     },
     {
@@ -46,10 +38,6 @@ export const router = createBrowserRouter([
         element: <EmployeeLayout />,
         children: [
             { path: '/newsPage', element: <NewsPage /> },
-
-            //   { path: "register", element: <Register /> },
-            //   { path: "forgot-password", element: <ForgotPassword /> },
-            //   { path: "reset-password", element: <ResetPassword /> },
         ],
     },
 ]);
