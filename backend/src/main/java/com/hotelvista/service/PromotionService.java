@@ -50,6 +50,9 @@ public class PromotionService {
     public List<Promotion> findAllByPromotionNameContainingIgnoreCase(String promotionName) {
         return repo.findAllByPromotionNameContainingIgnoreCase(promotionName);
     }
+    public Promotion findById(String id) {
+        return repo.findById(id).orElse(null);
+    }
 
     public Double findAllByFirstBookingForStandard() {
         return repo.findFirstBookingDiscountForStandard();

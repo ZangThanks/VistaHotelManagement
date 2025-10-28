@@ -1,7 +1,6 @@
 package com.hotelvista.dto;
 
 import com.hotelvista.model.Promotion;
-import com.hotelvista.model.PromotionType;
 import com.hotelvista.model.RoomType;
 import lombok.AllArgsConstructor;
 import lombok.Data;

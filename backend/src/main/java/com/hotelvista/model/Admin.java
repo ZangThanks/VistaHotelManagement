@@ -26,5 +26,6 @@ public class Admin extends User{
     @ToString.Exclude
     @JsonIgnore
     @OneToMany(mappedBy = "admin")
+    @JsonIgnore
     private List<Promotion> promotions;
 }
