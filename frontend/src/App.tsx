@@ -1,15 +1,17 @@
 import "./index.css";
 
 import "./App.css";
-
-import AppAdmin from "./pages/admin/appAdmin";
+import BookingPage from "./pages/admin/booking/BookingPage";
 
 function App() {
   return (
     <>
-      {/* <Home /> */}
-      {/* <ServiceList /> */}
-      <AppAdmin />
+      <div>
+        {/* <Header />
+        <HeaderHome />
+        <Footer /> */}
+        <BookingPage />
+      </div>
     </>
   );
 }
