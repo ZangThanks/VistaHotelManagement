@@ -1,5 +1,4 @@
-"use client";
-
+/* eslint-disable */
 import { useEffect, useState } from "react";
 import { Eye, Edit2, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
 import { getAll } from "../../../services/BookingService";
