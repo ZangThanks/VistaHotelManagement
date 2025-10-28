@@ -2,6 +2,7 @@ import React from "react";
 import { FaCalendarCheck, FaKey, FaClock, FaCalendarDay } from "react-icons/fa";
 
 function StatusCards({ bookings = [] }) {
+  // Calculate booking stats
   const totalToday = bookings.length;
   const completedCheckins = bookings.filter(
     (booking) => booking.status === "CHECKED_IN"
@@ -10,6 +11,7 @@ function StatusCards({ bookings = [] }) {
     (booking) => booking.status === "CONFIRMED" || booking.status === "PENDING"
   ).length;
   const earlyRequests = bookings.filter((booking) => {
+    // Assume early check-ins have some indicator in the booking data
     return booking.specialRequests?.toLowerCase().includes("early");
   }).length;
 

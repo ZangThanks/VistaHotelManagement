@@ -25,9 +25,8 @@ public class BookingController {
         return service.save(booking);
     }
 
-    @PutMapping("/edit/{id}")
-    public boolean update(@RequestBody Booking booking, @PathVariable("id") String bookingId) {
-        booking.setBookingID(bookingId);
+    @PutMapping("/edit")
+    public boolean update(@RequestBody Booking booking) {
         return service.save(booking);
     }
 

@@ -72,7 +72,6 @@ public interface PromotionRepository extends JpaRepository<Promotion, String> {
     @Query("""
        SELECT new com.hotelvista.dto.PromotionRoomTypeDTO(
            p,
-           p.promotionType,
            rt
        )
        FROM Promotion p
@@ -84,21 +83,8 @@ public interface PromotionRepository extends JpaRepository<Promotion, String> {
        """)
     List<PromotionRoomTypeDTO> findAllByPromotionTypeForRoomType(@Param("roomTypeID") String roomTypeID);
 
-    /**
-     * Tìm khuyến mãi theo tên khuyến mãi (promotionName) - không phân biệt hoa thường
-     *
-     * @param promotionName
-     * @return
-     */
-    List<Promotion> getPromotionByPromotionNameContainingIgnoreCase(String promotionName);
 
-    /**
-     * Tìm khuyến mãi theo mã khuyến mãi (promotionID)
-     *
-     * @param promotionID
-     * @return
-     */
-    Promotion getPromotionByPromotionID(@Param("promotionID") String promotionID);
+
 
 
 

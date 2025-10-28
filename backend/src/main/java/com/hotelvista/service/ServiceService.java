@@ -25,15 +25,11 @@ public class ServiceService {
         return repo.findAll();
     }
 
-    public List<com.hotelvista.model.Service> findAllByAvailability(boolean availability) {
-        return repo.findAllByAvailability(availability);
-    }
-
     public List<com.hotelvista.model.Service> findAllByServiceNameContainingIgnoreCase(String serviceName) {
         return repo.findAllByServiceNameContainingIgnoreCase(serviceName);
     }
 
-    public List<com.hotelvista.model.Service> findAllByServiceCategory(ServiceCategory serviceCategory) {
+    List<com.hotelvista.model.Service> findAllByServiceCategory(ServiceCategory serviceCategory) {
         return repo.findAllByServiceCategory(serviceCategory);
     }
 }

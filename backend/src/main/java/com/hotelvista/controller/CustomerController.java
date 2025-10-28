@@ -12,8 +12,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import com.hotelvista.model.Customer;
+import com.hotelvista.service.CustomerService;
+
 @RestController
-@CrossOrigin(origins = "*")
 @RequestMapping("/customers")
 public class CustomerController {
     @Autowired
@@ -23,6 +28,5 @@ public class CustomerController {
     public List<Customer> getAllCustomers() {
         return service.findAll();
     }
-
 
 }
