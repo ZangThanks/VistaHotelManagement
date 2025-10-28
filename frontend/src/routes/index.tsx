@@ -7,8 +7,10 @@ import EmployeeLayout from "../layouts/EmployeeLayout";
 // Auth pages
 import Login from "../pages/auth/Login";
 import Register from "../pages/auth/Register";
+
 import Home from "../pages/customer/Home";
 import ServiceList from "../pages/customer/ServiceList";
+import NewsPage from "../pages/employee/NewsPage";
 
 export const router = createBrowserRouter([
   {
@@ -26,7 +28,7 @@ export const router = createBrowserRouter([
     path: "",
     element: <EmployeeLayout />,
     children: [
-      { path: "", element: <Home /> },
+      { path: "", element: <NewsPage /> },
       { path: "service-list", element: <ServiceList /> },
       // { path: "register", element: <Register /> },
       //   { path: "forgot-password", element: <ForgotPassword /> },
