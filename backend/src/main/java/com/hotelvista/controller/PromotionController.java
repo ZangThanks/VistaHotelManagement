@@ -1,6 +1,7 @@
 package com.hotelvista.controller;
 
 import com.hotelvista.dto.PromotionRoomTypeDTO;
+import com.hotelvista.model.Promotion;
 import com.hotelvista.service.PromotionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -40,6 +41,28 @@ public class PromotionController {
         List<PromotionRoomTypeDTO> dto = promotionService.findAllCommonPromotionsByRoomType(roomTypeID);
         return (dto == null || dto.isEmpty()) ? ResponseEntity.noContent().build() : ResponseEntity.ok(dto);
     }
+
+    @GetMapping("")
+    public List<Promotion> getAllPromotions(){
+        return promotionService.findAll();
+    }
+
+    @GetMapping("/{promotionID}")
+    public void deletePromotion(@PathVariable String promotionID){
+        promotionService.deleteById(promotionID);
+    }
+
+    @PostMapping("/create")
+    public void savePromotion(@RequestBody Promotion promotion){
+        promotionService.save(promotion);
+    }
+
+    @GetMapping("/find/{id}")
+    public Promotion findById(String id) {
+        return promotionService.findById(id);
+    }
+
+
 
 
 }
