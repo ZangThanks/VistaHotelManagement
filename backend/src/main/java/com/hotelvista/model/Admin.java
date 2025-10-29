@@ -24,7 +24,7 @@ public class Admin extends User{
     private List<String> permissions;
 
     @ToString.Exclude
-    @OneToMany(mappedBy = "admin")
     @JsonIgnore
+    @OneToMany(mappedBy = "admin")
     private List<Promotion> promotions;
 }

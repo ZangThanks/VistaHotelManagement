@@ -72,7 +72,6 @@ public interface PromotionRepository extends JpaRepository<Promotion, String> {
     @Query("""
        SELECT new com.hotelvista.dto.PromotionRoomTypeDTO(
            p,
-           p.promotionType,
            rt
        )
        FROM Promotion p
@@ -83,10 +82,5 @@ public interface PromotionRepository extends JpaRepository<Promotion, String> {
        ORDER BY rtp.discountValue DESC
        """)
     List<PromotionRoomTypeDTO> findAllByPromotionTypeForRoomType(@Param("roomTypeID") String roomTypeID);
-
-
-
-
-
 
 }

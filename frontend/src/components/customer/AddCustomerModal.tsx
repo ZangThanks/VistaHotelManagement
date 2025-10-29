@@ -1,15 +1,5 @@
-/* eslint-disable */
 import React, { useState, useEffect } from 'react';
-
-interface Customer {
-    fullName: string;
-    email: string;
-    phone: string;
-    birthDate: string;
-    gender: 'MALE' | 'FEMALE';
-    memberShipLevel: 'SILVER' | 'GOLD' | 'PLATINUM';
-    loyaltyPoints: number;
-}
+import type { Customer } from '../../types/Customer';
 
 interface CustomerModalProps {
     show: boolean;
@@ -109,7 +99,11 @@ const AddCustomerModal: React.FC<CustomerModalProps> = ({
                         <select
                             value={form.gender}
                             onChange={(e) =>
-                                setForm({ ...form, gender: e.target.value as Customer['gender'] })
+                                setForm({
+                                    ...form,
+                                    gender: e.target
+                                        .value as Customer['gender'],
+                                })
                             }
                             className="w-full mt-1 p-2 border border-gray-300 rounded-lg text-sm"
                         >
@@ -126,7 +120,8 @@ const AddCustomerModal: React.FC<CustomerModalProps> = ({
                             onChange={(e) =>
                                 setForm({
                                     ...form,
-                                    memberShipLevel: e.target.value as Customer['memberShipLevel'],
+                                    memberShipLevel: e.target
+                                        .value as Customer['memberShipLevel'],
                                 })
                             }
                             className="w-full mt-1 p-2 border border-gray-300 rounded-lg text-sm"
