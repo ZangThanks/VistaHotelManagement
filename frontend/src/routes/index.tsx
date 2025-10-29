@@ -14,7 +14,7 @@ import Register from "../pages/auth/Register";
 import MainLayout from "../layouts/MainLayout";
 import CheckInManager from "../pages/employee/CheckInManager";
 import CheckOutManager from "../pages/employee/CheckOutManager";
-import InfoManagement from "../pages/admin/InfoManagement";
+import InfoManagement from "../pages/admin/infomation/InfoManagement";
 
 export const router = createBrowserRouter([
   {
