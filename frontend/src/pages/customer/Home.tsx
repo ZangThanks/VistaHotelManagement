@@ -1,12 +1,58 @@
-import React, { FC } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import ServiceButton from '../../components/ServiceButton';
+import HeaderHome from '../../components/HeaderHome';
+import Header from '../../components/Header';
 
-const Home: FC = () => {
+const Home: React.FC = () => {
+    const [showSolidHeader, setShowSolidHeader] = useState(false);
+    const bannerRef = useRef<HTMLVideoElement | null>(null);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            if (!bannerRef.current) return;
+
+            const bannerHeight = bannerRef.current.clientHeight;
+            const triggerPoint = bannerHeight * 0.6; // 60% chiều cao banner
+
+            if (window.scrollY > triggerPoint) {
+                setShowSolidHeader(true);
+            } else {
+                setShowSolidHeader(false);
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
     return (
         <div className="bg-white antialiased font-sans">
+            <div className="fixed top-0 left-0 w-full z-[9999] transition-all duration-700 ease-in-out">
+                {/* Header trong suốt ban đầu */}
+                <div
+                    className={`transition-opacity duration-700 ${
+                        showSolidHeader
+                            ? 'opacity-0 pointer-events-none'
+                            : 'opacity-100'
+                    }`}
+                >
+                    <HeaderHome />
+                </div>
+
+                {/* Header solid màu sau khi scroll */}
+                <div
+                    className={`absolute top-0 left-0 w-full transition-opacity duration-700 ${
+                        showSolidHeader
+                            ? 'opacity-100'
+                            : 'opacity-0 pointer-events-none'
+                    }`}
+                >
+                    <Header onMenuClick={() => {}} />
+                </div>
+            </div>
             {/* Hero Video Section */}
             <section className="relative w-full h-screen overflow-hidden">
                 <video
+                    ref={bannerRef}
                     src="https://res.cloudinary.com/dyccrebqj/video/upload/v1758708870/0924_te7gqq.mp4"
                     autoPlay
                     muted
