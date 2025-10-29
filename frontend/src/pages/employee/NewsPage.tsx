@@ -47,7 +47,7 @@ const NewsPage: React.FC = () => {
                             : 'opacity-0 pointer-events-none'
                     }`}
                 >
-                    <Header onMenuClick={() => {}} />
+                    <Header />
                 </div>
             </div>
 

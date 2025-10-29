@@ -1,11 +1,11 @@
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter } from 'react-router-dom';
 
 // Layouts
-import AuthLayout from "../layouts/AuthLayout";
-import EmployeeLayout from "../layouts/EmployeeLayout";
+import AuthLayout from '../layouts/AuthLayout';
+import EmployeeLayout from '../layouts/EmployeeLayout';
 
 // Auth pages
-import Login from "../pages/auth/Login";
+import Login from '../pages/auth/Login';
 import CustomerList from '../pages/employee/CustomerList';
 import NewsPage from '../pages/employee/NewsPage';
 import AdminLayout from '../layouts/AdminLayout';

@@ -11,6 +11,13 @@ import java.util.List;
 public interface CustomerVoucherRepository extends JpaRepository<CustomerVoucher, CustomerVoucher.CustomerVoucherId> {
 
     /**
+     * Tìm tất cả voucher của khách hàng theo customerId
+     * @param customerId
+     * @return
+     */
+    List<CustomerVoucher> findAllByCustomer_Id(String customerId);
+
+    /**
      * Tìm những voucher, customer và state tương ứng theo customerId với startDate - endDate
      *
      * @param startDate
@@ -24,5 +31,29 @@ public interface CustomerVoucherRepository extends JpaRepository<CustomerVoucher
     List<CustomerVoucher> findAllByVoucher_StartDateAfterAndEndDateBefore(@Param("startDate") LocalDate startDate,
                                                                           @Param("endDate") LocalDate endDate,
                                                                           @Param("customerId") String customerId);
+
+
+    /**
+     * Tìm tất cả voucher đang hoạt động của khách hàng
+     * @param customerId
+     * @return
+     */
+    @Query("SELECT cv FROM CustomerVoucher cv " +
+            "WHERE cv.voucher.isActive = true " +
+            "AND cv.voucher.endDate >= CURRENT_DATE " +
+            "AND cv.customer.id = :customerId")
+    List<CustomerVoucher> findActiveVouchersByCustomer(@Param("customerId") String customerId);
+
+
+    /**
+     * Tìm tất cả voucher của khách hàng theo trạng thái đã sử dụng hay chưa
+     * @param customerId
+     * @param state
+     * @return
+     */
+    @Query("SELECT cv FROM CustomerVoucher cv " +
+            "WHERE cv.customer.id = :customerId AND cv.state = :state")
+    List<CustomerVoucher> findByCustomerAndState(@Param("customerId") String customerId,
+                                                 @Param("state") boolean state);
 
 }

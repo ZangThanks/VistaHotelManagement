@@ -1,5 +1,4 @@
 /* eslint-disable*/
-import React from 'react';
 function CheckinTabs({ activeTab, onTabChange }) {
     const tabs = [
         { id: 'today', label: "Today's Check-ins" },

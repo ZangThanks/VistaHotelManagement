@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React from "react";
 import { FaCheck, FaEye, FaClock } from "react-icons/fa";
 
