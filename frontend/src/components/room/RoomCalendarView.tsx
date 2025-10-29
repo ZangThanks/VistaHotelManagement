@@ -1,5 +1,6 @@
-import React, { useState, useMemo, useRef } from "react";
+import React, { useState, useMemo } from "react";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { AnimatePresence } from "framer-motion";
 import type { Room } from "./RoomTableView";
 import BookingInfoPopup from "./BookingInfoPopup";
 
@@ -28,7 +29,7 @@ interface CalendarDay {
     isStart: boolean;
     isEnd: boolean;
     spanDays: number;
-    position: number; // Vị trí trong ô (để xếp chồng nhiều booking)
+    position: number;
   }>;
 }
 
@@ -41,63 +42,48 @@ const RoomCalendarView: React.FC<RoomCalendarViewProps> = ({
   onRoomClick,
 }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [selectedDate, setSelectedDate] = useState(new Date());
-  const [viewMode, setViewMode] = useState<"month" | "week">("month");
   const [selectedBooking, setSelectedBooking] = useState<{
     booking: RoomBooking;
     room: Room;
     position: { x: number; y: number };
   } | null>(null);
+  const [hoveredBookingId, setHoveredBookingId] = useState<string | null>(null);
 
-  const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  // Không cần closeTimeoutRef nữa vì dùng click
 
   const weekDays = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
 
-  // Tính các ngày cần hiển thị (theo tháng hoặc tuần)
+  // Tính các ngày cần hiển thị theo tháng
   const calendarDays = useMemo(() => {
     const days: CalendarDay[] = [];
 
-    if (viewMode === "week") {
-      // Hiển thị tuần chứa ngày được chọn
-      const startOfWeek = new Date(selectedDate);
-      const dayOfWeek = startOfWeek.getDay();
-      startOfWeek.setDate(startOfWeek.getDate() - dayOfWeek); // Về CN
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
 
-      for (let i = 0; i < 7; i++) {
-        const date = new Date(startOfWeek);
-        date.setDate(startOfWeek.getDate() + i);
-        days.push({ date, isCurrentMonth: true, bookings: [] });
-      }
-    } else {
-      // Hiển thị theo tháng
-      const year = currentDate.getFullYear();
-      const month = currentDate.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
 
-      const firstDay = new Date(year, month, 1);
-      const lastDay = new Date(year, month + 1, 0);
+    const startPadding = firstDay.getDay();
 
-      const startPadding = firstDay.getDay();
+    for (let i = startPadding - 1; i >= 0; i--) {
+      const date = new Date(year, month, -i);
+      days.push({ date, isCurrentMonth: false, bookings: [] });
+    }
 
-      for (let i = startPadding - 1; i >= 0; i--) {
-        const date = new Date(year, month, -i);
-        days.push({ date, isCurrentMonth: false, bookings: [] });
-      }
+    for (let i = 1; i <= lastDay.getDate(); i++) {
+      const date = new Date(year, month, i);
+      days.push({ date, isCurrentMonth: true, bookings: [] });
+    }
 
-      for (let i = 1; i <= lastDay.getDate(); i++) {
-        const date = new Date(year, month, i);
-        days.push({ date, isCurrentMonth: true, bookings: [] });
-      }
-
-      const totalCells = Math.ceil(days.length / 7) * 7;
-      const endPadding = totalCells - days.length;
-      for (let i = 1; i <= endPadding; i++) {
-        const date = new Date(year, month + 1, i);
-        days.push({ date, isCurrentMonth: false, bookings: [] });
-      }
+    const totalCells = Math.ceil(days.length / 7) * 7;
+    const endPadding = totalCells - days.length;
+    for (let i = 1; i <= endPadding; i++) {
+      const date = new Date(year, month + 1, i);
+      days.push({ date, isCurrentMonth: false, bookings: [] });
     }
 
     return days;
-  }, [currentDate, viewMode, selectedDate]);
+  }, [currentDate]);
 
   // Xử lý bookings cho từng ngày
   const calendarWithBookings = useMemo(() => {
@@ -108,7 +94,6 @@ const RoomCalendarView: React.FC<RoomCalendarViewProps> = ({
       daysMap.set(dateKey, { ...day, bookings: [] });
     });
 
-    // Duyệt qua từng booking
     bookings.forEach((booking) => {
       const room = rooms.find((r) => r.id === booking.roomId);
       if (!room) return;
@@ -118,32 +103,26 @@ const RoomCalendarView: React.FC<RoomCalendarViewProps> = ({
       const checkOut = new Date(booking.checkOut);
       checkOut.setHours(0, 0, 0, 0);
 
-      // Duyệt qua tất cả các ngày trong calendar để tìm ngày check-in
       for (let i = 0; i < calendarDays.length; i++) {
         const calendarDay = calendarDays[i];
         const currentDate = new Date(calendarDay.date);
         currentDate.setHours(0, 0, 0, 0);
 
-        // Nếu tìm thấy ngày check-in
         if (currentDate.getTime() === checkIn.getTime()) {
           const dateKey = currentDate.toDateString();
           const dayInMap = daysMap.get(dateKey);
 
-          // Tính số ngày còn lại trong tuần (để không vượt qua sang hàng khác)
           const dayOfWeek = currentDate.getDay();
-          const daysUntilEndOfWeek = 6 - dayOfWeek + 1; // Số ngày từ hôm nay đến hết Thứ 7
+          const daysUntilEndOfWeek = 6 - dayOfWeek + 1;
 
-          // Tính tổng số ngày của booking
           const totalBookingDays =
             Math.ceil(
               (checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24)
             ) + 1;
 
           if (dayInMap) {
-            // Span không được vượt qua cuối tuần (để không tràn sang hàng dưới)
             const spanDays = Math.min(daysUntilEndOfWeek, totalBookingDays);
 
-            // Tính vị trí để xếp chồng
             const existingBookings = dayInMap.bookings.filter((b) => b.isStart);
             const position = existingBookings.length;
 
@@ -157,9 +136,7 @@ const RoomCalendarView: React.FC<RoomCalendarViewProps> = ({
             });
           }
 
-          // Nếu booking kéo dài qua tuần tiếp theo
           if (totalBookingDays > daysUntilEndOfWeek) {
-            // Tìm Chủ nhật tuần tiếp theo
             let nextWeekStart = i + daysUntilEndOfWeek;
             let remainingDays = totalBookingDays - daysUntilEndOfWeek;
 
@@ -169,10 +146,8 @@ const RoomCalendarView: React.FC<RoomCalendarViewProps> = ({
               const nextDayInMap = daysMap.get(nextDateKey);
 
               if (nextDayInMap) {
-                // Tính span cho tuần này (tối đa 7 ngày)
                 const nextSpanDays = Math.min(7, remainingDays);
 
-                // Tính vị trí
                 const existingNextBookings = nextDayInMap.bookings.filter(
                   (b) => b.isStart
                 );
@@ -238,45 +213,42 @@ const RoomCalendarView: React.FC<RoomCalendarViewProps> = ({
     "checked-out": "border-rose-600",
   };
 
-  const handleMouseEnter = (
+  // Click để hiển thị/ẩn popup
+  const handleBookingClick = (
     booking: RoomBooking,
     room: Room,
     event: React.MouseEvent<HTMLDivElement>
   ) => {
-    // Hủy timeout nếu đang có
-    if (closeTimeoutRef.current) {
-      clearTimeout(closeTimeoutRef.current);
-      closeTimeoutRef.current = null;
-    }
+    event.stopPropagation(); // Ngăn event bubbling
 
-    const rect = event.currentTarget.getBoundingClientRect();
-    setSelectedBooking({
-      booking,
-      room,
-      position: {
-        x: rect.left + rect.width / 2,
-        y: rect.top - 10,
-      },
-    });
-  };
-
-  const handleMouseLeave = () => {
-    // Đặt timeout để đóng popup
-    closeTimeoutRef.current = setTimeout(() => {
+    // Nếu đang hiển thị popup của booking này thì đóng
+    if (selectedBooking?.booking.id === booking.id) {
       setSelectedBooking(null);
-    }, 100);
-  };
-
-  const handlePopupMouseEnter = () => {
-    // Hủy timeout khi hover vào popup
-    if (closeTimeoutRef.current) {
-      clearTimeout(closeTimeoutRef.current);
-      closeTimeoutRef.current = null;
+    } else {
+      // Hiển thị popup mới
+      const rect = event.currentTarget.getBoundingClientRect();
+      setSelectedBooking({
+        booking,
+        room,
+        position: {
+          x: rect.left + rect.width / 2,
+          y: rect.top,
+        },
+      });
     }
   };
 
-  const handlePopupMouseLeave = () => {
-    // Đóng popup khi rời khỏi popup
+  // Hover để highlight tất cả các đoạn của cùng booking
+  const handleBookingMouseEnter = (bookingId: string) => {
+    setHoveredBookingId(bookingId);
+  };
+
+  const handleBookingMouseLeave = () => {
+    setHoveredBookingId(null);
+  };
+
+  // Click vào backdrop để đóng popup
+  const handleBackdropClick = () => {
     setSelectedBooking(null);
   };
 
@@ -287,80 +259,28 @@ const RoomCalendarView: React.FC<RoomCalendarViewProps> = ({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <h2 className="text-2xl font-bold text-gray-800">
-              {viewMode === "month"
-                ? formatMonth(currentDate)
-                : `Tuần ${Math.ceil(
-                    selectedDate.getDate() / 7
-                  )} - ${formatMonth(selectedDate)}`}
+              {formatMonth(currentDate)}
             </h2>
             <button
               onClick={goToday}
-              className="px-4 py-2 text-sm bg-[#6b5e4c] text-white rounded-lg hover:bg-[#5a4d3e] transition-colors"
+              className="px-4 py-2 text-sm bg-[#6b5e4c] text-white rounded-lg hover:bg-[#5a4d3e] transition-colors cursor-pointer"
             >
-              Hôm nay
+              Today
             </button>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={previousMonth}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
             >
               <FaChevronLeft className="text-gray-600" />
             </button>
             <button
               onClick={nextMonth}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
             >
               <FaChevronRight className="text-gray-600" />
             </button>
-          </div>
-        </div>
-
-        {/* View Mode Toggle & Date Picker */}
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2 bg-gray-100 rounded-lg p-1">
-            <button
-              onClick={() => setViewMode("month")}
-              className={`px-4 py-2 text-sm rounded-md transition-colors ${
-                viewMode === "month"
-                  ? "bg-white text-[#6b5e4c] font-semibold shadow-sm"
-                  : "text-gray-600 hover:text-gray-800"
-              }`}
-            >
-              Tháng
-            </button>
-            <button
-              onClick={() => setViewMode("week")}
-              className={`px-4 py-2 text-sm rounded-md transition-colors ${
-                viewMode === "week"
-                  ? "bg-white text-[#6b5e4c] font-semibold shadow-sm"
-                  : "text-gray-600 hover:text-gray-800"
-              }`}
-            >
-              Tuần
-            </button>
-          </div>
-
-          {/* Date Picker */}
-          <div className="flex items-center gap-2">
-            <label className="text-sm text-gray-600 font-medium">
-              Chọn ngày:
-            </label>
-            <input
-              type="date"
-              value={selectedDate.toISOString().split("T")[0]}
-              onChange={(e) => {
-                const newDate = new Date(e.target.value);
-                setSelectedDate(newDate);
-                setCurrentDate(newDate);
-                if (viewMode === "week") {
-                  // Force re-render week view
-                  setViewMode("month");
-                  setTimeout(() => setViewMode("week"), 0);
-                }
-              }}
-              className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#6b5e4c] focus:border-transparent"
-            />
           </div>
         </div>
       </div>
@@ -386,17 +306,20 @@ const RoomCalendarView: React.FC<RoomCalendarViewProps> = ({
               day.bookings.filter((b) => b.isStart).length,
               1
             );
-            const minHeight = 100 + maxBookings * 32; // 32px per booking
+            const minHeight = 100 + maxBookings * 32;
+
+            const isToday =
+              day.date.toDateString() === new Date().toDateString();
 
             return (
               <div
                 key={idx}
                 className={`border-r border-b border-[#ebe3d7] p-2 last:border-r-0 ${
-                  !day.isCurrentMonth ? "bg-gray-50" : "bg-white"
-                } ${
-                  day.date.toDateString() === new Date().toDateString()
-                    ? "bg-blue-50"
-                    : ""
+                  isToday
+                    ? "bg-[#fff3cd]"
+                    : !day.isCurrentMonth
+                    ? "bg-gray-50"
+                    : "bg-white"
                 }`}
                 style={{ minHeight: `${minHeight}px` }}
               >
@@ -404,11 +327,7 @@ const RoomCalendarView: React.FC<RoomCalendarViewProps> = ({
                 <div
                   className={`text-sm font-semibold mb-1 ${
                     day.isCurrentMonth ? "text-gray-800" : "text-gray-400"
-                  } ${
-                    day.date.toDateString() === new Date().toDateString()
-                      ? "text-blue-600"
-                      : ""
-                  }`}
+                  } ${isToday ? "text-[#856404]" : ""}`}
                 >
                   {day.date.getDate()}
                 </div>
@@ -421,32 +340,46 @@ const RoomCalendarView: React.FC<RoomCalendarViewProps> = ({
                   {day.bookings
                     .filter((item) => item.isStart)
                     .map((item, bookingIdx) => {
-                      // Tính width để kéo dài qua nhiều cells
-                      // Mỗi cell có border, nên cần tính cả border width
-                      const cellWidth = 100; // 100% của 1 cell
-                      const gapBetweenCells = 1; // border width ~1px
+                      const cellWidth = 100;
+                      const gapBetweenCells = 1;
                       const totalWidth = `calc(${
                         item.spanDays * cellWidth
                       }% + ${(item.spanDays - 1) * gapBetweenCells}px)`;
 
+                      const isSelected =
+                        selectedBooking?.booking.id === item.booking.id;
+                      const isHovered = hoveredBookingId === item.booking.id;
+
                       return (
                         <div
                           key={bookingIdx}
-                          onMouseEnter={(e) =>
-                            handleMouseEnter(item.booking, item.room, e)
+                          onClick={(e) =>
+                            handleBookingClick(item.booking, item.room, e)
                           }
-                          onMouseLeave={handleMouseLeave}
+                          onMouseEnter={() =>
+                            handleBookingMouseEnter(item.booking.id)
+                          }
+                          onMouseLeave={handleBookingMouseLeave}
                           className={`${statusColors[item.booking.status]} ${
                             statusBorderColors[item.booking.status]
-                          } text-white text-xs px-2 py-1.5 rounded-md cursor-pointer hover:opacity-90 hover:shadow-lg hover:scale-[1.02] transition-all duration-200 truncate absolute border-l-4 font-medium`}
+                          } text-white text-xs px-2 py-1.5 rounded-md cursor-pointer truncate absolute border-l-4 font-medium transition-all duration-150 ${
+                            isHovered
+                              ? "opacity-90 shadow-lg scale-105 z-50"
+                              : ""
+                          } ${
+                            isSelected
+                              ? "opacity-90 shadow-lg scale-105 ring-2 ring-white"
+                              : ""
+                          }`}
                           style={{
                             width: totalWidth,
                             top: `${item.position * 32}px`,
                             left: 0,
-                            zIndex:
-                              selectedBooking?.booking.id === item.booking.id
-                                ? 20
-                                : 10 + item.position,
+                            zIndex: isHovered
+                              ? 50
+                              : isSelected
+                              ? 30
+                              : 10 + item.position,
                           }}
                         >
                           <div className="flex items-center gap-1 whitespace-nowrap overflow-hidden">
@@ -472,29 +405,32 @@ const RoomCalendarView: React.FC<RoomCalendarViewProps> = ({
       <div className="flex items-center gap-6 mt-4 text-sm">
         <div className="flex items-center gap-2">
           <div className="w-6 h-4 bg-amber-500 rounded border-l-4 border-amber-600" />
-          <span className="text-gray-700 font-medium">Đã xác nhận</span>
+          <span className="text-gray-700 font-medium">Confirmed</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-6 h-4 bg-emerald-500 rounded border-l-4 border-emerald-600" />
-          <span className="text-gray-700 font-medium">Đang ở</span>
+          <span className="text-gray-700 font-medium">Checked In</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-6 h-4 bg-rose-500 rounded border-l-4 border-rose-600" />
-          <span className="text-gray-700 font-medium">Đã trả phòng</span>
+          <span className="text-gray-700 font-medium">Checked Out</span>
         </div>
       </div>
 
-      {/* Booking Info Popup */}
-      {selectedBooking && (
-        <BookingInfoPopup
-          booking={selectedBooking.booking}
-          room={selectedBooking.room}
-          position={selectedBooking.position}
-          onClose={handlePopupMouseLeave}
-          onMouseEnter={handlePopupMouseEnter}
-          onMouseLeave={handlePopupMouseLeave}
-        />
-      )}
+      {/* Booking Info Popup với backdrop */}
+      <AnimatePresence>
+        {selectedBooking && (
+          <>
+            {/* Backdrop - click để đóng popup */}
+            <div className="fixed inset-0 z-40" onClick={handleBackdropClick} />
+            <BookingInfoPopup
+              booking={selectedBooking.booking}
+              room={selectedBooking.room}
+              position={selectedBooking.position}
+            />
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

@@ -142,7 +142,7 @@ const RoomCardView: React.FC<RoomCardViewProps> = ({
             <div className="flex gap-2">
               <button
                 onClick={() => onView(room)}
-                className="flex-1 py-2 px-3 text-sm font-medium text-[#1976d2] bg-[#e3f2fd] hover:bg-[#bbdefb] rounded-lg transition-colors flex items-center justify-center gap-2"
+                className="flex-1 py-2 px-3 text-sm font-medium text-[#1976d2] bg-[#e3f2fd] hover:bg-[#bbdefb] rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer"
                 title="View details"
               >
                 <FaEye />
@@ -150,7 +150,7 @@ const RoomCardView: React.FC<RoomCardViewProps> = ({
               </button>
               <button
                 onClick={() => onEdit(room)}
-                className="flex-1 py-2 px-3 text-sm font-medium text-[#2e7d32] bg-[#e8f5e9] hover:bg-[#c8e6c9] rounded-lg transition-colors flex items-center justify-center gap-2"
+                className="flex-1 py-2 px-3 text-sm font-medium text-[#2e7d32] bg-[#e8f5e9] hover:bg-[#c8e6c9] rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer"
                 title="Edit"
               >
                 <FaEdit />
@@ -158,7 +158,7 @@ const RoomCardView: React.FC<RoomCardViewProps> = ({
               </button>
               <button
                 onClick={() => onDelete(room)}
-                className="py-2 px-3 text-sm font-medium text-[#c62828] bg-[#ffebee] hover:bg-[#ffcdd2] rounded-lg transition-colors"
+                className="py-2 px-3 text-sm font-medium text-[#c62828] bg-[#ffebee] hover:bg-[#ffcdd2] rounded-lg transition-colors cursor-pointer"
                 title="Delete"
               >
                 <FaTrashAlt />

@@ -133,21 +133,21 @@ const RoomTableView: React.FC<RoomTableViewProps> = ({
                   <div className="flex items-center justify-center gap-2">
                     <button
                       onClick={() => onView(room)}
-                      className="text-[#1976d2] hover:text-[#1565c0] transition-colors p-2 hover:bg-blue-50 rounded-lg"
+                      className="text-[#1976d2] hover:text-[#1565c0] transition-colors p-2 hover:bg-blue-50 rounded-lg cursor-pointer"
                       title="View details"
                     >
                       <FaEye className="text-lg" />
                     </button>
                     <button
                       onClick={() => onEdit(room)}
-                      className="text-[#2e7d32] hover:text-[#1b5e20] transition-colors p-2 hover:bg-green-50 rounded-lg"
+                      className="text-[#2e7d32] hover:text-[#1b5e20] transition-colors p-2 hover:bg-green-50 rounded-lg cursor-pointer"
                       title="Edit"
                     >
                       <FaEdit className="text-lg" />
                     </button>
                     <button
                       onClick={() => onDelete(room)}
-                      className="text-[#c62828] hover:text-[#b71c1c] transition-colors p-2 hover:bg-red-50 rounded-lg"
+                      className="text-[#c62828] hover:text-[#b71c1c] transition-colors p-2 hover:bg-red-50 rounded-lg cursor-pointer"
                       title="Delete"
                     >
                       <FaTrashAlt className="text-lg" />

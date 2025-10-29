@@ -11,7 +11,6 @@ import {
   FaTh,
 } from "react-icons/fa";
 import RoomStatCard from "../../../components/room/RoomStatCard";
-import RoomChart from "../../../components/room/RoomChart";
 import RoomTableView from "../../../components/room/RoomTableView";
 import RoomCardView from "../../../components/room/RoomCardView";
 import RoomCalendarView from "../../../components/room/RoomCalendarView";
@@ -21,6 +20,7 @@ import RoomFilters from "../../../components/room/RoomFilters";
 import type { FilterOptions } from "../../../components/room/RoomFilters";
 import Pagination from "../../../components/room/Pagination";
 import type { Room } from "../../../components/room/RoomTableView";
+import AddRoomModal from "../../../components/room/AddRoomModal";
 import { motion } from "framer-motion";
 
 /**
@@ -40,6 +40,9 @@ const RoomManagement: React.FC = () => {
 
   // Selected room for detail modal
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
+
+  // Add room modal
+  const [isAddRoomModalOpen, setIsAddRoomModalOpen] = useState(false);
 
   // Filters
   const [filters, setFilters] = useState<FilterOptions>({
@@ -220,16 +223,6 @@ const RoomManagement: React.FC = () => {
     []
   );
 
-  // Mock chart data
-  const chartData = [
-    { month: "T1", occupied: 45, available: 30, maintenance: 5 },
-    { month: "T2", occupied: 52, available: 23, maintenance: 5 },
-    { month: "T3", occupied: 48, available: 27, maintenance: 5 },
-    { month: "T4", occupied: 60, available: 15, maintenance: 5 },
-    { month: "T5", occupied: 65, available: 10, maintenance: 5 },
-    { month: "T6", occupied: 58, available: 17, maintenance: 5 },
-  ];
-
   // Filter rooms
   const filteredRooms = useMemo(() => {
     return mockRooms.filter((room) => {
@@ -313,7 +306,13 @@ const RoomManagement: React.FC = () => {
 
   const handleAddRoom = () => {
     console.log("Add new room");
-    // TODO: Open add room modal
+    setIsAddRoomModalOpen(true);
+  };
+
+  const handleAddRoomSubmit = (roomData: any) => {
+    console.log("Room data submitted:", roomData);
+    // TODO: Call API to add room
+    // After successful API call, refresh room list
   };
 
   const handleRoomClick = (room: Room) => {
@@ -331,14 +330,14 @@ const RoomManagement: React.FC = () => {
         >
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Rooms</h1>
-            <p className="text-gray-600 mt-1">View and manage room</p>
+            <p className="text-gray-600 mt-1">View and manage rooms</p>
           </div>
           <button
             onClick={handleAddRoom}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-[#6b5e4c] text-white font-semibold rounded-lg shadow-lg hover:bg-[#5a4d3e] transition-colors"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-[#6b5e4c] text-white font-semibold rounded-lg shadow-lg hover:bg-[#5a4d3e] transition-colors cursor-pointer"
           >
             <FaPlus />
-            Add room
+            Add Room
           </button>
         </motion.div>
 
@@ -383,39 +382,32 @@ const RoomManagement: React.FC = () => {
           />
         </motion.div>
 
-        {/* Chart */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          <RoomChart data={chartData} type="bar" />
-        </motion.div>
-
-        {/* Filters */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-        >
-          <RoomFilters
-            filters={filters}
-            onFilterChange={setFilters}
-            roomTypes={roomTypes}
-            floors={floors}
-          />
-        </motion.div>
+        {/* Filters - Chỉ hiển thị khi ở chế độ xem lưới hoặc bảng */}
+        {(viewMode === "card" || viewMode === "table") && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <RoomFilters
+              filters={filters}
+              onFilterChange={setFilters}
+              roomTypes={roomTypes}
+              floors={floors}
+            />
+          </motion.div>
+        )}
 
         {/* View Mode Toggle */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
+          transition={{ delay: 0.3 }}
           className="flex items-center justify-between"
         >
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2 text-sm text-gray-600">
-              <span className="text-[#6b5e4c] font-medium">Total room:</span>
+              <span className="text-[#6b5e4c] font-medium">Total rooms:</span>
               <span className="font-semibold text-gray-900">
                 {filteredRooms.length} rooms
               </span>
@@ -427,7 +419,7 @@ const RoomManagement: React.FC = () => {
               </div>
               <div className="flex items-center gap-1">
                 <span className="w-3 h-3 rounded-full bg-[#2196f3]"></span>
-                <span className="text-gray-600">Booked</span>
+                <span className="text-gray-600">Occupied</span>
               </div>
               <div className="flex items-center gap-1">
                 <span className="w-3 h-3 rounded-full bg-[#ff9800]"></span>
@@ -435,52 +427,52 @@ const RoomManagement: React.FC = () => {
               </div>
               <div className="flex items-center gap-1">
                 <span className="w-3 h-3 rounded-full bg-[#f44336]"></span>
-                <span className="text-gray-600">Unavailable</span>
+                <span className="text-gray-600">Maintenance</span>
               </div>
             </div>
           </div>
           <div className="flex gap-2">
             <button
               onClick={() => setViewMode("status")}
-              className={`p-3 rounded-lg transition-colors ${
+              className={`p-3 rounded-lg transition-colors cursor-pointer ${
                 viewMode === "status"
                   ? "bg-[#6b5e4c] text-white"
                   : "bg-white text-gray-600 border border-gray-300 hover:bg-gray-50"
               }`}
-              title="Status Board"
+              title="Status Board View"
             >
               <FaTh />
             </button>
             <button
               onClick={() => setViewMode("calendar")}
-              className={`p-3 rounded-lg transition-colors ${
+              className={`p-3 rounded-lg transition-colors cursor-pointer ${
                 viewMode === "calendar"
                   ? "bg-[#6b5e4c] text-white"
                   : "bg-white text-gray-600 border border-gray-300 hover:bg-gray-50"
               }`}
-              title="Calendar view"
+              title="Calendar View"
             >
               <FaCalendarAlt />
             </button>
             <button
               onClick={() => setViewMode("card")}
-              className={`p-3 rounded-lg transition-colors ${
+              className={`p-3 rounded-lg transition-colors cursor-pointer ${
                 viewMode === "card"
                   ? "bg-[#6b5e4c] text-white"
                   : "bg-white text-gray-600 border border-gray-300 hover:bg-gray-50"
               }`}
-              title="Card view"
+              title="Card View"
             >
               <FaThLarge />
             </button>
             <button
               onClick={() => setViewMode("table")}
-              className={`p-3 rounded-lg transition-colors ${
+              className={`p-3 rounded-lg transition-colors cursor-pointer ${
                 viewMode === "table"
                   ? "bg-[#6b5e4c] text-white"
                   : "bg-white text-gray-600 border border-gray-300 hover:bg-gray-50"
               }`}
-              title="Table view"
+              title="Table View"
             >
               <FaList />
             </button>
@@ -491,7 +483,7 @@ const RoomManagement: React.FC = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
+          transition={{ delay: 0.4 }}
         >
           {viewMode === "status" ? (
             <RoomStatusBoard
@@ -527,7 +519,7 @@ const RoomManagement: React.FC = () => {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6 }}
+              transition={{ delay: 0.5 }}
             >
               <Pagination
                 currentPage={currentPage}
@@ -544,6 +536,13 @@ const RoomManagement: React.FC = () => {
       <RoomDetailModal
         room={selectedRoom}
         onClose={() => setSelectedRoom(null)}
+      />
+
+      {/* Add Room Modal */}
+      <AddRoomModal
+        isOpen={isAddRoomModalOpen}
+        onClose={() => setIsAddRoomModalOpen(false)}
+        onSubmit={handleAddRoomSubmit}
       />
     </div>
   );
