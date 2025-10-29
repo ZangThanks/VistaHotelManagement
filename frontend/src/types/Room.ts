@@ -10,5 +10,6 @@ export interface Room {
     lastCleaned?: string | null;
     notes?: string | null;
     roomType?: RoomType | null;
+    images?: string[];
     [key: string]: unknown;
 }

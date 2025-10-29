@@ -4,7 +4,14 @@ import type { Room } from '../../types/Room';
 import RoomCard from '../../components/RoomCard';
 
 export default function RoomList() {
-    const baseUrl = process.env.REACT_APP_API_URL || ''; // ensure .env has REACT_APP_API_URL
+    // Use Vite-compatible env access. Safe even in browser runtime.
+    const env =
+        (
+            import.meta as ImportMeta & {
+                env?: Record<string, string | undefined>;
+            }
+        ).env ?? {};
+    const baseUrl = (env.VITE_API_URL ?? env.REACT_APP_API_URL ?? '') as string;
     const getAuthToken = () => localStorage.getItem('token') || null;
     const service = useMemo(
         () => new RoomService(baseUrl, getAuthToken),
@@ -35,7 +42,13 @@ export default function RoomList() {
             })
             .catch((err) => {
                 console.error(err);
-                setError('Không thể tải danh sách phòng.');
+                // surface the real error (e.g. "Expected JSON response..." when baseUrl is wrong)
+                setError(
+                    typeof err === 'string'
+                        ? err
+                        : (err && (err as Error).message) ||
+                              'Không thể tải danh sách phòng.',
+                );
             })
             .finally(() => {
                 if (mounted) setLoading(false);
@@ -79,6 +92,29 @@ export default function RoomList() {
         if (r.status === 'BOOKED' || r.status === 'MAINTENANCE') return false;
         return true;
     });
+
+    // If baseUrl is not configured, show a clear UI message and avoid calling the API.
+    if (!baseUrl) {
+        return (
+            <div className="container mx-auto px-4 py-6">
+                <div className="p-6 bg-yellow-50 border-l-4 border-yellow-400 rounded">
+                    <h2 className="text-xl font-semibold mb-2">
+                        API baseUrl chưa được cấu hình
+                    </h2>
+                    <p className="text-sm text-gray-700 mb-2">
+                        Thiết lập biến môi trường VITE_API_URL (hoặc
+                        REACT_APP_API_URL) trỏ tới backend của bạn, ví dụ:{' '}
+                        <code>VITE_API_URL=http://localhost:3000</code>
+                    </p>
+                    <p className="text-sm text-gray-700">
+                        Sau khi chỉnh .env, khởi động lại dev server (npm/yarn
+                        start). Hiện tại danh sách phòng sẽ không được tải vì
+                        thiếu endpoint API.
+                    </p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="container mx-auto px-4 py-6">

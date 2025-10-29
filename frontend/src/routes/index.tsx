@@ -1,14 +1,15 @@
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter } from 'react-router-dom';
 
 // Layouts
-import AuthLayout from "../layouts/AuthLayout";
-import EmployeeLayout from "../layouts/EmployeeLayout";
+import AuthLayout from '../layouts/AuthLayout';
+import EmployeeLayout from '../layouts/EmployeeLayout';
 
 // Auth pages
-import Login from "../pages/auth/Login";
+import Login from '../pages/auth/Login';
 import CustomerList from '../pages/employee/CustomerList';
 import NewsPage from '../pages/employee/NewsPage';
 import AdminLayout from '../layouts/AdminLayout';
+import RoomList from '../pages/customer/RoomList';
 // import AppAdmin from '../pages/admin/appAdmin';
 
 export const router = createBrowserRouter([
@@ -36,9 +37,11 @@ export const router = createBrowserRouter([
     {
         path: '',
         element: <EmployeeLayout />,
-        children: [
-            { path: '/newsPage', element: <NewsPage /> },
-            
-        ],
+        children: [{ path: '/newsPage', element: <NewsPage /> }],
+    },
+    {
+        path: 'customer',
+        element: <RoomList />,
+        children: [{ path: 'room/list', element: <RoomList /> }],
     },
 ]);

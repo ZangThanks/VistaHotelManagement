@@ -7,6 +7,5 @@ export interface RoomType {
     maxOccupancy?: number;
     amenities?: string[];
     basePrice?: number;
-    images?: string[];
     [key: string]: unknown;
 }
