@@ -11,6 +11,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/maintenance")
+@CrossOrigin(origins = "http://localhost:5173")
 public class MaintenanceRequestController {
     private final MaintenanceRequestService service;
 

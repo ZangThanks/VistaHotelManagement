@@ -16,6 +16,9 @@ import CheckInManager from '../pages/employee/CheckInManager';
 import CheckOutManager from '../pages/employee/CheckOutManager';
 import InfoManagement from '../pages/admin/InfoManagement';
 import ServiceManagement from '../pages/admin/ServiceManagement';
+import Home from '../pages/customer/Home';
+import IncidentReport from '../pages/customer/IncidentReport';
+import IncidentManagement from '../pages/employee/IncidentManagement';
 
 export const router = createBrowserRouter([
     {
@@ -31,7 +34,10 @@ export const router = createBrowserRouter([
     {
         path: 'employee',
         element: <EmployeeLayout />,
-        children: [{ path: 'customer/list', element: <CustomerList /> }],
+        children: [
+            { path: 'customer/list', element: <CustomerList /> },
+            { path: 'incidents', element: <IncidentManagement /> },
+        ],
     },
     {
         path: 'admin',
@@ -49,7 +55,9 @@ export const router = createBrowserRouter([
         element: <EmployeeLayout />,
         children: [
             { path: 'newsPage', element: <NewsPage /> },
+            { path: 'home', element: <Home /> },
             { path: 'bookingPage', element: <BookingPage /> },
+            { path: 'incident-report', element: <IncidentReport /> },
         ],
     },
 ]);
