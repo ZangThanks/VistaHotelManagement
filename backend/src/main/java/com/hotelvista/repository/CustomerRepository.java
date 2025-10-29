@@ -7,8 +7,12 @@ import java.util.List;
 import java.util.Optional;
 
 public interface CustomerRepository extends JpaRepository<Customer, String> {
+
     List<Customer> findAllByFullNameContainingIgnoreCase(String fullName);
+
     Optional<Customer> findByEmail(String email);
+
     Optional<Customer> findByPhone(String phone);
+
     Optional<Customer> findByUserName(String userName);
 }

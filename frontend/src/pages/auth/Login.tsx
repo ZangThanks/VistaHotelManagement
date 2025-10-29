@@ -261,7 +261,6 @@ const Login: React.FC = () => {
           <span className="text-white/70 text-xs">Hoặc tiếp tục với</span>
           <div className="flex-1 h-px bg-white/30" />
         </div>
-        
         {/* Đăng nhập với mạng xã hội  */}
         <div className="grid grid-cols-2 gap-3">
           <button

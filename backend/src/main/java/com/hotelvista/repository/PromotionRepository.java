@@ -83,9 +83,4 @@ public interface PromotionRepository extends JpaRepository<Promotion, String> {
        """)
     List<PromotionRoomTypeDTO> findAllByPromotionTypeForRoomType(@Param("roomTypeID") String roomTypeID);
 
-
-
-
-
-
 }

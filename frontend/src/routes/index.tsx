@@ -3,17 +3,18 @@ import { createBrowserRouter } from "react-router-dom";
 // Layouts
 import AuthLayout from "../layouts/AuthLayout";
 import EmployeeLayout from "../layouts/EmployeeLayout";
-import AdminLayout from "../layouts/AdminLayout";
 
 // Auth pages
 import Login from "../pages/auth/Login";
+import CustomerList from "../pages/employee/CustomerList";
+import NewsPage from "../pages/employee/NewsPage";
+import AdminLayout from "../layouts/AdminLayout";
+import BookingPage from "../pages/admin/booking/BookingPage";
 import Register from "../pages/auth/Register";
-
-// Pages
-import Dashboard from "../pages/admin/dashboard/Dashboard";
-import CustomerList from '../pages/employee/CustomerList';
-import NewsPage from '../pages/employee/NewsPage';
-import RoomManagement from "../pages/admin/room/RoomManagement";
+import MainLayout from "../layouts/MainLayout";
+import CheckInManager from "../pages/employee/CheckInManager";
+import CheckOutManager from "../pages/employee/CheckOutManager";
+import InfoManagement from "../pages/admin/InfoManagement";
 
 export const router = createBrowserRouter([
   {
@@ -21,33 +22,32 @@ export const router = createBrowserRouter([
     element: <AuthLayout />,
     children: [
       { path: "login", element: <Login /> },
-
       { path: "register", element: <Register /> },
-      //   { path: "forgot-password", element: <ForgotPassword /> },
-      //   { path: "reset-password", element: <ResetPassword /> },
+      // { path: "forgot-password", element: <ForgotPassword /> },
+      // { path: "reset-password", element: <ResetPassword /> },
     ],
   },
   {
     path: "employee",
     element: <EmployeeLayout />,
-    children: [
-      {
-        path: "customer/list",
-        element: <CustomerList />,
-      },
-    ],
+    children: [{ path: "customer/list", element: <CustomerList /> }],
   },
   {
     path: "admin",
     element: <AdminLayout />,
     children: [
-      { path: "dashboard", element: <Dashboard /> },
-      { path: "room-management", element: <RoomManagement /> },
+      { path: "", element: <CheckInManager /> },
+      { path: "checkin", element: <CheckInManager /> },
+      { path: "checkout", element: <CheckOutManager /> },
+      { path: "info", element: <InfoManagement /> },
     ],
   },
   {
     path: "",
     element: <EmployeeLayout />,
-    children: [{ path: "/newsPage", element: <NewsPage /> }],
+    children: [
+      { path: "newsPage", element: <NewsPage /> },
+      { path: "bookingPage", element: <BookingPage /> },
+    ],
   },
 ]);
