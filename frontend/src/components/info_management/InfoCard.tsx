@@ -40,6 +40,7 @@ const InfoCard: React.FC<InfoCardProps> = ({
             transition={{ type: 'spring', stiffness: 300 }}
         >
             <div
+                onClick={onView}
                 className="h-52 bg-cover bg-center relative"
                 style={{ backgroundImage: `url(${item.image})` }}
             >
@@ -85,13 +86,6 @@ const InfoCard: React.FC<InfoCardProps> = ({
                         title="Edit"
                     >
                         <FaEdit size={14} />
-                    </button>
-                    <button
-                        onClick={onDelete}
-                        className="w-8 h-8 rounded-full bg-light hover:bg-red-100 text-red-500 flex items-center justify-center transition"
-                        title="Delete"
-                    >
-                        <FaTrashAlt size={14} />
                     </button>
                 </div>
             </div>

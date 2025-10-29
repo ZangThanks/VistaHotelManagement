@@ -13,6 +13,11 @@ import AdminLayout from '../layouts/AdminLayout';
 import Register from '../pages/auth/Register';
 import Home from '../pages/customer/Home';
 import MainLayout from '../layouts/MainLayout';
+import BookingPage from '../pages/admin/booking/BookingPage';
+import CheckInManager from '../pages/employee/CheckInManager';
+import CheckOutManager from '../pages/employee/CheckOutManager';
+import InfoManagement from '../pages/admin/infomation/InfoManagement';
+import NewsDetail from '../components/news/NewsDetail';
 
 export const router = createBrowserRouter([
     {
@@ -29,12 +34,21 @@ export const router = createBrowserRouter([
     {
         path: 'employee',
         element: <EmployeeLayout />,
-        children: [{ path: 'customer/list', element: <CustomerList /> }],
+        children: [
+            { path: 'customer/list', element: <CustomerList /> },
+            { path: 'bookingPage', element: <BookingPage /> },
+        ],
     },
     {
         path: 'admin',
         element: <AdminLayout />,
-        children: [{ path: '', element: <CustomerList /> }],
+        children: [
+            { path: '', element: <CheckInManager /> },
+            { path: 'checkin', element: <CheckInManager /> },
+            { path: 'checkout', element: <CheckOutManager /> },
+            { path: 'info', element: <InfoManagement /> },
+            { path: 'info/:id', element: <NewsDetail /> },
+        ],
     },
     {
         path: '',

@@ -1,7 +1,7 @@
 /* eslint-disable */
 import type React from 'react';
 import { useEffect, useState } from 'react';
-import { getAll } from '../../services/CustomerService';
+import { getAll } from '../../services/customerService';
 import AddCustomerModal from '../../components/customer/AddCustomerModal';
 import EditCustomerModal from '../../components/customer/EditCustomerModal';
 import type { Customer } from '../../types/Customer';
@@ -12,7 +12,7 @@ type StatCardProps = {
     label: string;
     value: React.ReactNode;
     color?: string;
-}
+};
 
 const StatCard: React.FC<StatCardProps> = ({ icon, label, value, color }) => (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition duration-300">
