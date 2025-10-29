@@ -33,17 +33,17 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
     {
       icon: <RiInfoCardFill />,
       label: "Information Management",
-      path: "/info-management",
+      path: "/admin/info",
     },
     {
       icon: <LuMapPinCheckInside />,
       label: "Check-in Management",
-      path: "/checkin-management",
+      path: "/admin/checkin",
     },
     {
       icon: <IoBagCheckOutline />,
       label: "Check-out Management",
-      path: "/checkout-management",
+      path: "/admin/checkout",
     },
     {
       icon: <FaCalendarAlt />,
