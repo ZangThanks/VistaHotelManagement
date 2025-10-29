@@ -2,9 +2,9 @@ USE vistalhoteldbs
 
 -- ROOM TYPES
 INSERT INTO room_types (room_type_id, area, base_price, description, max_occupancy, type_name) VALUES
-                                                                                                   ('STD', 22, 900000, 'Phòng tiêu chuẩn, phù hợp cho 2 người, view thành phố', 2, 'Standard'),
-                                                                                                   ('DLX', 32, 1500000, 'Phòng Deluxe, rộng rãi, ban công, view biển', 3, 'Deluxe'),
-                                                                                                   ('STE', 50, 3000000, 'Phòng Suite, cao cấp, phòng khách riêng, view toàn cảnh', 4, 'Suite');
+('STD', 22, 900000, 'Phòng tiêu chuẩn, phù hợp cho 2 người, view thành phố', 2, 'Standard'),
+('DLX', 32, 1500000, 'Phòng Deluxe, rộng rãi, ban công, view biển', 3, 'Deluxe'),
+('STE', 50, 3000000, 'Phòng Suite, cao cấp, phòng khách riêng, view toàn cảnh', 4, 'Suite');
 
 -- ROOM TYPE AMENTIES
 INSERT INTO room_type_amenties (room_type_id, amenties) VALUES

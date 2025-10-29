@@ -20,7 +20,6 @@ import com.hotelvista.service.CustomerService;
 
 
 @RestController
-@CrossOrigin(origins = "*")
 @RequestMapping("/customers")
 public class CustomerController {
     @Autowired

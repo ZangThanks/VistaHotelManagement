@@ -1,8 +1,18 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
+import Footer from '../components/Footer';
 
-const EmployeeLayout: React.FC = () => {
-    return <Outlet />;
+const MainLayout: React.FC = () => {
+    return (
+        <div>
+            <div>
+                <Outlet />
+            </div>
+            <div >
+                <Footer />
+            </div>
+        </div>
+    );
 };
 
-export default EmployeeLayout;
+export default MainLayout;

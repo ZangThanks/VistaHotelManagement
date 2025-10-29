@@ -9,7 +9,10 @@ import Login from "../pages/auth/Login";
 import CustomerList from '../pages/employee/CustomerList';
 import NewsPage from '../pages/employee/NewsPage';
 import AdminLayout from '../layouts/AdminLayout';
-import AppAdmin from '../pages/admin/appAdmin';
+// import AppAdmin from '../pages/admin/appAdmin';
+import Register from '../pages/auth/Register';
+import Home from '../pages/customer/Home';
+import MainLayout from '../layouts/MainLayout';
 
 export const router = createBrowserRouter([
     {
@@ -18,7 +21,7 @@ export const router = createBrowserRouter([
         children: [
             { path: 'login', element: <Login /> },
 
-            //   { path: "register", element: <Register /> },
+            { path: 'register', element: <Register /> },
             //   { path: "forgot-password", element: <ForgotPassword /> },
             //   { path: "reset-password", element: <ResetPassword /> },
         ],
@@ -35,10 +38,10 @@ export const router = createBrowserRouter([
     },
     {
         path: '',
-        element: <EmployeeLayout />,
+        element: <MainLayout />,
         children: [
             { path: '/newsPage', element: <NewsPage /> },
-            
+            { path: '/home', element: <Home /> },
         ],
     },
 ]);

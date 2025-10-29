@@ -1,7 +1,7 @@
-/* eslint-disable */
 import React, { useEffect, useState, useRef } from 'react';
 import HeaderHome from '../../components/HeaderHome';
 import Header from '../../components/Header';
+import bannerImg from '../../assets/images/bg_newPage.png';
 
 const NewsPage: React.FC = () => {
     const [showSolidHeader, setShowSolidHeader] = useState(false);
@@ -54,7 +54,7 @@ const NewsPage: React.FC = () => {
             {/* 🔳 Banner */}
             <img
                 ref={bannerRef}
-                src="../../assets/images/bg_newPage.png"
+                src={bannerImg}
                 alt="News Banner"
                 className="w-full h-screen object-cover"
             />
@@ -161,7 +161,7 @@ const NewsPage: React.FC = () => {
                     </article>
 
                     {/* Xem Thêm */}
-                    <div className="my-10 flex justify-center">
+                    <div className="py-10 flex justify-center">
                         <button className="text-sm uppercase tracking-widest px-5 py-2 rounded-full border border-black hover:text-white hover:bg-black transition-colors">
                             Xem thêm
                         </button>
