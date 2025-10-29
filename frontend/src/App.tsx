@@ -1,19 +1,14 @@
 import "./index.css";
+import "./App.css";
+import { RouterProvider } from "react-router-dom";
+import { router } from "./routes";
+
+import "./index.css";
 
 import "./App.css";
-import BookingPage from "./pages/admin/booking/BookingPage";
 
 function App() {
-  return (
-    <>
-      <div>
-        {/* <Header />
-        <HeaderHome />
-        <Footer /> */}
-        <BookingPage />
-      </div>
-    </>
-  );
+  return <RouterProvider router={router} />;
 }
 
 export default App;

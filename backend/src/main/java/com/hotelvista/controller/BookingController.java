@@ -9,7 +9,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
-@CrossOrigin(origins = "*")
 @RequestMapping("/bookings")
 public class BookingController {
     @Autowired

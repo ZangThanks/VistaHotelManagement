@@ -6,37 +6,40 @@ import EmployeeLayout from "../layouts/EmployeeLayout";
 
 // Auth pages
 import Login from "../pages/auth/Login";
-import CustomerList from '../pages/employee/CustomerList';
-import NewsPage from '../pages/employee/NewsPage';
-import AdminLayout from '../layouts/AdminLayout';
+import CustomerList from "../pages/employee/CustomerList";
+import NewsPage from "../pages/employee/NewsPage";
+import AdminLayout from "../layouts/AdminLayout";
+import BookingPage from "../pages/admin/booking/BookingPage";
+import Register from "../pages/auth/Register";
+import MainLayout from "../layouts/MainLayout";
 
 export const router = createBrowserRouter([
-    {
-        path: 'auth',
-        element: <AuthLayout />,
-        children: [
-            { path: 'login', element: <Login /> },
-
-            //   { path: "register", element: <Register /> },
-            //   { path: "forgot-password", element: <ForgotPassword /> },
-            //   { path: "reset-password", element: <ResetPassword /> },
-        ],
-    },
-    {
-        path: 'employee',
-        element: <EmployeeLayout />,
-        children: [{ path: 'customer/list', element: <CustomerList /> }],
-    },
-    {
-        path: 'admin',
-        element: <AdminLayout />,
-        children: [
-            { path: '', element: <CustomerList /> },
-        ],
-    },
-    {
-        path: '',
-        element: <EmployeeLayout />,
-        children: [{ path: '/newsPage', element: <NewsPage /> }],
-    },
+  {
+    path: "auth",
+    element: <AuthLayout />,
+    children: [
+      { path: "login", element: <Login /> },
+      { path: "register", element: <Register /> },
+      // { path: "forgot-password", element: <ForgotPassword /> },
+      // { path: "reset-password", element: <ResetPassword /> },
+    ],
+  },
+  {
+    path: "employee",
+    element: <EmployeeLayout />,
+    children: [{ path: "customer/list", element: <CustomerList /> }],
+  },
+  {
+    path: "admin",
+    element: <AdminLayout />,
+    children: [{ path: "", element: <CustomerList /> }],
+  },
+  {
+    path: "",
+    element: <EmployeeLayout />,
+    children: [
+      { path: "/newsPage", element: <NewsPage /> },
+      { path: "/bookingPage", element: <BookingPage /> },
+    ],
+  },
 ]);
