@@ -1,7 +1,6 @@
-
-/* eslint-disable*/
 import React, { useRef } from "react";
 import { Editor } from "@tinymce/tinymce-react";
+
 interface TinyMCEProps {
   initialValue: string;
   onChange: (content: string) => void;

@@ -177,7 +177,7 @@ const Login: React.FC = () => {
             </p>
           )}
         </div>
-        
+
         {/* Mật khẩu  */}
         <div
           key={`password-${shakeKey}`}
@@ -229,7 +229,7 @@ const Login: React.FC = () => {
             <p className="text-green-500 text-xs mt-1">✓ Mật khẩu hợp lệ</p>
           )}
         </div>
-        
+
         {/* Quên mật khẩu? */}
         <div className="flex justify-end">
           <button
@@ -261,7 +261,7 @@ const Login: React.FC = () => {
           <span className="text-white/70 text-xs">Hoặc tiếp tục với</span>
           <div className="flex-1 h-px bg-white/30" />
         </div>
-        
+
         {/* Đăng nhập với mạng xã hội  */}
         <div className="grid grid-cols-2 gap-3">
           <button

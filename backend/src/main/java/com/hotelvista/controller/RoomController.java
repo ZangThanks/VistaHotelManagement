@@ -17,19 +17,23 @@ public class RoomController {
     public RoomController(RoomService service) {
         this.service = service;
     }
+
     @GetMapping("")
     public List<Room> selectAll() {
         return service.selectAll();
     }
+
     @GetMapping("/{id}")
     public Room selectById(@PathVariable String id) {
         Optional<Room> room = service.selectById(id);
         return room.orElse(null);
     }
+
     @PostMapping("/save")
     public Room insertOrUpdate(@RequestBody Room room) {
         return service.insertOrUpdate(room);
     }
+
     @DeleteMapping("/delete/{id}")
     public void delete(@PathVariable String id) {
         service.delete(id);

@@ -1,42 +1,36 @@
 package com.hotelvista.controller;
 
 import com.hotelvista.model.Service;
+import com.hotelvista.model.enums.ServiceCategory;
 import com.hotelvista.service.ServiceService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/services")
-@CrossOrigin(origins = "*")
 public class ServiceController {
-    
     @Autowired
-    private ServiceService serviceService;
+    private ServiceService service;
 
-    // Lấy tất cả dịch vụ
-    @GetMapping
-    public ResponseEntity<List<Service>> getAllServices() {
-        List<Service> services = serviceService.findAll();
-        return ResponseEntity.ok(services);
+    @GetMapping("")
+    public List<Service> findAll() {
+        return service.findAll();
     }
 
-    // Thêm hoặc cập nhật dịch vụ
-    @PostMapping
-    public ResponseEntity<Service> addOrUpdateService(@RequestBody Service service) {
-        boolean result = serviceService.save(service);
-        if (result) {
-            return ResponseEntity.ok(service);
-        }
-        return ResponseEntity.badRequest().build();
+    @GetMapping("/availability")
+    public List<Service> findAllByAvailability(@RequestParam boolean availability) {
+        return service.findAllByAvailability(availability);
     }
 
-    // Tìm kiếm dịch vụ theo tên
-    @GetMapping("/search")
-    public ResponseEntity<List<Service>> searchServices(@RequestParam String name) {
-        List<Service> services = serviceService.findAllByServiceNameContainingIgnoreCase(name);
-        return ResponseEntity.ok(services);
+    @GetMapping("/name")
+    public List<Service> findAllByServiceNameContainingIgnoreCase(@RequestParam String serviceName) {
+        return service.findAllByServiceNameContainingIgnoreCase(serviceName);
+    }
+
+    @GetMapping("/category")
+    public List<Service> findAllByServiceCategory(@RequestParam ServiceCategory serviceCategory) {
+        return service.findAllByServiceCategory(serviceCategory);
     }
 }

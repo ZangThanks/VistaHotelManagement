@@ -1,35 +1,13 @@
-import { api } from './apiClient';
+import { axiosInstance } from "../config/api";
 
-export interface Service {
-    serviceID: string;
-    serviceName: string;
-    description: string;
-    price: number;
-    availability: boolean;
-    serviceHours: string;
-    serviceCategory:
-        | 'LAUNDRY'
-        | 'FOOD_BEVERAGE'
-        | 'SPA'
-        | 'TRANSPORT'
-        | 'TOUR'
-        | 'OTHER';
-}
+const ENDPOINT = "/services";
 
-// Lấy tất cả dịch vụ
-export const getAllServices = async (): Promise<Service[]> => {
-    const response = await api.get('/services');
+export const getAll = async () => {
+  try {
+    const response = await axiosInstance.get(ENDPOINT);
     return response.data;
-};
-
-// Thêm hoặc cập nhật dịch vụ
-export const saveService = async (service: Service): Promise<Service> => {
-    const response = await api.post('/services', service);
-    return response.data;
-};
-
-// Tìm kiếm dịch vụ theo tên
-export const searchServices = async (name: string): Promise<Service[]> => {
-    const response = await api.get(`/services/search?name=${name}`);
-    return response.data;
+  } catch (error) {
+    console.error("Error fetching services:", error);
+    throw error;
+  }
 };
