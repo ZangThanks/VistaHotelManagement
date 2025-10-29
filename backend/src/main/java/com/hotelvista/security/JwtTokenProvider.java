@@ -14,6 +14,10 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Component cung cấp các chức năng tạo và xác thực JWT token.
+ * Xử lý việc generate, validate và extract thông tin từ JWT tokens.
+ */
 @Component
 public class JwtTokenProvider {
 
@@ -29,7 +33,10 @@ public class JwtTokenProvider {
     private long jwtRefreshExpirationMs;
 
     /**
-     * Tạo SecretKey từ secret string
+     * Tạo SecretKey từ secret string để ký và verify JWT token.
+     * Sử dụng thuật toán HMAC-SHA.
+     * 
+     * @return SecretKey để ký JWT token
      */
     private SecretKey getSigningKey() {
         byte[] keyBytes = jwtSecret.getBytes(StandardCharsets.UTF_8);
@@ -37,7 +44,13 @@ public class JwtTokenProvider {
     }
 
     /**
-     * Tạo Access Token
+     * Tạo Access Token cho người dùng.
+     * Token chứa thông tin userId, userName, userRole và có thời gian hết hạn ngắn.
+     * 
+     * @param userId ID của người dùng
+     * @param userName tên đăng nhập của người dùng
+     * @param userRole vai trò của người dùng (ADMIN, EMPLOYEE, CUSTOMER)
+     * @return chuỗi JWT access token
      */
     public String generateToken(String userId, String userName, String userRole) {
         Map<String, Object> claims = new HashMap<>();
@@ -59,7 +72,11 @@ public class JwtTokenProvider {
     }
 
     /**
-     * Tạo Refresh Token
+     * Tạo Refresh Token để làm mới access token.
+     * Token có thời gian hết hạn dài hơn access token, chỉ chứa userId.
+     * 
+     * @param userId ID của người dùng
+     * @return chuỗi JWT refresh token
      */
     public String generateRefreshToken(String userId) {
         Map<String, Object> claims = new HashMap<>();
@@ -78,7 +95,10 @@ public class JwtTokenProvider {
     }
 
     /**
-     * Lấy userId từ token
+     * Lấy userId từ JWT token.
+     * 
+     * @param token JWT token cần extract thông tin
+     * @return userId của người dùng
      */
     public String getUserIdFromToken(String token) {
         Claims claims = getAllClaimsFromToken(token);
@@ -86,7 +106,10 @@ public class JwtTokenProvider {
     }
 
     /**
-     * Lấy userName từ token
+     * Lấy userName từ JWT token.
+     * 
+     * @param token JWT token cần extract thông tin
+     * @return tên đăng nhập của người dùng
      */
     public String getUserNameFromToken(String token) {
         Claims claims = getAllClaimsFromToken(token);
@@ -94,7 +117,10 @@ public class JwtTokenProvider {
     }
 
     /**
-     * Lấy userRole từ token
+     * Lấy userRole từ JWT token.
+     * 
+     * @param token JWT token cần extract thông tin
+     * @return vai trò của người dùng (ADMIN, EMPLOYEE, CUSTOMER)
      */
     public String getUserRoleFromToken(String token) {
         Claims claims = getAllClaimsFromToken(token);
@@ -102,7 +128,10 @@ public class JwtTokenProvider {
     }
 
     /**
-     * Lấy tất cả claims từ token
+     * Lấy tất cả claims (dữ liệu payload) từ JWT token.
+     * 
+     * @param token JWT token cần parse
+     * @return đối tượng Claims chứa tất cả thông tin trong token
      */
     private Claims getAllClaimsFromToken(String token) {
         return Jwts.parser()
@@ -113,7 +142,10 @@ public class JwtTokenProvider {
     }
 
     /**
-     * Kiểm tra token có hết hạn không
+     * Kiểm tra token có hết hạn hay không.
+     * 
+     * @param token JWT token cần kiểm tra
+     * @return true nếu token đã hết hạn, false nếu còn hiệu lực
      */
     public boolean isTokenExpired(String token) {
         try {
@@ -125,7 +157,11 @@ public class JwtTokenProvider {
     }
 
     /**
-     * Validate token
+     * Xác thực tính hợp lệ của JWT token.
+     * Kiểm tra signature, format, thời gian hết hạn và các thuộc tính khác.
+     * 
+     * @param token JWT token cần validate
+     * @return true nếu token hợp lệ, false nếu token không hợp lệ hoặc đã hết hạn
      */
     public boolean validateToken(String token) {
         try {

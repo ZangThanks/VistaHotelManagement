@@ -17,6 +17,10 @@ import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Controller xử lý các API liên quan đến xác thực và ủy quyền.
+ * Bao gồm đăng ký, đăng nhập, làm mới token và xác thực token.
+ */
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/auth")
@@ -26,6 +30,13 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
 
+    /**
+     * API đăng ký tài khoản khách hàng mới.
+     * Thực hiện validate thông tin, kiểm tra trùng lặp và tạo tài khoản mới.
+     * 
+     * @param req đối tượng RegisterRequest chứa thông tin đăng ký
+     * @return Map chứa trạng thái, thông báo và dữ liệu người dùng mới (nếu thành công)
+     */
     @PostMapping("/register")
     public Map<String, Object> register(@RequestBody RegisterRequest req) {
         // Validate
@@ -90,7 +101,13 @@ public class AuthController {
         );
     }
 
-
+    /**
+     * API đăng nhập vào hệ thống.
+     * Xác thực thông tin đăng nhập và tạo JWT tokens (access token và refresh token).
+     * 
+     * @param req đối tượng LoginRequest chứa email/phone và mật khẩu
+     * @return Map chứa trạng thái, thông báo, dữ liệu người dùng và tokens (nếu thành công)
+     */
     @PostMapping("/login")
     public Map<String, Object> login(@RequestBody LoginRequest req) {
         Customer user = null;
@@ -147,6 +164,13 @@ public class AuthController {
         return response;
     }
 
+    /**
+     * API làm mới access token bằng refresh token.
+     * Sử dụng khi access token hết hạn để lấy access token mới mà không cần đăng nhập lại.
+     * 
+     * @param authHeader header Authorization chứa refresh token (Bearer token)
+     * @return Map chứa trạng thái, thông báo và access token mới (nếu thành công)
+     */
     @PostMapping("/refresh-token")
     public Map<String, Object> refreshToken(@RequestHeader("Authorization") String authHeader) {
         try {
@@ -185,6 +209,13 @@ public class AuthController {
         }
     }
 
+    /**
+     * API xác thực tính hợp lệ của token.
+     * Kiểm tra token có còn hiệu lực hay không và trả về thông tin người dùng.
+     * 
+     * @param authHeader header Authorization chứa access token (Bearer token)
+     * @return Map chứa trạng thái, thông báo và thông tin người dùng (nếu token hợp lệ)
+     */
     @GetMapping("/validate")
     public Map<String, Object> validateToken(@RequestHeader("Authorization") String authHeader) {
         try {

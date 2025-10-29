@@ -18,6 +18,10 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.Collections;
 
+/**
+ * Filter xác thực JWT cho mọi HTTP request.
+ * Kế thừa OncePerRequestFilter để đảm bảo filter chỉ chạy một lần cho mỗi request.
+ */
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
@@ -26,6 +30,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Autowired
     private JwtTokenProvider tokenProvider;
 
+    /**
+     * Xử lý xác thực JWT cho mỗi request.
+     * Lấy token từ Authorization header, validate và set authentication vào SecurityContext.
+     * 
+     * @param request HTTP request
+     * @param response HTTP response
+     * @param filterChain chuỗi filter để tiếp tục xử lý request
+     * @throws ServletException nếu có lỗi servlet
+     * @throws IOException nếu có lỗi I/O
+     */
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
@@ -57,7 +71,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     /**
-     * Lấy JWT token từ Authorization header
+     * Lấy JWT token từ Authorization header.
+     * Token phải có định dạng "Bearer [token]".
+     * 
+     * @param request HTTP request chứa Authorization header
+     * @return JWT token nếu tìm thấy, ngược lại trả về null
      */
     private String getJwtFromRequest(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
