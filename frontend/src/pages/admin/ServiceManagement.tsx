@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import type { Service } from '../../services/serviceService';
-import { getAllServices } from '../../services/serviceService';
+import { getAll } from '../../services/serviceService';
 import AddServiceModal from '../../components/service/AddServiceModal';
 import EditServiceModal from '../../components/service/EditServiceModal';
 
@@ -49,7 +49,7 @@ const ServiceManagement: React.FC = () => {
     const fetchServices = async () => {
         try {
             setLoading(true);
-            const data = await getAllServices();
+            const data = await getAll();
             setServices(data);
             setFilteredServices(data);
         } catch (err) {
