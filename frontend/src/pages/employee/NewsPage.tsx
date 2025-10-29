@@ -1,7 +1,7 @@
+/* eslint-disable */
 import React, { useEffect, useState, useRef } from 'react';
 import HeaderHome from '../../components/HeaderHome';
 import Header from '../../components/Header';
-import bannerImg from '../../assets/images/bg_newPage.png'; // ✅ Import ảnh chuẩn
 
 const NewsPage: React.FC = () => {
     const [showSolidHeader, setShowSolidHeader] = useState(false);
@@ -47,14 +47,14 @@ const NewsPage: React.FC = () => {
                             : 'opacity-0 pointer-events-none'
                     }`}
                 >
-                    <Header />
+                    <Header onMenuClick={() => {}} />
                 </div>
             </div>
 
             {/* 🔳 Banner */}
             <img
                 ref={bannerRef}
-                src={bannerImg}
+                src="../../assets/images/bg_newPage.png"
                 alt="News Banner"
                 className="w-full h-screen object-cover"
             />

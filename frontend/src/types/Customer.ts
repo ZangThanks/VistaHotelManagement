@@ -1,0 +1,27 @@
+// Central Customer type used across the app
+// Matches the API payload structure you shared
+
+export type Gender = 'MALE' | 'FEMALE' | 'OTHER' | string;
+export type MemberShipLevel =
+    | 'BRONZE'
+    | 'SILVER'
+    | 'GOLD'
+    | 'PLATINUM'
+    | string;
+export type UserRole = 'CUSTOMER' | 'EMPLOYEE' | 'ADMIN' | string;
+
+export interface Customer {
+    id: string;
+    userName: string;
+    password: string;
+    email: string;
+    phone: string;
+    fullName: string;
+    address: string;
+    userRole: UserRole;
+    birthDate: string; // YYYY-MM-DD
+    gender: Gender;
+    joinedDate: string; // YYYY-MM-DD
+    loyaltyPoints: number;
+    memberShipLevel: MemberShipLevel;
+}

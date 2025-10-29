@@ -12,6 +12,9 @@ import AdminLayout from "../layouts/AdminLayout";
 import BookingPage from "../pages/admin/booking/BookingPage";
 import Register from "../pages/auth/Register";
 import MainLayout from "../layouts/MainLayout";
+import CheckInManager from "../pages/employee/CheckInManager";
+import CheckOutManager from "../pages/employee/CheckOutManager";
+import InfoManagement from "../pages/admin/InfoManagement";
 
 export const router = createBrowserRouter([
   {
@@ -32,14 +35,19 @@ export const router = createBrowserRouter([
   {
     path: "admin",
     element: <AdminLayout />,
-    children: [{ path: "", element: <CustomerList /> }],
+    children: [
+      { path: "", element: <CheckInManager /> },
+      { path: "checkin", element: <CheckInManager /> },
+      { path: "checkout", element: <CheckOutManager /> },
+      { path: "info", element: <InfoManagement /> },
+    ],
   },
   {
     path: "",
     element: <EmployeeLayout />,
     children: [
-      { path: "/newsPage", element: <NewsPage /> },
-      { path: "/bookingPage", element: <BookingPage /> },
+      { path: "newsPage", element: <NewsPage /> },
+      { path: "bookingPage", element: <BookingPage /> },
     ],
   },
 ]);
