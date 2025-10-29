@@ -41,4 +41,7 @@ public class CustomerService {
         return repo.findByPhone(phone).orElse(null);
     }
 
+    public Customer findByUserName(String userName) {
+        return repo.findByUserName(userName).orElse(null);
+    }
 }

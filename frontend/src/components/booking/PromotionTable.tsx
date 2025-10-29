@@ -1,39 +1,109 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Eye, Edit2, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
-import { getAll } from "../../../services/bookingService";
 
-export default function BookingTable() {
+interface Promotion {
+  id: string;
+  name: string;
+  startDate: string;
+  endDate: string;
+  discountType: string;
+  status: "Available" | "Inactive";
+}
+
+const promotions: Promotion[] = [
+  {
+    id: "PM25092401",
+    name: "Dynamic Push",
+    startDate: "14:00 24/09/2025",
+    endDate: "12:00 28/09/2025",
+    discountType: "Percentage discount",
+    status: "Available",
+  },
+  {
+    id: "PM25092402",
+    name: "Vivid Promote",
+    startDate: "14:00 24/09/2025",
+    endDate: "12:00 28/09/2025",
+    discountType: "Percentage discount",
+    status: "Available",
+  },
+  {
+    id: "PM25092403",
+    name: "Peak Impact",
+    startDate: "14:00 24/09/2025",
+    endDate: "12:00 28/09/2025",
+    discountType: "Percentage discount",
+    status: "Available",
+  },
+  {
+    id: "PM25092404",
+    name: "Buzz Promotion",
+    startDate: "14:00 24/09/2025",
+    endDate: "12:00 28/09/2025",
+    discountType: "Percentage discount",
+    status: "Inactive",
+  },
+  {
+    id: "PM25092405",
+    name: "Focus Promotions",
+    startDate: "14:00 24/09/2025",
+    endDate: "12:00 28/09/2025",
+    discountType: "Percentage discount",
+    status: "Available",
+  },
+  {
+    id: "PM25092406",
+    name: "Next level",
+    startDate: "14:00 24/09/2025",
+    endDate: "12:00 28/09/2025",
+    discountType: "Percentage discount",
+    status: "Available",
+  },
+  {
+    id: "PM25092407",
+    name: "Spotlight Sales",
+    startDate: "14:00 24/09/2025",
+    endDate: "12:00 28/09/2025",
+    discountType: "Percentage discount",
+    status: "Inactive",
+  },
+  {
+    id: "PM25092408",
+    name: "Prime Approach",
+    startDate: "14:00 24/09/2025",
+    endDate: "12:00 28/09/2025",
+    discountType: "Percentage discount",
+    status: "Available",
+  },
+  {
+    id: "PM25092409",
+    name: "Fresh Boost",
+    startDate: "14:00 24/09/2025",
+    endDate: "12:00 28/09/2025",
+    discountType: "Percentage discount",
+    status: "Available",
+  },
+  {
+    id: "PM25092410",
+    name: "Innovate Boost",
+    startDate: "14:00 24/09/2025",
+    endDate: "12:00 28/09/2025",
+    discountType: "Percentage discount",
+    status: "Inactive",
+  },
+];
+
+export default function PromotionTable() {
   const [currentPage, setCurrentPage] = useState(1);
-  const [bookings, setBookings] = useState([]);
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(true);
   const itemsPerPage = 10;
-  const totalPages = Math.ceil(25 / itemsPerPage);
-
-  const fetchedBookings = async () => {
-    try {
-      setLoading(true);
-      const data = await getAll();
-      setBookings(data);
-      setLoading(false);
-      setError("");
-    } catch (err) {
-      setError("Failed to fetch bookings: " + err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchedBookings();
-  }, []);
+  const totalPages = Math.ceil(promotions.length / itemsPerPage);
 
   return (
     <div className="flex-1 bg-[#d4c5b9] p-6 rounded-lg">
       <div className="flex justify-between items-center mb-6">
         <div>
           <h2 className="text-lg font-semibold text-gray-900">
-            Booking / Booking Management
+            Promotion / Order Management
           </h2>
         </div>
         <div className="flex gap-3">
@@ -44,7 +114,7 @@ export default function BookingTable() {
             Export
           </button>
           <button className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition text-sm font-medium">
-            Add Booking
+            Add Promotion
           </button>
         </div>
       </div>
@@ -54,28 +124,22 @@ export default function BookingTable() {
           <thead>
             <tr className="bg-gray-50 border-b border-gray-200">
               <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
-                Booking ID
+                Promotion ID
               </th>
               <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
-                Customer Name
+                Promotion Name
               </th>
               <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
-                Check-in Date
+                Start Date
               </th>
               <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
-                Check-out Date
+                End Date
               </th>
               <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
-                Booking Date
+                Discount Type
               </th>
               <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
                 Status
-              </th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
-                Payment Status
-              </th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
-                Number of Guests
               </th>
               <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
                 Actions
@@ -83,42 +147,36 @@ export default function BookingTable() {
             </tr>
           </thead>
           <tbody>
-            {bookings.map((booking) => (
+            {promotions.map((promo) => (
               <tr
-                key={booking.bookingID}
+                key={promo.id}
                 className="border-b border-gray-200 hover:bg-gray-50 transition"
               >
                 <td className="px-6 py-4 text-sm text-gray-900 font-medium">
-                  {booking.bookingID}
+                  {promo.id}
                 </td>
                 <td className="px-6 py-4 text-sm text-gray-900">
-                  {booking.customer.fullName}
+                  {promo.name}
                 </td>
                 <td className="px-6 py-4 text-sm text-gray-700">
-                  {booking.checkInDate}
+                  {promo.startDate}
                 </td>
                 <td className="px-6 py-4 text-sm text-gray-700">
-                  {booking.checkOutDate}
+                  {promo.endDate}
                 </td>
                 <td className="px-6 py-4 text-sm text-gray-700">
-                  {booking.bookingDate}
+                  {promo.discountType}
                 </td>
                 <td className="px-6 py-4 text-sm">
                   <span
                     className={`px-3 py-1 rounded-full text-xs font-medium ${
-                      booking.status === "CHECKED_OUT"
+                      promo.status === "Available"
                         ? "bg-green-100 text-green-700"
                         : "bg-red-100 text-red-700"
                     }`}
                   >
-                    {booking.status}
+                    {promo.status}
                   </span>
-                </td>
-                <td className="px-6 py-4 text-sm text-gray-700">
-                  {booking.paymentStatus}
-                </td>
-                <td className="px-6 py-4 text-sm text-gray-700">
-                  {booking.numberOfGuests}
                 </td>
                 <td className="px-6 py-4 text-sm">
                   <div className="flex gap-2">

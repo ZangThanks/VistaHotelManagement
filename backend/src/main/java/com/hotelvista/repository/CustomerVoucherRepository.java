@@ -25,4 +25,11 @@ public interface CustomerVoucherRepository extends JpaRepository<CustomerVoucher
                                                                           @Param("endDate") LocalDate endDate,
                                                                           @Param("customerId") String customerId);
 
+    /**
+     * Tìm những voucher thuộc khách hàng theo customerId
+     *
+     * @param customerId
+     * @return
+     */
+    List<CustomerVoucher> findAllByCustomer_Id(String customerId);
 }

@@ -9,7 +9,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
-@CrossOrigin(origins = "*")
 @RequestMapping("/bookings")
 public class BookingController {
     @Autowired
@@ -25,8 +24,9 @@ public class BookingController {
         return service.save(booking);
     }
 
-    @PutMapping("/edit")
-    public boolean update(@RequestBody Booking booking) {
+    @PutMapping("/edit/{id}")
+    public boolean update(@RequestBody Booking booking, @PathVariable("id") String bookingId) {
+        booking.setBookingID(bookingId);
         return service.save(booking);
     }
 

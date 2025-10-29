@@ -1,62 +1,43 @@
-import axios from "axios";
+import { api } from "./apiClient";
 
-const API_URL = "http://localhost:8080/bookings";
+const ENDPOINT = "/bookings";
 
 export const getAll = async () => {
   try {
-    const response = await axios.get(API_URL);
+    const response = await api.get(ENDPOINT);
     return response.data;
   } catch (error) {
-    console.error('Error fetching booking:', error);
+    console.error("Error fetching booking:", error);
     throw error;
   }
 };
 
-//TEst:
-// export const getAll = async () => {
-//   return new Promise((resolve) => {
-//     setTimeout(() => {
-//       resolve(sampleData);
-//     }, 800);
-//   });
-// };
+export const getBookingById = async (id) => {
+  try {
+    const response = await api.get(`${ENDPOINT}/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching booking ${id}:`, error);
+    throw error;
+  }
+};
 
-// export const getById = async (id) => {
+export const createBooking = async (booking) => {
+  try {
+    const response = await api.post(`${ENDPOINT}/save`, booking);
+    return response.data;
+  } catch (error) {
+    console.error("Error creating booking:", error);
+    throw error;
+  }
+};
 
-//   return new Promise((resolve, reject) => {
-//     setTimeout(() => {
-//       const booking = sampleData.find((b) => b.bookingID === id);
-//       if (booking) {
-//         resolve(booking);
-//       } else {
-//         reject(new Error("Booking not found"));
-//       }
-//     }, 300);
-//   });
-// };
-
-// export const createBooking = async (bookingData) => {
-
-//   return new Promise((resolve) => {
-//     setTimeout(() => {
-//       resolve({
-//         success: true,
-//         bookingID: `BOOK${Math.floor(1000 + Math.random() * 9000)}`,
-//         ...bookingData,
-//       });
-//     }, 500);
-//   });
-// };
-
-// export const updateBookingStatus = async (id, status) => {
-//   return new Promise((resolve) => {
-//     setTimeout(() => {
-//       resolve({
-//         success: true,
-//         bookingID: id,
-//         status,
-//       });
-//     }, 300);
-//   });
-// };
-
+export const updateBooking = async (id, booking) => {
+  try {
+    const response = await api.put(`${ENDPOINT}/edit/${id}`, booking);
+    return response.data;
+  } catch (error) {
+    console.error(`Error updating booking ${id}:`, error);
+    throw error;
+  }
+};
