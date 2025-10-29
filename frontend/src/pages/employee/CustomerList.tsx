@@ -1,7 +1,7 @@
 /* eslint-disable */
 import type React from 'react';
 import { useEffect, useState } from 'react';
-import { getAll } from '../../services/customerService';
+import { getAll } from '../../services/customerService'
 import AddCustomerModal from '../../components/customer/AddCustomerModal';
 import EditCustomerModal from '../../components/customer/EditCustomerModal';
 

@@ -6,6 +6,7 @@ import com.hotelvista.model.Customer;
 import com.hotelvista.model.enums.Gender;
 import com.hotelvista.model.enums.MemberShipLevel;
 import com.hotelvista.model.enums.UserRole;
+import com.hotelvista.security.JwtTokenProvider;
 import com.hotelvista.service.CustomerService;
 import com.hotelvista.util.GenerateIDUtil;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.Map;
 
 @RestController
@@ -21,8 +23,8 @@ import java.util.Map;
 public class AuthController {
 
     private final CustomerService service;
-
     private final PasswordEncoder passwordEncoder;
+    private final JwtTokenProvider jwtTokenProvider;
 
     @PostMapping("/register")
     public Map<String, Object> register(@RequestBody RegisterRequest req) {
@@ -74,10 +76,17 @@ public class AuthController {
         service.save(c);
 
         // Trả về Response
+        Map<String, Object> userData = new HashMap<>();
+        userData.put("id", c.getId());
+        userData.put("userName", c.getUserName());
+        userData.put("fullName", c.getFullName());
+        userData.put("email", c.getEmail());
+        userData.put("phone", c.getPhone());
+
         return Map.of(
                 "success", true,
                 "message", "Đăng ký thành công!",
-                "data", c
+                "data", userData
         );
     }
 
@@ -104,14 +113,110 @@ public class AuthController {
             return Map.of("success", false, "message", "Mật khẩu không đúng");
         }
 
-        // TODO: Tạo JWT token
-        String fakeToken = "FAKE_TOKEN_" + user.getId();
-
-        return Map.of(
-                "success", true,
-                "message", "Đăng nhập thành công",
-                "data", user,
-                "token", fakeToken
+        // Tạo JWT token
+        String accessToken = jwtTokenProvider.generateToken(
+                user.getId(),
+                user.getUserName(),
+                user.getUserRole().toString()
         );
+
+        String refreshToken = jwtTokenProvider.generateRefreshToken(user.getId());
+
+        // Tạo user data response (không bao gồm password)
+        Map<String, Object> userData = new HashMap<>();
+        userData.put("id", user.getId());
+        userData.put("userName", user.getUserName());
+        userData.put("fullName", user.getFullName());
+        userData.put("email", user.getEmail());
+        userData.put("phone", user.getPhone());
+        userData.put("address", user.getAddress());
+        userData.put("gender", user.getGender());
+        userData.put("userRole", user.getUserRole());
+        userData.put("joinedDate", user.getJoinedDate());
+        userData.put("loyaltyPoints", user.getLoyaltyPoints());
+        userData.put("memberShipLevel", user.getMemberShipLevel());
+
+        // Response
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("message", "Đăng nhập thành công");
+        response.put("data", userData);
+        response.put("accessToken", accessToken);
+        response.put("refreshToken", refreshToken);
+
+        return response;
     }
+
+    @PostMapping("/refresh-token")
+    public Map<String, Object> refreshToken(@RequestHeader("Authorization") String authHeader) {
+        try {
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                return Map.of("success", false, "message", "Token không hợp lệ");
+            }
+
+            String refreshToken = authHeader.substring(7);
+
+            if (!jwtTokenProvider.validateToken(refreshToken)) {
+                return Map.of("success", false, "message", "Refresh token không hợp lệ");
+            }
+
+            String userId = jwtTokenProvider.getUserIdFromToken(refreshToken);
+            Customer user = service.findById(userId);
+
+            if (user == null) {
+                return Map.of("success", false, "message", "Người dùng không tồn tại");
+            }
+
+            // Tạo access token mới
+            String newAccessToken = jwtTokenProvider.generateToken(
+                    user.getId(),
+                    user.getUserName(),
+                    user.getUserRole().toString()
+            );
+
+            return Map.of(
+                    "success", true,
+                    "message", "Token đã được làm mới",
+                    "token", newAccessToken
+            );
+
+        } catch (Exception e) {
+            return Map.of("success", false, "message", "Không thể làm mới token");
+        }
+    }
+
+    @GetMapping("/validate")
+    public Map<String, Object> validateToken(@RequestHeader("Authorization") String authHeader) {
+        try {
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                return Map.of("success", false, "message", "Token không hợp lệ");
+            }
+
+            String token = authHeader.substring(7);
+
+            if (jwtTokenProvider.validateToken(token)) {
+                String userId = jwtTokenProvider.getUserIdFromToken(token);
+                Customer user = service.findById(userId);
+
+                if (user == null) {
+                    return Map.of("success", false, "message", "Người dùng không tồn tại");
+                }
+
+                Map<String, Object> userData = new HashMap<>();
+                userData.put("id", user.getId());
+                userData.put("userName", user.getUserName());
+                userData.put("fullName", user.getFullName());
+                userData.put("email", user.getEmail());
+                userData.put("phone", user.getPhone());
+                userData.put("userRole", user.getUserRole());
+
+                return Map.of("success", false, "message", userData);
+            } else {
+                return Map.of("success", false, "message", "Token đã hết hạn");
+            }
+        } catch (Exception e) {
+            return Map.of("success", false, "message", "Token không hợp lệ");
+        }
+    }
+
 }

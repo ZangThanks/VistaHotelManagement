@@ -15,6 +15,8 @@ import MainLayout from "../layouts/MainLayout";
 import CheckInManager from "../pages/employee/CheckInManager";
 import CheckOutManager from "../pages/employee/CheckOutManager";
 import InfoManagement from "../pages/admin/InfoManagement";
+import Dashboard from "../pages/admin/dashboard/Dashboard";
+import RoomManagement from "../pages/admin/room/RoomManagement";
 
 export const router = createBrowserRouter([
   {
@@ -40,6 +42,8 @@ export const router = createBrowserRouter([
       { path: "checkin", element: <CheckInManager /> },
       { path: "checkout", element: <CheckOutManager /> },
       { path: "info", element: <InfoManagement /> },
+      { path: "dashboard", element: <Dashboard /> },
+      { path: "room-management", element: <RoomManagement /> },
     ],
   },
   {
