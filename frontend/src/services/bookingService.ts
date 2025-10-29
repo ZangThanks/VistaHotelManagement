@@ -45,6 +45,18 @@ export const updateDepartment = async (id, booking) => {
     }
 };
 
+export const searchBookings = async (keyword: string) => {
+  try {
+    const response = await axiosInstance.get(`${ENDPOINT}/search`, {
+      params: { keyword },
+    });
+    return response.data;
+  } catch (error) {
+    console.error(`Error searching bookings with keyword "${keyword}":`, error);
+    throw error;
+  }
+};
+
 // export const deleteBooking = async (id) => {
 //   try {
 //     await axios.delete(`${API_URL}/${id}`);

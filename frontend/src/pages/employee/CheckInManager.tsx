@@ -34,6 +34,7 @@ const CheckInManager: React.FC = () => {
     try {
       setLoading(true);
       const data = await getAll();
+      // console.log("=====Voucher: " + JSON.stringify(data, null, 2));
       setBookings(data);
       setLoading(false);
       setError("");
@@ -70,7 +71,6 @@ const CheckInManager: React.FC = () => {
     });
   };
 
-  // Loading state
   if (loading) {
     return (
       <div className="bg-[#F5F0EB] min-h-screen flex justify-center items-center">
@@ -82,12 +82,11 @@ const CheckInManager: React.FC = () => {
     );
   }
 
-  // Error state
   if (error) {
     return (
       <div className="bg-[#F5F0EB] min-h-screen flex justify-center items-center">
         <div className="bg-white p-6 rounded-lg shadow-md max-w-md w-full text-center">
-          <div className="text-red-500 text-5xl mb-4">⚠️</div>
+          <div className="text-red-500 text-5xl mb-4">Cảnh báo</div>
           <h2 className="text-2xl font-semibold mb-2">Error</h2>
           <p className="text-gray-600 mb-4">{error}</p>
           <button
