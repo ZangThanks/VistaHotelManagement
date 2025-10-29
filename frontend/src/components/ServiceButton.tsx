@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { FC } from 'react';
+
 interface ServiceButtonProps {
     text?: string;
     href?: string;
 }
 
-const ServiceButton: React.FC<ServiceButtonProps> = ({
+const ServiceButton: FC<ServiceButtonProps> = ({
     text = 'Reserve',
     href = '#',
 }) => {
