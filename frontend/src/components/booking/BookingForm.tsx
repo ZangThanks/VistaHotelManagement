@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { Calendar } from "lucide-react";
-import BookingCalendar from "./Calendar";
+import BookingCalendar from "../Calendar";
 import { TfiUser, TfiMore } from "react-icons/tfi";
 import { MdOutlineRoomService, MdRoomService } from "react-icons/md";
-import { getAll } from "../services/serviceService";
+import { getAll } from "../../services/serviceService";
 import { CiSquareQuestion } from "react-icons/ci";
 
 interface BookingFormProps {
