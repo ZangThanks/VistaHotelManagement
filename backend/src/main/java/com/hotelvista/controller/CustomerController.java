@@ -18,9 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import com.hotelvista.model.Customer;
 import com.hotelvista.service.CustomerService;
 
-@CrossOrigin(origins = "*")
 @RestController
-@CrossOrigin(origins = "*")
 @RequestMapping("/customers")
 public class CustomerController {
     @Autowired
