@@ -19,7 +19,7 @@ public class MaintenanceRequestController {
         this.service = service;
     }
 
-    @GetMapping("/all")
+    @GetMapping("")
     public List<MaintenanceRequest> selectAll() {
         return service.selectAll();
     }

@@ -9,6 +9,7 @@ import Login from "../pages/auth/Login";
 import CustomerList from '../pages/employee/CustomerList';
 import NewsPage from '../pages/employee/NewsPage';
 import AdminLayout from '../layouts/AdminLayout';
+import AppAdmin from '../pages/admin/appAdmin';
 
 export const router = createBrowserRouter([
     {
@@ -30,13 +31,14 @@ export const router = createBrowserRouter([
     {
         path: 'admin',
         element: <AdminLayout />,
-        children: [
-            { path: '', element: <CustomerList /> },
-        ],
+        children: [{ path: '', element: <CustomerList /> }],
     },
     {
         path: '',
         element: <EmployeeLayout />,
-        children: [{ path: '/newsPage', element: <NewsPage /> }],
+        children: [
+            { path: '/newsPage', element: <NewsPage /> },
+            
+        ],
     },
 ]);

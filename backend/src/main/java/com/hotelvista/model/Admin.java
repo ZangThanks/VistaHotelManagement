@@ -1,5 +1,6 @@
 package com.hotelvista.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -23,6 +24,7 @@ public class Admin extends User{
     private List<String> permissions;
 
     @ToString.Exclude
+    @JsonIgnore
     @OneToMany(mappedBy = "admin")
     private List<Promotion> promotions;
 }

@@ -1,16 +1,5 @@
-/* eslint-disable */
 import React, { useState, useEffect } from 'react';
-
-interface Customer {
-    id?: number | string;
-    fullName?: string;
-    birthDate?: string;
-    phone?: string;
-    email?: string;
-    address?: string;
-    gender?: 'MALE' | 'FEMALE' | string;
-    [key: string]: any;
-}
+import type { Customer } from '../../types/Customer';
 
 interface EditCustomerModalProps {
     show: boolean;
@@ -34,8 +23,8 @@ const EditCustomerModal: React.FC<EditCustomerModalProps> = ({
 
     if (!show || !customer) return null;
 
-    const handleChange = (field: keyof Customer, value: any) => {
-        setForm((prev) => ({ ...prev, [field]: value }));
+    const handleChange = (field: keyof Customer, value: unknown) => {
+        setForm((prev) => ({ ...prev, [field]: value as never }));
     };
 
     const handleSubmit = () => {

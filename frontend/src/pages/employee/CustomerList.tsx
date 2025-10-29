@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { getAll } from '../../services/CustomerService';
 import AddCustomerModal from '../../components/customer/AddCustomerModal';
 import EditCustomerModal from '../../components/customer/EditCustomerModal';
+import type { Customer } from '../../types/Customer';
 
 // Component thống kê nhỏ
 type StatCardProps = {
@@ -11,21 +12,6 @@ type StatCardProps = {
     label: string;
     value: React.ReactNode;
     color?: string;
-};
-export interface Customer {
-    id: string;
-    userName: string;
-    password: string;
-    email: string;
-    phone: string;
-    fullName: string;
-    address: string;
-    userRole: string;
-    birthDate: string;
-    gender: string;
-    joinedDate: string;
-    loyaltyPoints: number;
-    memberShipLevel: string;
 }
 
 const StatCard: React.FC<StatCardProps> = ({ icon, label, value, color }) => (
