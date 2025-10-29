@@ -5,11 +5,16 @@ import { TfiUser, TfiMore } from "react-icons/tfi";
 import { MdOutlineRoomService, MdRoomService } from "react-icons/md";
 import { getAll } from "../../services/serviceService";
 import { CiSquareQuestion } from "react-icons/ci";
+import { createBooking } from "../../services/bookingService";
+import { getById } from "../../services/CustomerService";
+import { getByCustomerId } from "../../services/customerVoucherService";
 
 interface BookingFormProps {
   currentStep: number;
   setCurrentStep: (step: number) => void;
 }
+
+const PAYMENT_METHODS = ["VNPAY QR", "CREDIT CARD", "BANK TRANSFER", "CASH"];
 
 export default function BookingForm({
   currentStep,
@@ -29,14 +34,25 @@ export default function BookingForm({
   const [specialRequests, setSpecialRequests] = useState("");
 
   const [services, setServices] = useState([]);
+  const [customerVouchers, setCustomerVouchers] = useState([]);
+  const [customer, setCustomer] = useState({});
+
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
 
-  const fetchedServices = async () => {
+  const fetchedData = async () => {
     try {
       setLoading(true);
-      const data = await getAll();
-      setServices(data);
+
+      const service = await getAll();
+      setServices(service);
+
+      const customerData = await getById("CUST001");
+      setCustomer(customerData);
+
+      const custVoucher = await getByCustomerId("CUST001");
+      setCustomerVouchers(custVoucher);
+
       setLoading(false);
       setError("");
     } catch (err) {
@@ -46,8 +62,54 @@ export default function BookingForm({
     }
   };
 
+  const [selectedRoom, setSelectedRoom] = useState([
+    {
+      roomNumber: "STD101",
+      floor: 1,
+      status: "AVAILABLE",
+      lastCleaned: "2024-06-01T12:00:00",
+      notes: "Sạch sẽ",
+      roomType: null,
+    },
+  ]);
+
+  const [booking, setBooking] = useState({
+    bookingID: "",
+    checkInDate: "",
+    checkOutDate: "",
+    numberOfGuests: 0,
+    status: "PENDING",
+    specialRequests: "",
+    bookingDate: new Date().toISOString(),
+    cancellationDate: null,
+    hourlyRate: null,
+    duration: 0,
+    packageType: "Standard",
+    totalAmount: 0,
+    paymentStatus: "",
+    invoiceType: "ROOM_BOOKING",
+    totalCost: 0,
+    customer: null,
+    employee: null,
+    bookingDetails: [
+      {
+        room: null,
+        roomPrice: 0,
+        review: null,
+      },
+    ],
+    bookingServices: services.map((service: any) => ({
+      service: service,
+      servicePrice: service.price,
+      quantity: 0,
+      totalAmount: 0,
+      orderStatus: "PENDING",
+      paymentMethod: "CASH",
+    })),
+  });
+
   useEffect(() => {
-    fetchedServices();
+    fetchedData();
   }, []);
 
   const handleNextStep = () => {
@@ -75,6 +137,32 @@ export default function BookingForm({
       selectedServices.includes(service.serviceID)
     );
   };
+
+  const getSelectedRoomObjects = () => {
+    return selectedRoom.filter((room) => selectedRooms.includes(room.id));
+  };
+
+  const calculateServiceCosts = () => {
+    return getSelectedServiceObjects().reduce(
+      (sum, service) => sum + service.price,
+      0
+    );
+  };
+
+  const calculateRoomCosts = () => {
+    return getSelectedRoomObjects().reduce(
+      (sum, room) => sum + room.roomType.basePrice,
+      0
+    );
+  };
+
+  const handleSaveBooking = (booking) => {};
+
+  const totalRoomCosts = calculateRoomCosts();
+  const totalServiceCosts = calculateServiceCosts();
+  const subtotal = totalRoomCosts + totalServiceCosts;
+  const discountValue = 60000;
+  const totalAmount = subtotal - discountValue;
 
   if (currentStep === 1) {
     return (
@@ -152,7 +240,7 @@ export default function BookingForm({
                   <input
                     type="text"
                     placeholder="Enter your name"
-                    value={customerName}
+                    value={customer.fullName}
                     onChange={(e) => setCustomerName(e.target.value)}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#c9b8a8]"
                   />
@@ -165,7 +253,7 @@ export default function BookingForm({
                   <input
                     type="tel"
                     placeholder="Enter your phone number"
-                    value={phoneNumber}
+                    value={customer.phoneNumber}
                     onChange={(e) => setPhoneNumber(e.target.value)}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#c9b8a8]"
                   />
@@ -178,7 +266,7 @@ export default function BookingForm({
                   <input
                     type="email"
                     placeholder="Enter your email"
-                    value={email}
+                    value={customer.email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#c9b8a8]"
                   />
@@ -358,23 +446,215 @@ export default function BookingForm({
     );
   } else if (currentStep === 4) {
     return (
-      <div className="max-w-6xl mx-auto bg-white rounded-lg shadow-lg p-8 border border-gray-200">
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">
-          Step {currentStep}
-        </h2>
-        <p className="text-gray-600 mb-6">This step is under development.</p>
-        <div className="flex gap-4">
+      <div className="max-w-2xl mx-auto space-y-6">
+        {/* Customer Information */}
+        <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
+          <div className="bg-[#c9b8a8] text-white px-4 py-3 rounded-lg mb-6 flex items-center gap-2">
+            <span className="text-lg">
+              <TfiUser className="text-white" />
+            </span>
+            <h3 className="font-semibold">Customer information</h3>
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 mb-1">
+                Customer Name
+              </label>
+              <p className="text-gray-900 font-medium">{customer.fullName}</p>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 mb-1">
+                Phone Number
+              </label>
+              <p className="text-gray-900 font-medium">
+                {customer.phoneNumber}
+              </p>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 mb-1">
+                Email
+              </label>
+              <p className="text-gray-900 font-medium">{customer.email}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Room Information */}
+        <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
+          <div className="bg-[#c9b8a8] text-white px-4 py-3 rounded-lg mb-6 flex items-center gap-2">
+            <span className="text-lg">🏨</span>
+            <h3 className="font-semibold">Room Information</h3>
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <label className="block text-xs font-semibold text-gray-600 mb-3">
+                Room Number:
+              </label>
+              <div className="space-y-2">
+                {getSelectedRoomObjects().map((room, index) => (
+                  <div
+                    key={index}
+                    className="flex justify-between items-center py-2 border-b border-gray-200"
+                  >
+                    <span className="text-gray-900 font-medium">
+                      {room.roomNumber}
+                    </span>
+                    <span className="text-[#c9b8a8] font-semibold">
+                      {room.roomType.basePrice.toLocaleString()} VND
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex justify-between items-center py-2 border-t border-gray-200 mt-4">
+              <label className="text-xs font-semibold text-gray-600">
+                Checkin Date:
+              </label>
+              <span className="text-gray-900 font-medium">
+                {checkInDate?.toLocaleDateString("en-GB")}
+              </span>
+            </div>
+
+            <div className="flex justify-between items-center py-2">
+              <label className="text-xs font-semibold text-gray-600">
+                Checkout Date:
+              </label>
+              <span className="text-gray-900 font-medium">
+                {checkOutDate?.toLocaleDateString("en-GB")}
+              </span>
+            </div>
+
+            <div className="flex justify-between items-center py-2 border-t border-gray-200 mt-4">
+              <label className="text-xs font-semibold text-gray-600">
+                Total room costs:
+              </label>
+              <span className="text-[#c9b8a8] font-semibold">
+                {totalRoomCosts.toLocaleString()} VND
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Selected Services */}
+        <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
+          <div className="bg-[#c9b8a8] text-white px-4 py-3 rounded-lg mb-6 flex items-center gap-2">
+            <span className="text-lg">🛎️</span>
+            <h3 className="font-semibold">Selected Services</h3>
+          </div>
+
+          <div className="space-y-3">
+            {getSelectedServiceObjects().map((service) => (
+              <div
+                key={service.serviceID}
+                className="flex justify-between items-center py-2 border-b border-gray-200"
+              >
+                <span className="text-gray-900 font-medium">
+                  • {service.serviceName} x1
+                </span>
+                <span className="text-gray-900 font-medium">
+                  {service.price.toLocaleString()} VND
+                </span>
+              </div>
+            ))}
+          </div>
+
+          <div className="flex justify-between items-center py-3 border-t border-gray-200 mt-4">
+            <label className="text-xs font-semibold text-gray-600">
+              Total service costs:
+            </label>
+            <span className="text-[#c9b8a8] font-semibold">
+              {totalServiceCosts.toLocaleString()} VND
+            </span>
+          </div>
+        </div>
+
+        {/* Booking Summary */}
+        <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
+          <div className="bg-[#c9b8a8] text-white px-4 py-3 rounded-lg mb-6 flex items-center gap-2">
+            <span className="text-lg">📋</span>
+            <h3 className="font-semibold">Booking</h3>
+          </div>
+
+          <div className="space-y-4">
+            <div className="flex justify-between items-center py-2">
+              <label className="text-sm font-semibold text-gray-900">
+                Vouchers
+              </label>
+              <span className="text-[#c9b8a8] text-sm font-medium cursor-pointer hover:underline">
+                {customerVouchers || "Choose voucher"}
+              </span>
+            </div>
+
+            <div className="flex justify-between items-center py-2 border-t border-gray-200 mt-4">
+              <label className="text-sm font-semibold text-gray-900">
+                Total costs:
+              </label>
+              <span className="text-gray-900 font-semibold">
+                {subtotal.toLocaleString()} VND
+              </span>
+            </div>
+
+            <div className="flex justify-between items-center py-2">
+              <label className="text-sm font-semibold text-gray-900">
+                Discount value:
+              </label>
+              <span className="text-gray-900 font-semibold">
+                {discountValue.toLocaleString()} VND
+              </span>
+            </div>
+
+            <div className="flex justify-between items-center py-3 border-t border-gray-200 mt-4">
+              <label className="text-sm font-semibold text-gray-900">
+                Total amount:
+              </label>
+              <span className="text-[#c9b8a8] font-bold text-lg">
+                {totalAmount.toLocaleString()} VND
+              </span>
+            </div>
+
+            <div className="mt-6 pt-4 border-t border-gray-200">
+              <label className="block text-sm font-semibold text-gray-900 mb-3">
+                Payment method:
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {PAYMENT_METHODS.map((method) => (
+                  <button
+                    key={method}
+                    onClick={() => setSelectedPaymentMethod(method)}
+                    className={`px-4 py-2 rounded-lg font-medium text-sm transition ${
+                      selectedPaymentMethod === method
+                        ? "bg-[#c9b8a8] text-white"
+                        : "border border-gray-300 text-gray-900 hover:bg-gray-50"
+                    }`}
+                  >
+                    {method}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Navigation Buttons */}
+        <div className="flex justify-between mt-8">
           <button
-            onClick={() => setCurrentStep(currentStep - 1)}
-            className="px-6 py-2 border border-gray-300 text-gray-900 font-semibold rounded-lg hover:bg-gray-50 transition"
+            onClick={handlePreviousStep}
+            className="px-8 py-3 border border-gray-300 text-gray-900 font-semibold rounded-lg hover:bg-gray-50 transition"
           >
             Back
           </button>
           <button
-            onClick={handleNextStep}
-            className="px-6 py-2 bg-[#c9b8a8] text-white font-semibold rounded-lg hover:bg-[#b8a896] transition"
+            onClick={() =>
+              alert(
+                `Booking confirmed! Payment method: ${selectedPaymentMethod}`
+              )
+            }
+            className="px-8 py-3 bg-[#c9b8a8] text-white font-semibold rounded-lg hover:bg-[#b8a896] transition"
           >
-            Next Step
+            Reserve
           </button>
         </div>
       </div>
