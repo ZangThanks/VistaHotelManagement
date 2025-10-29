@@ -1,7 +1,6 @@
-/* eslint-disable */
 import { useEffect, useState } from "react";
 import { Eye, Edit2, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
-import { getAll } from "../../../services/BookingService";
+import { getAll } from "../../../services/bookingService";
 
 export default function BookingTable() {
   const [currentPage, setCurrentPage] = useState(1);

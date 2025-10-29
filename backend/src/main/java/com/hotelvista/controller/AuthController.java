@@ -6,7 +6,7 @@ import com.hotelvista.model.Customer;
 import com.hotelvista.model.enums.Gender;
 import com.hotelvista.model.enums.MemberShipLevel;
 import com.hotelvista.model.enums.UserRole;
-import com.hotelvista.repository.CustomerRepository;
+import com.hotelvista.service.CustomerService;
 import com.hotelvista.util.GenerateIDUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -20,7 +20,8 @@ import java.util.Map;
 @RequestMapping("/auth")
 public class AuthController {
 
-    private final CustomerRepository customerRepo;
+    private final CustomerService service;
+
     private final PasswordEncoder passwordEncoder;
 
     @PostMapping("/register")
@@ -39,15 +40,16 @@ public class AuthController {
         }
 
         // Kiểm tra trùng lặp
-        if (req.getEmail() != null && customerRepo.findByEmail(req.getEmail()).isPresent()) {
+        if (req.getEmail() != null && service.findByEmail(req.getEmail()) != null) {
             return Map.of("success", false, "message", "Email đã được sử dụng");
         }
 
-        if (req.getPhone() != null && customerRepo.findByPhone(req.getPhone()).isPresent()) {
-            return Map.of("success", false, "message", "Số điện thoại đã được sử dụng");
+        if (req.getPhone() != null && service.findByPhone(req.getPhone()) != null) {
+            return Map.of("success", false, "message", "Số điện thoại đã đư" +
+                    "ợc sử dụng");
         }
 
-        if (customerRepo.findByUserName(req.getUserName()).isPresent()) {
+        if (service.findByUserName(req.getUserName()) != null) {
             return Map.of("success", false, "message", "Tên đăng nhập đã được sử dụng");
         }
 
@@ -69,7 +71,7 @@ public class AuthController {
         c.setPassword(encodedPassword);
 
         // Lưu vào Database
-        customerRepo.save(c);
+        service.save(c);
 
         // Trả về Response
         return Map.of(
@@ -86,11 +88,11 @@ public class AuthController {
 
         // Tìm user bằng email hoặc phone
         if (req.getEmail() != null && !req.getEmail().trim().isEmpty()) {
-            user = customerRepo.findByEmail(req.getEmail()).orElse(null);
+            user = service.findByEmail(req.getEmail());
         }
 
         if (user == null && req.getPhone() != null && !req.getPhone().trim().isEmpty()) {
-            user = customerRepo.findByPhone(req.getPhone()).orElse(null);
+            user = service.findByPhone(req.getPhone());
         }
 
         if (user == null) {
