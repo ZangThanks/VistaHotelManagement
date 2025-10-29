@@ -40,15 +40,16 @@ public class AuthController {
         }
 
         // Kiểm tra trùng lặp
-        if (req.getEmail() != null && service.exists(service.findByEmail(req.getEmail()).getId())) {
+        if (req.getEmail() != null && service.findByEmail(req.getEmail()) != null) {
             return Map.of("success", false, "message", "Email đã được sử dụng");
         }
 
-        if (req.getPhone() != null && service.exists(service.findByPhone(req.getPhone()).getId())) {
-            return Map.of("success", false, "message", "Số điện thoại đã được sử dụng");
+        if (req.getPhone() != null && service.findByPhone(req.getPhone()) != null) {
+            return Map.of("success", false, "message", "Số điện thoại đã đư" +
+                    "ợc sử dụng");
         }
 
-        if (service.exists(service.findByUserName(req.getUserName()).getId())) {
+        if (service.findByUserName(req.getUserName()) != null) {
             return Map.of("success", false, "message", "Tên đăng nhập đã được sử dụng");
         }
 

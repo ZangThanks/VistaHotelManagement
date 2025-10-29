@@ -7,4 +7,6 @@ public class GenerateIDUtil {
         String uuid = UUID.randomUUID().toString().replace("-", "").toUpperCase();
         return prefix + uuid.substring(0, length - prefix.length());
     }
+
+    
 }
