@@ -9,7 +9,7 @@ import Login from "../pages/auth/Login";
 import CustomerList from '../pages/employee/CustomerList';
 import NewsPage from '../pages/employee/NewsPage';
 import AdminLayout from '../layouts/AdminLayout';
-import AppAdmin from '../pages/admin/appAdmin';
+// import AppAdmin from '../pages/admin/appAdmin';
 
 export const router = createBrowserRouter([
     {
