@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FaTimes,
@@ -18,27 +18,23 @@ import {
   FaWind,
   FaTshirt,
   FaExclamationCircle,
-  FaSpinner
+  FaSpinner,
 } from "react-icons/fa";
 import TabNavigation, { type Tab } from "./TabNavigation";
 import { validateTab } from "../../utils/roomValidators";
 import type { ValidationError } from "../../utils/roomValidators";
+import roomService, { type RoomType } from "../../services/roomService";
 
 export interface RoomFormData {
+  // Room fields only (images belong to Room entity)
   roomNumber: string;
   floor: string;
   roomStatus: string;
   lastCleaned: string;
   notes: string;
-  roomTypeId: string;
-  typeName: string;
-  description: string;
-  area: string;
-  maxOccupancy: string;
-  basePrice: string;
-  amenities: string[];
-  imageUrls: string[];
-  imageFiles: File[];
+  roomTypeId: string; // FK to existing RoomType
+  imageUrls: string[]; // After Cloudinary upload
+  imageFiles: File[]; // Before upload
 }
 
 interface AddRoomModalProps {
@@ -48,9 +44,10 @@ interface AddRoomModalProps {
 }
 
 /**
-* Modal để thêm phòng mới với biểu mẫu nhiều bước
-* Bao gồm 4 tab: Chi tiết phòng, Loại phòng, Tiện nghi, Hình ảnh
-*/
+ * Modal để thêm phòng mới với biểu mẫu nhiều bước
+ * Bao gồm 2 tab: Chi tiết phòng (Room Details + Room Type selection), Hình ảnh
+ * Images belong to Room entity, Amenities come from RoomType (read-only)
+ */
 const AddRoomModal: React.FC<AddRoomModalProps> = ({
   isOpen,
   onClose,
@@ -60,58 +57,89 @@ const AddRoomModal: React.FC<AddRoomModalProps> = ({
   const [completedTabs, setCompletedTabs] = useState<string[]>([]);
   const [errors, setErrors] = useState<ValidationError[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [availableRoomTypes, setAvailableRoomTypes] = useState<RoomType[]>([]);
+  const [selectedRoomType, setSelectedRoomType] = useState<RoomType | null>(
+    null
+  );
+  const [loadingRoomTypes, setLoadingRoomTypes] = useState(false);
 
-  // Form data
+  // Form data - Room fields only
   const [formData, setFormData] = useState<RoomFormData>({
-    // Room Details
     roomNumber: "",
     floor: "",
     roomStatus: "AVAILABLE",
     lastCleaned: new Date().toISOString().slice(0, 16),
     notes: "",
-
-    // Room Type
     roomTypeId: "",
-    typeName: "",
-    description: "",
-    area: "",
-    maxOccupancy: "",
-    basePrice: "",
-
-    // Amenities
-    amenities: [] as string[],
-
-    // Images
-    imageUrls: [] as string[],
-    imageFiles: [] as File[],
+    imageUrls: [],
+    imageFiles: [],
   });
 
+  // Only 2 tabs now: Room Details (includes room type selection), Images
   const tabs: Tab[] = [
     { id: "details", label: "Room Details" },
-    { id: "type", label: "Room Type" },
-    { id: "amenities", label: "Amenities" },
     { id: "images", label: "Images" },
   ];
 
-  const availableAmenities = [
-    { id: "wifi", label: "Wifi", icon: <FaWifi /> },
-    { id: "tv", label: "TV", icon: <FaTv /> },
-    { id: "coffee", label: "Coffee Marker", icon: <FaCoffee /> },
-    { id: "ac", label: "AC", icon: <FaSnowflake /> },
-    { id: "minibar", label: "Mini Bar", icon: <FaGlassMartiniAlt /> },
-    { id: "balcony", label: "Balcony", icon: <FaDoorOpen /> },
-    { id: "jacuzzi", label: "Jacuzzi", icon: <FaHotTub /> },
-    { id: "kitchen", label: "Kitchen", icon: <FaUtensils /> },
-    { id: "safe", label: "Safe", icon: <FaLock /> },
-    { id: "dining", label: "Dining Area", icon: <FaConciergeBell /> },
-    { id: "hairdryer", label: "Hair Dryer", icon: <FaWind /> },
-    { id: "iron", label: "Iron", icon: <FaTshirt /> },
-  ];
+  // Fetch available room types on mount
+  useEffect(() => {
+    if (isOpen) {
+      fetchRoomTypes();
+    }
+  }, [isOpen]);
 
-  const roomTypes = [
-    { id: "STD", name: "Standard" },
-    { id: "DLX", name: "Deluxe" },
-    { id: "STE", name: "Suite" },
+  const fetchRoomTypes = async () => {
+    setLoadingRoomTypes(true);
+    try {
+      const types = await roomService.getAllRoomTypes();
+      setAvailableRoomTypes(types);
+    } catch (error) {
+      console.error("Failed to fetch room types:", error);
+      setErrors([
+        {
+          field: "roomTypeId",
+          message: "Failed to load room types. Please try again.",
+        },
+      ]);
+    } finally {
+      setLoadingRoomTypes(false);
+    }
+  };
+
+  // Update selected room type when roomTypeId changes
+  useEffect(() => {
+    if (formData.roomTypeId) {
+      const roomType = availableRoomTypes.find(
+        (rt) => rt.roomTypeID === formData.roomTypeId
+      );
+      setSelectedRoomType(roomType || null);
+    } else {
+      setSelectedRoomType(null);
+    }
+  }, [formData.roomTypeId, availableRoomTypes]);
+
+  // Map amenity IDs to icons for display
+  const amenityIcons: { [key: string]: React.ReactElement } = {
+    wifi: <FaWifi />,
+    tv: <FaTv />,
+    coffee: <FaCoffee />,
+    ac: <FaSnowflake />,
+    minibar: <FaGlassMartiniAlt />,
+    balcony: <FaDoorOpen />,
+    jacuzzi: <FaHotTub />,
+    kitchen: <FaUtensils />,
+    safe: <FaLock />,
+    dining: <FaConciergeBell />,
+    hairdryer: <FaWind />,
+    iron: <FaTshirt />,
+  };
+
+  const roomStatuses = [
+    { value: "AVAILABLE", label: "Available" },
+    { value: "OCCUPIED", label: "Occupied" },
+    { value: "CLEANING", label: "Cleaning" },
+    { value: "MAINTENANCE", label: "Maintenance" },
+    { value: "OUT_OF_SERVICE", label: "Out of Service" },
   ];
 
   const handleInputChange = (
@@ -122,35 +150,26 @@ const AddRoomModal: React.FC<AddRoomModalProps> = ({
     setErrors((prev) => prev.filter((err) => err.field !== field));
   };
 
-  const toggleAmenity = (amenityId: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      amenities: prev.amenities.includes(amenityId)
-        ? prev.amenities.filter((id) => id !== amenityId)
-        : [...prev.amenities, amenityId],
-    }));
-  };
-
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
 
     const fileArray = Array.from(files);
 
-    // Store files for later upload
+    // Store files for later upload to Cloudinary
     setFormData((prev) => ({
       ...prev,
       imageFiles: [...prev.imageFiles, ...fileArray],
     }));
 
     // Clear errors
-    setErrors((prev) => prev.filter((err) => err.field !== "images"));
+    setErrors((prev) => prev.filter((err) => err.field !== "imageFiles"));
   };
 
   const removeImage = (index: number) => {
     setFormData((prev) => ({
       ...prev,
-      imageUrls: prev.imageUrls.filter((_, i) => i !== index),
+      imageFiles: prev.imageFiles.filter((_, i) => i !== index),
     }));
   };
 
@@ -221,6 +240,7 @@ const AddRoomModal: React.FC<AddRoomModalProps> = ({
     setActiveTab("details");
     setCompletedTabs([]);
     setErrors([]);
+    setSelectedRoomType(null);
     setFormData({
       roomNumber: "",
       floor: "",
@@ -228,12 +248,6 @@ const AddRoomModal: React.FC<AddRoomModalProps> = ({
       lastCleaned: new Date().toISOString().slice(0, 16),
       notes: "",
       roomTypeId: "",
-      typeName: "",
-      description: "",
-      area: "",
-      maxOccupancy: "",
-      basePrice: "",
-      amenities: [],
       imageUrls: [],
       imageFiles: [],
     });
@@ -242,7 +256,7 @@ const AddRoomModal: React.FC<AddRoomModalProps> = ({
 
   const getFieldError = (field: string): string | undefined => {
     return errors.find((err) => err.field === field)?.message;
-  }
+  };
 
   if (!isOpen) return null;
 
@@ -337,7 +351,7 @@ const AddRoomModal: React.FC<AddRoomModalProps> = ({
                     exit={{ opacity: 0, x: -20 }}
                     transition={{ duration: 0.2 }}
                   >
-                    {/* Room Details Tab */}
+                    {/* Room Details Tab - Includes Room Type Selection */}
                     {activeTab === "details" && (
                       <div className="space-y-4">
                         <div className="grid grid-cols-2 gap-4">
@@ -368,27 +382,6 @@ const AddRoomModal: React.FC<AddRoomModalProps> = ({
 
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                              Last Cleaned{" "}
-                              <span className="text-red-500">*</span>
-                            </label>
-                            <input
-                              type="datetime-local"
-                              value={formData.lastCleaned}
-                              onChange={(e) =>
-                                handleInputChange("lastCleaned", e.target.value)
-                              }
-                              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#6b5e4c] focus:border-transparent ${
-                                getFieldError("lastCleaned")
-                                  ? "border-red-500"
-                                  : "border-gray-300"
-                              }`}
-                            />
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
                               Floor <span className="text-red-500">*</span>
                             </label>
                             <input
@@ -411,7 +404,9 @@ const AddRoomModal: React.FC<AddRoomModalProps> = ({
                               </p>
                             )}
                           </div>
+                        </div>
 
+                        <div className="grid grid-cols-2 gap-4">
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                               Room Status{" "}
@@ -424,13 +419,156 @@ const AddRoomModal: React.FC<AddRoomModalProps> = ({
                               }
                               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6b5e4c] focus:border-transparent cursor-pointer"
                             >
-                              <option value="AVAILABLE">AVAILABLE</option>
-                              <option value="BOOKED">BOOKED</option>
-                              <option value="MAINTENANCE">MAINTENANCE</option>
-                              <option value="CLEANING">CLEANING</option>
+                              {roomStatuses.map((status) => (
+                                <option key={status.value} value={status.value}>
+                                  {status.label}
+                                </option>
+                              ))}
                             </select>
                           </div>
+
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Last Cleaned{" "}
+                              <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                              type="datetime-local"
+                              value={formData.lastCleaned}
+                              onChange={(e) =>
+                                handleInputChange("lastCleaned", e.target.value)
+                              }
+                              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#6b5e4c] focus:border-transparent ${
+                                getFieldError("lastCleaned")
+                                  ? "border-red-500"
+                                  : "border-gray-300"
+                              }`}
+                            />
+                          </div>
                         </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Room Type <span className="text-red-500">*</span>
+                          </label>
+                          {loadingRoomTypes ? (
+                            <div className="flex items-center justify-center py-8">
+                              <FaSpinner className="animate-spin text-[#6b5e4c] text-2xl" />
+                            </div>
+                          ) : (
+                            <select
+                              value={formData.roomTypeId}
+                              onChange={(e) =>
+                                handleInputChange("roomTypeId", e.target.value)
+                              }
+                              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#6b5e4c] focus:border-transparent cursor-pointer ${
+                                getFieldError("roomTypeId")
+                                  ? "border-red-500"
+                                  : "border-gray-300"
+                              }`}
+                            >
+                              <option value="">Select room type</option>
+                              {availableRoomTypes.map((type) => (
+                                <option
+                                  key={type.roomTypeID}
+                                  value={type.roomTypeID}
+                                >
+                                  {type.typeName} - {type.area}m² -{" "}
+                                  {type.basePrice} VND
+                                </option>
+                              ))}
+                            </select>
+                          )}
+                          {getFieldError("roomTypeId") && (
+                            <p className="mt-1 text-sm text-red-600">
+                              {getFieldError("roomTypeId")}
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Display selected room type details and amenities (read-only) */}
+                        {selectedRoomType && (
+                          <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                            <h4 className="font-semibold text-gray-900 mb-3">
+                              Room Type Details
+                            </h4>
+                            <div className="grid grid-cols-2 gap-3 text-sm">
+                              <div>
+                                <span className="font-medium text-gray-700">
+                                  Type:
+                                </span>{" "}
+                                <span className="text-gray-600">
+                                  {selectedRoomType.typeName}
+                                </span>
+                              </div>
+                              <div>
+                                <span className="font-medium text-gray-700">
+                                  Area:
+                                </span>{" "}
+                                <span className="text-gray-600">
+                                  {selectedRoomType.area} m²
+                                </span>
+                              </div>
+                              <div>
+                                <span className="font-medium text-gray-700">
+                                  Max Occupancy:
+                                </span>{" "}
+                                <span className="text-gray-600">
+                                  {selectedRoomType.maxOccupancy} guests
+                                </span>
+                              </div>
+                              <div>
+                                <span className="font-medium text-gray-700">
+                                  Base Price:
+                                </span>{" "}
+                                <span className="text-gray-600">
+                                  {selectedRoomType.basePrice} {" "} VND
+                                </span>
+                              </div>
+                            </div>
+                            {selectedRoomType.description && (
+                              <div className="mt-3">
+                                <span className="font-medium text-gray-700 text-sm">
+                                  Description:
+                                </span>
+                                <p className="text-sm text-gray-600 mt-1">
+                                  {selectedRoomType.description}
+                                </p>
+                              </div>
+                            )}
+                            {selectedRoomType.amenties &&
+                              selectedRoomType.amenties.length > 0 && (
+                                <div className="mt-3">
+                                  <span className="font-medium text-gray-700 text-sm">
+                                    Included Amenities:
+                                  </span>
+                                  <div className="flex flex-wrap gap-2 mt-2">
+                                    {selectedRoomType.amenties.map(
+                                      (amenity) => {
+                                        const amenityKey = amenity
+                                          .toLowerCase()
+                                          .replace(/\s+/g, "");
+                                        const icon = amenityIcons[
+                                          amenityKey
+                                        ] || <FaConciergeBell />;
+                                        return (
+                                          <span
+                                            key={amenity}
+                                            className="inline-flex items-center gap-2 px-3 py-1 bg-white border border-blue-300 text-blue-700 rounded-full text-sm"
+                                          >
+                                            <span className="text-base">
+                                              {icon}
+                                            </span>
+                                            {amenity}
+                                          </span>
+                                        );
+                                      }
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+                          </div>
+                        )}
 
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -446,289 +584,6 @@ const AddRoomModal: React.FC<AddRoomModalProps> = ({
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6b5e4c] focus:border-transparent resize-none"
                           />
                         </div>
-                      </div>
-                    )}
-
-                    {/* Room Type Tab */}
-                    {activeTab === "type" && (
-                      <div className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                              Room Type ID{" "}
-                              <span className="text-red-500">*</span>
-                            </label>
-                            <select
-                              value={formData.roomTypeId}
-                              onChange={(e) => {
-                                const selectedType = roomTypes.find(
-                                  (t) => t.id === e.target.value
-                                );
-                                handleInputChange("roomTypeId", e.target.value);
-                                if (selectedType) {
-                                  handleInputChange(
-                                    "typeName",
-                                    selectedType.name
-                                  );
-                                }
-                              }}
-                              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#6b5e4c] focus:border-transparent cursor-pointer ${
-                                getFieldError("roomTypeId")
-                                  ? "border-red-500"
-                                  : "border-gray-300"
-                              }`}
-                            >
-                              <option value="">Select room type</option>
-                              {roomTypes.map((type) => (
-                                <option key={type.id} value={type.id}>
-                                  {type.id} - {type.name}
-                                </option>
-                              ))}
-                            </select>
-                            {getFieldError("roomTypeId") && (
-                              <p className="mt-1 text-sm text-red-600">
-                                {getFieldError("roomTypeId")}
-                              </p>
-                            )}
-                          </div>
-
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                              Area (sq ft){" "}
-                              <span className="text-red-500">*</span>
-                            </label>
-                            <input
-                              type="number"
-                              value={formData.area}
-                              onChange={(e) =>
-                                handleInputChange("area", e.target.value)
-                              }
-                              placeholder="1.1"
-                              step="0.1"
-                              min="0"
-                              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#6b5e4c] focus:border-transparent ${
-                                getFieldError("area")
-                                  ? "border-red-500"
-                                  : "border-gray-300"
-                              }`}
-                            />
-                            {getFieldError("area") && (
-                              <p className="mt-1 text-sm text-red-600">
-                                {getFieldError("area")}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Type Name <span className="text-red-500">*</span>
-                          </label>
-                          <input
-                            type="text"
-                            value={formData.typeName}
-                            onChange={(e) =>
-                              handleInputChange("typeName", e.target.value)
-                            }
-                            placeholder="Standard Queen"
-                            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#6b5e4c] focus:border-transparent ${
-                              getFieldError("typeName")
-                                ? "border-red-500"
-                                : "border-gray-300"
-                            }`}
-                          />
-                          {getFieldError("typeName") && (
-                            <p className="mt-1 text-sm text-red-600">
-                              {getFieldError("typeName")}
-                            </p>
-                          )}
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                              Max Occupancy{" "}
-                              <span className="text-red-500">*</span>
-                            </label>
-                            <input
-                              type="number"
-                              value={formData.maxOccupancy}
-                              onChange={(e) =>
-                                handleInputChange(
-                                  "maxOccupancy",
-                                  e.target.value
-                                )
-                              }
-                              placeholder="1"
-                              min="1"
-                              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#6b5e4c] focus:border-transparent ${
-                                getFieldError("maxOccupancy")
-                                  ? "border-red-500"
-                                  : "border-gray-300"
-                              }`}
-                            />
-                            {getFieldError("maxOccupancy") && (
-                              <p className="mt-1 text-sm text-red-600">
-                                {getFieldError("maxOccupancy")}
-                              </p>
-                            )}
-                          </div>
-
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                              Base Price <span className="text-red-500">*</span>
-                            </label>
-                            <input
-                              type="number"
-                              value={formData.basePrice}
-                              onChange={(e) =>
-                                handleInputChange("basePrice", e.target.value)
-                              }
-                              placeholder="0.01"
-                              step="0.01"
-                              min="0"
-                              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#6b5e4c] focus:border-transparent ${
-                                getFieldError("basePrice")
-                                  ? "border-red-500"
-                                  : "border-gray-300"
-                              }`}
-                            />
-                            {getFieldError("basePrice") && (
-                              <p className="mt-1 text-sm text-red-600">
-                                {getFieldError("basePrice")}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Description <span className="text-red-500">*</span>
-                          </label>
-                          <textarea
-                            value={formData.description}
-                            onChange={(e) =>
-                              handleInputChange("description", e.target.value)
-                            }
-                            placeholder="Cozy queen bed room perfect for couples"
-                            rows={3}
-                            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#6b5e4c] focus:border-transparent resize-none ${
-                              getFieldError("description")
-                                ? "border-red-500"
-                                : "border-gray-300"
-                            }`}
-                          />
-                          {getFieldError("description") && (
-                            <p className="mt-1 text-sm text-red-600">
-                              {getFieldError("description")}
-                            </p>
-                          )}
-                        </div>
-
-                        {/* Room Type Preview */}
-                        {formData.roomTypeId && (
-                          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                            <h4 className="font-semibold text-gray-900 mb-2">
-                              Room Type Preview{" "}
-                              <span className="text-red-500">*</span>
-                            </h4>
-                            <div className="space-y-1 text-sm text-gray-600">
-                              <p>
-                                <span className="font-medium">ID:</span>{" "}
-                                {formData.roomTypeId}
-                              </p>
-                              <p>
-                                <span className="font-medium">Name:</span>{" "}
-                                {formData.typeName}
-                              </p>
-                              <p>
-                                <span className="font-medium">Area:</span>{" "}
-                                {formData.area} sq ft
-                              </p>
-                              <p>
-                                <span className="font-medium">Occupancy:</span>{" "}
-                                {formData.maxOccupancy} guests
-                              </p>
-                              <p>
-                                <span className="font-medium">Base Price:</span>{" "}
-                                {formData.basePrice} VND
-                              </p>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Amenities Tab */}
-                    {activeTab === "amenities" && (
-                      <div className="space-y-4">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-3">
-                            Select Available Amenities
-                          </label>
-                          <div className="grid grid-cols-2 gap-3">
-                            {availableAmenities.map((amenity) => (
-                              <label
-                                key={amenity.id}
-                                className="flex items-center gap-3 p-3 border-2 rounded-lg cursor-pointer transition-all hover:bg-gray-50"
-                                style={{
-                                  borderColor: formData.amenities.includes(
-                                    amenity.id
-                                  )
-                                    ? "#6b5e4c"
-                                    : "#e5e7eb",
-                                  backgroundColor: formData.amenities.includes(
-                                    amenity.id
-                                  )
-                                    ? "#f5f0eb"
-                                    : "white",
-                                }}
-                              >
-                                <input
-                                  type="checkbox"
-                                  checked={formData.amenities.includes(
-                                    amenity.id
-                                  )}
-                                  onChange={() => toggleAmenity(amenity.id)}
-                                  className="w-5 h-5 text-[#6b5e4c] border-gray-300 rounded focus:ring-[#6b5e4c] cursor-pointer"
-                                />
-                                <span className="text-xl text-gray-600">
-                                  {amenity.icon}
-                                </span>
-                                <span className="font-medium text-gray-700">
-                                  {amenity.label}
-                                </span>
-                              </label>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* Selected Amenities */}
-                        {formData.amenities.length > 0 && (
-                          <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-                            <h4 className="font-semibold text-gray-900 mb-2">
-                              Selected Amenities ({formData.amenities.length}):
-                            </h4>
-                            <div className="flex flex-wrap gap-2">
-                              {formData.amenities.map((amenityId) => {
-                                const amenity = availableAmenities.find(
-                                  (a) => a.id === amenityId
-                                );
-                                return (
-                                  <span
-                                    key={amenityId}
-                                    className="inline-flex items-center gap-2 px-3 py-1 bg-white border border-[#6b5e4c] text-[#6b5e4c] rounded-full text-sm font-medium"
-                                  >
-                                    <span className="text-base">
-                                      {amenity?.icon}
-                                    </span>
-                                    {amenity?.label}
-                                  </span>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        )}
                       </div>
                     )}
 

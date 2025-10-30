@@ -1,37 +1,32 @@
 import { api } from "./apiClient";
 
-export type RoomStatus =
-  | "AVAILABLE"
-  | "BOOKED"
-  | "CLEANING"
-  | "MAINTENANCE";
+export type RoomStatus = "AVAILABLE" | "BOOKED" | "CLEANING" | "MAINTENANCE";
 
 export interface RoomType {
-    roomTypeID: string;
-    typeName: string;
-    description: string;
-    area: number;
-    maxOccupancy: number;
-    amenties: string[];
-    basePrice: number;
-    images: string[];
+  roomTypeID: string;
+  typeName: string;
+  description: string;
+  area: number;
+  maxOccupancy: number;
+  amenties: string[]; // Amenities belong to RoomType
+  basePrice: number;
 }
 
 export interface Room {
-    roomNumber: string;
-    floor: number;
-    status: RoomStatus;
-    lastCleaned: string; // ISO date string
-    notes: string;
-    roomType: RoomType;
+  roomNumber: string;
+  floor: number;
+  status: RoomStatus;
+  lastCleaned: string; // ISO date string
+  notes: string;
+  roomType: RoomType;
+  images: string[]; // Images belong to Room entity
 }
 
 interface ApiResponse<T> {
-    success?: boolean;
-    data?: T;
-    message?: string;
+  success?: boolean;
+  data?: T;
+  message?: string;
 }
-
 
 export const roomService = {
   /**

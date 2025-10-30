@@ -81,7 +81,7 @@ const RoomManagement: React.FC = () => {
       status: statusMap[apiRoom.status],
       capacity: apiRoom.roomType.maxOccupancy,
       amenities: apiRoom.roomType.amenties,
-      image: apiRoom.roomType.images[0] || "",
+      image: apiRoom.images?.[0] || "", // Images belong to Room, not RoomType
     };
   };
 
@@ -237,28 +237,15 @@ const RoomManagement: React.FC = () => {
       setLoading(true);
 
       // 1. Upload ảnh lên Cloudinary và lấy URL về
+      // Images belong to Room entity, not RoomType
       let cloudinaryUrls: string[] = [];
       if (roomData.imageFiles.length > 0) {
         const uploadImages = await uploadMultipleImagesToCloudinary(roomData.imageFiles);
         cloudinaryUrls = uploadImages.map(img => img.secure_url);
       }
 
-      // 2. Chuẩn bị dữ liệu loại phòng
-      const roomTypeData = {
-        roomTypeID: roomData.roomTypeId,
-        typeName: roomData.typeName,
-        description: roomData.description,
-        area: parseFloat(roomData.area),
-        maxOccupancy: parseInt(roomData.maxOccupancy),
-        amenties: roomData.amenities,
-        basePrice: parseFloat(roomData.basePrice),
-        images: cloudinaryUrls,
-      }
-
-      // 3. Lưu loại phòng đầu
-      await roomService.saveRoomType(roomTypeData);
-
-      // 4. Chuẩn bị dữ liệu phòng
+      // 2. Chuẩn bị dữ liệu phòng
+      // Room has images, RoomType is selected (not created)
       const roomApiData = {
         roomNumber: roomData.roomNumber,
         floor: parseInt(roomData.floor),
@@ -268,12 +255,13 @@ const RoomManagement: React.FC = () => {
         roomType: {
           roomTypeID: roomData.roomTypeId,
         } as ApiRoom["roomType"],
+        images: cloudinaryUrls, // Images belong to Room
       };
 
-      // 5. Lưu phòng
+      // 3. Lưu phòng
       await roomService.saveRoom(roomApiData);
 
-      // 6. Reload danh sách phòng
+      // 4. Reload danh sách phòng
       const apiRooms = await roomService.getAllRooms();
       const uiRooms = apiRooms
         .map((apiRoom) => {
