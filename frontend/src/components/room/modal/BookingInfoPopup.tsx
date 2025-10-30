@@ -25,8 +25,8 @@ const BookingInfoPopup: React.FC<BookingInfoPopupProps> = ({
   position,
 }) => {
   const statusConfig = {
-    confirmed: {
-      label: "Confirmed",
+    pending: {
+      label: "Pending",
       bg: "bg-amber-500",
       text: "text-amber-50",
     },
@@ -40,6 +40,11 @@ const BookingInfoPopup: React.FC<BookingInfoPopupProps> = ({
       bg: "bg-rose-500",
       text: "text-rose-50",
     },
+    cancelled: {
+      label: "Cancelled",
+      bg: "bg-gray-400",
+      text: "text-gray-900",
+    }
   };
 
   const nights =

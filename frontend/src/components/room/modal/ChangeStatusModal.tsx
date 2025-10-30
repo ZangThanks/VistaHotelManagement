@@ -83,7 +83,10 @@ const ChangeStatusModal: React.FC<ChangeStatusModalProps> = ({
           <div className="bg-gray-50 p-4 rounded-lg">
             <div className="text-sm text-gray-600">Room</div>
             <div className="text-xl font-bold text-gray-800">
-              {room.roomNumber} - {room.roomType}
+              {room.roomNumber} -{" "}
+              {typeof room.roomType === "string"
+                ? room.roomType
+                : room.roomType.typeName}
             </div>
           </div>
 

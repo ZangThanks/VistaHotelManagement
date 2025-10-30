@@ -11,7 +11,7 @@ export interface RoomBooking {
   guestName: string;
   checkIn: Date;
   checkOut: Date;
-  status: "confirmed" | "checked-in" | "checked-out";
+  status: "pending" | "checked-in" | "checked-out" | "cancelled";
 }
 
 interface RoomCalendarViewProps {
@@ -202,15 +202,17 @@ const RoomCalendarView: React.FC<RoomCalendarViewProps> = ({
   };
 
   const statusColors = {
-    confirmed: "bg-amber-500",
+    pending: "bg-amber-500",
     "checked-in": "bg-emerald-500",
     "checked-out": "bg-rose-500",
+    cancelled: "bg-gray-400",
   };
 
   const statusBorderColors = {
-    confirmed: "border-amber-600",
+    pending: "border-amber-600",
     "checked-in": "border-emerald-600",
     "checked-out": "border-rose-600",
+    cancelled: "border-gray-500",
   };
 
   // Click để hiển thị/ẩn popup
@@ -405,7 +407,7 @@ const RoomCalendarView: React.FC<RoomCalendarViewProps> = ({
       <div className="flex items-center gap-6 mt-4 text-sm">
         <div className="flex items-center gap-2">
           <div className="w-6 h-4 bg-amber-500 rounded border-l-4 border-amber-600" />
-          <span className="text-gray-700 font-medium">Confirmed</span>
+          <span className="text-gray-700 font-medium">Pending</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-6 h-4 bg-emerald-500 rounded border-l-4 border-emerald-600" />
@@ -414,6 +416,10 @@ const RoomCalendarView: React.FC<RoomCalendarViewProps> = ({
         <div className="flex items-center gap-2">
           <div className="w-6 h-4 bg-rose-500 rounded border-l-4 border-rose-600" />
           <span className="text-gray-700 font-medium">Checked Out</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-6 h-4 bg-gray-400 rounded border-l-4 border-gray-500" />
+          <span className="text-gray-700 font-medium">Cancelled</span>
         </div>
       </div>
 

@@ -23,7 +23,8 @@ import {
 import TabNavigation, { type Tab } from "../../common/TabNavigation";
 import { validateTab } from "../../../utils/roomValidators";
 import type { ValidationError } from "../../../utils/roomValidators";
-import roomService, { type RoomType } from "../../../services/roomService";
+import roomService from "../../../services/roomService";
+import type { RoomType } from "../../../types/RoomType";
 
 export interface RoomFormData {
   // Room fields only (images belong to Room entity)

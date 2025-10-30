@@ -1,6 +1,6 @@
 import React from "react";
 import { FaBed, FaUser, FaClock } from "react-icons/fa";
-import type { Room } from "../view/RoomTableView";
+import type { Room } from "./RoomTableView";
 
 interface RoomStatusBoardProps {
   rooms: Room[];
@@ -123,7 +123,9 @@ const RoomStatusBoard: React.FC<RoomStatusBoardProps> = ({
                           {room.roomNumber}
                         </span>
                         <span className="text-xs text-gray-600 text-center">
-                          {room.roomType}
+                          {typeof room.roomType === 'string' 
+                            ? room.roomType 
+                            : room.roomType.typeName}
                         </span>
                         <span
                           className={`text-xs font-medium ${colors.text} mt-1`}

@@ -131,7 +131,9 @@ const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
                       Room {room.roomNumber}
                     </h2>
                     <p className="text-sm text-white/80 mt-1">
-                      {room.roomType}
+                      {typeof room.roomType === "string"
+                        ? room.roomType
+                        : room.roomType.typeName}
                     </p>
                   </div>
                   <button
@@ -244,7 +246,9 @@ const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
                         <span className="text-sm font-medium">Room Type</span>
                       </div>
                       <p className="text-lg font-bold text-gray-800">
-                        {room.roomType}
+                        {typeof room.roomType === "string"
+                          ? room.roomType
+                          : room.roomType.typeName}
                       </p>
                     </div>
 

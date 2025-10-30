@@ -1,11 +1,11 @@
 
+// Backend RoomType from API
 export interface RoomType {
-    id?: string;
-    name?: string;
+    roomTypeID: string;
+    typeName: string;
     description?: string;
-    area?: number;
-    maxOccupancy?: number;
-    amenities?: string[];
-    basePrice?: number;
-    [key: string]: unknown;
+    area: number;
+    maxOccupancy: number;
+    amenties: string[];
+    basePrice: number;
 }

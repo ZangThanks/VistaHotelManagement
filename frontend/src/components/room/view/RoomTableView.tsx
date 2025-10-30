@@ -1,17 +1,22 @@
 import React from "react";
 import { FaEdit, FaEye, FaTrashAlt } from "react-icons/fa";
 import { motion } from "framer-motion";
+import type { RoomType } from "../../../types/RoomType";
 
+// UI Room interface for display
 export interface Room {
   id: string;
   roomNumber: string;
-  roomType: string;
+  roomType: string | RoomType;
   floor: number;
+  capacity: number;
   price: number;
   status: "available" | "occupied" | "maintenance" | "cleaning";
-  capacity: number;
   amenities: string[];
-  image?: string;
+  image: string;
+  images?: string[];
+  notes?: string;
+  lastCleaned?: string;
 }
 
 interface RoomTableViewProps {
@@ -103,7 +108,11 @@ const RoomTableView: React.FC<RoomTableViewProps> = ({
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-700">{room.roomType}</div>
+                  <div className="text-sm text-gray-700">
+                    {typeof room.roomType === 'string' 
+                      ? room.roomType 
+                      : room.roomType.typeName}
+                  </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm text-gray-700">

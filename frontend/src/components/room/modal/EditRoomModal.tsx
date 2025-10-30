@@ -23,10 +23,9 @@ import {
 import TabNavigation, { type Tab } from "../../common/TabNavigation";
 import { validateTab } from "../../../utils/roomValidators";
 import type { ValidationError } from "../../../utils/roomValidators";
-import roomService, {
-  type RoomType,
-  type Room,
-} from "../../../services/roomService";
+import roomService from "../../../services/roomService";
+import type { Room } from "../view/RoomTableView";
+import type { RoomType } from "../../../types/RoomType";
 
 export interface EditRoomFormData {
   roomNumber: string;
@@ -47,9 +46,9 @@ interface EditRoomModalProps {
 }
 
 /**
- * Modal to edit existing room
- * Similar design to AddRoomModal but pre-filled with room data
- */
+* Modal để chỉnh sửa phòng hiện có
+* Thiết kế tương tự AddRoomModal nhưng được điền sẵn dữ liệu phòng
+*/
 const EditRoomModal: React.FC<EditRoomModalProps> = ({
   isOpen,
   onClose,
@@ -126,14 +125,20 @@ const EditRoomModal: React.FC<EditRoomModalProps> = ({
         }
       }
 
+      // Get roomTypeId - handle both string and RoomType object
+      const roomTypeId =
+        typeof room.roomType === "string"
+          ? room.roomType
+          : room.roomType.roomTypeID;
+
       setFormData({
         roomNumber: room.roomNumber,
         floor: room.floor.toString(),
         roomStatus: room.status,
         lastCleaned: lastCleanedFormatted,
         notes: room.notes || "",
-        roomTypeId: room.roomType.roomTypeID,
-        imageUrls: room.images || [],
+        roomTypeId: roomTypeId,
+        imageUrls: room.images || (room.image ? [room.image] : []),
         imageFiles: [],
       });
     }

@@ -26,9 +26,10 @@ import ConfirmDialog from "../../../components/dialog/ConfirmDialog";
 import { motion } from "framer-motion";
 import {
   roomService,
-  type Room as ApiRoom,
-  type RoomStatus,
 } from "../../../services/roomService";
+import type { Room as ApiRoom, RoomStatus } from "../../../types/Room";
+import bookingService from "../../../services/bookingService";
+import type { RoomBooking } from "../../../types/Booking";
 import { uploadMultipleImagesToCloudinary } from "../../../services/cloudinaryService";
 import type { RoomFormData } from "../../../components/room/modal/AddRoomModal";
 import type { EditRoomFormData } from "../../../components/room/modal/EditRoomModal";
@@ -73,6 +74,9 @@ const RoomManagement: React.FC = () => {
   // Rooms data from API
   const [rooms, setRooms] = useState<Room[]>([]);
 
+  // Bookings data from API
+  const [bookings, setBookings] = useState<RoomBooking[]>([]);
+
   // Filters
   const [filters, setFilters] = useState<FilterOptions>({
     searchTerm: "",
@@ -83,7 +87,13 @@ const RoomManagement: React.FC = () => {
   });
 
   // Chuyển đổi API Room thành UI Room
-  const convertApiRoomToUiRoom = (apiRoom: ApiRoom): Room => {
+  const convertApiRoomToUiRoom = (apiRoom: ApiRoom): Room | null => {
+    // Skip rooms without roomType
+    if (!apiRoom.roomType) {
+      console.warn(`Room ${apiRoom.roomNumber} has null roomType, skipping...`);
+      return null;
+    }
+
     // Map backend RoomStatus với frontend Room status
     const statusMap: Record<RoomStatus, Room["status"]> = {
       AVAILABLE: "available",
@@ -93,15 +103,17 @@ const RoomManagement: React.FC = () => {
     };
 
     return {
-      id: apiRoom.roomNumber,
-      roomNumber: apiRoom.roomNumber,
+      id: apiRoom.roomNumber || "",
+      roomNumber: apiRoom.roomNumber || "",
       roomType: apiRoom.roomType.typeName,
-      floor: apiRoom.floor,
+      floor: apiRoom.floor || 0,
       price: apiRoom.roomType.basePrice,
       status: statusMap[apiRoom.status],
       capacity: apiRoom.roomType.maxOccupancy,
       amenities: apiRoom.roomType.amenties,
       image: apiRoom.images?.[0] || "", // Images belong to Room, not RoomType
+      notes: apiRoom.notes || undefined,
+      lastCleaned: apiRoom.lastCleaned || undefined,
     };
   };
 
@@ -111,7 +123,9 @@ const RoomManagement: React.FC = () => {
       try {
         setLoading(true);
         const apiRooms = await roomService.getAllRooms();
-        const uiRooms = apiRooms.map(convertApiRoomToUiRoom);
+        const uiRooms = apiRooms
+          .map(convertApiRoomToUiRoom)
+          .filter((room): room is Room => room !== null);
         setRooms(uiRooms);
       } catch (error) {
         console.error("Lỗi khi tải danh sách phòng:", error);
@@ -123,48 +137,20 @@ const RoomManagement: React.FC = () => {
     loadRooms();
   }, []);
 
-  // Mock bookings data for calendar view
-  const mockBookings = useMemo(
-    () => [
-      {
-        id: "booking-1",
-        roomId: "2",
-        roomNumber: "102",
-        checkIn: new Date(2025, 9, 28),
-        checkOut: new Date(2025, 9, 31),
-        guestName: "John Doe",
-        status: "checked-in" as const,
-      },
-      {
-        id: "booking-2",
-        roomId: "8",
-        roomNumber: "302",
-        checkIn: new Date(2025, 9, 29),
-        checkOut: new Date(2025, 10, 2),
-        guestName: "Jane Smith",
-        status: "checked-in" as const,
-      },
-      {
-        id: "booking-3",
-        roomId: "3",
-        roomNumber: "201",
-        checkIn: new Date(2025, 10, 1),
-        checkOut: new Date(2025, 10, 5),
-        guestName: "Bob Johnson",
-        status: "confirmed" as const,
-      },
-      {
-        id: "booking-4",
-        roomId: "5",
-        roomNumber: "204",
-        checkIn: new Date(2025, 10, 3),
-        checkOut: new Date(2025, 10, 7),
-        guestName: "Alice Brown",
-        status: "confirmed" as const,
-      },
-    ],
-    []
-  );
+  // Load bookings từ API
+  useEffect(() => {
+    const loadBookings = async () => {
+      try {
+        const roomBookings = await bookingService.getAllRoomBookings();
+        setBookings(roomBookings);
+      } catch (error) {
+        console.error("Lỗi khi tải danh sách booking:", error);
+        toast?.error("Không thể tải danh sách booking");
+      }
+    };
+
+    loadBookings();
+  }, [toast]);
 
   // Filter rooms
   const filteredRooms = useMemo(() => {
@@ -172,9 +158,13 @@ const RoomManagement: React.FC = () => {
       // Search filter
       if (filters.searchTerm) {
         const searchLower = filters.searchTerm.toLowerCase();
+        const roomTypeName = typeof room.roomType === 'string' 
+          ? room.roomType 
+          : room.roomType.typeName;
+        
         if (
           !room.roomNumber.toLowerCase().includes(searchLower) &&
-          !room.roomType.toLowerCase().includes(searchLower)
+          !roomTypeName.toLowerCase().includes(searchLower)
         ) {
           return false;
         }
@@ -186,8 +176,13 @@ const RoomManagement: React.FC = () => {
       }
 
       // Room type filter
-      if (filters.roomType !== "all" && room.roomType !== filters.roomType) {
-        return false;
+      if (filters.roomType !== "all") {
+        const roomTypeName = typeof room.roomType === 'string' 
+          ? room.roomType 
+          : room.roomType.typeName;
+        if (roomTypeName !== filters.roomType) {
+          return false;
+        }
       }
 
       // Floor filter
@@ -219,13 +214,48 @@ const RoomManagement: React.FC = () => {
     const available = rooms.filter((r) => r.status === "available").length;
     const occupied = rooms.filter((r) => r.status === "occupied").length;
     const maintenance = rooms.filter((r) => r.status === "maintenance").length;
-    const occupancyRate = ((occupied / rooms.length) * 100).toFixed(1);
+    const occupancyRate =
+      rooms.length > 0 ? ((occupied / rooms.length) * 100).toFixed(1) : "0";
 
-    return { available, occupied, maintenance, occupancyRate };
-  }, [rooms]);
+    // Calculate booking statistics
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const todayBookings = bookings.filter((booking) => {
+      const checkIn = new Date(booking.checkIn);
+      checkIn.setHours(0, 0, 0, 0);
+      return checkIn.getTime() === today.getTime();
+    });
+
+    const activeBookings = bookings.filter((booking) => {
+      return booking.status === "checked-in" || booking.status === "pending";
+    });
+
+    // Calculate daily revenue from today's bookings
+    const dailyRevenue = todayBookings.reduce(
+      (sum, booking) => sum + booking.totalAmount,
+      0
+    );
+
+    return {
+      available,
+      occupied,
+      maintenance,
+      occupancyRate,
+      todayBookings: todayBookings.length,
+      activeBookings: activeBookings.length,
+      dailyRevenue,
+    };
+  }, [rooms, bookings]);
 
   // Get unique room types and floors for filters
-  const roomTypes = Array.from(new Set(rooms.map((r) => r.roomType)));
+  const roomTypes = Array.from(
+    new Set(
+      rooms.map((r) => 
+        typeof r.roomType === 'string' ? r.roomType : r.roomType.typeName
+      )
+    )
+  );
   const floors = Array.from(new Set(rooms.map((r) => r.floor))).sort();
 
   // Handlers
@@ -526,9 +556,12 @@ const RoomManagement: React.FC = () => {
             icon={FaChartLine}
             iconBgColor="bg-[#fff8e1]"
             iconColor="text-[#f57c00]"
-            value={`2,380,000`}
+            value={`${stats.dailyRevenue.toLocaleString("vi-VN")}đ`}
             label="Daily Revenue"
-            trend={{ value: "+6% vs last week", isPositive: true }}
+            trend={{
+              value: `${stats.todayBookings} bookings today`,
+              isPositive: true,
+            }}
           />
           <RoomStatCard
             icon={FaTools}
@@ -536,7 +569,10 @@ const RoomManagement: React.FC = () => {
             iconColor="text-[#c62828]"
             value={stats.maintenance}
             label="Maintenance"
-            trend={{ value: "+4% vs last week", isPositive: false }}
+            trend={{
+              value: `${stats.activeBookings} active bookings`,
+              isPositive: false,
+            }}
           />
         </motion.div>
 
@@ -651,7 +687,7 @@ const RoomManagement: React.FC = () => {
           ) : viewMode === "calendar" ? (
             <RoomCalendarView
               rooms={rooms}
-              bookings={mockBookings}
+              bookings={bookings}
               onRoomClick={handleRoomClick}
             />
           ) : viewMode === "card" ? (
@@ -713,7 +749,7 @@ const RoomManagement: React.FC = () => {
             setRoomToEdit(null);
           }}
           onSubmit={handleEditRoomSubmit}
-          room={roomToEdit as unknown as ApiRoom}
+          room={roomToEdit}
         />
       )}
 
