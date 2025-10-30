@@ -11,7 +11,7 @@ import NewsPage from "../pages/employee/NewsPage";
 import AdminLayout from "../layouts/AdminLayout";
 import BookingPage from "../pages/admin/booking/BookingPage";
 import Register from "../pages/auth/Register";
-import MainLayout from "../layouts/MainLayout";
+// import MainLayout from "../layouts/MainLayout";
 import CheckInManager from "../pages/employee/CheckInManager";
 import CheckOutManager from "../pages/employee/CheckOutManager";
 import InfoManagement from "../pages/admin/InfoManagement";
