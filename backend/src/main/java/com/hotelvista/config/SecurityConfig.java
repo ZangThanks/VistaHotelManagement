@@ -63,24 +63,25 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         // Public endpoints
-                        .requestMatchers("/auth/**").permitAll()
-                        .requestMatchers("/public/**").permitAll()
-
-                        // Admin only
-                        .requestMatchers("/admin/**").hasAuthority("ADMIN")
-
-                        // Employee and Admin
-                        .requestMatchers("/employee/**").hasAnyAuthority("ADMIN", "EMPLOYEE")
-
-                        // Customer, Employee and Admin
-                        .requestMatchers("/customer/**").hasAnyAuthority("ADMIN", "EMPLOYEE", "CUSTOMER")
-
-                        // All other requests need authentication
-                        .anyRequest().authenticated()
+//                        .requestMatchers("/auth/**").permitAll()
+//                        .requestMatchers("/public/**").permitAll()
+//
+//                        // Admin only
+//                        .requestMatchers("/admin/**").hasAuthority("ADMIN")
+//
+//                        // Employee and Admin
+//                        .requestMatchers("/employee/**").hasAnyAuthority("ADMIN", "EMPLOYEE")
+//
+//                        // Customer, Employee and Admin
+//                        .requestMatchers("/customer/**").hasAnyAuthority("ADMIN", "EMPLOYEE", "CUSTOMER")
+//
+//                        // All other requests need authentication
+//                        .anyRequest().authenticated()
+                                .anyRequest().permitAll()
                 );
 
         // Add JWT filter
-        http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+//        http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

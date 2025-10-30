@@ -17,10 +17,14 @@ import {
   FaConciergeBell,
   FaWind,
   FaTshirt,
+  FaExclamationCircle,
+  FaSpinner
 } from "react-icons/fa";
 import TabNavigation, { type Tab } from "./TabNavigation";
+import { validateTab } from "../../utils/roomValidators";
+import type { ValidationError } from "../../utils/roomValidators";
 
-interface RoomFormData {
+export interface RoomFormData {
   roomNumber: string;
   floor: string;
   roomStatus: string;
@@ -34,6 +38,7 @@ interface RoomFormData {
   basePrice: string;
   amenities: string[];
   imageUrls: string[];
+  imageFiles: File[];
 }
 
 interface AddRoomModalProps {
@@ -43,9 +48,9 @@ interface AddRoomModalProps {
 }
 
 /**
- * Modal for adding a new room with multi-step form
- * Includes 4 tabs: Room Details, Room Type, Amenities, Images
- */
+* Modal để thêm phòng mới với biểu mẫu nhiều bước
+* Bao gồm 4 tab: Chi tiết phòng, Loại phòng, Tiện nghi, Hình ảnh
+*/
 const AddRoomModal: React.FC<AddRoomModalProps> = ({
   isOpen,
   onClose,
@@ -53,6 +58,8 @@ const AddRoomModal: React.FC<AddRoomModalProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState("details");
   const [completedTabs, setCompletedTabs] = useState<string[]>([]);
+  const [errors, setErrors] = useState<ValidationError[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Form data
   const [formData, setFormData] = useState<RoomFormData>({
@@ -76,6 +83,7 @@ const AddRoomModal: React.FC<AddRoomModalProps> = ({
 
     // Images
     imageUrls: [] as string[],
+    imageFiles: [] as File[],
   });
 
   const tabs: Tab[] = [
@@ -101,19 +109,17 @@ const AddRoomModal: React.FC<AddRoomModalProps> = ({
   ];
 
   const roomTypes = [
-    { id: "RT001", name: "Standard Single" },
-    { id: "RT002", name: "Standard Queen" },
-    { id: "RT003", name: "Deluxe Single" },
-    { id: "RT004", name: "Deluxe Double" },
-    { id: "RT005", name: "Suite" },
-    { id: "RT006", name: "Presidential Suite" },
+    { id: "STD", name: "Standard" },
+    { id: "DLX", name: "Deluxe" },
+    { id: "STE", name: "Suite" },
   ];
 
   const handleInputChange = (
     field: keyof RoomFormData,
-    value: string | string[]
+    value: string | string[] | File[]
   ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+    setErrors((prev) => prev.filter((err) => err.field !== field));
   };
 
   const toggleAmenity = (amenityId: string) => {
@@ -129,24 +135,16 @@ const AddRoomModal: React.FC<AddRoomModalProps> = ({
     const files = e.target.files;
     if (!files) return;
 
-    // Convert files to data URLs (base64) for preview
     const fileArray = Array.from(files);
-    const filePromises = fileArray.map((file) => {
-      return new Promise<string>((resolve) => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          resolve(reader.result as string);
-        };
-        reader.readAsDataURL(file);
-      });
-    });
 
-    Promise.all(filePromises).then((dataUrls) => {
-      setFormData((prev) => ({
-        ...prev,
-        imageUrls: [...prev.imageUrls, ...dataUrls],
-      }));
-    });
+    // Store files for later upload
+    setFormData((prev) => ({
+      ...prev,
+      imageFiles: [...prev.imageFiles, ...fileArray],
+    }));
+
+    // Clear errors
+    setErrors((prev) => prev.filter((err) => err.field !== "images"));
   };
 
   const removeImage = (index: number) => {
@@ -157,12 +155,23 @@ const AddRoomModal: React.FC<AddRoomModalProps> = ({
   };
 
   const handleNext = () => {
-    // Mark current tab as completed
+    // Validate tab hiện tại
+    const tabErrors = validateTab(activeTab, formData);
+
+    if (tabErrors.length > 0) {
+      setErrors(tabErrors);
+      return;
+    }
+
+    // Đánh dấu tab hiện tại là đã hoàn thành
     if (!completedTabs.includes(activeTab)) {
       setCompletedTabs([...completedTabs, activeTab]);
     }
 
-    // Move to next tab
+    // Clear errors
+    setErrors([]);
+
+    // Di chuyển tới tab tiếp theo
     const currentIndex = tabs.findIndex((tab) => tab.id === activeTab);
     if (currentIndex < tabs.length - 1) {
       setActiveTab(tabs[currentIndex + 1].id);
@@ -177,18 +186,41 @@ const AddRoomModal: React.FC<AddRoomModalProps> = ({
   };
 
   const handleSubmit = () => {
-    // Mark last tab as completed
+    // Validate tab cuối
+    const tabErrors = validateTab(activeTab, formData);
+
+    if (tabErrors.length > 0) {
+      setErrors(tabErrors);
+      return;
+    }
+
+    // Đánh dấu tab cuối cùng là đã hoàn thành
     if (!completedTabs.includes(activeTab)) {
       setCompletedTabs([...completedTabs, activeTab]);
     }
 
-    onSubmit(formData);
-    handleClose();
+    setIsSubmitting(true);
+
+    try {
+      onSubmit(formData);
+      handleClose();
+    } catch (error) {
+      console.error("Lỗi gửi form", error);
+      setErrors([
+        {
+          field: "submit",
+          message: "Lỗi tạo phòng. Vui lòng thử lại.",
+        },
+      ]);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleClose = () => {
     setActiveTab("details");
     setCompletedTabs([]);
+    setErrors([]);
     setFormData({
       roomNumber: "",
       floor: "",
@@ -203,9 +235,14 @@ const AddRoomModal: React.FC<AddRoomModalProps> = ({
       basePrice: "",
       amenities: [],
       imageUrls: [],
+      imageFiles: [],
     });
     onClose();
   };
+
+  const getFieldError = (field: string): string | undefined => {
+    return errors.find((err) => err.field === field)?.message;
+  }
 
   if (!isOpen) return null;
 
@@ -251,9 +288,44 @@ const AddRoomModal: React.FC<AddRoomModalProps> = ({
               <TabNavigation
                 tabs={tabs}
                 activeTab={activeTab}
-                onTabChange={setActiveTab}
+                onTabChange={(tabId) => {
+                  // Chỉ cho phép nhấp vào các tab đã hoàn thành hoặc tab hiện tại
+                  const tabIndex = tabs.findIndex((t) => t.id === tabId);
+                  const currentIndex = tabs.findIndex(
+                    (t) => t.id === activeTab
+                  );
+
+                  if (
+                    tabIndex <= currentIndex ||
+                    completedTabs.includes(tabs[tabIndex - 1]?.id)
+                  ) {
+                    setErrors([]);
+                    setActiveTab(tabId);
+                  }
+                }}
                 completedTabs={completedTabs}
               />
+
+              {/* Error Summary */}
+              {errors.length > 0 && (
+                <div className="mx-6 mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <div className="flex items-start gap-3">
+                    <FaExclamationCircle className="text-red-500 mt-0.5 flex-shrink-0" />
+                    <div className="flex-1">
+                      <p className="font-semibold text-red-800 text-sm">
+                        Please fix the following errors:
+                      </p>
+                      <ul className="mt-2 space-y-1">
+                        {errors.map((error, index) => (
+                          <li key={index} className="text-sm text-red-700">
+                            • {error.message}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Tab Content */}
               <div className="flex-1 overflow-y-auto p-6">
@@ -281,8 +353,17 @@ const AddRoomModal: React.FC<AddRoomModalProps> = ({
                                 handleInputChange("roomNumber", e.target.value)
                               }
                               placeholder="e.g. 101, A-205, Suite-301"
-                              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6b5e4c] focus:border-transparent"
+                              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#6b5e4c] focus:border-transparent ${
+                                getFieldError("roomNumber")
+                                  ? "border-red-500"
+                                  : "border-gray-300"
+                              }`}
                             />
+                            {getFieldError("roomNumber") && (
+                              <p className="mt-1 text-sm text-red-600">
+                                {getFieldError("roomNumber")}
+                              </p>
+                            )}
                           </div>
 
                           <div>
@@ -296,7 +377,11 @@ const AddRoomModal: React.FC<AddRoomModalProps> = ({
                               onChange={(e) =>
                                 handleInputChange("lastCleaned", e.target.value)
                               }
-                              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6b5e4c] focus:border-transparent"
+                              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#6b5e4c] focus:border-transparent ${
+                                getFieldError("lastCleaned")
+                                  ? "border-red-500"
+                                  : "border-gray-300"
+                              }`}
                             />
                           </div>
                         </div>
@@ -313,8 +398,18 @@ const AddRoomModal: React.FC<AddRoomModalProps> = ({
                                 handleInputChange("floor", e.target.value)
                               }
                               placeholder="Floor number"
-                              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6b5e4c] focus:border-transparent"
+                              min="1"
+                              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#6b5e4c] focus:border-transparent ${
+                                getFieldError("floor")
+                                  ? "border-red-500"
+                                  : "border-gray-300"
+                              }`}
                             />
+                            {getFieldError("floor") && (
+                              <p className="mt-1 text-sm text-red-600">
+                                {getFieldError("floor")}
+                              </p>
+                            )}
                           </div>
 
                           <div>
@@ -330,7 +425,7 @@ const AddRoomModal: React.FC<AddRoomModalProps> = ({
                               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6b5e4c] focus:border-transparent cursor-pointer"
                             >
                               <option value="AVAILABLE">AVAILABLE</option>
-                              <option value="OCCUPIED">OCCUPIED</option>
+                              <option value="BOOKED">BOOKED</option>
                               <option value="MAINTENANCE">MAINTENANCE</option>
                               <option value="CLEANING">CLEANING</option>
                             </select>
@@ -339,7 +434,7 @@ const AddRoomModal: React.FC<AddRoomModalProps> = ({
 
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Notes <span className="text-red-500">*</span>
+                            Notes
                           </label>
                           <textarea
                             value={formData.notes}
@@ -377,7 +472,11 @@ const AddRoomModal: React.FC<AddRoomModalProps> = ({
                                   );
                                 }
                               }}
-                              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6b5e4c] focus:border-transparent cursor-pointer"
+                              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#6b5e4c] focus:border-transparent cursor-pointer ${
+                                getFieldError("roomTypeId")
+                                  ? "border-red-500"
+                                  : "border-gray-300"
+                              }`}
                             >
                               <option value="">Select room type</option>
                               {roomTypes.map((type) => (
@@ -386,6 +485,11 @@ const AddRoomModal: React.FC<AddRoomModalProps> = ({
                                 </option>
                               ))}
                             </select>
+                            {getFieldError("roomTypeId") && (
+                              <p className="mt-1 text-sm text-red-600">
+                                {getFieldError("roomTypeId")}
+                              </p>
+                            )}
                           </div>
 
                           <div>
@@ -401,8 +505,18 @@ const AddRoomModal: React.FC<AddRoomModalProps> = ({
                               }
                               placeholder="1.1"
                               step="0.1"
-                              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6b5e4c] focus:border-transparent"
+                              min="0"
+                              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#6b5e4c] focus:border-transparent ${
+                                getFieldError("area")
+                                  ? "border-red-500"
+                                  : "border-gray-300"
+                              }`}
                             />
+                            {getFieldError("area") && (
+                              <p className="mt-1 text-sm text-red-600">
+                                {getFieldError("area")}
+                              </p>
+                            )}
                           </div>
                         </div>
 
@@ -417,8 +531,17 @@ const AddRoomModal: React.FC<AddRoomModalProps> = ({
                               handleInputChange("typeName", e.target.value)
                             }
                             placeholder="Standard Queen"
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6b5e4c] focus:border-transparent"
+                            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#6b5e4c] focus:border-transparent ${
+                              getFieldError("typeName")
+                                ? "border-red-500"
+                                : "border-gray-300"
+                            }`}
                           />
+                          {getFieldError("typeName") && (
+                            <p className="mt-1 text-sm text-red-600">
+                              {getFieldError("typeName")}
+                            </p>
+                          )}
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
@@ -437,8 +560,18 @@ const AddRoomModal: React.FC<AddRoomModalProps> = ({
                                 )
                               }
                               placeholder="1"
-                              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6b5e4c] focus:border-transparent"
+                              min="1"
+                              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#6b5e4c] focus:border-transparent ${
+                                getFieldError("maxOccupancy")
+                                  ? "border-red-500"
+                                  : "border-gray-300"
+                              }`}
                             />
+                            {getFieldError("maxOccupancy") && (
+                              <p className="mt-1 text-sm text-red-600">
+                                {getFieldError("maxOccupancy")}
+                              </p>
+                            )}
                           </div>
 
                           <div>
@@ -453,8 +586,18 @@ const AddRoomModal: React.FC<AddRoomModalProps> = ({
                               }
                               placeholder="0.01"
                               step="0.01"
-                              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6b5e4c] focus:border-transparent"
+                              min="0"
+                              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#6b5e4c] focus:border-transparent ${
+                                getFieldError("basePrice")
+                                  ? "border-red-500"
+                                  : "border-gray-300"
+                              }`}
                             />
+                            {getFieldError("basePrice") && (
+                              <p className="mt-1 text-sm text-red-600">
+                                {getFieldError("basePrice")}
+                              </p>
+                            )}
                           </div>
                         </div>
 
@@ -469,8 +612,17 @@ const AddRoomModal: React.FC<AddRoomModalProps> = ({
                             }
                             placeholder="Cozy queen bed room perfect for couples"
                             rows={3}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6b5e4c] focus:border-transparent resize-none"
+                            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#6b5e4c] focus:border-transparent resize-none ${
+                              getFieldError("description")
+                                ? "border-red-500"
+                                : "border-gray-300"
+                            }`}
                           />
+                          {getFieldError("description") && (
+                            <p className="mt-1 text-sm text-red-600">
+                              {getFieldError("description")}
+                            </p>
+                          )}
                         </div>
 
                         {/* Room Type Preview */}
@@ -499,7 +651,7 @@ const AddRoomModal: React.FC<AddRoomModalProps> = ({
                               </p>
                               <p>
                                 <span className="font-medium">Base Price:</span>{" "}
-                                ${formData.basePrice}
+                                {formData.basePrice} VND
                               </p>
                             </div>
                           </div>
@@ -645,47 +797,28 @@ const AddRoomModal: React.FC<AddRoomModalProps> = ({
                           </label>
                         </div>
 
-                        {/* URL Input */}
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Or enter image URLs (one per line)
-                          </label>
-                          <textarea
-                            value={formData.imageUrls.join("\n")}
-                            onChange={(e) =>
-                              handleInputChange(
-                                "imageUrls",
-                                e.target.value
-                                  .split("\n")
-                                  .filter((url) => url.trim())
-                              )
-                            }
-                            placeholder="https://example.com/room-image-1.jpg&#10;https://example.com/room-image-2.jpg"
-                            rows={3}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6b5e4c] focus:border-transparent resize-none font-mono text-sm"
-                          />
-                        </div>
+                        {getFieldError("images") && (
+                          <p className="text-sm text-red-600 text-center">
+                            {getFieldError("images")}
+                          </p>
+                        )}
 
                         {/* Images Preview */}
-                        {formData.imageUrls.length > 0 && (
+                        {formData.imageFiles.length > 0 && (
                           <div className="bg-green-50 p-4 rounded-lg border border-green-200">
                             <h4 className="font-semibold text-gray-900 mb-2">
-                              Images Added ({formData.imageUrls.length})
+                              Images Selected ({formData.imageFiles.length})
                             </h4>
                             <div className="grid grid-cols-3 gap-2">
-                              {formData.imageUrls.map((url, index) => (
+                              {formData.imageFiles.map((file, index) => (
                                 <div
                                   key={index}
                                   className="relative aspect-video bg-gray-200 rounded-lg overflow-hidden group"
                                 >
                                   <img
-                                    src={url}
+                                    src={URL.createObjectURL(file)}
                                     alt={`Room ${index + 1}`}
                                     className="w-full h-full object-cover"
-                                    onError={(e) => {
-                                      (e.target as HTMLImageElement).src =
-                                        "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Crect fill='%23ddd' width='100' height='100'/%3E%3Ctext fill='%23999' x='50%25' y='50%25' text-anchor='middle' dy='.3em'%3ENo Image%3C/text%3E%3C/svg%3E";
-                                    }}
                                   />
                                   {/* Remove button */}
                                   <button
@@ -695,15 +828,18 @@ const AddRoomModal: React.FC<AddRoomModalProps> = ({
                                   >
                                     <FaTimes className="w-3 h-3" />
                                   </button>
+                                  <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs p-1 truncate">
+                                    {file.name}
+                                  </div>
                                 </div>
                               ))}
                             </div>
                           </div>
                         )}
 
-                        {formData.imageUrls.length === 0 && (
-                          <div className="text-center py-4 text-sm text-green-600 italic">
-                            No images added
+                        {formData.imageFiles.length === 0 && (
+                          <div className="text-center py-4 text-sm text-gray-500 italic">
+                            No images selected
                           </div>
                         )}
                       </div>
@@ -716,7 +852,8 @@ const AddRoomModal: React.FC<AddRoomModalProps> = ({
               <div className="flex items-center justify-between p-6 border-t border-gray-200 bg-gray-50">
                 <button
                   onClick={handleClose}
-                  className="px-6 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer font-medium"
+                  disabled={isSubmitting}
+                  className="px-6 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Cancel
                 </button>
@@ -725,7 +862,8 @@ const AddRoomModal: React.FC<AddRoomModalProps> = ({
                   {!isFirstTab && (
                     <button
                       onClick={handlePrevious}
-                      className="inline-flex items-center gap-2 px-6 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer font-medium"
+                      disabled={isSubmitting}
+                      className="inline-flex items-center gap-2 px-6 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <FaArrowLeft />
                       Previous
@@ -735,7 +873,8 @@ const AddRoomModal: React.FC<AddRoomModalProps> = ({
                   {!isLastTab ? (
                     <button
                       onClick={handleNext}
-                      className="inline-flex items-center gap-2 px-6 py-2 bg-[#6b5e4c] text-white rounded-lg hover:bg-[#5a4d3e] transition-colors cursor-pointer font-medium"
+                      disabled={isSubmitting}
+                      className="inline-flex items-center gap-2 px-6 py-2 bg-[#6b5e4c] text-white rounded-lg hover:bg-[#5a4d3e] transition-colors cursor-pointer font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Next
                       <FaArrowRight />
@@ -743,10 +882,20 @@ const AddRoomModal: React.FC<AddRoomModalProps> = ({
                   ) : (
                     <button
                       onClick={handleSubmit}
-                      className="inline-flex items-center gap-2 px-6 py-2 bg-[#6b5e4c] text-white rounded-lg hover:bg-[#5a4d3e] transition-colors cursor-pointer font-medium"
+                      disabled={isSubmitting}
+                      className="inline-flex items-center gap-2 px-6 py-2 bg-[#6b5e4c] text-white rounded-lg hover:bg-[#5a4d3e] transition-colors cursor-pointer font-medium disabled:opacity-50 disabled:cursor-not-allowed min-w-[140px]"
                     >
-                      <FaCheck />
-                      Create Room
+                      {isSubmitting ? (
+                        <>
+                          <FaSpinner className="animate-spin" />
+                          Creating...
+                        </>
+                      ) : (
+                        <>
+                          <FaCheck />
+                          Create Room
+                        </>
+                      )}
                     </button>
                   )}
                 </div>

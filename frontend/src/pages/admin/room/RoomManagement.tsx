@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   FaDoorOpen,
   FaBed,
@@ -22,10 +22,13 @@ import Pagination from "../../../components/room/Pagination";
 import type { Room } from "../../../components/room/RoomTableView";
 import AddRoomModal from "../../../components/room/AddRoomModal";
 import { motion } from "framer-motion";
+import {roomService, type Room as ApiRoom, type RoomStatus} from  "../../../services/roomService"
+import { uploadMultipleImagesToCloudinary } from "../../../services/cloudinaryService";
+import type { RoomFormData } from "../../../components/room/AddRoomModal";
 
 /**
  * Component quản lý phòng
- * Hiển thị overview, chart, danh sách phòng với filter và phân trang
+ * Hiển thị overview, danh sách phòng với filter và phân trang
  * Hỗ trợ nhiều view: Card, Table, Calendar, Status Board
  */
 const RoomManagement: React.FC = () => {
@@ -44,6 +47,12 @@ const RoomManagement: React.FC = () => {
   // Add room modal
   const [isAddRoomModalOpen, setIsAddRoomModalOpen] = useState(false);
 
+  // Loading state
+  const [loading, setLoading] = useState(true);
+
+  // Rooms data from API
+  const [rooms, setRooms] = useState<Room[]>([]);
+
   // Filters
   const [filters, setFilters] = useState<FilterOptions>({
     searchTerm: "",
@@ -53,132 +62,46 @@ const RoomManagement: React.FC = () => {
     priceRange: "all",
   });
 
-  // Mock data - Thay thế bằng API call thực tế
-  const mockRooms: Room[] = useMemo(
-    () => [
-      {
-        id: "1",
-        roomNumber: "101",
-        roomType: "Deluxe Single",
-        floor: 1,
-        price: 1200000,
-        status: "available",
-        capacity: 2,
-        amenities: ["WiFi", "TV", "AC", "Minibar"],
-        image:
-          "https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=500",
-      },
-      {
-        id: "2",
-        roomNumber: "102",
-        roomType: "Deluxe Double",
-        floor: 1,
-        price: 1500000,
-        status: "occupied",
-        capacity: 3,
-        amenities: ["WiFi", "TV", "AC", "Minibar", "Balcony"],
-        image:
-          "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=500",
-      },
-      {
-        id: "3",
-        roomNumber: "201",
-        roomType: "Suite",
-        floor: 2,
-        price: 3000000,
-        status: "available",
-        capacity: 4,
-        amenities: ["WiFi", "TV", "AC", "Minibar", "Kitchen", "Living Room"],
-        image:
-          "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=500",
-      },
-      {
-        id: "4",
-        roomNumber: "202",
-        roomType: "Suite",
-        floor: 2,
-        price: 3200000,
-        status: "maintenance",
-        capacity: 4,
-        amenities: ["WiFi", "TV", "AC", "Minibar", "Jacuzzi"],
-        image:
-          "https://images.unsplash.com/photo-1590490360182-c33d57733427?w=500",
-      },
-      {
-        id: "5",
-        roomNumber: "301",
-        roomType: "Presidential Suite",
-        floor: 3,
-        price: 8000000,
-        status: "available",
-        capacity: 6,
-        amenities: ["WiFi", "TV", "AC", "Minibar", "Kitchen", "2 Bathrooms"],
-        image:
-          "https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=500",
-      },
-      {
-        id: "6",
-        roomNumber: "103",
-        roomType: "Standard Single",
-        floor: 1,
-        price: 800000,
-        status: "cleaning",
-        capacity: 1,
-        amenities: ["WiFi", "TV", "AC"],
-        image:
-          "https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=500",
-      },
-      {
-        id: "7",
-        roomNumber: "104",
-        roomType: "Standard Double",
-        floor: 1,
-        price: 1000000,
-        status: "available",
-        capacity: 2,
-        amenities: ["WiFi", "TV", "AC"],
-        image:
-          "https://images.unsplash.com/photo-1595576508898-0ad5c879a061?w=500",
-      },
-      {
-        id: "8",
-        roomNumber: "203",
-        roomType: "Deluxe Double",
-        floor: 2,
-        price: 1600000,
-        status: "occupied",
-        capacity: 3,
-        amenities: ["WiFi", "TV", "AC", "Minibar", "Sea View"],
-        image:
-          "https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?w=500",
-      },
-      {
-        id: "9",
-        roomNumber: "204",
-        roomType: "Family Room",
-        floor: 2,
-        price: 2500000,
-        status: "available",
-        capacity: 5,
-        amenities: ["WiFi", "TV", "AC", "Minibar", "2 Beds"],
-        image:
-          "https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=500",
-      },
-      {
-        id: "10",
-        roomNumber: "302",
-        roomType: "Executive Suite",
-        floor: 3,
-        price: 5000000,
-        status: "available",
-        capacity: 4,
-        amenities: ["WiFi", "TV", "AC", "Minibar", "Office Space"],
-        image:
-          "https://images.unsplash.com/photo-1591088398332-8a7791972843?w=500",
-      },
-    ],
-    []
-  );
+  // Chuyển đổi API Room thành UI Room
+  const convertApiRoomToUiRoom = (apiRoom: ApiRoom): Room => {
+    // Map backend RoomStatus với frontend Room status
+    const statusMap: Record<RoomStatus, Room["status"]> = {
+      AVAILABLE: "available",
+      BOOKED: "occupied",
+      MAINTENANCE: "maintenance",
+      CLEANING: "cleaning",
+    };
+
+    return {
+      id: apiRoom.roomNumber,
+      roomNumber: apiRoom.roomNumber,
+      roomType: apiRoom.roomType.typeName,
+      floor: apiRoom.floor,
+      price: apiRoom.roomType.basePrice,
+      status: statusMap[apiRoom.status],
+      capacity: apiRoom.roomType.maxOccupancy,
+      amenities: apiRoom.roomType.amenties,
+      image: apiRoom.roomType.images[0] || "",
+    };
+  };
+
+  // Load danh sách từ API
+  useEffect(() => {
+    const loadRooms = async () => {
+      try {
+        setLoading(true);
+        const apiRooms = await roomService.getAllRooms();
+        const uiRooms = apiRooms.map(convertApiRoomToUiRoom);
+        setRooms(uiRooms);
+      } catch (error) {
+        console.error("Lỗi khi tải danh sách phòng:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadRooms();
+  }, []);
 
   // Mock bookings data for calendar view
   const mockBookings = useMemo(
@@ -225,7 +148,7 @@ const RoomManagement: React.FC = () => {
 
   // Filter rooms
   const filteredRooms = useMemo(() => {
-    return mockRooms.filter((room) => {
+    return rooms.filter((room) => {
       // Search filter
       if (filters.searchTerm) {
         const searchLower = filters.searchTerm.toLowerCase();
@@ -262,7 +185,7 @@ const RoomManagement: React.FC = () => {
 
       return true;
     });
-  }, [mockRooms, filters]);
+  }, [rooms, filters]);
 
   // Pagination
   const totalPages = Math.ceil(filteredRooms.length / itemsPerPage);
@@ -273,19 +196,17 @@ const RoomManagement: React.FC = () => {
 
   // Statistics
   const stats = useMemo(() => {
-    const available = mockRooms.filter((r) => r.status === "available").length;
-    const occupied = mockRooms.filter((r) => r.status === "occupied").length;
-    const maintenance = mockRooms.filter(
-      (r) => r.status === "maintenance"
-    ).length;
-    const occupancyRate = ((occupied / mockRooms.length) * 100).toFixed(1);
+    const available = rooms.filter((r) => r.status === "available").length;
+    const occupied = rooms.filter((r) => r.status === "occupied").length;
+    const maintenance = rooms.filter((r) => r.status === "maintenance").length;
+    const occupancyRate = ((occupied / rooms.length) * 100).toFixed(1);
 
     return { available, occupied, maintenance, occupancyRate };
-  }, [mockRooms]);
+  }, [rooms]);
 
   // Get unique room types and floors for filters
-  const roomTypes = Array.from(new Set(mockRooms.map((r) => r.roomType)));
-  const floors = Array.from(new Set(mockRooms.map((r) => r.floor))).sort();
+  const roomTypes = Array.from(new Set(rooms.map((r) => r.roomType)));
+  const floors = Array.from(new Set(rooms.map((r) => r.floor))).sort();
 
   // Handlers
   const handleEdit = (room: Room) => {
@@ -309,15 +230,95 @@ const RoomManagement: React.FC = () => {
     setIsAddRoomModalOpen(true);
   };
 
-  const handleAddRoomSubmit = (roomData: any) => {
+  const handleAddRoomSubmit = async (roomData: RoomFormData) => {
     console.log("Room data submitted:", roomData);
-    // TODO: Call API to add room
-    // After successful API call, refresh room list
+    
+    try {
+      setLoading(true);
+
+      // 1. Upload ảnh lên Cloudinary và lấy URL về
+      let cloudinaryUrls: string[] = [];
+      if (roomData.imageFiles.length > 0) {
+        const uploadImages = await uploadMultipleImagesToCloudinary(roomData.imageFiles);
+        cloudinaryUrls = uploadImages.map(img => img.secure_url);
+      }
+
+      // 2. Chuẩn bị dữ liệu loại phòng
+      const roomTypeData = {
+        roomTypeID: roomData.roomTypeId,
+        typeName: roomData.typeName,
+        description: roomData.description,
+        area: parseFloat(roomData.area),
+        maxOccupancy: parseInt(roomData.maxOccupancy),
+        amenties: roomData.amenities,
+        basePrice: parseFloat(roomData.basePrice),
+        images: cloudinaryUrls,
+      }
+
+      // 3. Lưu loại phòng đầu
+      await roomService.saveRoomType(roomTypeData);
+
+      // 4. Chuẩn bị dữ liệu phòng
+      const roomApiData = {
+        roomNumber: roomData.roomNumber,
+        floor: parseInt(roomData.floor),
+        status: roomData.roomStatus as RoomStatus,
+        lastCleaned: roomData.lastCleaned,
+        notes: roomData.notes,
+        roomType: {
+          roomTypeID: roomData.roomTypeId,
+        } as ApiRoom["roomType"],
+      };
+
+      // 5. Lưu phòng
+      await roomService.saveRoom(roomApiData);
+
+      // 6. Reload danh sách phòng
+      const apiRooms = await roomService.getAllRooms();
+      const uiRooms = apiRooms
+        .map((apiRoom) => {
+          if (!apiRoom.roomType) {
+            console.warn(
+               `Room ${apiRoom.roomNumber} has null roomType,skipping...`
+            );
+            return null;
+          }
+          return convertApiRoomToUiRoom(apiRoom);
+        })
+        .filter((room): room is Room => room !== null);
+
+      setRooms(uiRooms);
+
+      // 7. Đóng modal
+      setIsAddRoomModalOpen(false);
+
+      // TODO: Show success notification
+      alert("Room created successfully!");
+
+    } catch (error) {
+      console.error("Failed to add room:", error);
+      alert("Failed to create room. Please try again.");
+      throw error;
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleRoomClick = (room: Room) => {
     setSelectedRoom(room);
   };
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#f5f0eb] p-6 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#6b5e4c] mx-auto"></div>
+          <p className="mt-4 text-gray-600">Đang tải danh sách phòng...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#f5f0eb] p-6">
@@ -492,7 +493,7 @@ const RoomManagement: React.FC = () => {
             />
           ) : viewMode === "calendar" ? (
             <RoomCalendarView
-              rooms={mockRooms}
+              rooms={rooms}
               bookings={mockBookings}
               onRoomClick={handleRoomClick}
             />

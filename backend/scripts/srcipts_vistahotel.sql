@@ -29,16 +29,16 @@ INSERT INTO room_type_images (room_type_id, images_url) VALUES
                                                             ('STE', 'https://q-xx.bstatic.com/xdata/images/hotel/max1024x768/629964341.jpg?k=119039eeeec43b29489f366935c93223415e50bca6c94593a0baa3b4f0f1f473&o=&s=600x'),
                                                             ('STE', 'https://pix8.agoda.net/property/73668369/0/ab0f949fe65b213cc9b1ad2f32c3271f.jpeg?ce=2&s=600x');
 
--- ROOMS
-INSERT INTO rooms (room_number, floor, last_cleaned, notes, status) VALUES
-                                                                        ('STD101', 1, '2024-06-01 12:00:00', 'Sạch sẽ', 'AVAILABLE'),
-                                                                        ('STD102', 1, '2024-06-01 13:00:00', 'Sạch sẽ', 'BOOKED'),
-                                                                        ('STD103', 1, '2024-06-01 14:00:00', 'Đang bảo trì', 'MAINTENANCE'),
-                                                                        ('DLX201', 2, '2024-06-01 11:00:00', 'Sạch sẽ', 'AVAILABLE'),
-                                                                        ('DLX202', 2, '2024-06-01 12:30:00', 'Đang dọn dẹp', 'CLEANING'),
-                                                                        ('DLX203', 2, '2024-06-01 13:30:00', 'Sạch sẽ', 'AVAILABLE'),
-                                                                        ('STE301', 3, '2024-06-01 10:00:00', 'Sạch sẽ', 'AVAILABLE'),
-                                                                        ('STE302', 3, '2024-06-01 09:00:00', 'Sạch sẽ', 'BOOKED');
+-- ROOMS (FIXED: Added room_type_id)
+INSERT INTO rooms (room_number, floor, last_cleaned, notes, status, room_type_id) VALUES
+                                                                                      ('STD101', 1, '2024-06-01 12:00:00', 'Sạch sẽ', 'AVAILABLE', 'STD'),
+                                                                                      ('STD102', 1, '2024-06-01 13:00:00', 'Sạch sẽ', 'BOOKED', 'STD'),
+                                                                                      ('STD103', 1, '2024-06-01 14:00:00', 'Đang bảo trì', 'MAINTENANCE', 'STD'),
+                                                                                      ('DLX201', 2, '2024-06-01 11:00:00', 'Sạch sẽ', 'AVAILABLE', 'DLX'),
+                                                                                      ('DLX202', 2, '2024-06-01 12:30:00', 'Đang dọn dẹp', 'CLEANING', 'DLX'),
+                                                                                      ('DLX203', 2, '2024-06-01 13:30:00', 'Sạch sẽ', 'AVAILABLE', 'DLX'),
+                                                                                      ('STE301', 3, '2024-06-01 10:00:00', 'Sạch sẽ', 'AVAILABLE', 'STE'),
+                                                                                      ('STE302', 3, '2024-06-01 09:00:00', 'Sạch sẽ', 'BOOKED', 'STE');
 
 -- CUSTOMERS
 INSERT INTO customers (customer_id, address, email, full_name, PASSWORD, joined_date, phone, user_name, user_role, birth_date, gender, loyalty_points, membership_level) VALUES
