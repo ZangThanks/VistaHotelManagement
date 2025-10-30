@@ -12,7 +12,7 @@ export const getAll = async () => {
   }
 };
 
-export const getBookingById = async (id) => {
+export const getBookingById = async (id: string) => {
   try {
     const response = await api.get(`${ENDPOINT}/${id}`);
     return response.data;
@@ -22,7 +22,7 @@ export const getBookingById = async (id) => {
   }
 };
 
-export const createBooking = async (booking) => {
+export const createBooking = async (booking: object) => {
   try {
     const response = await api.post(`${ENDPOINT}/save`, booking);
     return response.data;
@@ -32,7 +32,7 @@ export const createBooking = async (booking) => {
   }
 };
 
-export const updateDepartment = async (id, booking) => {
+export const updateBooking = async (id: string, booking: object) => {
   try {
     const response = await api.put(`${ENDPOINT}/edit/${id}`, booking);
     return response.data;
@@ -41,13 +41,3 @@ export const updateDepartment = async (id, booking) => {
     throw error;
   }
 };
-
-// export const deleteBooking = async (id) => {
-//   try {
-//     await axios.delete(`${API_URL}/${id}`);
-//     return true;
-//   } catch (error) {
-//     console.error(`Error deleting booking ${id}:`, error);
-//     throw error;
-//   }
-// };

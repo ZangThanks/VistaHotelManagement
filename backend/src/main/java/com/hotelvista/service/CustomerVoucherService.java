@@ -24,4 +24,8 @@ public class CustomerVoucherService {
     public List<CustomerVoucher> findAllByVoucherStartDateAfterAndEndDateBefore(LocalDate startDate, LocalDate endDate, String customerId) {
         return repo.findAllByVoucher_StartDateAfterAndEndDateBefore(startDate, endDate, customerId);
     }
+
+    public List<CustomerVoucher> findAllByCustomer_Id(String customerId) {
+        return repo.findAllByCustomer_Id(customerId);
+    }
 }

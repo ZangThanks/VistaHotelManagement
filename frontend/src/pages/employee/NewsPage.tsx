@@ -2,6 +2,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import HeaderHome from '../../components/HeaderHome';
 import Header from '../../components/Header';
+import bannerImg from '../../assets/images/bg_newPage.png';
 
 const NewsPage: React.FC = () => {
     const [showSolidHeader, setShowSolidHeader] = useState(false);
@@ -47,14 +48,14 @@ const NewsPage: React.FC = () => {
                             : 'opacity-0 pointer-events-none'
                     }`}
                 >
-                    <Header onMenuClick={() => {}} />
+                    <Header />
                 </div>
             </div>
 
             {/* 🔳 Banner */}
             <img
                 ref={bannerRef}
-                src="../../assets/images/bg_newPage.png"
+                src={bannerImg}
                 alt="News Banner"
                 className="w-full h-screen object-cover"
             />

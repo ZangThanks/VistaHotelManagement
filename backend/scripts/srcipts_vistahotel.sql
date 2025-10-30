@@ -20,40 +20,38 @@ INSERT INTO room_type_amenties (room_type_id, amenties) VALUES
                                                             ('STE', 'Minibar'),
                                                             ('STE', 'Ban công');
 
--- ROOM TYPE IMAGES
-INSERT INTO room_type_images (room_type_id, images_url) VALUES
-                                                            ('STD', 'https://pix8.agoda.net/hotelImages/7394456/87898656/a9ed80d50120f6b39035912334b2c530.jpg?ce=0&s=600x'),
-                                                            ('STD', 'https://pix8.agoda.net/hotelImages/7394456/93823858/036cf046c58da8fff1cf92aaf3aa7f37.jpg?ce=2&s=600x'),
-                                                            ('DLX', 'https://q-xx.bstatic.com/xdata/images/hotel/max1024x768/629950678.jpg?k=519c28836f153d0fc993144aca31868f5489a3d1590a2af8ba7be2d2b5de05a9&o=&s=600x'),
-                                                            ('DLX', 'https://pix8.agoda.net/hotelImages/7394456/87898656/a12bb62e00b1bd42f5bcd4168742230a.jpg?ce=2&s=600x'),
-                                                            ('STE', 'https://q-xx.bstatic.com/xdata/images/hotel/max1024x768/629964341.jpg?k=119039eeeec43b29489f366935c93223415e50bca6c94593a0baa3b4f0f1f473&o=&s=600x'),
-                                                            ('STE', 'https://pix8.agoda.net/property/73668369/0/ab0f949fe65b213cc9b1ad2f32c3271f.jpeg?ce=2&s=600x');
-
--- ROOMS (FIXED: Added room_type_id)
+-- ROOMS
 INSERT INTO rooms (room_number, floor, last_cleaned, notes, status, room_type_id) VALUES
-                                                                                      ('STD101', 1, '2024-06-01 12:00:00', 'Sạch sẽ', 'AVAILABLE', 'STD'),
-                                                                                      ('STD102', 1, '2024-06-01 13:00:00', 'Sạch sẽ', 'BOOKED', 'STD'),
-                                                                                      ('STD103', 1, '2024-06-01 14:00:00', 'Đang bảo trì', 'MAINTENANCE', 'STD'),
-                                                                                      ('DLX201', 2, '2024-06-01 11:00:00', 'Sạch sẽ', 'AVAILABLE', 'DLX'),
-                                                                                      ('DLX202', 2, '2024-06-01 12:30:00', 'Đang dọn dẹp', 'CLEANING', 'DLX'),
-                                                                                      ('DLX203', 2, '2024-06-01 13:30:00', 'Sạch sẽ', 'AVAILABLE', 'DLX'),
-                                                                                      ('STE301', 3, '2024-06-01 10:00:00', 'Sạch sẽ', 'AVAILABLE', 'STE'),
-                                                                                      ('STE302', 3, '2024-06-01 09:00:00', 'Sạch sẽ', 'BOOKED', 'STE');
-
+                                                                          ('STD101', 1, '2024-06-01 12:00:00', 'Sạch sẽ', 'AVAILABLE','STD'),
+                                                                          ('STD102', 1, '2024-06-01 13:00:00', 'Sạch sẽ', 'BOOKED', 'STD'),
+                                                                          ('STD103', 1, '2024-06-01 14:00:00', 'Đang bảo trì', 'MAINTENANCE', 'STD'),
+                                                                          ('DLX201', 2, '2024-06-01 11:00:00', 'Sạch sẽ', 'AVAILABLE', 'DLX'),
+                                                                          ('DLX202', 2, '2024-06-01 12:30:00', 'Đang dọn dẹp', 'CLEANING', 'DLX'),
+                                                                          ('DLX203', 2, '2024-06-01 13:30:00', 'Sạch sẽ', 'AVAILABLE', 'DLX'),
+                                                                          ('STE301', 3, '2024-06-01 10:00:00', 'Sạch sẽ', 'AVAILABLE', 'STE'),
+                                                                          ('STE302', 3, '2024-06-01 09:00:00', 'Sạch sẽ', 'BOOKED', 'STE');
+-- ROOM TYPE IMAGES
+INSERT INTO room_images (room_id, images_url) VALUES
+                                                  ('STD101', 'https://pix8.agoda.net/hotelImages/7394456/87898656/a9ed80d50120f6b39035912334b2c530.jpg?ce=0&s=600x'),
+                                                  ('STD102', 'https://pix8.agoda.net/hotelImages/7394456/93823858/036cf046c58da8fff1cf92aaf3aa7f37.jpg?ce=2&s=600x'),
+                                                  ('STD103', 'https://q-xx.bstatic.com/xdata/images/hotel/max1024x768/629950678.jpg?k=519c28836f153d0fc993144aca31868f5489a3d1590a2af8ba7be2d2b5de05a9&o=&s=600x'),
+                                                  ('DLX201', 'https://pix8.agoda.net/hotelImages/7394456/87898656/a12bb62e00b1bd42f5bcd4168742230a.jpg?ce=2&s=600x'),
+                                                  ('DLX202', 'https://q-xx.bstatic.com/xdata/images/hotel/max1024x768/629964341.jpg?k=119039eeeec43b29489f366935c93223415e50bca6c94593a0baa3b4f0f1f473&o=&s=600x'),
+                                                  ('STE301', 'https://pix8.agoda.net/property/73668369/0/ab0f949fe65b213cc9b1ad2f32c3271f.jpeg?ce=2&s=600x');
 -- CUSTOMERS
 INSERT INTO customers (customer_id, address, email, full_name, PASSWORD, joined_date, phone, user_name, user_role, birth_date, gender, loyalty_points, membership_level) VALUES
-                                                                                                                                                               ('CUST001', 'TP.HCM', 'nguyenvana@gmail.com', 'Nguyễn Văn A', 'hashedpw1','2025-10-20', '0901234567', 'nguyenvana', 'CUSTOMER', '1990-05-20', 'MALE', 12000, 'SILVER'),
-                                                                                                                                                               ('CUST002', 'TP.HCM', 'tranthib@gmail.com', 'Trần Thị B', 'hashedpw2', '2025-10-20', '0912345678', 'tranthib', 'CUSTOMER', '1988-08-15', 'FEMALE', 55000, 'GOLD'),
-                                                                                                                                                               ('CUST003', 'TP.HCM', 'lequocd@gmail.com', 'Lê Quốc D', 'hashedpw3', '2025-10-20', '0923456789', 'lequocd', 'CUSTOMER', '1995-12-01', 'MALE', 2500, 'BRONZE'),
-                                                                                                                                                               ('CUST004', 'TP.HCM', 'phamthic@gmail.com', 'Phạm Thị C', 'hashedpw4', '2025-10-20', '0934567890', 'phamthic', 'CUSTOMER', '1992-03-10', 'FEMALE', 105000, 'PLATINUM');
+                                                                                                                                                                             ('CUST001', 'TP.HCM', 'nguyenvana@gmail.com', 'Nguyễn Văn A', 'hashedpw1','2025-10-20', '0901234567', 'nguyenvana', 'CUSTOMER', '1990-05-20', 'MALE', 12000, 'SILVER'),
+                                                                                                                                                                             ('CUST002', 'TP.HCM', 'tranthib@gmail.com', 'Trần Thị B', 'hashedpw2', '2025-10-20', '0912345678', 'tranthib', 'CUSTOMER', '1988-08-15', 'FEMALE', 55000, 'GOLD'),
+                                                                                                                                                                             ('CUST003', 'TP.HCM', 'lequocd@gmail.com', 'Lê Quốc D', 'hashedpw3', '2025-10-20', '0923456789', 'lequocd', 'CUSTOMER', '1995-12-01', 'MALE', 2500, 'BRONZE'),
+                                                                                                                                                                             ('CUST004', 'TP.HCM', 'phamthic@gmail.com', 'Phạm Thị C', 'hashedpw4', '2025-10-20', '0934567890', 'phamthic', 'CUSTOMER', '1992-03-10', 'FEMALE', 105000, 'PLATINUM');
 
 -- EMPLOYEES (Using the specified names)
 INSERT INTO employees (employee_id, address, email, full_name, password, phone, user_name, user_role, department, hire_date, position, salary) VALUES
-                                                                                                                                                  ('EMP001', 'TP.HCM', 'duyen@vista.com', 'Nguyễn Thị Mỹ Duyên', 'hashedpw5', '0987654321', 'duyen', 'EMPLOYEE', 'Lễ tân', '2022-01-10', 'Receptionist', 9000000),
-                                                                                                                                                  ('EMP002', 'TP.HCM', 'hiep@vista.com', 'Phan Phước Hiệp', 'hashedpw6', '0976543210', 'hiep', 'EMPLOYEE', 'Kỹ thuật', '2021-05-15', 'Technician', 12000000),
-                                                                                                                                                  ('EMP003', 'TP.HCM', 'nhan@vista.com', 'Hồ Quang Nhân', 'hashedpw7', '0965432109', 'nhan', 'EMPLOYEE', 'Quản lý', '2020-09-20', 'Manager', 18000000),
-                                                                                                                                                  ('EMP004', 'TP.HCM', 'khoe@vista.com', 'Trần Đoàn Khỏe', 'hashedpw8', '0954321098', 'khoe', 'EMPLOYEE', 'Bảo vệ', '2021-03-15', 'Security', 8500000),
-                                                                                                                                                  ('EMP005', 'TP.HCM', 'vu@vista.com', 'Trần Long Vũ', 'hashedpw9', '0943210987', 'vu', 'EMPLOYEE', 'Nhà hàng', '2022-02-01', 'F&B Manager', 15000000);
+                                                                                                                                                   ('EMP001', 'TP.HCM', 'duyen@vista.com', 'Nguyễn Thị Mỹ Duyên', 'hashedpw5', '0987654321', 'duyen', 'EMPLOYEE', 'Lễ tân', '2022-01-10', 'Receptionist', 9000000),
+                                                                                                                                                   ('EMP002', 'TP.HCM', 'hiep@vista.com', 'Phan Phước Hiệp', 'hashedpw6', '0976543210', 'hiep', 'EMPLOYEE', 'Kỹ thuật', '2021-05-15', 'Technician', 12000000),
+                                                                                                                                                   ('EMP003', 'TP.HCM', 'nhan@vista.com', 'Hồ Quang Nhân', 'hashedpw7', '0965432109', 'nhan', 'EMPLOYEE', 'Quản lý', '2020-09-20', 'Manager', 18000000),
+                                                                                                                                                   ('EMP004', 'TP.HCM', 'khoe@vista.com', 'Trần Đoàn Khỏe', 'hashedpw8', '0954321098', 'khoe', 'EMPLOYEE', 'Bảo vệ', '2021-03-15', 'Security', 8500000),
+                                                                                                                                                   ('EMP005', 'TP.HCM', 'vu@vista.com', 'Trần Long Vũ', 'hashedpw9', '0943210987', 'vu', 'EMPLOYEE', 'Nhà hàng', '2022-02-01', 'F&B Manager', 15000000);
 
 -- ADMINS
 INSERT INTO admins (admin_id, address, email, full_name, password, phone, user_name, user_role, admin_level) VALUES
@@ -65,25 +63,25 @@ INSERT INTO admin_permissions (user_id, permissions) VALUES
 
 -- SERVICES
 INSERT INTO services (service_id, availability, description, price, service_category, service_hours, service_name) VALUES
-                                                                                                                      ('SV001', b'1', 'Phở bò đặc biệt', 80000, 'FOOD_BEVERAGE', '06:00-22:00', 'Phở bò'),
-                                                                                                                      ('SV002', b'1', 'Bia', 35000, 'FOOD_BEVERAGE', '06:00-23:00', 'Bia Hà Nội'),
-                                                                                                                      ('SV003', b'1', 'Giặt ủi quần áo', 50000, 'LAUNDRY', '08:00-20:00', 'Giặt ủi'),
-                                                                                                                      ('SV004', b'1', 'Bánh ngọt tráng miệng', 45000, 'FOOD_BEVERAGE', '06:00-22:00', 'Bánh ngọt'),
-                                                                                                                      ('SV005', b'1', 'Nước ép cam', 40000, 'FOOD_BEVERAGE', '06:00-22:00', 'Nước ép cam');
+                                                                                                                       ('SV001', b'1', 'Phở bò đặc biệt', 80000, 'FOOD_BEVERAGE', '06:00-22:00', 'Phở bò'),
+                                                                                                                       ('SV002', b'1', 'Bia', 35000, 'FOOD_BEVERAGE', '06:00-23:00', 'Bia Hà Nội'),
+                                                                                                                       ('SV003', b'1', 'Giặt ủi quần áo', 50000, 'LAUNDRY', '08:00-20:00', 'Giặt ủi'),
+                                                                                                                       ('SV004', b'1', 'Bánh ngọt tráng miệng', 45000, 'FOOD_BEVERAGE', '06:00-22:00', 'Bánh ngọt'),
+                                                                                                                       ('SV005', b'1', 'Nước ép cam', 40000, 'FOOD_BEVERAGE', '06:00-22:00', 'Nước ép cam');
 
 -- PROMOTION TYPE
-INSERT INTO promotion_types(promotion_type_id, promotion_type_name, description) VALUES 
-																														('PROMTYPECM', 'Summer Sale', 'Summer Sale'),
-																														('PROMTYPEFB', 'First-booking discount', 'First-booking discount');
-																														
+INSERT INTO promotion_types(promotion_type_id, promotion_type_name, description) VALUES
+                                                                                     ('PROMTYPECM', 'Summer Sale', 'Summer Sale'),
+                                                                                     ('PROMTYPEFB', 'First-booking discount', 'First-booking discount');
+
 
 -- PROMOTIONS
 INSERT INTO promotions (promotion_id, description, discount_type, is_active, promotion_name, admin_id, promotion_type_id) VALUES
-                                                                                                           ('PROMO001', 'Giảm giá mùa hè 10%', 'PERCENT', b'1', 'Summer Sale', 'ADMIN001', 'PROMTYPECM'),
-                                                                                                           ('PROMO002', 'Giảm giá lễ hội 200.000 VND', 'FIXED', b'1', 'Festival Discount', 'ADMIN001', 'PROMTYPECM'),
-                                                                                                           ('PROMO003', 'Giảm giá cho khách đặt phòng Standard lần đầu 10%', 'PERCENT', b'1', 'First-booking discount for Standard Room', 'ADMIN001', 'PROMTYPEFB'),
-                                                                                                           ('PROMO004', 'Giảm giá cho khách đặt phòng Deluxe lần đầu 12%', 'PERCENT', b'1', 'First-booking discount for Deluxe Room', 'ADMIN001', 'PROMTYPEFB'),
-                                                                                                           ('PROMO005', 'Giảm giá cho khách đặt phòng Suite lần đầu 15%', 'PERCENT', b'1', 'First-booking discount for Suite Room', 'ADMIN001', 'PROMTYPEFB');
+                                                                                                                              ('PROMO001', 'Giảm giá mùa hè 10%', 'PERCENT', b'1', 'Summer Sale', 'ADMIN001', 'PROMTYPECM'),
+                                                                                                                              ('PROMO002', 'Giảm giá lễ hội 200.000 VND', 'FIXED', b'1', 'Festival Discount', 'ADMIN001', 'PROMTYPECM'),
+                                                                                                                              ('PROMO003', 'Giảm giá cho khách đặt phòng Standard lần đầu 10%', 'PERCENT', b'1', 'First-booking discount for Standard Room', 'ADMIN001', 'PROMTYPEFB'),
+                                                                                                                              ('PROMO004', 'Giảm giá cho khách đặt phòng Deluxe lần đầu 12%', 'PERCENT', b'1', 'First-booking discount for Deluxe Room', 'ADMIN001', 'PROMTYPEFB'),
+                                                                                                                              ('PROMO005', 'Giảm giá cho khách đặt phòng Suite lần đầu 15%', 'PERCENT', b'1', 'First-booking discount for Suite Room', 'ADMIN001', 'PROMTYPEFB');
 
 -- ROOM TYPE PROMOTIONS
 INSERT INTO room_type_promotions (discount_value, end_date, start_date, room_type_id, promotion_id) VALUES
@@ -115,10 +113,10 @@ INSERT INTO review_images (review_id, images_url) VALUES
 
 -- BOOKINGS
 INSERT INTO bookings (booking_id, booking_date, cancellation_date, check_in_date, check_out_date, duration, hourly_rate, number_of_guests, package_type, payment_status, special_requests, status, total_amount, total_cost, customer_id, employee_id) VALUES
-                                                                                                                                                                                                                                                          ('BOOK001', '2024-06-01 09:00:00', NULL, '2024-06-10 14:00:00', '2024-06-12 12:00:00', 2, NULL, 2, 'Standard', 'COMPLETED', 'Yêu cầu phòng tầng thấp', 'CHECKED_OUT', 1800000, 1800000, 'CUST001', 'EMP001'),
-                                                                                                                                                                                                                                                          ('BOOK002', '2024-06-02 10:00:00', NULL, '2024-06-15 14:00:00', '2024-06-18 12:00:00', 3, NULL, 3, 'Deluxe', 'COMPLETED', 'Ban công view biển', 'CHECKED_IN', 4500000, 4500000, 'CUST002', 'EMP001'),
-                                                                                                                                                                                                                                                          ('BOOK003', '2024-06-03 11:00:00', NULL, '2024-06-20 14:00:00', '2024-06-21 12:00:00', 1, NULL, 1, 'Suite', 'PENDING', 'Check-in sớm', 'PENDING', 3000000, 3000000, 'CUST003', 'EMP003'),
-                                                                                                                                                                                                                                                          ('BOOK004', '2024-06-04 12:00:00', '2024-06-05 15:00:00', '2024-06-25 14:00:00', '2024-06-27 12:00:00', 2, NULL, 2, 'Deluxe', 'REFUNDED', 'Hủy phòng do việc đột xuất', 'CANCELLED', 0, 0, 'CUST004', 'EMP005');
+                                                                                                                                                                                                                                                           ('BOOK001', '2024-06-01 09:00:00', NULL, '2024-06-10 14:00:00', '2024-06-12 12:00:00', 2, NULL, 2, 'Standard', 'COMPLETED', 'Yêu cầu phòng tầng thấp', 'CHECKED_OUT', 1800000, 1800000, 'CUST001', 'EMP001'),
+                                                                                                                                                                                                                                                           ('BOOK002', '2024-06-02 10:00:00', NULL, '2024-06-15 14:00:00', '2024-06-18 12:00:00', 3, NULL, 3, 'Deluxe', 'COMPLETED', 'Ban công view biển', 'CHECKED_IN', 4500000, 4500000, 'CUST002', 'EMP001'),
+                                                                                                                                                                                                                                                           ('BOOK003', '2024-06-03 11:00:00', NULL, '2024-06-20 14:00:00', '2024-06-21 12:00:00', 1, NULL, 1, 'Suite', 'PENDING', 'Check-in sớm', 'PENDING', 3000000, 3000000, 'CUST003', 'EMP003'),
+                                                                                                                                                                                                                                                           ('BOOK004', '2024-06-04 12:00:00', '2024-06-05 15:00:00', '2024-06-25 14:00:00', '2024-06-27 12:00:00', 2, NULL, 2, 'Deluxe', 'REFUNDED', 'Hủy phòng do việc đột xuất', 'CANCELLED', 0, 0, 'CUST004', 'EMP005');
 
 -- BOOKING DETAILS
 INSERT INTO booking_details (room_price, booking_id, room_id, review_id) VALUES
