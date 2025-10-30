@@ -1,4 +1,4 @@
-import type { RoomFormData } from "../components/room/AddRoomModal";
+import type { RoomFormData } from "../components/room/modal/AddRoomModal";
 
 export interface ValidationError {
   field: string;

@@ -22,11 +22,11 @@ export interface Room {
   images: string[]; // Images belong to Room entity
 }
 
-interface ApiResponse<T> {
-  success?: boolean;
-  data?: T;
-  message?: string;
-}
+// interface ApiResponse<T> {
+//   success?: boolean;
+//   data?: T;
+//   message?: string;
+// }
 
 export const roomService = {
   /**

@@ -3,8 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { faEnvelope, faLock } from "@fortawesome/free-solid-svg-icons";
 import logoImage from "../../assets/images/logoWhite.png";
 import googleLogo from "../../assets/images/google-logo.svg";
-import Button from "../../components/Button";
-import FloatingInput from "../../components/FloatingInput";
+import Button from "../../components/common/Button";
+import FloatingInput from "../../components/common/FloatingInput";
 import { handleLogin } from "../../services/authService";
 import {
   validateEmailOrPhone,

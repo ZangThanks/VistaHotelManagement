@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useContext } from "react";
 import {
   FaDoorOpen,
   FaBed,
@@ -11,20 +11,28 @@ import {
   FaTh,
 } from "react-icons/fa";
 import RoomStatCard from "../../../components/room/RoomStatCard";
-import RoomTableView from "../../../components/room/RoomTableView";
-import RoomCardView from "../../../components/room/RoomCardView";
-import RoomCalendarView from "../../../components/room/RoomCalendarView";
-import RoomStatusBoard from "../../../components/room/RoomStatusBoard";
-import RoomDetailModal from "../../../components/room/RoomDetailModal";
+import RoomTableView from "../../../components/room/view/RoomTableView";
+import RoomCardView from "../../../components/room/view/RoomCardView";
+import RoomCalendarView from "../../../components/room/view/RoomCalendarView";
+import RoomStatusBoard from "../../../components/room/view/RoomStatusBoard";
+import RoomDetailModal from "../../../components/room/modal/RoomDetailModal";
 import RoomFilters from "../../../components/room/RoomFilters";
 import type { FilterOptions } from "../../../components/room/RoomFilters";
-import Pagination from "../../../components/room/Pagination";
-import type { Room } from "../../../components/room/RoomTableView";
-import AddRoomModal from "../../../components/room/AddRoomModal";
+import Pagination from "../../../components/common/Pagination";
+import type { Room } from "../../../components/room/view/RoomTableView";
+import AddRoomModal from "../../../components/room/modal/AddRoomModal";
+import EditRoomModal from "../../../components/room/modal/EditRoomModal";
+import ConfirmDialog from "../../../components/dialog/ConfirmDialog";
 import { motion } from "framer-motion";
-import {roomService, type Room as ApiRoom, type RoomStatus} from  "../../../services/roomService"
+import {
+  roomService,
+  type Room as ApiRoom,
+  type RoomStatus,
+} from "../../../services/roomService";
 import { uploadMultipleImagesToCloudinary } from "../../../services/cloudinaryService";
-import type { RoomFormData } from "../../../components/room/AddRoomModal";
+import type { RoomFormData } from "../../../components/room/modal/AddRoomModal";
+import type { EditRoomFormData } from "../../../components/room/modal/EditRoomModal";
+import { ToastContext } from "../../../context/ToastContext";
 
 /**
  * Component quản lý phòng
@@ -46,6 +54,18 @@ const RoomManagement: React.FC = () => {
 
   // Add room modal
   const [isAddRoomModalOpen, setIsAddRoomModalOpen] = useState(false);
+
+  // Edit room modal
+  const [isEditRoomModalOpen, setIsEditRoomModalOpen] = useState(false);
+  const [roomToEdit, setRoomToEdit] = useState<Room | null>(null);
+
+  // Delete confirmation
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const [roomToDelete, setRoomToDelete] = useState<Room | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  // Toast context
+  const toast = useContext(ToastContext);
 
   // Loading state
   const [loading, setLoading] = useState(true);
@@ -211,8 +231,7 @@ const RoomManagement: React.FC = () => {
   // Handlers
   const handleEdit = (room: Room) => {
     console.log("Edit room:", room);
-    setSelectedRoom(room);
-    // TODO: Open edit modal
+    handleEditRoom(room);
   };
 
   const handleView = (room: Room) => {
@@ -222,7 +241,7 @@ const RoomManagement: React.FC = () => {
 
   const handleDelete = (room: Room) => {
     console.log("Delete room:", room);
-    // TODO: Show confirmation dialog
+    handleDeleteRoom(room);
   };
 
   const handleAddRoom = () => {
@@ -232,7 +251,7 @@ const RoomManagement: React.FC = () => {
 
   const handleAddRoomSubmit = async (roomData: RoomFormData) => {
     console.log("Room data submitted:", roomData);
-    
+
     try {
       setLoading(true);
 
@@ -240,8 +259,10 @@ const RoomManagement: React.FC = () => {
       // Images belong to Room entity, not RoomType
       let cloudinaryUrls: string[] = [];
       if (roomData.imageFiles.length > 0) {
-        const uploadImages = await uploadMultipleImagesToCloudinary(roomData.imageFiles);
-        cloudinaryUrls = uploadImages.map(img => img.secure_url);
+        const uploadImages = await uploadMultipleImagesToCloudinary(
+          roomData.imageFiles
+        );
+        cloudinaryUrls = uploadImages.map((img) => img.secure_url);
       }
 
       // 2. Chuẩn bị dữ liệu phòng
@@ -267,7 +288,7 @@ const RoomManagement: React.FC = () => {
         .map((apiRoom) => {
           if (!apiRoom.roomType) {
             console.warn(
-               `Room ${apiRoom.roomNumber} has null roomType,skipping...`
+              `Room ${apiRoom.roomNumber} has null roomType,skipping...`
             );
             return null;
           }
@@ -277,18 +298,166 @@ const RoomManagement: React.FC = () => {
 
       setRooms(uiRooms);
 
-      // 7. Đóng modal
+      // 5. Đóng modal
       setIsAddRoomModalOpen(false);
 
-      // TODO: Show success notification
-      alert("Room created successfully!");
-
+      // 6. Show success toast
+      toast?.success("Room created successfully!", {
+        duration: 3000,
+        position: "top-right",
+      });
     } catch (error) {
       console.error("Failed to add room:", error);
-      alert("Failed to create room. Please try again.");
+      toast?.error("Failed to create room. Please try again.", {
+        duration: 5000,
+        position: "top-right",
+      });
       throw error;
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleEditRoom = async (room: Room) => {
+    try {
+      // Fetch full room data from API to get complete information
+      const fullRoomData = await roomService.getRoomById(room.roomNumber);
+      if (fullRoomData) {
+        setRoomToEdit(fullRoomData as unknown as Room);
+        setIsEditRoomModalOpen(true);
+      } else {
+        toast?.error("Failed to load room data", {
+          duration: 3000,
+          position: "top-right",
+        });
+      }
+    } catch (error) {
+      console.error("Failed to fetch room data:", error);
+      toast?.error("Failed to load room data", {
+        duration: 3000,
+        position: "top-right",
+      });
+    }
+  };
+
+  const handleEditRoomSubmit = async (roomData: EditRoomFormData) => {
+    console.log("Edit room data submitted:", roomData);
+
+    try {
+      setLoading(true);
+
+      // 1. Upload new images to Cloudinary
+      let newCloudinaryUrls: string[] = [];
+      if (roomData.imageFiles.length > 0) {
+        const uploadImages = await uploadMultipleImagesToCloudinary(
+          roomData.imageFiles
+        );
+        newCloudinaryUrls = uploadImages.map((img) => img.secure_url);
+      }
+
+      // 2. Combine existing and new image URLs
+      const allImageUrls = [...roomData.imageUrls, ...newCloudinaryUrls];
+
+      // 3. Prepare room data for API
+      const roomApiData = {
+        roomNumber: roomData.roomNumber,
+        floor: parseInt(roomData.floor),
+        status: roomData.roomStatus as RoomStatus,
+        lastCleaned: roomData.lastCleaned,
+        notes: roomData.notes,
+        roomType: {
+          roomTypeID: roomData.roomTypeId,
+        } as ApiRoom["roomType"],
+        images: allImageUrls,
+      };
+
+      // 4. Update room
+      await roomService.saveRoom(roomApiData);
+
+      // 5. Reload rooms
+      const apiRooms = await roomService.getAllRooms();
+      const uiRooms = apiRooms
+        .map((apiRoom) => {
+          if (!apiRoom.roomType) {
+            console.warn(
+              `Room ${apiRoom.roomNumber} has null roomType, skipping...`
+            );
+            return null;
+          }
+          return convertApiRoomToUiRoom(apiRoom);
+        })
+        .filter((room): room is Room => room !== null);
+
+      setRooms(uiRooms);
+
+      // 6. Close modal
+      setIsEditRoomModalOpen(false);
+      setRoomToEdit(null);
+
+      // 7. Show success toast
+      toast?.success("Room updated successfully!", {
+        duration: 3000,
+        position: "top-right",
+      });
+    } catch (error) {
+      console.error("Failed to update room:", error);
+      toast?.error("Failed to update room. Please try again.", {
+        duration: 5000,
+        position: "top-right",
+      });
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteRoom = (room: Room) => {
+    setRoomToDelete(room);
+    setIsDeleteConfirmOpen(true);
+  };
+
+  const confirmDeleteRoom = async () => {
+    if (!roomToDelete) return;
+
+    try {
+      setIsDeleting(true);
+
+      // Delete room via API
+      await roomService.deleteRoom(roomToDelete.roomNumber);
+
+      // Reload rooms
+      const apiRooms = await roomService.getAllRooms();
+      const uiRooms = apiRooms
+        .map((apiRoom) => {
+          if (!apiRoom.roomType) {
+            console.warn(
+              `Room ${apiRoom.roomNumber} has null roomType, skipping...`
+            );
+            return null;
+          }
+          return convertApiRoomToUiRoom(apiRoom);
+        })
+        .filter((room): room is Room => room !== null);
+
+      setRooms(uiRooms);
+
+      // Close dialog
+      setIsDeleteConfirmOpen(false);
+      setRoomToDelete(null);
+
+      // Show success toast
+      toast?.success("Room deleted successfully!", {
+        duration: 3000,
+        position: "top-right",
+      });
+    } catch (error) {
+      console.error("Failed to delete room:", error);
+      toast?.error("Failed to delete room. Please try again.", {
+        duration: 5000,
+        position: "top-right",
+      });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -525,6 +694,7 @@ const RoomManagement: React.FC = () => {
       <RoomDetailModal
         room={selectedRoom}
         onClose={() => setSelectedRoom(null)}
+        onEdit={handleEditRoom}
       />
 
       {/* Add Room Modal */}
@@ -532,6 +702,35 @@ const RoomManagement: React.FC = () => {
         isOpen={isAddRoomModalOpen}
         onClose={() => setIsAddRoomModalOpen(false)}
         onSubmit={handleAddRoomSubmit}
+      />
+
+      {/* Edit Room Modal */}
+      {roomToEdit && (
+        <EditRoomModal
+          isOpen={isEditRoomModalOpen}
+          onClose={() => {
+            setIsEditRoomModalOpen(false);
+            setRoomToEdit(null);
+          }}
+          onSubmit={handleEditRoomSubmit}
+          room={roomToEdit as unknown as ApiRoom}
+        />
+      )}
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={isDeleteConfirmOpen}
+        onClose={() => {
+          setIsDeleteConfirmOpen(false);
+          setRoomToDelete(null);
+        }}
+        onConfirm={confirmDeleteRoom}
+        title="Delete Room"
+        message={`Are you sure you want to delete Room ${roomToDelete?.roomNumber}? This action cannot be undone.`}
+        type="danger"
+        confirmText="Delete"
+        cancelText="Cancel"
+        isLoading={isDeleting}
       />
     </div>
   );

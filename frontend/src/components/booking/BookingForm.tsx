@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Calendar } from "lucide-react";
-import BookingCalendar from "../Calendar";
+import BookingCalendar from "../common/Calendar";
 import { TfiUser, TfiMore } from "react-icons/tfi";
 import { MdOutlineRoomService, MdRoomService } from "react-icons/md";
 import { getAll } from "../../services/serviceService";
