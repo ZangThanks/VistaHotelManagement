@@ -12,15 +12,15 @@ export const getAll = async () => {
   }
 };
 export const getHighlighted = async () => {
-    try {
-        const response = await axiosInstance.get(`${ENDPOINT}/highlight`);
-        return response.data;
-    } catch (error) {
-        console.error('❌ Error fetching highlighted news:', error);
-        throw error;
-    }
+  try {
+    const response = await axiosInstance.get(`${ENDPOINT}/highlight`);
+    return response.data;
+  } catch (error) {
+    console.error("❌ Error fetching highlighted news:", error);
+    throw error;
+  }
 };
 export const getNewsById = async (id: string) => {
-    const response = await axiosInstance.get(`${ENDPOINT}/${id}`);
-    return response.data;
+  const response = await axiosInstance.get(`${ENDPOINT}/${id}`);
+  return response.data;
 };
