@@ -209,20 +209,21 @@ const Register: React.FC = () => {
     }
   };
 
-  const handleLogin = () => navigate("/auth/login");
 
   return (
     <div className="w-full flex flex-col">
-      <form onSubmit={handleSubmit} className="flex flex-col space-y-5 pb-6">
+      <form onSubmit={handleSubmit} className="flex flex-col space-y-4 pb-6">
         {/* Logo */}
-        <div className="flex justify-center mb-2">
-          <img src={logoImage} alt="Logo Vista" className="h-16 w-auto" />
+        <div className="flex justify-center mb-4">
+          <img src={logoImage} alt="Logo Vista" className="h-20 w-auto" />
         </div>
 
         {/* Title */}
-        <div className="text-center mb-3">
-          <h1 className="text-2xl font-bold text-yellow-50 mb-2">Đăng ký</h1>
-          <p className="text-sm text-yellow-50">
+        <div className="text-center mb-4">
+          <h1 className="text-2xl font-bold text-yellow-50 mb-2">
+            Đăng ký tài khoản
+          </h1>
+          <p className="text-sm text-yellow-50/80">
             Tạo tài khoản để trải nghiệm Vista Hotel
           </p>
         </div>
@@ -230,7 +231,7 @@ const Register: React.FC = () => {
         {/* Username */}
         <div
           key={`userName-${shakeKey}`}
-          className={`min-h-[70px] mt-5 ${
+          className={`min-h-[70px] ${
             userNameError ? "animate-[shake_400ms_ease-in-out]" : ""
           }`}
         >
@@ -246,30 +247,30 @@ const Register: React.FC = () => {
                 ? "border-red-500"
                 : userNameSuccess
                 ? "border-green-500"
-                : "border-gray-300"
+                : "border-white/40"
             }
             focusBorderColor={
               userNameError
                 ? "focus:border-red-500"
                 : userNameSuccess
                 ? "focus:border-green-500"
-                : "focus:border-amber-400"
+                : "focus:border-[#c3923c]"
             }
             labelColor={
               userNameError
                 ? "text-red-500"
                 : userNameSuccess
                 ? "text-green-500"
-                : "text-white"
+                : "text-white/80"
             }
             focusLabelColor={
               userNameError
                 ? "text-red-500"
                 : userNameSuccess
                 ? "text-green-500"
-                : "text-amber-400"
+                : "text-[#c3923c]"
             }
-            className="bg-transparent"
+            className="bg-transparent text-white"
           />
           {userNameError && (
             <p className="text-red-500 text-xs mt-1">{userNameError}</p>
@@ -300,30 +301,30 @@ const Register: React.FC = () => {
                 ? "border-red-500"
                 : fullNameSuccess
                 ? "border-green-500"
-                : "border-gray-300"
+                : "border-white/40"
             }
             focusBorderColor={
               fullNameError
                 ? "focus:border-red-500"
                 : fullNameSuccess
                 ? "focus:border-green-500"
-                : "focus:border-amber-400"
+                : "focus:border-[#c3923c]"
             }
             labelColor={
               fullNameError
                 ? "text-red-500"
                 : fullNameSuccess
                 ? "text-green-500"
-                : "text-white"
+                : "text-white/80"
             }
             focusLabelColor={
               fullNameError
                 ? "text-red-500"
                 : fullNameSuccess
                 ? "text-green-500"
-                : "text-amber-400"
+                : "text-[#c3923c]"
             }
-            className="bg-transparent"
+            className="bg-transparent text-white"
           />
           {fullNameError && (
             <p className="text-red-500 text-xs mt-1">{fullNameError}</p>
@@ -352,30 +353,30 @@ const Register: React.FC = () => {
                 ? "border-red-500"
                 : identifierSuccess
                 ? "border-green-500"
-                : "border-gray-300"
+                : "border-white/40"
             }
             focusBorderColor={
               identifierError
                 ? "focus:border-red-500"
                 : identifierSuccess
                 ? "focus:border-green-500"
-                : "focus:border-amber-400"
+                : "focus:border-[#c3923c]"
             }
             labelColor={
               identifierError
                 ? "text-red-500"
                 : identifierSuccess
                 ? "text-green-500"
-                : "text-white"
+                : "text-white/80"
             }
             focusLabelColor={
               identifierError
                 ? "text-red-500"
                 : identifierSuccess
                 ? "text-green-500"
-                : "text-amber-400"
+                : "text-[#c3923c]"
             }
-            className="bg-transparent"
+            className="bg-transparent text-white"
           />
           {identifierError && (
             <p className="text-red-500 text-xs mt-1">{identifierError}</p>
@@ -410,30 +411,30 @@ const Register: React.FC = () => {
                 ? "border-red-500"
                 : passwordSuccess
                 ? "border-green-500"
-                : "border-gray-300"
+                : "border-white/40"
             }
             focusBorderColor={
               passwordError
                 ? "focus:border-red-500"
                 : passwordSuccess
                 ? "focus:border-green-500"
-                : "focus:border-amber-400"
+                : "focus:border-[#c3923c]"
             }
             labelColor={
               passwordError
                 ? "text-red-500"
                 : passwordSuccess
                 ? "text-green-500"
-                : "text-white"
+                : "text-white/80"
             }
             focusLabelColor={
               passwordError
                 ? "text-red-500"
                 : passwordSuccess
                 ? "text-green-500"
-                : "text-amber-400"
+                : "text-[#c3923c]"
             }
-            className="bg-transparent"
+            className="bg-transparent text-white"
           />
           {passwordError && (
             <p className="text-red-500 text-xs mt-1">{passwordError}</p>
@@ -462,30 +463,30 @@ const Register: React.FC = () => {
                 ? "border-red-500"
                 : confirmPasswordSuccess
                 ? "border-green-500"
-                : "border-gray-300"
+                : "border-white/40"
             }
             focusBorderColor={
               confirmPasswordError
                 ? "focus:border-red-500"
                 : confirmPasswordSuccess
                 ? "focus:border-green-500"
-                : "focus:border-amber-400"
+                : "focus:border-[#c3923c]"
             }
             labelColor={
               confirmPasswordError
                 ? "text-red-500"
                 : confirmPasswordSuccess
                 ? "text-green-500"
-                : "text-white"
+                : "text-white/80"
             }
             focusLabelColor={
               confirmPasswordError
                 ? "text-red-500"
                 : confirmPasswordSuccess
                 ? "text-green-500"
-                : "text-amber-400"
+                : "text-[#c3923c]"
             }
-            className="bg-transparent"
+            className="bg-transparent text-white"
           />
           {confirmPasswordError && (
             <p className="text-red-500 text-xs mt-1">{confirmPasswordError}</p>
@@ -498,15 +499,16 @@ const Register: React.FC = () => {
         {/* Submit */}
         <Button
           text={isSubmitting ? "Đang xử lý..." : "Đăng ký"}
-          color="bg-amber-400"
-          textColor="text-gray-900"
+          color="bg-[#c3923c]"
+          textColor="text-white"
           size="lg"
           rounded="md"
           fullWidth
           shadow
           type="submit"
           disabled={isSubmitting}
-          className="font-semibold hover:bg-amber-500 transition-colors"
+          loading={isSubmitting}
+          className="font-semibold hover:bg-[#b4893e] transition-colors mt-2"
         />
 
         {/* Divider */}
@@ -542,12 +544,18 @@ const Register: React.FC = () => {
         {/* Terms */}
         <p className="text-center text-xs text-white/70 leading-relaxed">
           Khi đăng ký, bạn đồng ý với{" "}
-          <a href="#" className="text-amber-300 hover:underline font-medium">
+          <a
+            href="#"
+            className="text-[#eab354] hover:text-[#c3923c] hover:underline font-medium"
+          >
             Điều khoản
           </a>{" "}
           và{" "}
-          <a href="#" className="text-amber-300 hover:underline font-medium">
-            Chính sách của chúng tôi
+          <a
+            href="#"
+            className="text-[#eab354] hover:text-[#c3923c] hover:underline font-medium"
+          >
+            Chính sách
           </a>
         </p>
 
@@ -556,8 +564,8 @@ const Register: React.FC = () => {
           Đã có tài khoản?{" "}
           <button
             type="button"
-            onClick={handleLogin}
-            className="text-amber-300 hover:text-amber-200 font-semibold transition-colors cursor-pointer"
+            onClick={() => navigate("/auth/login")}
+            className="text-[#eab354] hover:text-[#c3923c] font-semibold transition-colors cursor-pointer"
           >
             Đăng nhập
           </button>

@@ -105,14 +105,16 @@ const RoomDetailModal: React.FC<RoomDetailModalProps> = ({
       <AnimatePresence>
         {room && (
           <>
-            {/* Backdrop */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={onClose}
-              className="fixed inset-0 bg-black/50 z-[100]"
-            />
+            {/* Backdrop - Hide when ChangeStatusModal is open */}
+            {!showChangeStatus && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={onClose}
+                className="fixed inset-0 bg-black/50 z-[100]"
+              />
+            )}
 
             {/* Modal */}
             <motion.div

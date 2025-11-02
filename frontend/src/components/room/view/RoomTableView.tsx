@@ -109,8 +109,8 @@ const RoomTableView: React.FC<RoomTableViewProps> = ({
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm text-gray-700">
-                    {typeof room.roomType === 'string' 
-                      ? room.roomType 
+                    {typeof room.roomType === "string"
+                      ? room.roomType
                       : room.roomType.typeName}
                   </div>
                 </td>

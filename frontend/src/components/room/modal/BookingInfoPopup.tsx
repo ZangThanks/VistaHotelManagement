@@ -110,7 +110,11 @@ const BookingInfoPopup: React.FC<BookingInfoPopupProps> = ({
               <h3 className="text-base font-bold text-white">
                 Room {booking.roomNumber}
               </h3>
-              <p className="text-xs text-gray-100">{room.roomType}</p>
+              <p className="text-xs text-gray-100">
+                {typeof room.roomType === 'string' 
+                  ? room.roomType 
+                  : room.roomType.typeName}
+              </p>
             </div>
             <div
               className={`${statusConfig[booking.status].bg} ${

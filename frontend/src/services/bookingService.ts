@@ -67,7 +67,7 @@ export const convertToRoomBooking = (booking: Booking): RoomBooking[] => {
         ? "pending"
         : booking.status === "CANCELLED"
         ? "cancelled"
-        : "pending" as const,
+        : ("pending" as const),
     numberOfGuests: booking.numberOfGuests,
     totalAmount: booking.totalAmount,
   }));

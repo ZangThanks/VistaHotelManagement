@@ -123,8 +123,8 @@ const RoomStatusBoard: React.FC<RoomStatusBoardProps> = ({
                           {room.roomNumber}
                         </span>
                         <span className="text-xs text-gray-600 text-center">
-                          {typeof room.roomType === 'string' 
-                            ? room.roomType 
+                          {typeof room.roomType === "string"
+                            ? room.roomType
                             : room.roomType.typeName}
                         </span>
                         <span

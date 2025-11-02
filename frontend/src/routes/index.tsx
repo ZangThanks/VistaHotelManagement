@@ -6,12 +6,13 @@ import EmployeeLayout from "../layouts/EmployeeLayout";
 
 // Auth pages
 import Login from "../pages/auth/Login";
+import Register from "../pages/auth/Register";
+import ForgotPassword from "../pages/auth/ForgotPassword";
+import ResetPassword from "../pages/auth/ResetPassword";
 import CustomerList from "../pages/employee/CustomerList";
 import NewsPage from "../pages/employee/NewsPage";
 import AdminLayout from "../layouts/AdminLayout";
 import BookingPage from "../pages/admin/booking/BookingPage";
-import Register from "../pages/auth/Register";
-import MainLayout from "../layouts/MainLayout";
 import CheckInManager from "../pages/employee/CheckInManager";
 import CheckOutManager from "../pages/employee/CheckOutManager";
 import InfoManagement from "../pages/admin/InfoManagement";
@@ -25,8 +26,8 @@ export const router = createBrowserRouter([
     children: [
       { path: "login", element: <Login /> },
       { path: "register", element: <Register /> },
-      // { path: "forgot-password", element: <ForgotPassword /> },
-      // { path: "reset-password", element: <ResetPassword /> },
+      { path: "forgot-password", element: <ForgotPassword /> },
+      { path: "reset-password", element: <ResetPassword /> },
     ],
   },
   {

@@ -24,9 +24,7 @@ import AddRoomModal from "../../../components/room/modal/AddRoomModal";
 import EditRoomModal from "../../../components/room/modal/EditRoomModal";
 import ConfirmDialog from "../../../components/dialog/ConfirmDialog";
 import { motion } from "framer-motion";
-import {
-  roomService,
-} from "../../../services/roomService";
+import { roomService } from "../../../services/roomService";
 import type { Room as ApiRoom, RoomStatus } from "../../../types/Room";
 import bookingService from "../../../services/bookingService";
 import type { RoomBooking } from "../../../types/Booking";
@@ -158,10 +156,11 @@ const RoomManagement: React.FC = () => {
       // Search filter
       if (filters.searchTerm) {
         const searchLower = filters.searchTerm.toLowerCase();
-        const roomTypeName = typeof room.roomType === 'string' 
-          ? room.roomType 
-          : room.roomType.typeName;
-        
+        const roomTypeName =
+          typeof room.roomType === "string"
+            ? room.roomType
+            : room.roomType.typeName;
+
         if (
           !room.roomNumber.toLowerCase().includes(searchLower) &&
           !roomTypeName.toLowerCase().includes(searchLower)
@@ -177,9 +176,10 @@ const RoomManagement: React.FC = () => {
 
       // Room type filter
       if (filters.roomType !== "all") {
-        const roomTypeName = typeof room.roomType === 'string' 
-          ? room.roomType 
-          : room.roomType.typeName;
+        const roomTypeName =
+          typeof room.roomType === "string"
+            ? room.roomType
+            : room.roomType.typeName;
         if (roomTypeName !== filters.roomType) {
           return false;
         }
@@ -251,8 +251,8 @@ const RoomManagement: React.FC = () => {
   // Get unique room types and floors for filters
   const roomTypes = Array.from(
     new Set(
-      rooms.map((r) => 
-        typeof r.roomType === 'string' ? r.roomType : r.roomType.typeName
+      rooms.map((r) =>
+        typeof r.roomType === "string" ? r.roomType : r.roomType.typeName
       )
     )
   );

@@ -146,7 +146,7 @@ const Login: React.FC = () => {
                 ? "focus:border-red-500"
                 : identifierSuccess
                 ? "focus:border-green-500"
-                : "focus:border-amber-400"
+                : "focus:border-[#c3923c]"
             }
             labelColor={
               identifierError
@@ -160,7 +160,7 @@ const Login: React.FC = () => {
                 ? "text-red-500"
                 : identifierSuccess
                 ? "text-green-500"
-                : "text-amber-400"
+                : "text-[#c3923c]"
             }
             className="bg-transparent text-white"
           />
@@ -177,7 +177,7 @@ const Login: React.FC = () => {
             </p>
           )}
         </div>
-        
+
         {/* Mật khẩu  */}
         <div
           key={`password-${shakeKey}`}
@@ -204,7 +204,7 @@ const Login: React.FC = () => {
                 ? "focus:border-red-500"
                 : passwordSuccess
                 ? "focus:border-green-500"
-                : "focus:border-amber-400"
+                : "focus:border-[#c3923c]"
             }
             labelColor={
               passwordError
@@ -218,7 +218,7 @@ const Login: React.FC = () => {
                 ? "text-red-500"
                 : passwordSuccess
                 ? "text-green-500"
-                : "text-amber-400"
+                : "text-[#c3923c]"
             }
             className="bg-transparent text-white"
           />
@@ -229,13 +229,13 @@ const Login: React.FC = () => {
             <p className="text-green-500 text-xs mt-1">✓ Mật khẩu hợp lệ</p>
           )}
         </div>
-        
+
         {/* Quên mật khẩu? */}
         <div className="flex justify-end">
           <button
             type="button"
             onClick={handleForgotPassword}
-            className="text-amber-400 hover:text-amber-500 text-sm font-medium transition-colors cursor-pointer"
+            className="text-[#eab354] hover:text-[#c3923c] text-sm font-medium transition-colors cursor-pointer"
           >
             Quên mật khẩu?
           </button>
@@ -244,15 +244,15 @@ const Login: React.FC = () => {
         {/* Button đăng nhập */}
         <Button
           text={loading ? "Đang đăng nhập..." : "Đăng nhập"}
-          color="bg-amber-400"
-          textColor="text-gray-900"
+          color="bg-[#c3923c]"
+          textColor="text-white"
           size="lg"
           rounded="md"
           fullWidth
           shadow
           type="submit"
           disabled={loading}
-          className="font-semibold hover:bg-amber-500 transition-colors"
+          className="font-semibold hover:bg-[#b4893e] transition-all"
           loading={loading}
         />
 
@@ -287,11 +287,17 @@ const Login: React.FC = () => {
         {/* Chuyển đến đăng ký */}
         <p className="text-center text-xs text-white/70 leading-relaxed">
           Khi đăng ký, bạn đồng ý với{" "}
-          <a href="#" className="text-amber-300 hover:underline font-medium">
+          <a
+            href="#"
+            className="text-[#eab354] hover:text-[#c3923c] hover:underline font-medium"
+          >
             Điều khoản
           </a>{" "}
           và{" "}
-          <a href="#" className="text-amber-300 hover:underline font-medium">
+          <a
+            href="#"
+            className="text-[#eab354] hover:text-[#c3923c] hover:underline font-medium"
+          >
             Chính sách
           </a>
         </p>
@@ -302,7 +308,7 @@ const Login: React.FC = () => {
           <button
             type="button"
             onClick={handleRegister}
-            className="text-amber-300 hover:text-amber-200 font-semibold transition-colors cursor-pointer"
+            className="text-[#eab354] hover:text-[#c3923c] font-semibold transition-colors cursor-pointer"
           >
             Đăng ký
           </button>

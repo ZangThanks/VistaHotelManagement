@@ -1,3 +1,6 @@
+/* Import Google Fonts - Must be first */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700;800&display=swap");
+
 @import "tailwindcss";
 
 /* Custom scrollbar */
@@ -85,8 +88,8 @@
   --color-warning: #ffb300;
   --color-danger: #f44336;
   --color-info: #2196f3;
-  --color-primary: #4f46e5;
-  --color-secondary: #d946ef;
+  --color-primary: #c3923c;
+  --color-secondary: #b4893e;
   --gradient-cream: linear-gradient(90deg, #f8ebd6 45%, #ffffff 80%);
 
   /* Dark mode support */
@@ -95,11 +98,11 @@
   --color-text: #111111;
   --color-text-dark: #f9f9f9;
 
-  /* Font families */
-  --font-sans: "Poppins", sans-serif;
-  --font-playfair: "Playfair Display", serif;
-  --font-body: "Inter", sans-serif;
-  --font-heading: "Poppins", sans-serif;
+  /* Font families - Modern & Elegant */
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  --font-playfair: "Playfair Display", Georgia, serif;
+  --font-body: "Inter", system-ui, -apple-system, sans-serif;
+  --font-heading: "Inter", system-ui, -apple-system, sans-serif;
 
   /* Shadow + border radius */
   --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
@@ -165,10 +168,17 @@
 }
 
 @layer base {
+  * {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
   body {
     background-color: var(--color-bg);
     color: var(--color-text);
     font-family: var(--font-body);
+    font-weight: 400;
+    letter-spacing: -0.01em;
   }
 
   .dark body {
@@ -183,9 +193,9 @@
   h5,
   h6 {
     font-family: var(--font-heading);
+    font-weight: 600;
+    letter-spacing: -0.02em;
   }
-
-  @import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap");
 
   @keyframes modalFadeIn {
     from {
