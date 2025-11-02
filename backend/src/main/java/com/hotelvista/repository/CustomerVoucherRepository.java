@@ -11,13 +11,6 @@ import java.util.List;
 public interface CustomerVoucherRepository extends JpaRepository<CustomerVoucher, CustomerVoucher.CustomerVoucherId> {
 
     /**
-     * Tìm tất cả voucher của khách hàng theo customerId
-     * @param customerId
-     * @return
-     */
-    List<CustomerVoucher> findAllByCustomer_Id(String customerId);
-
-    /**
      * Tìm những voucher, customer và state tương ứng theo customerId với startDate - endDate
      *
      * @param startDate
@@ -56,4 +49,11 @@ public interface CustomerVoucherRepository extends JpaRepository<CustomerVoucher
     List<CustomerVoucher> findByCustomerAndState(@Param("customerId") String customerId,
                                                  @Param("state") boolean state);
 
+    /**
+     * Tìm những voucher thuộc khách hàng theo customerId
+     *
+     * @param customerId
+     * @return
+     */
+    List<CustomerVoucher> findAllByCustomer_Id(String customerId);
 }
