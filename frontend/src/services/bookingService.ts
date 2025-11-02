@@ -1,3 +1,4 @@
+import { axiosInstance } from "../config/api";
 import { api } from "./apiClient";
 
 const ENDPOINT = "/bookings";
@@ -5,7 +6,8 @@ const ENDPOINT = "/bookings";
 export const getAll = async () => {
   try {
     const response = await axiosInstance.get(ENDPOINT);
-    return response.data.data;
+    console.log("=========DATAAAA: " + response.data);
+    return response.data;
   } catch (error) {
     console.error("Error fetching booking:", error);
     throw error;

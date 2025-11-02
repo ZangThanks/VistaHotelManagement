@@ -14,7 +14,10 @@ import Register from "../pages/auth/Register";
 import MainLayout from "../layouts/MainLayout";
 import CheckInManager from "../pages/employee/CheckInManager";
 import CheckOutManager from "../pages/employee/CheckOutManager";
-import InfoManagement from "../pages/admin/InfoManagement";
+import Home from "../pages/customer/Home";
+import RoomList from "../pages/customer/RoomList";
+import NewsDetail from "../components/news/NewsDetail";
+import InfoManagement from "../pages/admin/infomation/InfoManagement";
 
 export const router = createBrowserRouter([
   {
@@ -30,8 +33,10 @@ export const router = createBrowserRouter([
   {
     path: "employee",
     element: <EmployeeLayout />,
-    children: [{ path: "customer/list", element: <CustomerList /> },
-      { path: 'bookingPage', element: <BookingPage /> }],
+    children: [
+      { path: "customer/list", element: <CustomerList /> },
+      { path: "bookingPage", element: <BookingPage /> },
+    ],
   },
   {
     path: "admin",
@@ -41,7 +46,7 @@ export const router = createBrowserRouter([
       { path: "checkin", element: <CheckInManager /> },
       { path: "checkout", element: <CheckOutManager /> },
       { path: "info", element: <InfoManagement /> },
-      { path: 'info/:id', element: <NewsDetail /> }
+      { path: "info/:id", element: <NewsDetail /> },
     ],
   },
   {
@@ -53,17 +58,16 @@ export const router = createBrowserRouter([
     ],
   },
   {
-    path: '',
+    path: "",
     element: <MainLayout />,
     children: [
-      { path: '/newsPage', element: <NewsPage /> },
-      { path: '/home', element: <Home /> },
+      { path: "/newsPage", element: <NewsPage /> },
+      { path: "/home", element: <Home /> },
     ],
-  }
-
+  },
   {
-    path: 'customer',
+    path: "customer",
     element: <RoomList />,
-    children: [{ path: 'room/list', element: <RoomList /> }],
+    children: [{ path: "room/list", element: <RoomList /> }],
   },
 ]);

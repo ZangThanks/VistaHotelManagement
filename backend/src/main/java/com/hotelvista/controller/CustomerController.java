@@ -22,12 +22,6 @@ public class CustomerController {
         return service.findAll();
     }
 
-    //TODO: HAI HÀM FIND BY ID
-    @GetMapping("/{id}")
-    public Customer findById(@PathVariable("id") String id) {
-        return service.findById(id);
-    }
-
     /**
      * Lấy thông tin khách hàng theo ID.
      *
