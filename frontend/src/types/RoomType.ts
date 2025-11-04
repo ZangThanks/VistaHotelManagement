@@ -1,7 +1,6 @@
-
 export interface RoomType {
-    id?: string;
-    name?: string;
+    roomTypeID?: string;
+    typeName?: string;
     description?: string;
     area?: number;
     maxOccupancy?: number;
