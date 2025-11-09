@@ -33,11 +33,15 @@ INSERT INTO rooms (room_number, floor, last_cleaned, notes, status, room_type_id
 -- ROOM TYPE IMAGES
 INSERT INTO room_images (room_id, images_url) VALUES
                                                   ('STD101', 'https://pix8.agoda.net/hotelImages/7394456/87898656/a9ed80d50120f6b39035912334b2c530.jpg?ce=0&s=600x'),
-                                                  ('STD102', 'https://pix8.agoda.net/hotelImages/7394456/93823858/036cf046c58da8fff1cf92aaf3aa7f37.jpg?ce=2&s=600x'),
-                                                  ('STD103', 'https://q-xx.bstatic.com/xdata/images/hotel/max1024x768/629950678.jpg?k=519c28836f153d0fc993144aca31868f5489a3d1590a2af8ba7be2d2b5de05a9&o=&s=600x'),
+                                                  ('STD101', 'https://pix8.agoda.net/hotelImages/7394456/93823858/036cf046c58da8fff1cf92aaf3aa7f37.jpg?ce=2&s=600x'),
+                                                  ('STD101', 'https://q-xx.bstatic.com/xdata/images/hotel/max1024x768/629950678.jpg?k=519c28836f153d0fc993144aca31868f5489a3d1590a2af8ba7be2d2b5de05a9&o=&s=600x'),
                                                   ('DLX201', 'https://pix8.agoda.net/hotelImages/7394456/87898656/a12bb62e00b1bd42f5bcd4168742230a.jpg?ce=2&s=600x'),
                                                   ('DLX202', 'https://q-xx.bstatic.com/xdata/images/hotel/max1024x768/629964341.jpg?k=119039eeeec43b29489f366935c93223415e50bca6c94593a0baa3b4f0f1f473&o=&s=600x'),
-                                                  ('STE301', 'https://pix8.agoda.net/property/73668369/0/ab0f949fe65b213cc9b1ad2f32c3271f.jpeg?ce=2&s=600x');
+                                                  ('STE301', 'https://pix8.agoda.net/property/73668369/0/ab0f949fe65b213cc9b1ad2f32c3271f.jpeg?ce=2&s=600x'),
+                                                  ('STD103', 'https://pix8.agoda.net/hotelImages/7394456/87898656/a9ed80d50120f6b39035912334b2c530.jpg?ce=0&s=600x'),
+                                                  ('DLX203', 'https://pix8.agoda.net/hotelImages/7394456/93823858/036cf046c58da8fff1cf92aaf3aa7f37.jpg?ce=2&s=600x'),
+                                                  ('DLX203', 'https://q-xx.bstatic.com/xdata/images/hotel/max1024x768/629950678.jpg?k=519c28836f153d0fc993144aca31868f5489a3d1590a2af8ba7be2d2b5de05a9&o=&s=600x'),
+                                                  ('STE302', 'https://pix8.agoda.net/property/73668369/0/ab0f949fe65b213cc9b1ad2f32c3271f.jpeg?ce=2&s=600x');
 -- CUSTOMERS
 INSERT INTO customers (customer_id, address, email, full_name, PASSWORD, joined_date, phone, user_name, user_role, birth_date, gender, loyalty_points, membership_level) VALUES
                                                                                                                                                                              ('CUST001', 'TP.HCM', 'nguyenvana@gmail.com', 'Nguyễn Văn A', 'hashedpw1','2025-10-20', '0901234567', 'nguyenvana', 'CUSTOMER', '1990-05-20', 'MALE', 12000, 'SILVER'),

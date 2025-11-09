@@ -3,7 +3,6 @@ export type RoomStatus = 'AVAILABLE' | 'BOOKED' | 'CLEANING' | 'MAINTENANCE';
 import type { RoomType } from './RoomType';
 
 export interface Room {
-    id?: string;
     roomNumber?: string;
     floor?: number | null;
     status: RoomStatus;

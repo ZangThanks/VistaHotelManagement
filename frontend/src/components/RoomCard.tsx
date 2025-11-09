@@ -1,10 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-// import {
-//     Card,
-//     CardFooter,
-// } from './components_bonus/my-card/components/ui/card';
+import { Card, CardFooter } from './my-card/components/ui/card';
 import type { Room } from '../types/Room';
 
 interface RoomCardProps {
@@ -12,9 +9,8 @@ interface RoomCardProps {
 }
 
 export default function RoomCard({ room }: RoomCardProps) {
-    const images =
-        (room.roomType?.images as string[] | undefined) || room.images || [];
-    const title = room.roomType?.name || room.roomNumber || 'Room';
+    const images = (room.images as string[] | undefined) || room.images || [];
+    const title = room.roomType?.typeName || room.roomNumber || 'Room';
     const description = room.roomType?.description || room.notes || '';
     const price = room.roomType?.basePrice ?? 0;
 
@@ -40,10 +36,10 @@ export default function RoomCard({ room }: RoomCardProps) {
     const isVideo = (url: string) => /\.(mp4|webm|ogg)$/i.test(url);
 
     return (
-        <Link to={`/rooms/${room.id}`}>
-            <Card className="w-full max-w-md items-center mx-auto overflow-hidden border-0 rounded-xl hover:shadow-lg transition-shadow duration-300 ease-in-out mb-5">
-                <div className="relative">
-                    <div className="relative h-[300px] w-[400px]">
+        <Link to={`/customer/room/${room.roomNumber}`}>
+            <Card className="w-full max-w-md items-center mx-auto overflow-hidden rounded-xl hover:shadow-xl transition-shadow duration-300 ease-in-out mb-5 border-0 shadow-sm">
+                <div className="relative ">
+                    <div className="relative h-[300px] w-[380px] ">
                         {images.length > 0 ? (
                             isVideo(images[currentImageIndex]) ? (
                                 <video
