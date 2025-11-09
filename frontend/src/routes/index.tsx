@@ -1,34 +1,34 @@
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter } from 'react-router-dom';
 
 // Layouts
-import AuthLayout from "../layouts/AuthLayout";
-import EmployeeLayout from "../layouts/EmployeeLayout";
-import AdminLayout from "../layouts/AdminLayout";
-import MainLayout from "../layouts/MainLayout";
-import CustomerLayout from "../layouts/CustomerLayout";
+import AuthLayout from '../layouts/AuthLayout';
+import EmployeeLayout from '../layouts/EmployeeLayout';
+import AdminLayout from '../layouts/AdminLayout';
+import MainLayout from '../layouts/MainLayout';
+import CustomerLayout from '../layouts/CustomerLayout';
 
 // Auth pages
-import Login from "../pages/auth/Login";
-import Register from "../pages/auth/Register";
+import Login from '../pages/auth/Login';
+import Register from '../pages/auth/Register';
 
 // Employee pages
-import CustomerList from "../pages/employee/CustomerList";
-import NewsPage from "../pages/employee/NewsPage";
-import CheckInManager from "../pages/employee/CheckInManager";
-import CheckOutManager from "../pages/employee/CheckOutManager";
-import IncidentManagement from "../pages/employee/IncidentManagement";
+import CustomerList from '../pages/employee/CustomerList';
+import NewsPage from '../pages/employee/NewsPage';
+import CheckInManager from '../pages/employee/CheckInManager';
+import CheckOutManager from '../pages/employee/CheckOutManager';
+import IncidentManagement from '../pages/employee/IncidentManagement';
 
 // Admin pages
-import BookingPage from "../pages/admin/booking/BookingPage";
-import InfoManagement from "../pages/admin/infomation/InfoManagement";
-import ServiceManagement from "../pages/admin/ServiceManagement";
+import BookingPage from '../pages/admin/booking/BookingPage';
+import InfoManagement from '../pages/admin/infomation/InfoManagement';
+import ServiceManagement from '../pages/admin/ServiceManagement';
 
 // Customer pages
-import Home from "../pages/customer/Home";
-import RoomList from "../pages/customer/RoomList";
-import RoomDetail from "../pages/customer/RoomDetail";
-import RoomComparison from "../pages/customer/RoomComparison";
-import IncidentReport from "../pages/customer/IncidentReport";
+import Home from '../pages/customer/Home';
+import RoomList from '../pages/customer/RoomList';
+import RoomDetail from '../pages/customer/RoomDetail';
+
+import IncidentReport from '../pages/customer/IncidentReport';
 import NewsDetail from '../components/news/NewsDetail';
 
 // Router configuration
@@ -77,12 +77,12 @@ export const router = createBrowserRouter([
         ],
     },
     {
-        path: "customer",
+        path: 'customer',
         element: <CustomerLayout />,
         children: [
-            { path: "room", element: <RoomList /> },
-            { path: "room/:id", element: <RoomDetail /> },
-            { path: "room/compare", element: <RoomComparison /> },
+            { path: 'room', element: <RoomList /> },
+            { path: 'room/:id', element: <RoomDetail /> },
+       
         ],
     },
 ]);
