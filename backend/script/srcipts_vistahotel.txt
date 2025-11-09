@@ -1,10 +1,10 @@
-USE vistalhoteldbs;
+USE vistalhoteldbs
 
 -- ROOM TYPES
 INSERT INTO room_types (room_type_id, area, base_price, description, max_occupancy, type_name) VALUES
-                                                                                                   ('STD', 22, 900000, 'Phòng tiêu chuẩn, phù hợp cho 2 người, view thành phố', 2, 'Standard'),
-                                                                                                   ('DLX', 32, 1500000, 'Phòng Deluxe, rộng rãi, ban công, view biển', 3, 'Deluxe'),
-                                                                                                   ('STE', 50, 3000000, 'Phòng Suite, cao cấp, phòng khách riêng, view toàn cảnh', 4, 'Suite');
+('STD', 22, 900000, 'Phòng tiêu chuẩn, phù hợp cho 2 người, view thành phố', 2, 'Standard'),
+('DLX', 32, 1500000, 'Phòng Deluxe, rộng rãi, ban công, view biển', 3, 'Deluxe'),
+('STE', 50, 3000000, 'Phòng Suite, cao cấp, phòng khách riêng, view toàn cảnh', 4, 'Suite');
 
 -- ROOM TYPE AMENTIES
 INSERT INTO room_type_amenties (room_type_id, amenties) VALUES
@@ -136,7 +136,7 @@ INSERT INTO booking_services (quantity, service_price, total_amount, booking_id,
 -- EARLY CHECKINS
 INSERT INTO early_checkins (request_id, additional_fee, approval_status, approve_by, request_date, request_time, customer_id) VALUES
                                                                                                                                   ('EC001', 450000, 'APPROVED', 'EMP001', '2024-06-10 08:00:00', '2024-06-10 08:00:00', 'CUST001'),
-                                                                                                                                  ('EC002', 900000, 'PENDING', NULL, '2024-06-15 07:30:00', '2024-06-15 07:30:00', 'CUST002');
+                                                                                                                                  ('EC002', 900000, 'REJECTED', NULL, '2024-06-15 07:30:00', '2024-06-15 07:30:00', 'CUST002');
 
 -- MAINTENANCE REQUESTS
 INSERT INTO maintenance_requests (request_id, actual_cost, assigned_to, completion_date, description, estimated_time, prioty, request_date, status, booking_id) VALUES

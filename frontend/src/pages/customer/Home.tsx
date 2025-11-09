@@ -46,7 +46,7 @@ const Home: React.FC = () => {
                             : 'opacity-0 pointer-events-none'
                     }`}
                 >
-                    <Header onMenuClick={() => {}} />
+                    <Header />
                 </div>
             </div>
             {/* Hero Video Section */}

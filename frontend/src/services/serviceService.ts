@@ -1,6 +1,6 @@
-import { axiosInstance } from '../config/api';
+import { api } from "./apiClient";
 
-const ENDPOINT = '/services';
+const ENDPOINT = "/services";
 
 // Interface Service type
 export interface Service {
@@ -16,55 +16,55 @@ export interface Service {
 // Lấy tất cả dịch vụ
 export const getAll = async (): Promise<Service[]> => {
     try {
-        const response = await axiosInstance.get(ENDPOINT);
+        const response = await api.get(ENDPOINT);
         return response.data;
     } catch (error) {
-        console.error('Error fetching services:', error);
+        console.error("Error fetching services:", error);
         throw error;
     }
 };
 
 // Lấy dịch vụ theo trạng thái khả dụng
 export const getServicesByAvailability = async (
-    availability: boolean,
+    availability: boolean
 ): Promise<Service[]> => {
     try {
-        const response = await axiosInstance.get(`${ENDPOINT}/availability`, {
+        const response = await api.get(`${ENDPOINT}/availability`, {
             params: { availability },
         });
         return response.data;
     } catch (error) {
-        console.error('Error fetching services by availability:', error);
+        console.error("Error fetching services by availability:", error);
         throw error;
     }
 };
 
 // Tìm kiếm dịch vụ theo tên
 export const searchServicesByName = async (
-    serviceName: string,
+    serviceName: string
 ): Promise<Service[]> => {
     try {
-        const response = await axiosInstance.get(`${ENDPOINT}/name`, {
+        const response = await api.get(`${ENDPOINT}/name`, {
             params: { serviceName },
         });
         return response.data;
     } catch (error) {
-        console.error('Error searching services by name:', error);
+        console.error("Error searching services by name:", error);
         throw error;
     }
 };
 
 // Lấy dịch vụ theo danh mục
 export const getServicesByCategory = async (
-    serviceCategory: string,
+    serviceCategory: string
 ): Promise<Service[]> => {
     try {
-        const response = await axiosInstance.get(`${ENDPOINT}/category`, {
+        const response = await api.get(`${ENDPOINT}/category`, {
             params: { serviceCategory },
         });
         return response.data;
     } catch (error) {
-        console.error('Error fetching services by category:', error);
+        console.error("Error fetching services by category:", error);
         throw error;
     }
 };
@@ -72,10 +72,10 @@ export const getServicesByCategory = async (
 // Lưu (thêm mới hoặc cập nhật) dịch vụ
 export const saveService = async (service: Service): Promise<Service> => {
     try {
-        const response = await axiosInstance.post(ENDPOINT, service);
+        const response = await api.post(ENDPOINT, service);
         return response.data;
     } catch (error) {
-        console.error('Error saving service:', error);
+        console.error("Error saving service:", error);
         throw error;
     }
 };
@@ -83,9 +83,9 @@ export const saveService = async (service: Service): Promise<Service> => {
 // Xóa dịch vụ
 export const deleteService = async (serviceID: string): Promise<void> => {
     try {
-        await axiosInstance.delete(`${ENDPOINT}/${serviceID}`);
+        await api.delete(`${ENDPOINT}/${serviceID}`);
     } catch (error) {
-        console.error('Error deleting service:', error);
+        console.error("Error deleting service:", error);
         throw error;
     }
 };

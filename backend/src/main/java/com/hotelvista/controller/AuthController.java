@@ -12,7 +12,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.util.Date;
 import java.util.Map;
 
 @RestController
@@ -24,6 +26,12 @@ public class AuthController {
 
     private final PasswordEncoder passwordEncoder;
 
+    /**
+     * Đăng ký tài khoản mới.
+     *
+     * @param req đối tượng RegisterRequest chứa thông tin đăng ký
+     * @return kết quả đăng ký
+     */
     @PostMapping("/register")
     public Map<String, Object> register(@RequestBody RegisterRequest req) {
         // Validate
@@ -53,9 +61,12 @@ public class AuthController {
             return Map.of("success", false, "message", "Tên đăng nhập đã được sử dụng");
         }
 
+        // Sinh mã khách hàng: CUSTddMMyyyyXXXX
+        String newCustomerId = generateCustomerId();
+
         // Tạo customer
         Customer c = new Customer();
-        c.setId(GenerateIDUtil.generateID("CU", 8));
+        c.setId(newCustomerId);
         c.setUserName(req.getUserName());
         c.setFullName(req.getFullName());
         c.setEmail(req.getEmail());
@@ -67,6 +78,7 @@ public class AuthController {
         c.setLoyaltyPoints(0);
         c.setMemberShipLevel(MemberShipLevel.BRONZE);
 
+        // mã hóa password
         String encodedPassword = passwordEncoder.encode(req.getPassword());
         c.setPassword(encodedPassword);
 
@@ -81,7 +93,34 @@ public class AuthController {
         );
     }
 
+    /**
+     * Sinh mã khách hàng mới theo định dạng CUSTddMMyyyyXXXX
+     *
+     * @return mã khách hàng mới
+     */
+    private String generateCustomerId() {
+        String datePart = new SimpleDateFormat("ddMMyy").format(new Date());
+        String prefix = "CUS" + datePart;
 
+        // Lấy khách hàng cuối cùng trong ngày từ DB
+        Customer lastCustomer = service.findLastCustomerOfDay(prefix);
+        int nextNumber = 1;
+
+        if (lastCustomer != null && lastCustomer.getId() != null) {
+            String lastId = lastCustomer.getId();
+            String numberPart = lastId.substring(lastId.length() - 4); // 4 số cuối
+            nextNumber = Integer.parseInt(numberPart) + 1;
+        }
+
+        return prefix + String.format("%04d", nextNumber);
+    }
+
+    /**
+     * Đăng nhập tài khoản.
+     *
+     * @param req đối tượng LoginRequest chứa thông tin đăng nhập
+     * @return kết quả đăng nhập
+     */
     @PostMapping("/login")
     public Map<String, Object> login(@RequestBody LoginRequest req) {
         Customer user = null;

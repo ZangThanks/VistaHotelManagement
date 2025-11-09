@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class CustomerVoucherService {
@@ -17,11 +18,68 @@ public class CustomerVoucherService {
         return repo.findAll();
     }
 
+    /**
+     * Lưu thông tin voucher của khách hàng
+     * @param customerVoucher
+     * @return
+     */
     public boolean save(CustomerVoucher customerVoucher) {
         return repo.save(customerVoucher) != null;
     }
 
+    /**
+     * Tìm tất cả voucher của khách hàng theo id khách hàng
+     * @param customerId
+     * @return
+     */
+    public List<CustomerVoucher> findAllByCustomer_Id(String customerId) {
+        return repo.findAllByCustomer_Id(customerId);
+    }
+
+    /**
+     * Tìm tất cả voucher của khách hàng theo khoảng thời gian
+     * @param startDate
+     * @param endDate
+     * @param customerId
+     * @return
+     */
     public List<CustomerVoucher> findAllByVoucherStartDateAfterAndEndDateBefore(LocalDate startDate, LocalDate endDate, String customerId) {
         return repo.findAllByVoucher_StartDateAfterAndEndDateBefore(startDate, endDate, customerId);
     }
+
+    /**
+     * Tìm tất cả voucher còn hiệu lực của khách hàng
+     * @param customerId
+     * @return
+     */
+    public List<CustomerVoucher> findActiveVouchersByCustomer(String customerId) {
+        return repo.findActiveVouchersByCustomer(customerId);
+    }
+
+    /**
+     * Lấy tất cả voucher của khách hàng theo trạng thái đã sử dụng hoặc chưa sử dụng
+     * @param customerId
+     * @param state
+     * @return
+     */
+    public List<CustomerVoucher> findByCustomerAndState(String customerId, boolean state) {
+        return repo.findByCustomerAndState(customerId, state);
+    }
+
+    /**
+     * Đánh dấu voucher của khách hàng đã được sử dụng
+     * @param id
+     * @return
+     */
+    public boolean markAsUsed(CustomerVoucher.CustomerVoucherId id) {
+        Optional<CustomerVoucher> opt = repo.findById(id);
+        if (opt.isPresent()) {
+            CustomerVoucher cv = opt.get();
+            cv.setState(true);
+            repo.save(cv);
+            return true;
+        }
+        return false;
+    }
+
 }
