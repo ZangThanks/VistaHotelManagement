@@ -23,8 +23,9 @@ import {
 import TabNavigation, { type Tab } from "../../common/TabNavigation";
 import { validateTab } from "../../../utils/roomValidators";
 import type { ValidationError } from "../../../utils/roomValidators";
-import roomService from "../../../services/roomService";
+import { roomService } from "../../../services/roomService";
 import type { RoomType } from "../../../types/RoomType";
+import { formatVND } from "../../../utils/formatters";
 
 export interface RoomFormData {
   // Room fields only (images belong to Room entity)
@@ -76,13 +77,13 @@ const AddRoomModal: React.FC<AddRoomModalProps> = ({
     imageFiles: [],
   });
 
-  // Only 2 tabs now: Room Details (includes room type selection), Images
+  // Only 2 tabs now: Room Details, Images
   const tabs: Tab[] = [
     { id: "details", label: "Room Details" },
     { id: "images", label: "Images" },
   ];
 
-  // Fetch available room types on mount
+  // Lấy các loại phòng có sẵn
   useEffect(() => {
     if (isOpen) {
       fetchRoomTypes();
@@ -107,7 +108,7 @@ const AddRoomModal: React.FC<AddRoomModalProps> = ({
     }
   };
 
-  // Update selected room type when roomTypeId changes
+  // Cập nhật loại phòng đã chọn khi roomTypeId thay đổi
   useEffect(() => {
     if (formData.roomTypeId) {
       const roomType = availableRoomTypes.find(
@@ -119,7 +120,26 @@ const AddRoomModal: React.FC<AddRoomModalProps> = ({
     }
   }, [formData.roomTypeId, availableRoomTypes]);
 
-  // Map amenity IDs to icons for display
+  // Tự động tạo số phòng khi chọn tầng và loại phòng
+  useEffect(() => {
+    const generateRoomNumber = async () => {
+      if (formData.floor && formData.roomTypeId) {
+        try {
+          const nextRoomNumber = await roomService.getNextRoomNumber(
+            parseInt(formData.floor),
+            formData.roomTypeId
+          );
+          setFormData((prev) => ({ ...prev, roomNumber: nextRoomNumber }));
+        } catch (error) {
+          console.error("Error generating room number:", error);
+        }
+      }
+    };
+
+    generateRoomNumber();
+  }, [formData.floor, formData.roomTypeId]);
+
+  // Map ID to amenity icon
   const amenityIcons: { [key: string]: React.ReactElement } = {
     wifi: <FaWifi />,
     tv: <FaTv />,
@@ -157,7 +177,7 @@ const AddRoomModal: React.FC<AddRoomModalProps> = ({
 
     const fileArray = Array.from(files);
 
-    // Store files for later upload to Cloudinary
+    // Lưu trữ các tập tin để tải lên Cloudinary sau này
     setFormData((prev) => ({
       ...prev,
       imageFiles: [...prev.imageFiles, ...fileArray],
@@ -364,11 +384,10 @@ const AddRoomModal: React.FC<AddRoomModalProps> = ({
                             <input
                               type="text"
                               value={formData.roomNumber}
-                              onChange={(e) =>
-                                handleInputChange("roomNumber", e.target.value)
-                              }
-                              placeholder="e.g. 101, A-205, Suite-301"
-                              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#6b5e4c] focus:border-transparent ${
+                              readOnly
+                              disabled
+                              placeholder="Auto-generated (Select floor & type)"
+                              className={`w-full px-4 py-2 border rounded-lg bg-gray-100 text-gray-600 cursor-not-allowed ${
                                 getFieldError("roomNumber")
                                   ? "border-red-500"
                                   : "border-gray-300"
@@ -475,7 +494,7 @@ const AddRoomModal: React.FC<AddRoomModalProps> = ({
                                   value={type.roomTypeID}
                                 >
                                   {type.typeName} - {type.area}m² -{" "}
-                                  {type.basePrice} VND
+                                  {formatVND(type.basePrice)}
                                 </option>
                               ))}
                             </select>
@@ -522,8 +541,8 @@ const AddRoomModal: React.FC<AddRoomModalProps> = ({
                                 <span className="font-medium text-gray-700">
                                   Base Price:
                                 </span>{" "}
-                                <span className="text-gray-600">
-                                  {selectedRoomType.basePrice} VND
+                                <span className="text-gray-600 font-semibold">
+                                  {formatVND(selectedRoomType.basePrice)}
                                 </span>
                               </div>
                             </div>
@@ -538,36 +557,37 @@ const AddRoomModal: React.FC<AddRoomModalProps> = ({
                               </div>
                             )}
                             {selectedRoomType.amenties &&
-                              selectedRoomType.amenties.length > 0 && (
-                                <div className="mt-3">
-                                  <span className="font-medium text-gray-700 text-sm">
-                                    Included Amenities:
-                                  </span>
-                                  <div className="flex flex-wrap gap-2 mt-2">
-                                    {selectedRoomType.amenties.map(
-                                      (amenity) => {
-                                        const amenityKey = amenity
-                                          .toLowerCase()
-                                          .replace(/\s+/g, "");
-                                        const icon = amenityIcons[
-                                          amenityKey
-                                        ] || <FaConciergeBell />;
-                                        return (
-                                          <span
-                                            key={amenity}
-                                            className="inline-flex items-center gap-2 px-3 py-1 bg-white border border-blue-300 text-blue-700 rounded-full text-sm"
-                                          >
-                                            <span className="text-base">
-                                              {icon}
-                                            </span>
-                                            {amenity}
+                            Array.isArray(selectedRoomType.amenties) &&
+                            selectedRoomType.amenties.length > 0 ? (
+                              <div className="mt-3">
+                                <span className="font-medium text-gray-700 text-sm">
+                                  Included Amenities:
+                                </span>
+                                <div className="flex flex-wrap gap-2 mt-2">
+                                  {(selectedRoomType.amenties as string[]).map(
+                                    (amenity: string) => {
+                                      const amenityKey = amenity
+                                        .toLowerCase()
+                                        .replace(/\s+/g, "");
+                                      const icon = amenityIcons[amenityKey] || (
+                                        <FaConciergeBell />
+                                      );
+                                      return (
+                                        <span
+                                          key={amenity}
+                                          className="inline-flex items-center gap-2 px-3 py-1 bg-white border border-blue-300 text-blue-700 rounded-full text-sm"
+                                        >
+                                          <span className="text-base">
+                                            {icon}
                                           </span>
-                                        );
-                                      }
-                                    )}
-                                  </div>
+                                          {amenity}
+                                        </span>
+                                      );
+                                    }
+                                  )}
                                 </div>
-                              )}
+                              </div>
+                            ) : null}
                           </div>
                         )}
 

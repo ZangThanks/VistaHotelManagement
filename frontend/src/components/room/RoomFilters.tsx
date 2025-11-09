@@ -1,5 +1,6 @@
 import React from "react";
 import { FaSearch, FaFilter } from "react-icons/fa";
+import Dropdown from "../Dropdown";
 
 export interface FilterOptions {
   searchTerm: string;
@@ -59,13 +60,13 @@ const RoomFilters: React.FC<RoomFiltersProps> = ({
             Search
           </label>
           <div className="relative">
-            <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 z-10" />
             <input
               type="text"
               placeholder="Search all or name"
               value={filters.searchTerm}
               onChange={(e) => handleChange("searchTerm", e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6b5e4c] focus:border-transparent outline-none transition-all"
+              className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg bg-white hover:border-[#6b5e4c] focus:ring-2 focus:ring-[#6b5e4c] focus:border-transparent outline-none transition-all text-gray-700 font-medium"
             />
           </div>
         </div>
@@ -75,17 +76,18 @@ const RoomFilters: React.FC<RoomFiltersProps> = ({
           <label className="block text-sm font-medium text-gray-700 mb-2">
             All Status
           </label>
-          <select
+          <Dropdown
+            options={[
+              { value: "all", label: "All" },
+              { value: "available", label: "Available" },
+              { value: "occupied", label: "Booked" },
+              { value: "maintenance", label: "Unavailable" },
+              { value: "cleaning", label: "Cleaning" },
+            ]}
             value={filters.status}
-            onChange={(e) => handleChange("status", e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6b5e4c] focus:border-transparent outline-none transition-all"
-          >
-            <option value="all">All</option>
-            <option value="available">Available</option>
-            <option value="occupied">Booked</option>
-            <option value="maintenance">Unavailable</option>
-            <option value="cleaning">Cleaning</option>
-          </select>
+            onChange={(value) => handleChange("status", value)}
+            placeholder="Select status"
+          />
         </div>
 
         {/* Room Type */}
@@ -93,18 +95,15 @@ const RoomFilters: React.FC<RoomFiltersProps> = ({
           <label className="block text-sm font-medium text-gray-700 mb-2">
             All Room
           </label>
-          <select
+          <Dropdown
+            options={[
+              { value: "all", label: "All" },
+              ...roomTypes.map((type) => ({ value: type, label: type })),
+            ]}
             value={filters.roomType}
-            onChange={(e) => handleChange("roomType", e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6b5e4c] focus:border-transparent outline-none transition-all"
-          >
-            <option value="all">All</option>
-            {roomTypes.map((type) => (
-              <option key={type} value={type}>
-                {type}
-              </option>
-            ))}
-          </select>
+            onChange={(value) => handleChange("roomType", value)}
+            placeholder="Select room type"
+          />
         </div>
 
         {/* Floor */}
@@ -112,18 +111,18 @@ const RoomFilters: React.FC<RoomFiltersProps> = ({
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Room no.
           </label>
-          <select
+          <Dropdown
+            options={[
+              { value: "all", label: "All" },
+              ...floors.map((floor) => ({
+                value: floor.toString(),
+                label: `Floor ${floor}`,
+              })),
+            ]}
             value={filters.floor}
-            onChange={(e) => handleChange("floor", e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6b5e4c] focus:border-transparent outline-none transition-all"
-          >
-            <option value="all">All</option>
-            {floors.map((floor) => (
-              <option key={floor} value={floor.toString()}>
-                Floor {floor}
-              </option>
-            ))}
-          </select>
+            onChange={(value) => handleChange("floor", value)}
+            placeholder="Select floor"
+          />
         </div>
 
         {/* Price Range */}
@@ -131,17 +130,18 @@ const RoomFilters: React.FC<RoomFiltersProps> = ({
           <label className="block text-sm font-medium text-gray-700 mb-2">
             All Type
           </label>
-          <select
+          <Dropdown
+            options={[
+              { value: "all", label: "All" },
+              { value: "0-1000000", label: "< 1,000,000 VND" },
+              { value: "1000000-2000000", label: "1,000,000 - 2,000,000 VND" },
+              { value: "2000000-5000000", label: "2,000,000 - 5,000,000 VND" },
+              { value: "5000000-999999999", label: "> 5,000,000 VND" },
+            ]}
             value={filters.priceRange}
-            onChange={(e) => handleChange("priceRange", e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6b5e4c] focus:border-transparent outline-none transition-all"
-          >
-            <option value="all">All</option>
-            <option value="0-1000000">&lt; 1,000,000 VND</option>
-            <option value="1000000-2000000">1,000,000 - 2,000,000 VND</option>
-            <option value="2000000-5000000">2,000,000 - 5,000,000 VND</option>
-            <option value="5000000-999999999">&gt; 5,000,000 VND</option>
-          </select>
+            onChange={(value) => handleChange("priceRange", value)}
+            placeholder="Select price range"
+          />
         </div>
       </div>
 

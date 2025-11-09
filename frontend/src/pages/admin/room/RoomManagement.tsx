@@ -22,6 +22,7 @@ import Pagination from "../../../components/common/Pagination";
 import type { Room } from "../../../components/room/view/RoomTableView";
 import AddRoomModal from "../../../components/room/modal/AddRoomModal";
 import EditRoomModal from "../../../components/room/modal/EditRoomModal";
+import ChangeStatusModal from "../../../components/room/modal/ChangeStatusModal";
 import ConfirmDialog from "../../../components/dialog/ConfirmDialog";
 import { motion } from "framer-motion";
 import { roomService } from "../../../services/roomService";
@@ -39,7 +40,7 @@ import { ToastContext } from "../../../context/ToastContext";
  * Hỗ trợ nhiều view: Card, Table, Calendar, Status Board
  */
 const RoomManagement: React.FC = () => {
-  // View mode: table, card, calendar, or status
+  // Chế độ xem: bảng, thẻ, lịch hoặc bảng trạng thái
   const [viewMode, setViewMode] = useState<
     "table" | "card" | "calendar" | "status"
   >("status");
@@ -62,6 +63,9 @@ const RoomManagement: React.FC = () => {
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [roomToDelete, setRoomToDelete] = useState<Room | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // Change status modal
+  const [changeStatusRoom, setChangeStatusRoom] = useState<Room | null>(null);
 
   // Toast context
   const toast = useContext(ToastContext);
@@ -86,7 +90,7 @@ const RoomManagement: React.FC = () => {
 
   // Chuyển đổi API Room thành UI Room
   const convertApiRoomToUiRoom = (apiRoom: ApiRoom): Room | null => {
-    // Skip rooms without roomType
+    // Bỏ qua phòng không có roomType
     if (!apiRoom.roomType) {
       console.warn(`Room ${apiRoom.roomNumber} has null roomType, skipping...`);
       return null;
@@ -103,35 +107,37 @@ const RoomManagement: React.FC = () => {
     return {
       id: apiRoom.roomNumber || "",
       roomNumber: apiRoom.roomNumber || "",
-      roomType: apiRoom.roomType.typeName,
+      roomType: apiRoom.roomType.typeName || "",
       floor: apiRoom.floor || 0,
-      price: apiRoom.roomType.basePrice,
+      price: apiRoom.roomType.basePrice || 0,
       status: statusMap[apiRoom.status],
-      capacity: apiRoom.roomType.maxOccupancy,
-      amenities: apiRoom.roomType.amenties,
-      image: apiRoom.images?.[0] || "", // Images belong to Room, not RoomType
+      capacity: apiRoom.roomType.maxOccupancy || 0,
+      amenities: (apiRoom.roomType.amenties as string[]) || [],
+      image: apiRoom.images?.[0] || "", // Hình ảnh đầu tiên để tương thích ngược
+      images: apiRoom.images || [], // Tất cả hình ảnh cho gallery
       notes: apiRoom.notes || undefined,
       lastCleaned: apiRoom.lastCleaned || undefined,
     };
   };
 
-  // Load danh sách từ API
-  useEffect(() => {
-    const loadRooms = async () => {
-      try {
-        setLoading(true);
-        const apiRooms = await roomService.getAllRooms();
-        const uiRooms = apiRooms
-          .map(convertApiRoomToUiRoom)
-          .filter((room): room is Room => room !== null);
-        setRooms(uiRooms);
-      } catch (error) {
-        console.error("Lỗi khi tải danh sách phòng:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Load danh sách phòng từ API
+  const loadRooms = async () => {
+    try {
+      setLoading(true);
+      const apiRooms = await roomService.getAllRooms();
+      const uiRooms = apiRooms
+        .map(convertApiRoomToUiRoom)
+        .filter((room: Room | null): room is Room => room !== null);
+      setRooms(uiRooms);
+    } catch (error) {
+      console.error("Lỗi khi tải danh sách phòng:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  // Load danh sách từ API khi component mount
+  useEffect(() => {
     loadRooms();
   }, []);
 
@@ -153,13 +159,13 @@ const RoomManagement: React.FC = () => {
   // Filter rooms
   const filteredRooms = useMemo(() => {
     return rooms.filter((room) => {
-      // Search filter
+      // Bộ lọc tìm kiếm
       if (filters.searchTerm) {
         const searchLower = filters.searchTerm.toLowerCase();
         const roomTypeName =
           typeof room.roomType === "string"
             ? room.roomType
-            : room.roomType.typeName;
+            : room.roomType?.typeName || "";
 
         if (
           !room.roomNumber.toLowerCase().includes(searchLower) &&
@@ -169,28 +175,28 @@ const RoomManagement: React.FC = () => {
         }
       }
 
-      // Status filter
+      // Bộ lọc trạng thái
       if (filters.status !== "all" && room.status !== filters.status) {
         return false;
       }
 
-      // Room type filter
+      // Bộ lọc loại phòng
       if (filters.roomType !== "all") {
         const roomTypeName =
           typeof room.roomType === "string"
             ? room.roomType
-            : room.roomType.typeName;
+            : room.roomType?.typeName || "";
         if (roomTypeName !== filters.roomType) {
           return false;
         }
       }
 
-      // Floor filter
+      // Bộ lọc tầng
       if (filters.floor !== "all" && room.floor.toString() !== filters.floor) {
         return false;
       }
 
-      // Price range filter
+      // Bộ lọc phạm vi giá
       if (filters.priceRange !== "all") {
         const [min, max] = filters.priceRange.split("-").map(Number);
         if (room.price < min || room.price > max) {
@@ -217,7 +223,7 @@ const RoomManagement: React.FC = () => {
     const occupancyRate =
       rooms.length > 0 ? ((occupied / rooms.length) * 100).toFixed(1) : "0";
 
-    // Calculate booking statistics
+    // Tính toán thống kê đặt phòng
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -231,7 +237,7 @@ const RoomManagement: React.FC = () => {
       return booking.status === "checked-in" || booking.status === "pending";
     });
 
-    // Calculate daily revenue from today's bookings
+    // Tính toán doanh thu hàng ngày từ các đặt phòng hôm nay
     const dailyRevenue = todayBookings.reduce(
       (sum, booking) => sum + booking.totalAmount,
       0
@@ -248,12 +254,16 @@ const RoomManagement: React.FC = () => {
     };
   }, [rooms, bookings]);
 
-  // Get unique room types and floors for filters
+  // Lấy các loại phòng và tầng riêng biệt cho bộ lọc
   const roomTypes = Array.from(
     new Set(
-      rooms.map((r) =>
-        typeof r.roomType === "string" ? r.roomType : r.roomType.typeName
-      )
+      rooms
+        .map((r) => {
+          const typeName =
+            typeof r.roomType === "string" ? r.roomType : r.roomType?.typeName;
+          return typeName || "";
+        })
+        .filter(Boolean)
     )
   );
   const floors = Array.from(new Set(rooms.map((r) => r.floor))).sort();
@@ -272,6 +282,42 @@ const RoomManagement: React.FC = () => {
   const handleDelete = (room: Room) => {
     console.log("Delete room:", room);
     handleDeleteRoom(room);
+  };
+
+  // Handler để thay đổi trạng thái phòng
+  const handleChangeStatus = async (
+    roomId: string,
+    newStatus: Room["status"],
+    note?: string
+  ) => {
+    try {
+      // Map Trạng thái UI cho API RoomStatus
+      const statusMap: Record<Room["status"], RoomStatus> = {
+        available: "AVAILABLE",
+        occupied: "BOOKED",
+        maintenance: "MAINTENANCE",
+        cleaning: "CLEANING",
+      };
+
+      await roomService.updateRoomStatus(roomId, statusMap[newStatus], note);
+
+      // Show success toast
+      toast?.success(`Room ${roomId} status updated to ${newStatus}`);
+
+      // Reload danh sách phòng
+      await loadRooms();
+
+      // Đóng modal
+      setChangeStatusRoom(null);
+
+      // Đóng RoomDetailModal nếu đang mở
+      if (selectedRoom?.roomNumber === roomId) {
+        setSelectedRoom(null);
+      }
+    } catch (error) {
+      console.error("Error updating room status:", error);
+      toast?.error("Failed to update room status");
+    }
   };
 
   const handleAddRoom = () => {
@@ -296,18 +342,25 @@ const RoomManagement: React.FC = () => {
       }
 
       // 2. Chuẩn bị dữ liệu phòng
-      // Room has images, RoomType is selected (not created)
-      const roomApiData = {
-        roomNumber: roomData.roomNumber,
+      const roomApiData: Partial<ApiRoom> = {
         floor: parseInt(roomData.floor),
         status: roomData.roomStatus as RoomStatus,
-        lastCleaned: roomData.lastCleaned,
-        notes: roomData.notes,
+        lastCleaned: roomData.lastCleaned || null,
+        notes: roomData.notes || null,
         roomType: {
           roomTypeID: roomData.roomTypeId,
-        } as ApiRoom["roomType"],
-        images: cloudinaryUrls, // Images belong to Room
+        },
+        images: cloudinaryUrls,
       };
+
+      if (roomData.roomNumber) {
+        roomApiData.roomNumber = roomData.roomNumber;
+      }
+
+      console.log(
+        "Sending room data to API:",
+        JSON.stringify(roomApiData, null, 2)
+      );
 
       // 3. Lưu phòng
       await roomService.saveRoom(roomApiData);
@@ -315,7 +368,7 @@ const RoomManagement: React.FC = () => {
       // 4. Reload danh sách phòng
       const apiRooms = await roomService.getAllRooms();
       const uiRooms = apiRooms
-        .map((apiRoom) => {
+        .map((apiRoom: ApiRoom) => {
           if (!apiRoom.roomType) {
             console.warn(
               `Room ${apiRoom.roomNumber} has null roomType,skipping...`
@@ -324,7 +377,7 @@ const RoomManagement: React.FC = () => {
           }
           return convertApiRoomToUiRoom(apiRoom);
         })
-        .filter((room): room is Room => room !== null);
+        .filter((room: Room | null): room is Room => room !== null);
 
       setRooms(uiRooms);
 
@@ -350,7 +403,7 @@ const RoomManagement: React.FC = () => {
 
   const handleEditRoom = async (room: Room) => {
     try {
-      // Fetch full room data from API to get complete information
+      // Lấy dữ liệu phòng đầy đủ từ API để có thông tin hoàn chỉnh
       const fullRoomData = await roomService.getRoomById(room.roomNumber);
       if (fullRoomData) {
         setRoomToEdit(fullRoomData as unknown as Room);
@@ -376,7 +429,7 @@ const RoomManagement: React.FC = () => {
     try {
       setLoading(true);
 
-      // 1. Upload new images to Cloudinary
+      // 1. Tải hình ảnh mới lên Cloudinary
       let newCloudinaryUrls: string[] = [];
       if (roomData.imageFiles.length > 0) {
         const uploadImages = await uploadMultipleImagesToCloudinary(
@@ -385,10 +438,10 @@ const RoomManagement: React.FC = () => {
         newCloudinaryUrls = uploadImages.map((img) => img.secure_url);
       }
 
-      // 2. Combine existing and new image URLs
+      // 2. Kết hợp URL ảnh hiện có và mới
       const allImageUrls = [...roomData.imageUrls, ...newCloudinaryUrls];
 
-      // 3. Prepare room data for API
+      // 3. Chuẩn bị dữ liệu phòng cho API
       const roomApiData = {
         roomNumber: roomData.roomNumber,
         floor: parseInt(roomData.floor),
@@ -407,7 +460,7 @@ const RoomManagement: React.FC = () => {
       // 5. Reload rooms
       const apiRooms = await roomService.getAllRooms();
       const uiRooms = apiRooms
-        .map((apiRoom) => {
+        .map((apiRoom: ApiRoom) => {
           if (!apiRoom.roomType) {
             console.warn(
               `Room ${apiRoom.roomNumber} has null roomType, skipping...`
@@ -416,7 +469,7 @@ const RoomManagement: React.FC = () => {
           }
           return convertApiRoomToUiRoom(apiRoom);
         })
-        .filter((room): room is Room => room !== null);
+        .filter((room: Room | null): room is Room => room !== null);
 
       setRooms(uiRooms);
 
@@ -458,7 +511,7 @@ const RoomManagement: React.FC = () => {
       // Reload rooms
       const apiRooms = await roomService.getAllRooms();
       const uiRooms = apiRooms
-        .map((apiRoom) => {
+        .map((apiRoom: ApiRoom) => {
           if (!apiRoom.roomType) {
             console.warn(
               `Room ${apiRoom.roomNumber} has null roomType, skipping...`
@@ -467,7 +520,7 @@ const RoomManagement: React.FC = () => {
           }
           return convertApiRoomToUiRoom(apiRoom);
         })
-        .filter((room): room is Room => room !== null);
+        .filter((room: Room | null): room is Room => room !== null);
 
       setRooms(uiRooms);
 
@@ -731,6 +784,11 @@ const RoomManagement: React.FC = () => {
         room={selectedRoom}
         onClose={() => setSelectedRoom(null)}
         onEdit={handleEditRoom}
+        onChangeStatus={() => {
+          if (selectedRoom) {
+            setChangeStatusRoom(selectedRoom);
+          }
+        }}
       />
 
       {/* Add Room Modal */}
@@ -768,6 +826,15 @@ const RoomManagement: React.FC = () => {
         cancelText="Cancel"
         isLoading={isDeleting}
       />
+
+      {/* Change Status Modal */}
+      {changeStatusRoom && (
+        <ChangeStatusModal
+          room={changeStatusRoom}
+          onClose={() => setChangeStatusRoom(null)}
+          onConfirm={handleChangeStatus}
+        />
+      )}
     </div>
   );
 };

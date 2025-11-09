@@ -23,9 +23,10 @@ import {
 import TabNavigation, { type Tab } from "../../common/TabNavigation";
 import { validateTab } from "../../../utils/roomValidators";
 import type { ValidationError } from "../../../utils/roomValidators";
-import roomService from "../../../services/roomService";
+import { roomService } from "../../../services/roomService";
 import type { Room } from "../view/RoomTableView";
 import type { RoomType } from "../../../types/RoomType";
+import { formatVND } from "../../../utils/formatters";
 
 export interface EditRoomFormData {
   roomNumber: string;
@@ -46,9 +47,9 @@ interface EditRoomModalProps {
 }
 
 /**
-* Modal để chỉnh sửa phòng hiện có
-* Thiết kế tương tự AddRoomModal nhưng được điền sẵn dữ liệu phòng
-*/
+ * Modal để chỉnh sửa phòng hiện có
+ * Thiết kế tương tự AddRoomModal nhưng được điền sẵn dữ liệu phòng
+ */
 const EditRoomModal: React.FC<EditRoomModalProps> = ({
   isOpen,
   onClose,
@@ -126,14 +127,14 @@ const EditRoomModal: React.FC<EditRoomModalProps> = ({
       }
 
       // Get roomTypeId - handle both string and RoomType object
-      const roomTypeId =
+      const roomTypeId: string =
         typeof room.roomType === "string"
           ? room.roomType
-          : room.roomType.roomTypeID;
+          : room.roomType?.roomTypeID || "";
 
       setFormData({
-        roomNumber: room.roomNumber,
-        floor: room.floor.toString(),
+        roomNumber: room.roomNumber || "",
+        floor: room.floor?.toString() || "",
         roomStatus: room.status,
         lastCleaned: lastCleanedFormatted,
         notes: room.notes || "",
@@ -392,21 +393,15 @@ const EditRoomModal: React.FC<EditRoomModalProps> = ({
                             <input
                               type="text"
                               value={formData.roomNumber}
-                              onChange={(e) =>
-                                handleInputChange("roomNumber", e.target.value)
-                              }
-                              placeholder="e.g. 101, A-205, Suite-301"
-                              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#6b5e4c] focus:border-transparent ${
-                                getFieldError("roomNumber")
-                                  ? "border-red-500"
-                                  : "border-gray-300"
-                              }`}
+                              readOnly
+                              disabled
+                              placeholder="Room number cannot be changed"
+                              className="w-full px-4 py-2 border rounded-lg bg-gray-100 text-gray-600 cursor-not-allowed border-gray-300"
                             />
-                            {getFieldError("roomNumber") && (
-                              <p className="mt-1 text-sm text-red-600">
-                                {getFieldError("roomNumber")}
-                              </p>
-                            )}
+                            <p className="mt-1 text-xs text-gray-500">
+                              Room number is auto-generated and cannot be
+                              modified
+                            </p>
                           </div>
 
                           <div>
@@ -515,7 +510,7 @@ const EditRoomModal: React.FC<EditRoomModalProps> = ({
                           )}
                         </div>
 
-                        {/* Display selected room type details */}
+                        {/* Hiển thị chi tiết loại phòng đã chọn*/}
                         {selectedRoomType && (
                           <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
                             <h4 className="font-semibold text-gray-900 mb-3">
@@ -550,8 +545,8 @@ const EditRoomModal: React.FC<EditRoomModalProps> = ({
                                 <span className="font-medium text-gray-700">
                                   Base Price:
                                 </span>{" "}
-                                <span className="text-gray-600">
-                                  ${selectedRoomType.basePrice}
+                                <span className="text-gray-600 font-semibold">
+                                  {formatVND(selectedRoomType.basePrice)}
                                 </span>
                               </div>
                             </div>
@@ -566,36 +561,37 @@ const EditRoomModal: React.FC<EditRoomModalProps> = ({
                               </div>
                             )}
                             {selectedRoomType.amenties &&
-                              selectedRoomType.amenties.length > 0 && (
-                                <div className="mt-3">
-                                  <span className="font-medium text-gray-700 text-sm">
-                                    Included Amenities:
-                                  </span>
-                                  <div className="flex flex-wrap gap-2 mt-2">
-                                    {selectedRoomType.amenties.map(
-                                      (amenity) => {
-                                        const amenityKey = amenity
-                                          .toLowerCase()
-                                          .replace(/\s+/g, "");
-                                        const icon = amenityIcons[
-                                          amenityKey
-                                        ] || <FaConciergeBell />;
-                                        return (
-                                          <span
-                                            key={amenity}
-                                            className="inline-flex items-center gap-2 px-3 py-1 bg-white border border-blue-300 text-blue-700 rounded-full text-sm"
-                                          >
-                                            <span className="text-base">
-                                              {icon}
-                                            </span>
-                                            {amenity}
+                            Array.isArray(selectedRoomType.amenties) &&
+                            selectedRoomType.amenties.length > 0 ? (
+                              <div className="mt-3">
+                                <span className="font-medium text-gray-700 text-sm">
+                                  Included Amenities:
+                                </span>
+                                <div className="flex flex-wrap gap-2 mt-2">
+                                  {(selectedRoomType.amenties as string[]).map(
+                                    (amenity: string) => {
+                                      const amenityKey = amenity
+                                        .toLowerCase()
+                                        .replace(/\s+/g, "");
+                                      const icon = amenityIcons[amenityKey] || (
+                                        <FaConciergeBell />
+                                      );
+                                      return (
+                                        <span
+                                          key={amenity}
+                                          className="inline-flex items-center gap-2 px-3 py-1 bg-white border border-blue-300 text-blue-700 rounded-full text-sm"
+                                        >
+                                          <span className="text-base">
+                                            {icon}
                                           </span>
-                                        );
-                                      }
-                                    )}
-                                  </div>
+                                          {amenity}
+                                        </span>
+                                      );
+                                    }
+                                  )}
                                 </div>
-                              )}
+                              </div>
+                            ) : null}
                           </div>
                         )}
 

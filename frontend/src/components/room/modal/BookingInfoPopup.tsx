@@ -7,8 +7,9 @@ import {
   FaMoon,
   FaDollarSign,
 } from "react-icons/fa";
-import type { Room } from "../view/RoomTableView"
+import type { Room } from "../view/RoomTableView";
 import type { RoomBooking } from "../view/RoomCalendarView";
+import { formatVND } from "../../../utils/formatters";
 
 interface BookingInfoPopupProps {
   booking: RoomBooking;
@@ -44,7 +45,7 @@ const BookingInfoPopup: React.FC<BookingInfoPopupProps> = ({
       label: "Cancelled",
       bg: "bg-gray-400",
       text: "text-gray-900",
-    }
+    },
   };
 
   const nights =
@@ -111,8 +112,8 @@ const BookingInfoPopup: React.FC<BookingInfoPopupProps> = ({
                 Room {booking.roomNumber}
               </h3>
               <p className="text-xs text-gray-100">
-                {typeof room.roomType === 'string' 
-                  ? room.roomType 
+                {typeof room.roomType === "string"
+                  ? room.roomType
                   : room.roomType.typeName}
               </p>
             </div>
@@ -173,7 +174,7 @@ const BookingInfoPopup: React.FC<BookingInfoPopupProps> = ({
               <div className="flex items-center gap-1">
                 <FaDollarSign className="text-amber-600 text-xs" />
                 <span className="text-sm font-bold text-[#6b5e4c]">
-                  {totalPrice.toLocaleString("vi-VN")}
+                  {formatVND(totalPrice)}
                 </span>
               </div>
             </div>
