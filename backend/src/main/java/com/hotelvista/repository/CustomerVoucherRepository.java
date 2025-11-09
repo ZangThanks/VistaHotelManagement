@@ -25,6 +25,30 @@ public interface CustomerVoucherRepository extends JpaRepository<CustomerVoucher
                                                                           @Param("endDate") LocalDate endDate,
                                                                           @Param("customerId") String customerId);
 
+
+    /**
+     * Tìm tất cả voucher đang hoạt động của khách hàng
+     * @param customerId
+     * @return
+     */
+    @Query("SELECT cv FROM CustomerVoucher cv " +
+            "WHERE cv.voucher.isActive = true " +
+            "AND cv.voucher.endDate >= CURRENT_DATE " +
+            "AND cv.customer.id = :customerId")
+    List<CustomerVoucher> findActiveVouchersByCustomer(@Param("customerId") String customerId);
+
+
+    /**
+     * Tìm tất cả voucher của khách hàng theo trạng thái đã sử dụng hay chưa
+     * @param customerId
+     * @param state
+     * @return
+     */
+    @Query("SELECT cv FROM CustomerVoucher cv " +
+            "WHERE cv.customer.id = :customerId AND cv.state = :state")
+    List<CustomerVoucher> findByCustomerAndState(@Param("customerId") String customerId,
+                                                 @Param("state") boolean state);
+
     /**
      * Tìm những voucher thuộc khách hàng theo customerId
      *

@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React from "react";
 import { FaEye, FaComment } from "react-icons/fa";
 

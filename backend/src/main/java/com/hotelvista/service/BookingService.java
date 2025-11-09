@@ -53,4 +53,9 @@ public class BookingService {
     public List<Booking> findAllByCustomer_Id(String customerId) {
         return repo.findAllByCustomer_Id(customerId);
     }
+
+    public List<Booking> searchBookings(String keyword) {
+        return repo.searchBookings(keyword);
+    }
+
 }
