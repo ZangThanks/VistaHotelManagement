@@ -39,10 +39,10 @@ public class CustomerController {
      * @param customer đối tượng Customer cần lưu
      * @return Customer đã lưu
      */
-    @PostMapping
-    public Customer createOrUpdateCustomer(@RequestBody Customer customer) {
+    @PostMapping("/save")
+    public void createOrUpdateCustomer(@RequestBody Customer customer) {
         service.save(customer);
-        return customer;
     }
+
 
 }
