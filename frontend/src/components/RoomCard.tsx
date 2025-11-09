@@ -36,7 +36,7 @@ export default function RoomCard({ room }: RoomCardProps) {
     const isVideo = (url: string) => /\.(mp4|webm|ogg)$/i.test(url);
 
     return (
-        <Link to={`/room/${room.roomNumber}`}>
+        <Link to={`/customer/room/${room.roomNumber}`}>
             <Card className="w-full max-w-md items-center mx-auto overflow-hidden rounded-xl hover:shadow-xl transition-shadow duration-300 ease-in-out mb-5 border-0 shadow-sm">
                 <div className="relative ">
                     <div className="relative h-[300px] w-[380px] ">
