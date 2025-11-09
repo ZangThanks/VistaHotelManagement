@@ -1,10 +1,12 @@
+import { axiosInstance } from "../config/api";
 import { api } from "./apiClient";
 
 const ENDPOINT = "/bookings";
 
 export const getAll = async () => {
   try {
-    const response = await api.get(ENDPOINT);
+    const response = await axiosInstance.get(ENDPOINT);
+    console.log("=========DATAAAA: " + response.data);
     return response.data;
   } catch (error) {
     console.error("Error fetching booking:", error);
@@ -12,7 +14,7 @@ export const getAll = async () => {
   }
 };
 
-export const getBookingById = async (id) => {
+export const getBookingById = async (id: string) => {
   try {
     const response = await api.get(`${ENDPOINT}/${id}`);
     return response.data;
@@ -22,7 +24,7 @@ export const getBookingById = async (id) => {
   }
 };
 
-export const createBooking = async (booking) => {
+export const createBooking = async (booking: object) => {
   try {
     const response = await api.post(`${ENDPOINT}/save`, booking);
     return response.data;
@@ -32,7 +34,7 @@ export const createBooking = async (booking) => {
   }
 };
 
-export const updateBooking = async (id, booking) => {
+export const updateBooking = async (id: string, booking: object) => {
   try {
     const response = await api.put(`${ENDPOINT}/edit/${id}`, booking);
     return response.data;
@@ -41,3 +43,25 @@ export const updateBooking = async (id, booking) => {
     throw error;
   }
 };
+
+export const searchBookings = async (keyword: string) => {
+  try {
+    const response = await axiosInstance.get(`${ENDPOINT}/search`, {
+      params: { keyword },
+    });
+    return response.data;
+  } catch (error) {
+    console.error(`Error searching bookings with keyword "${keyword}":`, error);
+    throw error;
+  }
+};
+
+// export const deleteBooking = async (id) => {
+//   try {
+//     await axios.delete(`${API_URL}/${id}`);
+//     return true;
+//   } catch (error) {
+//     console.error(`Error deleting booking ${id}:`, error);
+//     throw error;
+//   }
+// };

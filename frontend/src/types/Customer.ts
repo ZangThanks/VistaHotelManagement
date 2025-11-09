@@ -1,6 +1,3 @@
-// Central Customer type used across the app
-// Matches the API payload structure you shared
-
 export type Gender = 'MALE' | 'FEMALE' | 'OTHER' | string;
 export type MemberShipLevel =
     | 'BRONZE'

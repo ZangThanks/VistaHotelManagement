@@ -1,5 +1,34 @@
 import React, { useState, useEffect } from "react";
-import { FaCalendarCheck, FaWalking, FaClock } from "react-icons/fa";
+import { FaCalendarCheck, FaWalking, FaClock, FaSearch } from "react-icons/fa";
+import { searchBookings } from "../../services/bookingService";
+import IDScannerModal, { type IDCardInfo } from "./IDScannerModal";
+
+interface Booking {
+  bookingID: string;
+  checkInDate: string;
+  checkOutDate: string;
+  numberOfGuests: number;
+  status: string;
+  specialRequests: string;
+  bookingDate: string;
+  packageType: string;
+  totalAmount: number;
+  paymentStatus: string;
+  customer: {
+    id: string;
+    fullName: string;
+    email: string;
+    phone: string;
+  };
+  bookingDetails: Array<{
+    room: {
+      roomNumber: string;
+      floor: number;
+      status: string;
+    };
+    roomPrice: number;
+  }>;
+}
 
 function ManualCheckinModal({ isOpen, onClose }) {
   const [activeOption, setActiveOption] = useState("booking");
@@ -9,6 +38,15 @@ function ManualCheckinModal({ isOpen, onClose }) {
   const [duration, setDuration] = useState("4");
   const [checkOutTime, setCheckOutTime] = useState("");
   const [hourlyRate, setHourlyRate] = useState({ rate: 45, percentage: 45 });
+
+  // States for Existing Booking search
+  const [searchKeyword, setSearchKeyword] = useState("");
+  const [searchResults, setSearchResults] = useState<Booking[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+
+  // States for ID Card Scanner
+  const [showIDScanner, setShowIDScanner] = useState(false);
 
   useEffect(() => {
     if (roomType) {
@@ -86,6 +124,94 @@ function ManualCheckinModal({ isOpen, onClose }) {
 
     const rate = baseRate * (percentage / 100);
     setHourlyRate({ rate, percentage });
+  };
+
+  // Xử lý tìm booking
+  const handleSearchBookings = async () => {
+    if (!searchKeyword.trim()) {
+      alert("Please enter a search keyword");
+      return;
+    }
+
+    setIsSearching(true);
+    try {
+      const results = await searchBookings(searchKeyword);
+      setSearchResults(results);
+
+      if (results.length === 0) {
+        alert("No bookings found matching your search criteria");
+      }
+    } catch (error) {
+      console.error("Error searching bookings:", error);
+      alert("Failed to search bookings. Please try again.");
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  // Handle Enter key press in search input
+  const handleSearchKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handleSearchBookings();
+    }
+  };
+
+  // Format date for display
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
+
+  // Get status badge color
+  const getStatusBadgeClass = (status: string) => {
+    switch (status.toUpperCase()) {
+      case "PENDING":
+        return "bg-amber-50 text-amber-700";
+      case "CONFIRMED":
+        return "bg-green-50 text-green-700";
+      case "CANCELLED":
+        return "bg-red-50 text-red-700";
+      case "COMPLETED":
+        return "bg-blue-50 text-blue-700";
+      default:
+        return "bg-gray-50 text-gray-700";
+    }
+  };
+
+  // Handle booking selection
+  const handleSelectBooking = (booking: Booking) => {
+    setSelectedBooking(booking);
+  };
+
+  // Handle check-in process - Show ID Scanner
+  const handleProcessCheckIn = () => {
+    if (activeOption === "booking" && !selectedBooking) {
+      alert("Please select a booking first");
+      return;
+    }
+
+    setShowIDScanner(true);
+  };
+
+  // Handle ID scan completion
+  const handleIDScanComplete = (idInfo: IDCardInfo) => {
+    console.log("Check-in completed with data:", {
+      booking: selectedBooking,
+      idCardInfo: idInfo,
+    });
+
+    alert("Check-in completed successfully!");
+    setShowIDScanner(false);
+    onClose();
+  };
+
+  // Close ID Scanner
+  const handleCloseIDScanner = () => {
+    setShowIDScanner(false);
   };
 
   if (!isOpen) return null;
@@ -172,55 +298,168 @@ function ManualCheckinModal({ isOpen, onClose }) {
                     <input
                       type="text"
                       placeholder="Enter booking ID, guest name or phone number"
-                      className="flex-1 p-2.5 border border-[#EBE3D7] rounded-md"
+                      className="flex-1 p-2.5 border border-[#EBE3D7] rounded-md focus:outline-none focus:ring-2 focus:ring-[#CCBDA3]"
+                      value={searchKeyword}
+                      onChange={(e) => setSearchKeyword(e.target.value)}
+                      onKeyPress={handleSearchKeyPress}
                     />
-                    <button className="px-4 py-2.5 bg-[#CCBDA3] text-white rounded-md">
-                      Search
+                    <button
+                      onClick={handleSearchBookings}
+                      disabled={isSearching}
+                      className="px-4 py-2.5 bg-[#CCBDA3] text-white rounded-md hover:bg-[#b8ac94] transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    >
+                      {isSearching ? (
+                        <>
+                          <span className="animate-spin">⏳</span>
+                          Searching...
+                        </>
+                      ) : (
+                        <>
+                          <FaSearch />
+                          Search
+                        </>
+                      )}
                     </button>
                   </div>
                 </div>
 
-                <div>
-                  <h3 className="text-lg font-semibold mb-3">Search Results</h3>
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead>
-                        <tr className="bg-[#F5F0EB] text-left">
-                          <th className="py-3 px-4 font-semibold">
-                            Booking ID
-                          </th>
-                          <th className="py-3 px-4 font-semibold">
-                            Guest Name
-                          </th>
-                          <th className="py-3 px-4 font-semibold">
-                            Check-in Date
-                          </th>
-                          <th className="py-3 px-4 font-semibold">Room Type</th>
-                          <th className="py-3 px-4 font-semibold">Status</th>
-                          <th className="py-3 px-4 font-semibold"></th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr className="border-b hover:bg-[#F5F0EB]/50 cursor-pointer">
-                          <td className="py-3 px-4">VH-23062505</td>
-                          <td className="py-3 px-4">Richard White</td>
-                          <td className="py-3 px-4">June 25, 2023</td>
-                          <td className="py-3 px-4">Deluxe Suite</td>
-                          <td className="py-3 px-4">
-                            <span className="px-2 py-1 bg-amber-50 text-amber-700 text-xs rounded-full">
-                              Pending
+                {searchResults.length > 0 && (
+                  <div>
+                    <h3 className="text-lg font-semibold mb-3">
+                      Search Results ({searchResults.length})
+                    </h3>
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead>
+                          <tr className="bg-[#F5F0EB] text-left">
+                            <th className="py-3 px-4 font-semibold">
+                              Booking ID
+                            </th>
+                            <th className="py-3 px-4 font-semibold">
+                              Guest Name
+                            </th>
+                            <th className="py-3 px-4 font-semibold">Phone</th>
+                            <th className="py-3 px-4 font-semibold">
+                              Check-in Date
+                            </th>
+                            <th className="py-3 px-4 font-semibold">Room(s)</th>
+                            <th className="py-3 px-4 font-semibold">Status</th>
+                            <th className="py-3 px-4 font-semibold"></th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {searchResults.map((booking) => (
+                            <tr
+                              key={booking.bookingID}
+                              className={`border-b hover:bg-[#F5F0EB]/50 cursor-pointer transition ${
+                                selectedBooking?.bookingID === booking.bookingID
+                                  ? "bg-[#CCBDA3]/10"
+                                  : ""
+                              }`}
+                            >
+                              <td className="py-3 px-4 font-medium">
+                                {booking.bookingID}
+                              </td>
+                              <td className="py-3 px-4">
+                                {booking.customer.fullName}
+                              </td>
+                              <td className="py-3 px-4">
+                                {booking.customer.phone}
+                              </td>
+                              <td className="py-3 px-4">
+                                {formatDate(booking.checkInDate)}
+                              </td>
+                              <td className="py-3 px-4">
+                                {booking.bookingDetails
+                                  .map((detail) => detail.room.roomNumber)
+                                  .join(", ")}
+                              </td>
+                              <td className="py-3 px-4">
+                                <span
+                                  className={`px-2 py-1 text-xs rounded-full ${getStatusBadgeClass(
+                                    booking.status
+                                  )}`}
+                                >
+                                  {booking.status}
+                                </span>
+                              </td>
+                              <td className="py-3 px-4">
+                                <button
+                                  onClick={() => handleSelectBooking(booking)}
+                                  className={`px-3 py-1 text-sm rounded-md transition ${
+                                    selectedBooking?.bookingID ===
+                                    booking.bookingID
+                                      ? "bg-green-600 text-white"
+                                      : "bg-[#CCBDA3] text-white hover:bg-[#b8ac94]"
+                                  }`}
+                                >
+                                  {selectedBooking?.bookingID ===
+                                  booking.bookingID
+                                    ? "Selected"
+                                    : "Select"}
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {selectedBooking && (
+                      <div className="mt-4 p-4 bg-[#F5F0EB] rounded-lg">
+                        <h4 className="font-semibold mb-2">Booking Details</h4>
+                        <div className="grid grid-cols-2 gap-3 text-sm">
+                          <div>
+                            <span className="text-gray-600">Guest:</span>{" "}
+                            <span className="font-medium">
+                              {selectedBooking.customer.fullName}
                             </span>
-                          </td>
-                          <td className="py-3 px-4">
-                            <button className="px-3 py-1 bg-[#CCBDA3] text-white text-sm rounded-md">
-                              Select
-                            </button>
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
+                          </div>
+                          <div>
+                            <span className="text-gray-600">Email:</span>{" "}
+                            <span className="font-medium">
+                              {selectedBooking.customer.email}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-gray-600">Check-out:</span>{" "}
+                            <span className="font-medium">
+                              {formatDate(selectedBooking.checkOutDate)}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-gray-600">Guests:</span>{" "}
+                            <span className="font-medium">
+                              {selectedBooking.numberOfGuests}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-gray-600">Package:</span>{" "}
+                            <span className="font-medium">
+                              {selectedBooking.packageType}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-gray-600">Total Amount:</span>{" "}
+                            <span className="font-medium">
+                              {selectedBooking.totalAmount.toLocaleString()} VND
+                            </span>
+                          </div>
+                          {selectedBooking.specialRequests && (
+                            <div className="col-span-2">
+                              <span className="text-gray-600">
+                                Special Requests:
+                              </span>{" "}
+                              <span className="font-medium">
+                                {selectedBooking.specialRequests}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
-                </div>
+                )}
               </div>
             )}
 
@@ -624,12 +863,24 @@ function ManualCheckinModal({ isOpen, onClose }) {
             >
               Cancel
             </button>
-            <button className="px-6 py-2.5 bg-[#CCBDA3] text-white rounded-md hover:bg-[#b8ac94] transition font-medium">
+            <button
+              onClick={handleProcessCheckIn}
+              className="px-6 py-2.5 bg-[#CCBDA3] text-white rounded-md hover:bg-[#b8ac94] transition font-medium"
+            >
               Process Check-in
             </button>
           </div>
         </div>
       </div>
+
+      {/* ID Card Scanner Modal Component */}
+      <IDScannerModal
+        isOpen={showIDScanner}
+        onClose={handleCloseIDScanner}
+        onComplete={handleIDScanComplete}
+        bookingID={selectedBooking?.bookingID}
+        customerID={selectedBooking?.customer.id}
+      />
     </>
   );
 }

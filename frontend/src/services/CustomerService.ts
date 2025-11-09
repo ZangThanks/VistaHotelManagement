@@ -1,10 +1,10 @@
-import { api } from "./apiClient";
+import { axiosInstance } from "../config/api";
 
 const ENDPOINT = "/customers";
 
 export const getAll = async () => {
   try {
-    const response = await api.get(ENDPOINT);
+    const response = await axiosInstance.get(ENDPOINT);
     return response.data;
   } catch (error) {
     console.error("Error fetching customers:", error);
@@ -14,7 +14,7 @@ export const getAll = async () => {
 
 export const getById = async (id) => {
   try {
-    const response = await api.get(`${ENDPOINT}/${id}`);
+    const response = await axiosInstance.get(`${ENDPOINT}/${id}`);
     return response.data;
   } catch (error) {
     console.error(`Error fetching booking ${id}:`, error);

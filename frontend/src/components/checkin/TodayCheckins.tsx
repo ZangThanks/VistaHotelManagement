@@ -1,14 +1,13 @@
 import React from "react";
 import { FaCheck, FaEye, FaConciergeBell } from "react-icons/fa";
 
-// Helper function to format date from ISO string to readable time
 const formatCheckInTime = (dateString) => {
   if (!dateString) return "N/A";
   const date = new Date(dateString);
   return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 };
 
-// Helper to determine trust score based on loyalty points
+// Khung uy tín
 const getTrustScore = (loyaltyPoints) => {
   if (!loyaltyPoints) return { value: 50, level: "medium" };
   if (loyaltyPoints >= 10000) return { value: 85, level: "high" };
@@ -16,14 +15,12 @@ const getTrustScore = (loyaltyPoints) => {
   return { value: 40, level: "low" };
 };
 
-// Helper to determine status
 const getStatus = (status) => {
   if (status === "CHECKED_IN") return "completed";
   if (status === "CHECKED_OUT") return "completed";
   return "pending";
 };
 
-// Helper to determine payment status object
 const getPaymentStatus = (status) => {
   switch (status) {
     case "COMPLETED":
@@ -37,15 +34,31 @@ const getPaymentStatus = (status) => {
   }
 };
 
+// Kiểm tra xem ngày check-in có phải hôm nay không
+const isToday = (dateString) => {
+  if (!dateString) return false;
+  const checkInDate = new Date(dateString);
+  const today = new Date();
+
+  return (
+    checkInDate.getDate() === today.getDate() &&
+    checkInDate.getMonth() === today.getMonth() &&
+    checkInDate.getFullYear() === today.getFullYear()
+  );
+};
+
 function TodayTab({ onViewDetails, bookings = [] }) {
-  // Transform API data into the format needed for display
-  const todayCheckins = bookings.map((booking) => ({
+  // Lọc bookings: chỉ lấy những booking có status CHECKED_IN và checkInDate là hôm nay
+  const filteredBookings = bookings.filter(
+    (booking) => booking.status === "CHECKED_IN" && isToday(booking.checkInDate)
+  );
+
+  const todayCheckins = filteredBookings.map((booking) => ({
     id: booking.bookingID,
     guest: {
       name: booking.customer?.fullName || "Guest",
       email: booking.customer?.email || "No email",
-      // Using a placeholder image since the API doesn't provide images
-      image: "https://randomuser.me/api/portraits/men/42.jpg",
+      image: " ",
     },
     room: `${booking.bookingDetails[0]?.room?.roomNumber || "N/A"} - ${
       booking.bookingDetails[0]?.room?.roomType?.typeName || "Standard"
@@ -54,7 +67,6 @@ function TodayTab({ onViewDetails, bookings = [] }) {
     status: getStatus(booking.status),
     trustScore: getTrustScore(booking.customer?.loyaltyPoints),
     paymentStatus: getPaymentStatus(booking.paymentStatus),
-    // Determine available actions based on status
     actions:
       booking.status === "CHECKED_IN"
         ? ["view", "services"]
@@ -91,9 +103,9 @@ function TodayTab({ onViewDetails, bookings = [] }) {
         }`}
       >
         <span className="font-bold">{score.value}</span>
-        <div className="text-xs">
+        {/* <div className="text-xs">
           {score.level.charAt(0).toUpperCase() + score.level.slice(1)}
-        </div>
+        </div> */}
       </div>
     );
   };
@@ -172,33 +184,19 @@ function TodayTab({ onViewDetails, bookings = [] }) {
               </td>
               <td className="py-4 px-4">
                 <div className="flex gap-1">
-                  {booking.actions.includes("checkin") && (
-                    <button
-                      title="Check In"
-                      className="w-8 h-8 rounded-full bg-[#F5F0EB] hover:bg-[#EBE3D7] transition flex items-center justify-center"
-                    >
-                      <FaCheck size={14} />
-                    </button>
-                  )}
-
-                  {booking.actions.includes("view") && (
-                    <button
-                      title="View Details"
-                      className="w-8 h-8 rounded-full bg-[#F5F0EB] hover:bg-[#EBE3D7] transition flex items-center justify-center"
-                      onClick={() => onViewDetails(booking)}
-                    >
-                      <FaEye size={14} />
-                    </button>
-                  )}
-
-                  {booking.actions.includes("services") && (
-                    <button
-                      title="Room Services"
-                      className="w-8 h-8 rounded-full bg-[#F5F0EB] hover:bg-[#EBE3D7] transition flex items-center justify-center"
-                    >
-                      <FaConciergeBell size={14} />
-                    </button>
-                  )}
+                  <button
+                    title="Check In"
+                    className="w-8 h-8 rounded-full bg-[#F5F0EB] hover:bg-[#EBE3D7] transition flex items-center justify-center"
+                  >
+                    <FaCheck size={14} />
+                  </button>
+                  <button
+                    title="View Details"
+                    className="w-8 h-8 rounded-full bg-[#F5F0EB] hover:bg-[#EBE3D7] transition flex items-center justify-center"
+                    onClick={() => onViewDetails(booking)}
+                  >
+                    <FaEye size={14} />
+                  </button>
                 </div>
               </td>
             </tr>

@@ -1,5 +1,7 @@
 package com.hotelvista.model;
 
+import com.hotelvista.model.enums.ApprovalStatus;
+import com.hotelvista.model.enums.BookingStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -24,7 +26,8 @@ public class EarlyCheckin {
     private LocalDateTime requestTime;
 
     @Column(name = "approval_status")
-    private String approvalStatus;
+    @Enumerated(EnumType.STRING)
+    private ApprovalStatus approvalStatus;
 
     @Column(name = "additional_fee")
     private double additionalFee;
