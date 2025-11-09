@@ -34,12 +34,15 @@ export default function BookingForm({
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [specialRequests, setSpecialRequests] = useState("");
 
-  const [services, setServices] = useState([]);
-  const [customerVouchers, setCustomerVouchers] = useState([]);
-  const [customer, setCustomer] = useState({});
+  const [services, setServices] = useState<any[]>([]);
+  const [customerVouchers, setCustomerVouchers] = useState<any[]>([]);
+  const [customer, setCustomer] = useState<any>({});
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(
+    PAYMENT_METHODS[0]
+  );
 
   const fetchedData = async () => {
     try {
@@ -57,20 +60,33 @@ export default function BookingForm({
       setLoading(false);
       setError("");
     } catch (err) {
-      setError("Failed to fetch bookings: " + err);
+      console.error("Error fetching data:", err);
+      setError("Failed to fetch data: " + err);
     } finally {
       setLoading(false);
     }
   };
 
-  const [selectedRoom, setSelectedRoom] = useState([
+  const [selectedRoom, setSelectedRoom] = useState<any[]>([
     {
       roomNumber: "STD101",
       floor: 1,
       status: "AVAILABLE",
       lastCleaned: "2024-06-01T12:00:00",
       notes: "Sạch sẽ",
-      roomType: null,
+      roomType: {
+        roomTypeID: "STD",
+        typeName: "Standard",
+        description: "Phòng tiêu chuẩn, phù hợp cho 2 người, view thành phố",
+        area: 22,
+        maxOccupancy: 2,
+        amenties: ["WiFi", "TV", "Minibar"],
+        basePrice: 900000,
+        images: [
+          "https://pix8.agoda.net/hotelImages/7394456/87898656/a9ed80d50120f6b39035912334b2c530.jpg?ce=0&s=600x",
+          "https://pix8.agoda.net/hotelImages/7394456/93823858/036cf046c58da8fff1cf92aaf3aa7f37.jpg?ce=2&s=600x",
+        ],
+      },
     },
   ]);
 
@@ -99,7 +115,7 @@ export default function BookingForm({
         review: null,
       },
     ],
-    bookingServices: services.map((service: any) => ({
+    bookingServices: selectedServices.map((service: any) => ({
       service: service,
       servicePrice: service.price,
       quantity: 0,
@@ -140,7 +156,9 @@ export default function BookingForm({
   };
 
   const getSelectedRoomObjects = () => {
-    return selectedRoom.filter((room) => selectedRooms.includes(room.id));
+    // selectedRooms variable wasn't defined previously; return selectedRoom array
+    // (the form uses selectedRoom state directly in this component)
+    return selectedRoom as any[];
   };
 
   const calculateServiceCosts = () => {
@@ -152,12 +170,81 @@ export default function BookingForm({
 
   const calculateRoomCosts = () => {
     return getSelectedRoomObjects().reduce(
-      (sum, room) => sum + room.roomType.basePrice,
+      (sum: number, room: any) => sum + (room.roomType?.basePrice || 0),
       0
     );
   };
 
-  const handleSaveBooking = (booking) => {};
+  const handleSaveBooking = async () => {
+    setError("");
+
+    if (!checkInDate) {
+      setError("Please select a check-in date.");
+      return;
+    }
+    if (!checkOutDate) {
+      setError("Please select a check-out date.");
+      return;
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const ci = new Date(checkInDate);
+    ci.setHours(0, 0, 0, 0);
+    const co = new Date(checkOutDate);
+    co.setHours(0, 0, 0, 0);
+
+    if (ci < today) {
+      setError("Check-in cannot be before today.");
+      return;
+    }
+    if (co <= ci) {
+      setError("Check-out must be after check-in.");
+      return;
+    }
+
+    // Build payload expected by backend (best-effort based on current fields)
+    const payload: any = {
+      checkInDate: ci.toISOString(),
+      checkOutDate: co.toISOString(),
+      numberOfGuests: booking.numberOfGuests || 1,
+      status: booking.status || "PENDING",
+      specialRequests,
+      bookingDate: new Date().toISOString(),
+      packageType: booking.packageType || "Standard",
+      totalAmount,
+      customer: {
+        fullName: customerName || (customer as any)?.fullName || "",
+        phoneNumber: phoneNumber || (customer as any)?.phoneNumber || "",
+        email: email || (customer as any)?.email || "",
+      },
+      bookingDetails: getSelectedRoomObjects().map((r: any) => ({
+        roomNumber: r.roomNumber,
+        roomPrice: r.roomType?.basePrice || 0,
+      })),
+      bookingServices: getSelectedServiceObjects().map((s: any) => ({
+        serviceID: s.serviceID,
+        quantity: 1,
+        servicePrice: s.price,
+      })),
+      paymentMethod: selectedPaymentMethod,
+    };
+
+    try {
+      setLoading(true);
+      const res = await createBooking(payload as any);
+      // Optionally you can do more with response (navigate, reset form, etc.)
+      alert("Booking saved successfully.");
+      // Advance to confirmation step or keep on summary
+      setCurrentStep(4);
+    } catch (err: any) {
+      console.error(err);
+      setError("Failed to save booking: " + (err?.message || err));
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const totalRoomCosts = calculateRoomCosts();
   const totalServiceCosts = calculateServiceCosts();
@@ -311,6 +398,13 @@ export default function BookingForm({
   } else if (currentStep === 2) {
     return (
       <div className="max-w-6xl mx-auto">
+        {/* Error Message */}
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-sm text-red-600">{error}</p>
+          </div>
+        )}
+
         <div className="grid grid-cols-3 gap-8">
           {/* Services List */}
           <div className="col-span-2">
@@ -322,38 +416,49 @@ export default function BookingForm({
                 <h3 className="font-semibold">Services</h3>
               </div>
 
-              <div className="space-y-4">
-                {services.map((service, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center gap-4 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition cursor-pointer"
-                    onClick={() => toggleService(service.serviceID)}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={selectedServices.includes(service.serviceID)}
-                      onChange={() => toggleService(service.serviceID)}
-                      className="w-5 h-5 cursor-pointer accent-[#c9b8a8]"
-                    />
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-gray-900">
-                        {service.serviceName}
-                      </h4>
-                      <p className="text-sm text-gray-600">
-                        {service.description}
-                      </p>
+              {/* Loading State */}
+              {loading ? (
+                <div className="flex justify-center items-center py-12">
+                  <div className="text-gray-500">Loading services...</div>
+                </div>
+              ) : services.length === 0 ? (
+                <div className="flex justify-center items-center py-12">
+                  <div className="text-gray-500">No services available</div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {services.map((service, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center gap-4 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition cursor-pointer"
+                      onClick={() => toggleService(service.serviceID)}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedServices.includes(service.serviceID)}
+                        onChange={() => toggleService(service.serviceID)}
+                        className="w-5 h-5 cursor-pointer accent-[#c9b8a8]"
+                      />
+                      <div className="flex-1">
+                        <h4 className="font-semibold text-gray-900">
+                          {service.serviceName}
+                        </h4>
+                        <p className="text-sm text-gray-600">
+                          {service.description}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-semibold text-gray-900">
+                          {service.serviceHours}
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          {service.price.toLocaleString()}đ
+                        </p>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-sm font-semibold text-gray-900">
-                        {service.serviceHours}
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        {service.price.toLocaleString()}đ
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
@@ -542,7 +647,9 @@ export default function BookingForm({
         {/* Selected Services */}
         <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
           <div className="bg-[#c9b8a8] text-white px-4 py-3 rounded-lg mb-6 flex items-center gap-2">
-            <span className="text-lg">🛎️</span>
+            <span className="text-lg">
+              <MdRoomService className="text-white" />
+            </span>
             <h3 className="font-semibold">Selected Services</h3>
           </div>
 
@@ -580,12 +687,23 @@ export default function BookingForm({
           </div>
 
           <div className="space-y-4">
-            <div className="flex justify-between items-center py-2">
+            <div>
+              <label className="text-sm font-semibold text-gray-900">
+                Special Requests
+              </label>
+              <p className="text-gray-900 font-medium mt-0.5">
+                {specialRequests || "None"}
+              </p>
+            </div>
+
+            <div className="flex justify-between items-center py-2 border-t border-gray-200 mt-4">
               <label className="text-sm font-semibold text-gray-900">
                 Vouchers
               </label>
               <span className="text-[#c9b8a8] text-sm font-medium cursor-pointer hover:underline">
-                {customerVouchers || "Choose voucher"}
+                {customerVouchers && customerVouchers.length > 0
+                  ? "Choose voucher"
+                  : "No vouchers available"}
               </span>
             </div>
 
@@ -647,16 +765,20 @@ export default function BookingForm({
           >
             Back
           </button>
-          <button
-            onClick={() =>
-              alert(
-                `Booking confirmed! Payment method: ${selectedPaymentMethod}`
-              )
-            }
-            className="px-8 py-3 bg-[#c9b8a8] text-white font-semibold rounded-lg hover:bg-[#b8a896] transition"
-          >
-            Reserve
-          </button>
+          <div className="flex flex-col items-end">
+            {error && <div className="text-sm text-red-600 mb-3">{error}</div>}
+            <button
+              onClick={handleSaveBooking}
+              disabled={loading}
+              className={`px-8 py-3 text-white font-semibold rounded-lg transition ${
+                loading
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-[#c9b8a8] hover:bg-[#b8a896]"
+              }`}
+            >
+              {loading ? "Saving..." : "Reserve"}
+            </button>
+          </div>
         </div>
       </div>
     );
