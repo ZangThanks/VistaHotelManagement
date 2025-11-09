@@ -1,23 +1,25 @@
-import { createBrowserRouter } from 'react-router-dom';
+import { createBrowserRouter } from "react-router-dom";
 
 // Layouts
-import AuthLayout from '../layouts/AuthLayout';
-import EmployeeLayout from '../layouts/EmployeeLayout';
+import AuthLayout from "../layouts/AuthLayout";
+import EmployeeLayout from "../layouts/EmployeeLayout";
 
 // Auth pages
-import Login from '../pages/auth/Login';
-import CustomerList from '../pages/employee/CustomerList';
-import NewsPage from '../pages/employee/NewsPage';
-import AdminLayout from '../layouts/AdminLayout';
-// import AppAdmin from '../pages/admin/appAdmin';
-import Register from '../pages/auth/Register';
-import Home from '../pages/customer/Home';
-import MainLayout from '../layouts/MainLayout';
-import BookingPage from '../pages/admin/booking/BookingPage';
-import CheckInManager from '../pages/employee/CheckInManager';
-import CheckOutManager from '../pages/employee/CheckOutManager';
-import InfoManagement from '../pages/admin/infomation/InfoManagement';
-import NewsDetail from '../components/news/NewsDetail';
+import Login from "../pages/auth/Login";
+import CustomerList from "../pages/employee/CustomerList";
+import NewsPage from "../pages/employee/NewsPage";
+import AdminLayout from "../layouts/AdminLayout";
+import BookingPage from "../pages/admin/booking/BookingPage";
+import Register from "../pages/auth/Register";
+import MainLayout from "../layouts/MainLayout";
+import CheckInManager from "../pages/employee/CheckInManager";
+import CheckOutManager from "../pages/employee/CheckOutManager";
+import Home from "../pages/customer/Home";
+import RoomList from "../pages/customer/RoomList";
+// import NewsDetail from "../components/news/NewsDetail";
+import InfoManagement from "../pages/admin/infomation/InfoManagement";
+import RoomDetail from '../pages/customer/RoomDetail';
+import CustomerLayout from '../layouts/CustomerLayout';
 
 export const router = createBrowserRouter([
     {
@@ -25,10 +27,9 @@ export const router = createBrowserRouter([
         element: <AuthLayout />,
         children: [
             { path: 'login', element: <Login /> },
-
             { path: 'register', element: <Register /> },
-            //   { path: "forgot-password", element: <ForgotPassword /> },
-            //   { path: "reset-password", element: <ResetPassword /> },
+            // { path: "forgot-password", element: <ForgotPassword /> },
+            // { path: "reset-password", element: <ResetPassword /> },
         ],
     },
     {
@@ -47,7 +48,14 @@ export const router = createBrowserRouter([
             { path: 'checkin', element: <CheckInManager /> },
             { path: 'checkout', element: <CheckOutManager /> },
             { path: 'info', element: <InfoManagement /> },
-            { path: 'info/:id', element: <NewsDetail /> },
+        ],
+    },
+    {
+        path: '',
+        element: <EmployeeLayout />,
+        children: [
+            { path: 'newsPage', element: <NewsPage /> },
+            { path: 'bookingPage', element: <BookingPage /> },
         ],
     },
     {
@@ -56,6 +64,14 @@ export const router = createBrowserRouter([
         children: [
             { path: '/newsPage', element: <NewsPage /> },
             { path: '/home', element: <Home /> },
+        ],
+    },
+    {
+        path: 'customer',
+        element: <CustomerLayout />,
+        children: [
+            { path: 'room', element: <RoomList /> },
+            { path: 'room/:id', element: <RoomDetail /> },
         ],
     },
 ]);

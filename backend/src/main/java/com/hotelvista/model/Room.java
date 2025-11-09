@@ -41,4 +41,9 @@ public class Room {
     @JsonIgnore
     @OneToMany(mappedBy = "room")
     private List<BookingDetail> bookingDetails;
+
+    @ElementCollection
+    @CollectionTable(name = "room_images", joinColumns = @JoinColumn(name = "room_id"))
+    @Column(name = "images_url")
+    private List<String> images;
 }

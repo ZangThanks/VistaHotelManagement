@@ -1,5 +1,5 @@
 import { useState } from "react";
-import BookingForm from "../../../components/BookingForm";
+import BookingForm from "../../../components/booking/BookingForm";
 import Footer from "../../../components/Footer";
 import Header from "../../../components/Header";
 

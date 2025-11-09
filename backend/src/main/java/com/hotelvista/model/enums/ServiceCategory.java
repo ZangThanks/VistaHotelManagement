@@ -11,6 +11,9 @@ import lombok.ToString;
 @NoArgsConstructor
 public enum ServiceCategory {
     FOOD_BEVERAGE("FOOD BEVERAGE"),
+    WELLNESS("WELLNESS"),
+    TRANSPORTATION("TRANSPORTATION"),
+    RECREATION("RECREATION"),
     LAUNDRY("LAUNDRY");
 
     private String serviceCategory;

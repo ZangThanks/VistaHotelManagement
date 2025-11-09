@@ -12,7 +12,7 @@
     --color-info: #2196f3;
     --color-primary: #4f46e5;
     --color-secondary: #d946ef;
-    --gradient-cream: linear-gradient(90deg, #f8ebd6 45%, #ffffff 80%);
+    --gradient-cream: linear-gradient(180deg, #FFF5E5 5%, #ffffff 95%);
 
     /* Dark mode support */
     --color-bg: #f9f9f9;
@@ -125,3 +125,21 @@
         scrollbar-width: none; /* Firefox */
     }
 }
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbbda3;
+  border-radius: 50px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1eee8;
+  border-radius: 50px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #b9aa92;
+}
+
