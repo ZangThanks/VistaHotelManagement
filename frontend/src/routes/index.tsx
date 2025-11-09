@@ -27,50 +27,53 @@ import ServiceManagement from "../pages/admin/ServiceManagement";
 import Home from "../pages/customer/Home";
 import RoomList from "../pages/customer/RoomList";
 import RoomDetail from "../pages/customer/RoomDetail";
+import RoomComparison from "../pages/customer/RoomComparison";
 import IncidentReport from "../pages/customer/IncidentReport";
+import NewsDetail from '../components/news/NewsDetail';
 
 // Router configuration
 export const router = createBrowserRouter([
     {
-        path: "auth",
+        path: 'auth',
         element: <AuthLayout />,
         children: [
-            { path: "login", element: <Login /> },
-            { path: "register", element: <Register /> },
+            { path: 'login', element: <Login /> },
+            { path: 'register', element: <Register /> },
             // { path: "forgot-password", element: <ForgotPassword /> },
             // { path: "reset-password", element: <ResetPassword /> },
         ],
     },
     {
-        path: "employee",
+        path: 'employee',
         element: <EmployeeLayout />,
         children: [
-            { path: "customer/list", element: <CustomerList /> },
-            { path: "incidents", element: <IncidentManagement /> },
-            { path: "bookingPage", element: <BookingPage /> },
-            { path: "newsPage", element: <NewsPage /> },
+            { path: 'customer/list', element: <CustomerList /> },
+            { path: 'incidents', element: <IncidentManagement /> },
+            { path: 'bookingPage', element: <BookingPage /> },
+            { path: 'newsPage', element: <NewsPage /> },
         ],
     },
     {
-        path: "admin",
+        path: 'admin',
         element: <AdminLayout />,
         children: [
-            { path: "", element: <CheckInManager /> },
-            { path: "checkin", element: <CheckInManager /> },
-            { path: "checkout", element: <CheckOutManager /> },
-            { path: "info", element: <InfoManagement /> },
-            { path: "services", element: <ServiceManagement /> },
-            { path: "bookingPage", element: <BookingPage /> },
+            { path: '', element: <CheckInManager /> },
+            { path: 'checkin', element: <CheckInManager /> },
+            { path: 'checkout', element: <CheckOutManager /> },
+            { path: 'info', element: <InfoManagement /> },
+            { path: 'services', element: <ServiceManagement /> },
+            { path: 'bookingPage', element: <BookingPage /> },
+            { path: 'info/:id', element: <NewsDetail /> },
         ],
     },
     {
-        path: "",
+        path: '',
         element: <MainLayout />,
         children: [
-            { path: "/", element: <Home /> },
-            { path: "home", element: <Home /> },
-            { path: "newsPage", element: <NewsPage /> },
-            { path: "incident-report", element: <IncidentReport /> },
+            { path: '/', element: <Home /> },
+            { path: 'home', element: <Home /> },
+            { path: 'newsPage', element: <NewsPage /> },
+            { path: 'incident-report', element: <IncidentReport /> },
         ],
     },
     {
@@ -79,6 +82,7 @@ export const router = createBrowserRouter([
         children: [
             { path: "room", element: <RoomList /> },
             { path: "room/:id", element: <RoomDetail /> },
+            { path: "room/compare", element: <RoomComparison /> },
         ],
     },
 ]);
