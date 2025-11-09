@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import {
-    Card,
-    CardFooter,
-} from './components_bonus/my-card/components/ui/card';
+// import {
+//     Card,
+//     CardFooter,
+// } from './components_bonus/my-card/components/ui/card';
 import type { Room } from '../types/Room';
 
 interface RoomCardProps {

@@ -1,4 +1,3 @@
-/* eslint-disable */
 import React from 'react';
 import { FaCalendarCheck, FaKey, FaClock, FaCalendarDay } from 'react-icons/fa';
 
