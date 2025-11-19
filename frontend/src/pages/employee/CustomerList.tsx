@@ -1,10 +1,11 @@
 /* eslint-disable */
 import type React from 'react';
 import { useEffect, useState } from 'react';
-import { getAll } from '../../services/customerService';
+import { getAll } from '../../services/CustomerService';
 import AddCustomerModal from '../../components/customer/AddCustomerModal';
 import EditCustomerModal from '../../components/customer/EditCustomerModal';
 import type { Customer } from '../../types/Customer';
+import { saveCustomer } from '../../services/CustomerService';
 
 // Component thống kê nhỏ
 type StatCardProps = {
@@ -99,26 +100,33 @@ export default function CustomerList() {
         );
     };
 
-    const handleAddCustomer = (data: Partial<Customer>) => {
-        const newId =
-            'CUST' + (customers.length + 1).toString().padStart(3, '0');
-        const newCustomer: Customer = {
-            id: newId,
-            userName: data.email?.split('@')[0] || 'user' + newId,
-            password: '123456',
-            email: data.email ?? '',
-            phone: data.phone ?? '',
-            fullName: data.fullName ?? '',
-            address: data.address ?? '',
-            userRole: 'CUSTOMER',
-            birthDate: data.birthDate ?? '',
-            gender: data.gender ?? '',
-            joinedDate: new Date().toISOString().split('T')[0],
-            loyaltyPoints: data.loyaltyPoints ?? 0,
-            memberShipLevel: data.memberShipLevel ?? 'SILVER',
-        };
-        setCustomers((prev) => [...prev, newCustomer]);
-        setShowModal(false);
+    const handleAddCustomer = async (data: Partial<Customer>) => {
+        try {
+            const saved = await saveCustomer({
+                ...data,
+                userRole: 'CUSTOMER',
+                password: '123456',
+                joinedDate: new Date().toISOString().split('T')[0],
+            } as Customer);
+
+            if (saved) {
+                // Nếu BE trả Customer
+                setCustomers((prev) => [...prev, saved]);
+            } else {
+                // Nếu BE trả void → gọi lại danh sách
+                const refreshed = await getAll();
+                setCustomers(refreshed ?? []);
+            }
+
+            setShowModal(false);
+            alert('Lưu khách hàng thành công!');
+        } catch (err) {
+            if (err instanceof Error) {
+                alert('❌ ' + err.message);
+            } else {
+                alert('❌ ' + String(err));
+            }
+        }
     };
 
     useEffect(() => {
@@ -274,7 +282,7 @@ export default function CustomerList() {
                                         <th className="px-4 py-3 text-left text-xs font-bold text-gray-900 uppercase tracking-wide">
                                             Điện thoại
                                         </th>
-                                        <th className="px-4 py-3 text-left text-xs font-bold text-gray-900 uppercase tracking-wide">
+                                        <th className="px-4 py-3 text-center text-xs font-bold text-gray-900 uppercase tracking-wide">
                                             Hạng thành viên
                                         </th>
                                         <th className="px-4 py-3 text-center text-xs font-bold text-gray-900 uppercase tracking-wide">
@@ -309,7 +317,7 @@ export default function CustomerList() {
                                             <td className="px-4 py-3 text-sm text-gray-600 font-medium">
                                                 {c.phone}
                                             </td>
-                                            <td className="px-4 py-3">
+                                            <td className="px-4 py-3 text-center">
                                                 <span
                                                     className={`px-3 py-1 rounded-full text-xs font-bold inline-block ${
                                                         c.memberShipLevel ===
@@ -329,9 +337,6 @@ export default function CustomerList() {
                                             </td>
                                             <td className="px-4 py-3 text-center">
                                                 <div className="flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition duration-200">
-                                                    <button className="p-2 text-gray-900 hover:bg-gray-100 rounded-lg transition hover:scale-110">
-                                                        <i className="fa-solid fa-eye text-sm"></i>
-                                                    </button>
                                                     <button
                                                         onClick={() =>
                                                             handleEditCustomer(
@@ -341,10 +346,6 @@ export default function CustomerList() {
                                                         className="p-2 text-gray-900 hover:bg-gray-100 rounded-lg transition hover:scale-110"
                                                     >
                                                         <i className="fa-solid fa-pen text-sm"></i>
-                                                    </button>
-
-                                                    <button className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition hover:scale-110">
-                                                        <i className="fa-solid fa-trash text-sm"></i>
                                                     </button>
                                                 </div>
                                             </td>

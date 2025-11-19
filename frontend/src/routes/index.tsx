@@ -16,8 +16,6 @@ import CheckInManager from "../pages/employee/CheckInManager";
 import CheckOutManager from "../pages/employee/CheckOutManager";
 import Home from "../pages/customer/Home";
 import RoomList from "../pages/customer/RoomList";
-// import NewsDetail from "../components/news/NewsDetail";
-import InfoManagement from "../pages/admin/infomation/InfoManagement";
 import ForgotPassword from "../pages/auth/ForgotPassword.tsx";
 import ResetPassword from "../pages/auth/ResetPassword.tsx";
 import Dashboard from "../pages/admin/dashboard/Dashboard.tsx";
@@ -25,6 +23,8 @@ import NewsDetail from "../components/news/NewsDetail.tsx";
 import RoomManagement from "../pages/admin/room/RoomManagement.tsx";
 import RoomDetail from "../pages/customer/RoomDetail.tsx";
 import CustomerLayout from "../layouts/CustomerLayout.tsx";
+import DailyWorkStatistics from '../pages/employee/DailyWorkStatistics.tsx';
+import NewsList from '../pages/admin/infomation/NewsList.tsx';
 
 export const router = createBrowserRouter([
   {
@@ -52,7 +52,7 @@ export const router = createBrowserRouter([
       { path: "", element: <Dashboard /> },
       { path: "checkin", element: <CheckInManager /> },
       { path: "checkout", element: <CheckOutManager /> },
-      { path: "info", element: <InfoManagement /> },
+      { path: "info", element: <NewsList /> },
       { path: "info/:id", element: <NewsDetail /> },
       { path: "room-management", element: <RoomManagement /> },
     ],
@@ -74,11 +74,49 @@ export const router = createBrowserRouter([
     ],
   },
     {
-        path: "customer",
+        path: 'auth',
+        element: <AuthLayout />,
+        children: [
+            { path: 'login', element: <Login /> },
+            { path: 'register', element: <Register /> },
+            // { path: "forgot-password", element: <ForgotPassword /> },
+            // { path: "reset-password", element: <ResetPassword /> },
+        ],
+    },
+    {
+        path: 'employee',
+        element: <EmployeeLayout />,
+        children: [
+            { path: 'customer/list', element: <CustomerList /> },
+            { path: 'bookingPage', element: <BookingPage /> },
+            { path: 'daily', element: <DailyWorkStatistics /> },
+        ],
+    },
+    {
+        path: 'admin',
+        element: <AdminLayout />,
+        children: [
+            { path: '', element: <CheckInManager /> },
+            { path: 'checkin', element: <CheckInManager /> },
+            { path: 'checkout', element: <CheckOutManager /> },
+            { path: 'info', element: <NewsList /> },
+        ],
+    },
+    {
+        path: '',
+        element: <MainLayout />,
+        children: [
+            { path: '/newsPage', element: <NewsPage /> },
+            { path: '/home', element: <Home /> },
+        ],
+    },
+    {
+        path: 'customer',
         element: <CustomerLayout />,
         children: [
-            { path: "room/list", element: <RoomList /> },
-            { path: "room/:id", element: <RoomDetail /> },
+            { path: 'room/list', element: <RoomList /> },
+            { path: 'room/:id', element: <RoomDetail /> },
+            { path: 'bookingPage', element: <BookingPage /> },
         ],
     },
 ]);

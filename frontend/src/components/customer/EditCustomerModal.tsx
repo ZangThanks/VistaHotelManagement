@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import type { Customer } from '../../types/Customer';
+import { saveCustomer } from '../../services/CustomerService';
 
 interface EditCustomerModalProps {
     show: boolean;
@@ -27,9 +28,20 @@ const EditCustomerModal: React.FC<EditCustomerModalProps> = ({
         setForm((prev) => ({ ...prev, [field]: value as never }));
     };
 
-    const handleSubmit = () => {
-        onSave(form as Customer);
-        onClose();
+    const handleSubmit = async () => {
+        try {
+            const updated = await saveCustomer(form as Customer); // gọi BE để lưu
+            if (updated) {
+                onSave(updated); // cập nhật lại danh sách ở FE
+                alert('✅ Cập nhật khách hàng thành công!');
+            } else {
+                alert('❌ Không thể lưu khách hàng (BE không trả dữ liệu)');
+            }
+            onClose();
+        } catch (error) {
+            console.error('Error saving customer:', error);
+            alert('❌ Lỗi khi lưu khách hàng!');
+        }
     };
 
     return (
