@@ -1,21 +1,22 @@
 /* eslint-disable */
 import React from "react";
 import { FaEye, FaComment } from "react-icons/fa";
+import type { Booking } from "../../types/Booking";
 
-const formatCheckInTime = (dateString) => {
+const formatCheckInTime = (dateString: string) => {
   if (!dateString) return "N/A";
   const date = new Date(dateString);
   return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 };
 
-const getTrustScore = (loyaltyPoints) => {
+const getTrustScore = (loyaltyPoints: any) => {
   if (!loyaltyPoints) return { value: 50, level: "medium" };
   if (loyaltyPoints >= 10000) return { value: 85, level: "high" };
   if (loyaltyPoints >= 5000) return { value: 65, level: "medium" };
   return { value: 40, level: "low" };
 };
 
-const getPaymentStatus = (status) => {
+const getPaymentStatus = (status: any) => {
   switch (status) {
     case "COMPLETED":
       return { type: "complete", label: "Paid in Full" };
@@ -28,7 +29,7 @@ const getPaymentStatus = (status) => {
   }
 };
 
-const isTomorrowBooking = (booking) => {
+const isTomorrowBooking = (booking: Booking) => {
   if (!booking.checkInDate) return false;
 
   const today = new Date();
@@ -36,7 +37,14 @@ const isTomorrowBooking = (booking) => {
   tomorrow.setDate(tomorrow.getDate() + 1);
 
   const checkInDate = new Date(booking.checkInDate);
-
+  console.log("========================================================");
+  console.log(
+    booking.bookingID +
+      "=> NGÀY MAI: " +
+      tomorrow +
+      " NGÀY CỦA BOOKING: " +
+      checkInDate
+  );
   return (
     checkInDate.getDate() === tomorrow.getDate() &&
     checkInDate.getMonth() === tomorrow.getMonth() &&
@@ -44,7 +52,15 @@ const isTomorrowBooking = (booking) => {
   );
 };
 
-const TomorrowTab = ({ onViewDetails, bookings = [] }) => {
+type TomorrowTabProps = {
+  onViewDetails?: (booking: Booking) => void;
+  bookings?: Booking[];
+};
+
+const TomorrowTab = ({
+  onViewDetails = () => {},
+  bookings = [],
+}: TomorrowTabProps) => {
   const tomorrowBookings = bookings
     .filter((booking) => isTomorrowBooking(booking))
     .map((booking) => ({
@@ -52,7 +68,7 @@ const TomorrowTab = ({ onViewDetails, bookings = [] }) => {
       guest: {
         name: booking.customer?.fullName || "Guest",
         email: booking.customer?.email || "No email",
-        image: "https://randomuser.me/api/portraits/men/22.jpg", // Placeholder image
+        image: "https://randomuser.me/api/portraits/men/22.jpg",
       },
       room: `${booking.bookingDetails[0]?.room?.roomNumber || "N/A"} - ${
         booking.bookingDetails[0]?.room?.roomType?.typeName || "Standard"

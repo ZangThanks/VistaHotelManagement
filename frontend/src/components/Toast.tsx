@@ -121,43 +121,39 @@ const Toast: React.FC<ToastProps> = ({
       case "success":
         return {
           icon: faCheckCircle,
-          bgColor: "from-green-500 to-green-600",
-          shadowColor: "shadow-green-500/50",
-          iconBg: "bg-green-600/30",
-          borderColor: "border-green-400",
-          textColor: "text-white",
-          progressColor: "bg-gradient-to-r from-green-300 to-green-200",
+          iconColor: "text-green-500",
+          iconBg: "bg-green-50",
+          borderColor: "border-green-200",
+          progressColor: "bg-green-500",
+          accentColor: "bg-green-500",
         };
       case "error":
         return {
           icon: faTimesCircle,
-          bgColor: "from-red-500 to-red-600",
-          shadowColor: "shadow-red-500/50",
-          iconBg: "bg-red-600/30",
-          borderColor: "border-red-400",
-          textColor: "text-white",
-          progressColor: "bg-gradient-to-r from-red-300 to-red-200",
+          iconColor: "text-red-500",
+          iconBg: "bg-red-50",
+          borderColor: "border-red-200",
+          progressColor: "bg-red-500",
+          accentColor: "bg-red-500",
         };
       case "warning":
         return {
           icon: faExclamationCircle,
-          bgColor: "from-yellow-400 to-yellow-500",
-          shadowColor: "shadow-yellow-500/50",
-          iconBg: "bg-yellow-600/30",
-          borderColor: "border-yellow-300",
-          textColor: "text-gray-900",
-          progressColor: "bg-gradient-to-r from-yellow-200 to-yellow-100",
+          iconColor: "text-amber-500",
+          iconBg: "bg-amber-50",
+          borderColor: "border-amber-200",
+          progressColor: "bg-amber-500",
+          accentColor: "bg-amber-500",
         };
       case "info":
       default:
         return {
           icon: faInfoCircle,
-          bgColor: "from-blue-500 to-blue-600",
-          shadowColor: "shadow-blue-500/50",
-          iconBg: "bg-blue-600/30",
-          borderColor: "border-blue-400",
-          textColor: "text-white",
-          progressColor: "bg-gradient-to-r from-blue-300 to-blue-200",
+          iconColor: "text-blue-500",
+          iconBg: "bg-blue-50",
+          borderColor: "border-blue-200",
+          progressColor: "bg-blue-500",
+          accentColor: "bg-blue-500",
         };
     }
   };
@@ -167,14 +163,13 @@ const Toast: React.FC<ToastProps> = ({
   return (
     <div
       className={`
-        relative flex items-center gap-3 min-w-[320px] max-w-[450px] p-4 pr-3
-        rounded-xl shadow-2xl ${config.shadowColor}
-        bg-gradient-to-br ${config.bgColor}
-        border ${config.borderColor}
-        backdrop-blur-sm
+        relative flex items-start gap-3 min-w-[320px] max-w-[450px] p-4
+        rounded-xl shadow-lg
+        bg-white
+        border-l-4 ${config.borderColor}
         ${isExiting ? "toast-exit" : isVisible ? "toast-enter" : "opacity-0"}
-        hover:scale-105 hover:shadow-3xl
-        transition-transform duration-200
+        hover:shadow-xl
+        transition-all duration-200
       `}
       onMouseEnter={() => pauseOnHover && setIsPaused(true)}
       onMouseLeave={() => pauseOnHover && setIsPaused(false)}
@@ -182,18 +177,16 @@ const Toast: React.FC<ToastProps> = ({
     >
       {/* Icon with background */}
       <div
-        className={`flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full ${config.iconBg}`}
+        className={`flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-lg ${config.iconBg}`}
       >
         <FontAwesomeIcon
           icon={config.icon}
-          className={`text-xl ${config.textColor}`}
+          className={`text-xl ${config.iconColor}`}
         />
       </div>
 
       {/* Message */}
-      <div
-        className={`flex-1 ${config.textColor} text-sm font-medium leading-relaxed pr-2`}
-      >
+      <div className="flex-1 text-gray-800 text-sm font-medium leading-relaxed pt-1.5 pr-2">
         {message}
       </div>
 
@@ -201,12 +194,13 @@ const Toast: React.FC<ToastProps> = ({
       {showCloseButton && (
         <button
           onClick={handleClose}
-          className={`
-            flex-shrink-0 w-6 h-6 flex items-center justify-center
-            rounded-full ${config.textColor} 
-            hover:bg-white/20 active:bg-white/30
-            transition-all duration-200
-          `}
+          className="
+            flex-shrink-0 w-7 h-7 flex items-center justify-center
+            rounded-lg text-gray-400
+            hover:bg-gray-100 hover:text-gray-600
+            active:bg-gray-200
+            transition-all duration-200 mt-0.5
+          "
           aria-label="Close notification"
         >
           <FontAwesomeIcon icon={faTimes} className="text-sm" />
@@ -215,10 +209,10 @@ const Toast: React.FC<ToastProps> = ({
 
       {/* Progress Bar */}
       {duration > 0 && (
-        <div className="absolute bottom-0 left-0 right-0 h-1 bg-black/10 rounded-b-xl overflow-hidden">
+        <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-100 rounded-b-xl overflow-hidden">
           <div
             ref={progressRef}
-            className={`h-full ${config.progressColor} rounded-b-xl`}
+            className={`h-full ${config.progressColor}`}
             style={{ width: "100%" }}
           />
         </div>

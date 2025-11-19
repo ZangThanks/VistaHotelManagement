@@ -45,8 +45,4 @@ public class Customer extends User{
     @OneToMany(mappedBy = "customer")
     private List<Booking> bookings;
 
-    @ToString.Exclude
-    @JsonIgnore
-    @OneToMany(mappedBy = "customer")
-    private List<EarlyCheckin> earlyCheckin;
 }

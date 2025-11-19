@@ -80,7 +80,7 @@ public class EarlyCheckinController {
      * Lấy tất cả yêu cầu nhận phòng sớm
      * @return
      */
-    @GetMapping("/all")
+    @GetMapping()
     public List<EarlyCheckin> getAll() {
         return earlyCheckinService.findAll();
     }

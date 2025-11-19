@@ -22,6 +22,12 @@ public class CustomerController {
         return service.findAll();
     }
 
+    @GetMapping("/search")
+    public List<Customer> searchCustomers(@RequestParam String name) {
+        return service.findAllByFullNameContainingIgnoreCase(name);
+    }
+
+
     /**
      * Lấy thông tin khách hàng theo ID.
      *
@@ -39,10 +45,11 @@ public class CustomerController {
      * @param customer đối tượng Customer cần lưu
      * @return Customer đã lưu
      */
-    @PostMapping
+    @PostMapping("/save")
     public Customer createOrUpdateCustomer(@RequestBody Customer customer) {
         service.save(customer);
         return customer;
     }
+
 
 }
