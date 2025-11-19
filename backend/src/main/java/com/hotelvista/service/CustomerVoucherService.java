@@ -56,12 +56,6 @@ public class CustomerVoucherService {
         return repo.findActiveVouchersByCustomer(customerId);
     }
 
-    /**
-     * Lấy tất cả voucher của khách hàng theo trạng thái đã sử dụng hoặc chưa sử dụng
-     * @param customerId
-     * @param state
-     * @return
-     */
     public List<CustomerVoucher> findByCustomerAndState(String customerId, boolean state) {
         return repo.findByCustomerAndState(customerId, state);
     }
@@ -80,6 +74,10 @@ public class CustomerVoucherService {
             return true;
         }
         return false;
+    }
+
+    public List<CustomerVoucher> findAllByCustomer_IdAndStateIsTrue(String customerId) {
+        return repo.findAllByCustomer_IdAndStateIsTrue(customerId);
     }
 
 }

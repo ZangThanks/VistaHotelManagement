@@ -10,7 +10,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/news")
 public class NewsController {
-
     @Autowired
     private NewsService service;
 

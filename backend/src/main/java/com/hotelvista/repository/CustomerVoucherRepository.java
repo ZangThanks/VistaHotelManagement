@@ -56,4 +56,13 @@ public interface CustomerVoucherRepository extends JpaRepository<CustomerVoucher
      * @return
      */
     List<CustomerVoucher> findAllByCustomer_Id(String customerId);
+
+    /**
+     * Tìm những voucher thuộc khách hàng theo customerId, chưa sử dụng
+     *
+     * @param customerId
+     * @return
+     */
+    @Query("SELECT cv FROM CustomerVoucher cv WHERE cv.customer.id = :customerId AND cv.state = true")
+    List<CustomerVoucher> findAllByCustomer_IdAndStateIsTrue(String customerId);
 }

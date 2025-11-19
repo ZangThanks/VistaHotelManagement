@@ -44,4 +44,19 @@ public class BookingController {
     public List<Booking> findAllByCustomer_Id(@PathVariable("id") String customerId) {
         return service.findAllByCustomer_Id(customerId);
     }
+
+    @GetMapping("/search")
+    public List<Booking> searchBookings(@RequestParam(required = false) String keyword) {
+        return service.searchBookings(keyword);
+    }
+
+    @GetMapping("/create-booking-id")
+    public String generateBookingID() {
+        return service.generateBookingID();
+    }
+
+    @GetMapping("/room/{roomNumber}")
+    public List<Booking> findAllByRoom_RoomNumber(@PathVariable("roomNumber") String roomNumber) {
+        return service.findAllByRoom_RoomNumber(roomNumber);
+    }
 }

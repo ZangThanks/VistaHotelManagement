@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { FaPlus } from "react-icons/fa";
-import useModal from "../../hooks/Checkin/useModal";
+import useModal from "../../hooks/useModal";
 import StatusCards from "../../components/checkin/StatusCards";
 import SearchFilter from "../../components/checkin/SearchFilter";
 import CheckinTabs from "../../components/checkin/CheckinTabs";
@@ -35,7 +35,6 @@ const CheckInManager: React.FC = () => {
     try {
       setLoading(true);
       const data = await getAll();
-      console.log("=====LIST BOOKING: " + JSON.stringify(data, null, 2));
       setBookings(data);
       filterBookingsByDate(data, currentDate);
       setLoading(false);

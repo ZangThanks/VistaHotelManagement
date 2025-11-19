@@ -22,7 +22,6 @@ public class BookingDetail {
     @Id
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "booking_id")
-    @JsonIgnore
     private Booking booking;
 
     @Column(name = "room_price")

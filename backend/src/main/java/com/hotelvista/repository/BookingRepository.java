@@ -1,6 +1,7 @@
 package com.hotelvista.repository;
 
 import com.hotelvista.model.Booking;
+import com.hotelvista.model.BookingDetail;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -35,9 +36,23 @@ public interface BookingRepository extends JpaRepository<Booking, String> {
      */
     @Query("""
         SELECT b FROM Booking b 
-         WHERE b.bookingID = :keyword OR
-         b.customer.phone LIKE %:keyword% OR
-          LOWER(b.customer.fullName) LIKE LOWER(CONCAT('%', :keyword, '%')) 
+            WHERE b.bookingID = :keyword OR b.customer.phone LIKE %:keyword% OR
+            LOWER(b.customer.fullName) LIKE LOWER(CONCAT('%', :keyword, '%')) 
         """)
     List<Booking> searchBookings(@Param("keyword") String keyword);
+
+
+    //B1109250001
+    /**
+     * Tìm số thứ tự lớn nhất của booking trong ngày hôm nay
+     * @param todayPrefix
+     * @return
+     */
+    @Query("SELECT MAX(CAST(SUBSTRING(b.bookingID, 8) AS int)) FROM Booking b WHERE b.bookingID LIKE CONCAT(:todayPrefix, '%')")
+    Integer findMaxSequenceForToday(@Param("todayPrefix") String todayPrefix);
+
+    @Query("SELECT b FROM Booking b " +
+            "JOIN BookingDetail bd ON b.bookingID = bd.booking.bookingID " +
+            "WHERE bd.room.roomNumber = :roomNumber")
+    List<Booking> findAllByRoom_RoomNumber(@Param("roomNumber") String roomNumber);
 }
