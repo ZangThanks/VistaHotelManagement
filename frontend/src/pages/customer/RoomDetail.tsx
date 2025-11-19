@@ -2,8 +2,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import type { Room } from "../../types/Room";
-import Calendar from "../../components/Calendar";
 import RoomCard from "../../components/RoomCard";
+import Calendar from "../../components/common/Calendar";
 
 function formatCurrency(v: number) {
   return new Intl.NumberFormat("vi-VN", {
@@ -243,13 +243,13 @@ export default function RoomDetail() {
                     <dd>
                       {room.availableFrom
                         ? new Date().toLocaleDateString()
-                          // room.availableFrom,
-                        : "—"}{" "}
+                        : // room.availableFrom,
+                          "—"}{" "}
                       —{" "}
                       {room.availableTo
                         ? new Date().toLocaleDateString()
-                          // room.availableTo,
-                        : "—"}
+                        : // room.availableTo,
+                          "—"}
                     </dd>
                   </div>
                 </dl>
