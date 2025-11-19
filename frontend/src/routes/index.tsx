@@ -18,9 +18,13 @@ import Home from "../pages/customer/Home";
 import RoomList from "../pages/customer/RoomList";
 // import NewsDetail from "../components/news/NewsDetail";
 import InfoManagement from "../pages/admin/infomation/InfoManagement";
-import RoomDetail from "../pages/customer/RoomDetail";
-import CustomerLayout from "../layouts/CustomerLayout";
-import NewsDetail from "../components/news/NewsDetail";
+import ForgotPassword from "../pages/auth/ForgotPassword.tsx";
+import ResetPassword from "../pages/auth/ResetPassword.tsx";
+import Dashboard from "../pages/admin/dashboard/Dashboard.tsx";
+import NewsDetail from "../components/news/NewsDetail.tsx";
+import RoomManagement from "../pages/admin/room/RoomManagement.tsx";
+import RoomDetail from "../pages/customer/RoomDetail.tsx";
+import CustomerLayout from "../layouts/CustomerLayout.tsx";
 
 export const router = createBrowserRouter([
   {
@@ -29,8 +33,8 @@ export const router = createBrowserRouter([
     children: [
       { path: "login", element: <Login /> },
       { path: "register", element: <Register /> },
-      // { path: "forgot-password", element: <ForgotPassword /> },
-      // { path: "reset-password", element: <ResetPassword /> },
+      { path: "forgot-password", element: <ForgotPassword /> },
+      { path: "reset-password", element: <ResetPassword /> },
     ],
   },
   {
@@ -45,11 +49,12 @@ export const router = createBrowserRouter([
     path: "admin",
     element: <AdminLayout />,
     children: [
-      { path: "", element: <CheckInManager /> },
+      { path: "", element: <Dashboard /> },
       { path: "checkin", element: <CheckInManager /> },
       { path: "checkout", element: <CheckOutManager /> },
       { path: "info", element: <InfoManagement /> },
       { path: "info/:id", element: <NewsDetail /> },
+      { path: "room-management", element: <RoomManagement /> },
     ],
   },
   {
@@ -68,12 +73,12 @@ export const router = createBrowserRouter([
       { path: "/home", element: <Home /> },
     ],
   },
-  {
-    path: "customer",
-    element: <CustomerLayout />,
-    children: [
-      { path: "room", element: <RoomList /> },
-      { path: "room/:id", element: <RoomDetail /> },
-    ],
-  },
+    {
+        path: "customer",
+        element: <CustomerLayout />,
+        children: [
+            { path: "room/list", element: <RoomList /> },
+            { path: "room/:id", element: <RoomDetail /> },
+        ],
+    },
 ]);
