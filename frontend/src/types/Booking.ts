@@ -1,62 +1,42 @@
-import type { Room } from "./Room";
 import type { Customer } from "./Customer";
+import type { Employee } from "./Employee";
 
 export type BookingStatus =
-    | "PENDING"
-    | "CHECKED_IN"
-    | "CHECKED_OUT"
-    | "CANCELLED";
+  | "PENDING"
+  | "CHECKED_IN"
+  | "CHECKED_OUT"
+  | "CANCELLED"
+  | string;
 export type PaymentStatus =
-    | "PENDING"
-    | "COMPLETED"
-    | "FAILED"
-    | "REFUNDED"
-    | "CANCELLED";
+  | "PENDING"
+  | "COMPLETED"
+  | "FAILED"
+  | "REFUNDED"
+  | "CANCELLED"
+  | string;
 export type InvoiceType =
-    | "ROOM_BOOKING"
-    | "SERVICE"
-    | "ADDITIONAL_FEE"
-    | "REFUND";
-
-export interface BookingDetail {
-  room: Room;
-  roomPrice: number;
-}
+  | "ROOM_BOOKING"
+  | "SERVICE"
+  | "ADDITIONAL_FEE"
+  | "REFUND"
+  | string;
 
 export interface Booking {
   bookingID: string;
-  checkInDate: string;
-  checkOutDate: string;
+  checkInDate?: string | null;
+  checkOutDate?: string | null;
   numberOfGuests: number;
   status: BookingStatus;
-  specialRequests?: string;
+  specialRequests?: string | null;
   bookingDate: string;
-  cancellationDate?: string;
-  hourlyRate?: number;
-  duration?: number;
-  packageType?: string;
+  cancellationDate?: string | null;
+  hourlyRate?: number | null;
+  duration: number;
+  packageType?: string | null;
   totalAmount: number;
   paymentStatus: PaymentStatus;
   invoiceType: InvoiceType;
-  totalCost: number;
-  customer: Customer;
-  employee?: {
-    id: string;
-    fullName: string;
-    email?: string;
-    phone?: string;
-  };
-  bookingDetails: BookingDetail[];
-}
-
-export interface RoomBooking {
-  id: string;
-  roomId: string;
-  roomNumber: string;
-  guestName: string;
-  checkIn: Date;
-  checkOut: Date;
-  status: "pending" | "checked-in" | "checked-out" | "cancelled";
-  numberOfGuests: number;
-  totalAmount: number;
+  totalCost?: number | null;
+  customer?: Customer | null;
+  employee?: Employee | null;
 }
