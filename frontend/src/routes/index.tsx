@@ -24,6 +24,7 @@ import RoomManagement from "../pages/admin/room/RoomManagement.tsx";
 import RoomDetail from "../pages/customer/RoomDetail.tsx";
 import CustomerLayout from "../layouts/CustomerLayout.tsx";
 import NewsList from "../pages/admin/infomation/NewsList.tsx";
+import PromotionManagement from "../pages/admin/promotion/PromotionManagement.tsx";
 
 export const router = createBrowserRouter([
   {
@@ -51,6 +52,7 @@ export const router = createBrowserRouter([
       { path: "info", element: <NewsList /> },
       { path: "info/:id", element: <NewsDetail /> },
       { path: "room-management", element: <RoomManagement /> },
+      { path: "promotions", element: <PromotionManagement /> },
     ],
   },
   {
