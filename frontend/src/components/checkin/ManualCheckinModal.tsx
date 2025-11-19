@@ -13,13 +13,11 @@ function ManualCheckinModal({ isOpen, onClose }) {
   const [checkOutTime, setCheckOutTime] = useState("");
   const [hourlyRate, setHourlyRate] = useState({ rate: 45, percentage: 45 });
 
-  // States for Existing Booking search
   const [searchKeyword, setSearchKeyword] = useState("");
   const [searchResults, setSearchResults] = useState<Booking[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
 
-  // States for ID Card Scanner
   const [showIDScanner, setShowIDScanner] = useState(false);
 
   useEffect(() => {
@@ -110,10 +108,11 @@ function ManualCheckinModal({ isOpen, onClose }) {
     setIsSearching(true);
     try {
       const results = await searchBookings(searchKeyword);
+      // console.log("BOOKING SEARCH: ", results);
       setSearchResults(results);
 
       if (results.length === 0) {
-        alert("No bookings found matching your search criteria");
+        alert("Không tìm thấy booking");
       }
     } catch (error) {
       console.error("Error searching bookings:", error);

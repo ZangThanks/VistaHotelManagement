@@ -92,8 +92,7 @@ export const getAllRoomBookings = async (): Promise<RoomBooking[]> => {
     console.error("Error fetching room bookings:", error);
   }
   return [];
-}
-
+};
 
 export const searchBookings = async (keyword: string) => {
   try {
@@ -106,7 +105,6 @@ export const searchBookings = async (keyword: string) => {
     throw error;
   }
 };
-
 
 // export const deleteBooking = async (id) => {
 //   try {
@@ -126,4 +124,3 @@ export default {
   getAllRoomBookings,
   convertToRoomBooking,
 };
-

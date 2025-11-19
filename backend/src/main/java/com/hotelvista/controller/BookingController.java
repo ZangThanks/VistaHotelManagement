@@ -44,4 +44,9 @@ public class BookingController {
     public List<Booking> findAllByCustomer_Id(@PathVariable("id") String customerId) {
         return service.findAllByCustomer_Id(customerId);
     }
+
+    @GetMapping("/search")
+    public List<Booking> findBookingByKeyWord(@RequestParam String keyword) {
+        return service.searchBookings(keyword);
+    }
 }

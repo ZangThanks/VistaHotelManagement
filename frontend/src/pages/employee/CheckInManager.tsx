@@ -35,7 +35,6 @@ const CheckInManager: React.FC = () => {
     try {
       setLoading(true);
       const data = await getAll();
-      console.log("=====LIST BOOKING: " + JSON.stringify(data, null, 2));
       setBookings(data);
       filterBookingsByDate(data, currentDate);
       setLoading(false);
