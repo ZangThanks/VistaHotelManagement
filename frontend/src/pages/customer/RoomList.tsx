@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { getAll } from '../../services/roomService';
 import type { Room } from '../../types/Room';
 import RoomCard from '../../components/RoomCard';

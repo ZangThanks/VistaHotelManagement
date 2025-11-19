@@ -1,3 +1,4 @@
+/* eslint-disable */
 export interface Booking {
   bookingID: string;
   checkInDate: string;

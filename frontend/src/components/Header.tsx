@@ -10,11 +10,12 @@ import type { NavItem } from '../types/Header';
 
 const navItems: NavItem[] = [
     { label: 'Overview', path: '/home' },
-    { label: 'About Us', path: '/about' },
+    { label: 'About Us', path: '/contact' },
     { label: 'Accommodation', path: '/customer/room/list' },
     { label: 'Services', path: '/services' },
     { label: 'Events', path: '/newsPage' },
     { label: 'Exclusive Offers', path: '/customer/promotion/list' },
+    { label: 'My bookings', path: '/customer/booking/mybookings' },
 ];
 
 const Header: React.FC = () => {

@@ -3,14 +3,14 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser } from '@fortawesome/free-solid-svg-icons';
 import { Link } from 'react-router-dom';
 const HeaderHome: React.FC = () => {
-  const navItems = [
-      { label: 'Overview', path: '/home' },
-      { label: 'About Us', path: '/about' },
-      { label: 'Accommodation', path: '/customer/room/list' },
-      { label: 'Services', path: '/services' },
-      { label: 'Events', path: '/newsPage' },
-      { label: 'Exclusive Offers', path: '/customer/promotion/list' },
-  ];
+    const navItems = [
+        { label: 'Overview', path: '/home' },
+        { label: 'About Us', path: '/contact' },
+        { label: 'Accommodation', path: '/customer/room/list' },
+        { label: 'Services', path: '/services' },
+        { label: 'Events', path: '/newsPage' },
+        { label: 'Exclusive Offers', path: '/customer/promotion/list' },
+    ];
 
     return (
         <header className="fixed top-0 left-0 w-full z-[9999]">
