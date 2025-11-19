@@ -6,16 +6,46 @@ import { TfiUser, TfiMore } from "react-icons/tfi";
 import { MdOutlineRoomService, MdRoomService } from "react-icons/md";
 import { getAll } from "../../services/serviceService";
 import { CiSquareQuestion } from "react-icons/ci";
-import { createBooking } from "../../services/bookingService";
-import { getById } from "../../services/CustomerService";
-import { getByCustomerId } from "../../services/customerVoucherService";
+import {
+  createBooking,
+  generateBookingID,
+} from "../../services/bookingService";
+import { getById } from "../../services/customerService";
+import {
+  getByCustomerIdAndStateTrue,
+  saveCustomerVoucher,
+} from "../../services/customerVoucherService";
+import type { Customer } from "../../types/Customer";
+import type { Service } from "../../types/Service";
+import type { CustomerVoucher } from "../../types/CustomerVoucher";
+import type { Room } from "../../types/Room";
+import { getRoomById } from "../../services/roomService";
+import CustomerVoucherModal from "./CustomerVoucherModal";
 
 interface BookingFormProps {
   currentStep: number;
   setCurrentStep: (step: number) => void;
 }
 
-const PAYMENT_METHODS = ["VNPAY QR", "CREDIT CARD", "BANK TRANSFER", "CASH"];
+export type PaymentMethod =
+  | "VNPAY_QR"
+  | "CREDIT_CARD"
+  | "BANK_TRANSFER"
+  | "CASH";
+
+export type OrderStatus =
+  | "PLACE"
+  | "PREPARING"
+  | "READY"
+  | "DELIVERED"
+  | "CANCELLED";
+
+const PAYMENT_METHODS: PaymentMethod[] = [
+  "VNPAY_QR",
+  "CREDIT_CARD",
+  "BANK_TRANSFER",
+  "CASH",
+];
 
 export default function BookingForm({
   currentStep,
@@ -27,35 +57,52 @@ export default function BookingForm({
   const [checkOutDate, setCheckOutDate] = useState<Date | null>(
     new Date(2025, 8, 19)
   );
-  const [customerName, setCustomerName] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [email, setEmail] = useState("");
   const [promotionCode, setPromotionCode] = useState("");
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [specialRequests, setSpecialRequests] = useState("");
 
-  const [services, setServices] = useState<any[]>([]);
-  const [customerVouchers, setCustomerVouchers] = useState<any[]>([]);
-  const [customer, setCustomer] = useState<any>({});
-
+  const [services, setServices] = useState<Service[]>([]);
+  const [customerVouchers, setCustomerVouchers] = useState<CustomerVoucher[]>(
+    []
+  );
+  const [customer, setCustomer] = useState<Customer>();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(
-    PAYMENT_METHODS[0]
-  );
+  const [selectedPaymentMethod, setSelectedPaymentMethod] =
+    useState<PaymentMethod>(PAYMENT_METHODS[0]);
+  const [selectedRoom] = useState<string[]>(["DLX201"]);
+  const [rooms, setRooms] = useState<Room[]>([]);
+  const [bookingID, setBookingID] = useState<string>("");
+  const [isVoucherModalOpen, setIsVoucherModalOpen] = useState(false);
+  const [selectedVoucher, setSelectedVoucher] = useState<CustomerVoucher[]>([]);
 
   const fetchedData = async () => {
     try {
       setLoading(true);
 
+      const id = await generateBookingID();
+      setBookingID(id);
+
       const service = await getAll();
       setServices(service);
 
-      const customerData = await getById("CUST001");
-      setCustomer(customerData);
+      const roomPromises = selectedRoom.map((roomId) => getRoomById(roomId));
+      const roomsData = await Promise.all(roomPromises);
+      setRooms(roomsData);
 
-      const custVoucher = await getByCustomerId("CUST001");
-      setCustomerVouchers(custVoucher);
+      const userDataStr = localStorage.getItem("user");
+      const userData = userDataStr ? JSON.parse(userDataStr) : null;
+      const customerId = userData?.data?.id || userData?.id;
+
+      if (customerId) {
+        const customerData = await getById(customerId);
+        setCustomer(customerData);
+
+        const custVoucher = await getByCustomerIdAndStateTrue(customerId);
+        setCustomerVouchers(custVoucher);
+      } else {
+        setError("User not logged in. Please log in to continue.");
+      }
 
       setLoading(false);
       setError("");
@@ -67,36 +114,13 @@ export default function BookingForm({
     }
   };
 
-  const [selectedRoom, setSelectedRoom] = useState<any[]>([
-    {
-      roomNumber: "STD101",
-      floor: 1,
-      status: "AVAILABLE",
-      lastCleaned: "2024-06-01T12:00:00",
-      notes: "Sạch sẽ",
-      roomType: {
-        roomTypeID: "STD",
-        typeName: "Standard",
-        description: "Phòng tiêu chuẩn, phù hợp cho 2 người, view thành phố",
-        area: 22,
-        maxOccupancy: 2,
-        amenties: ["WiFi", "TV", "Minibar"],
-        basePrice: 900000,
-        images: [
-          "https://pix8.agoda.net/hotelImages/7394456/87898656/a9ed80d50120f6b39035912334b2c530.jpg?ce=0&s=600x",
-          "https://pix8.agoda.net/hotelImages/7394456/93823858/036cf046c58da8fff1cf92aaf3aa7f37.jpg?ce=2&s=600x",
-        ],
-      },
-    },
-  ]);
-
-  const [booking, setBooking] = useState({
-    bookingID: "",
-    checkInDate: "",
-    checkOutDate: "",
+  const [booking] = useState({
+    bookingID: bookingID || "",
+    checkInDate: checkInDate ? checkInDate.toISOString() : "",
+    checkOutDate: checkOutDate ? checkOutDate.toISOString() : "",
     numberOfGuests: 0,
     status: "PENDING",
-    specialRequests: "",
+    specialRequests: specialRequests || "",
     bookingDate: new Date().toISOString(),
     cancellationDate: null,
     hourlyRate: null,
@@ -106,23 +130,10 @@ export default function BookingForm({
     paymentStatus: "",
     invoiceType: "ROOM_BOOKING",
     totalCost: 0,
-    customer: null,
+    customer: customer || null,
     employee: null,
-    bookingDetails: [
-      {
-        room: null,
-        roomPrice: 0,
-        review: null,
-      },
-    ],
-    bookingServices: selectedServices.map((service: any) => ({
-      service: service,
-      servicePrice: service.price,
-      quantity: 0,
-      totalAmount: 0,
-      orderStatus: "PENDING",
-      paymentMethod: "CASH",
-    })),
+    bookingDetails: [{}],
+    bookingServices: [{}],
   });
 
   useEffect(() => {
@@ -155,12 +166,6 @@ export default function BookingForm({
     );
   };
 
-  const getSelectedRoomObjects = () => {
-    // selectedRooms variable wasn't defined previously; return selectedRoom array
-    // (the form uses selectedRoom state directly in this component)
-    return selectedRoom as any[];
-  };
-
   const calculateServiceCosts = () => {
     return getSelectedServiceObjects().reduce(
       (sum, service) => sum + service.price,
@@ -169,8 +174,8 @@ export default function BookingForm({
   };
 
   const calculateRoomCosts = () => {
-    return getSelectedRoomObjects().reduce(
-      (sum: number, room: any) => sum + (room.roomType?.basePrice || 0),
+    return rooms.reduce(
+      (sum, room) => sum + (room.roomType?.basePrice || 0),
       0
     );
   };
@@ -204,39 +209,61 @@ export default function BookingForm({
       return;
     }
 
-    // Build payload expected by backend (best-effort based on current fields)
+    const checkInWithTime = new Date(checkInDate);
+    checkInWithTime.setHours(14, 0, 0, 0);
+
+    const checkOutWithTime = new Date(checkOutDate);
+    checkOutWithTime.setHours(12, 0, 0, 0);
+
+    const formatLocalDateTime = (date: Date) => {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      const hours = String(date.getHours()).padStart(2, "0");
+      const minutes = String(date.getMinutes()).padStart(2, "0");
+      const seconds = String(date.getSeconds()).padStart(2, "0");
+      return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+    };
+
     const payload: any = {
-      checkInDate: ci.toISOString(),
-      checkOutDate: co.toISOString(),
+      bookingID: bookingID,
+      checkInDate: formatLocalDateTime(checkInWithTime),
+      checkOutDate: formatLocalDateTime(checkOutWithTime),
       numberOfGuests: booking.numberOfGuests || 1,
       status: booking.status || "PENDING",
-      specialRequests,
+      specialRequests: specialRequests,
       bookingDate: new Date().toISOString(),
       packageType: booking.packageType || "Standard",
       totalAmount,
-      customer: {
-        fullName: customerName || (customer as any)?.fullName || "",
-        phoneNumber: phoneNumber || (customer as any)?.phoneNumber || "",
-        email: email || (customer as any)?.email || "",
-      },
-      bookingDetails: getSelectedRoomObjects().map((r: any) => ({
-        roomNumber: r.roomNumber,
+      customer: customer || null,
+      bookingDetails: rooms.map((r: Room) => ({
+        room: r,
+        booking: booking,
         roomPrice: r.roomType?.basePrice || 0,
+        review: null,
       })),
-      bookingServices: getSelectedServiceObjects().map((s: any) => ({
-        serviceID: s.serviceID,
-        quantity: 1,
+      bookingServices: getSelectedServiceObjects().map((s: Service) => ({
+        service: s,
+        booking: booking,
         servicePrice: s.price,
+        quantity: 1,
+        totalAmount: s.price,
+        orderStatus: "PLACE",
+        payemntStatus: "PENDING",
       })),
       paymentMethod: selectedPaymentMethod,
     };
 
     try {
       setLoading(true);
-      const res = await createBooking(payload as any);
-      // Optionally you can do more with response (navigate, reset form, etc.)
+      await createBooking(payload as any);
+
+      for (const cv of selectedVoucher) {
+        cv.state = false;
+        await saveCustomerVoucher(cv);
+      }
+
       alert("Booking saved successfully.");
-      // Advance to confirmation step or keep on summary
       setCurrentStep(4);
     } catch (err: any) {
       console.error(err);
@@ -249,7 +276,26 @@ export default function BookingForm({
   const totalRoomCosts = calculateRoomCosts();
   const totalServiceCosts = calculateServiceCosts();
   const subtotal = totalRoomCosts + totalServiceCosts;
-  const discountValue = 60000;
+
+  const calculateDiscount = () => {
+    if (!selectedVoucher || selectedVoucher.length === 0) return 0;
+    let discount = 0;
+
+    selectedVoucher.forEach((v) => {
+      const voucher = v.voucher;
+      const discountType = voucher.discountType;
+
+      if (discountType === "PERCENT") {
+        discount = discount + (subtotal * voucher.discountPercentage) / 100;
+      } else {
+        discount = discount + (voucher.discountValue || 0);
+      }
+    });
+
+    return discount;
+  };
+
+  const discountValue = calculateDiscount();
   const totalAmount = subtotal - discountValue;
 
   if (currentStep === 1) {
@@ -328,9 +374,9 @@ export default function BookingForm({
                   <input
                     type="text"
                     placeholder="Enter your name"
-                    value={customer.fullName}
-                    onChange={(e) => setCustomerName(e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#c9b8a8]"
+                    value={customer?.fullName || ""}
+                    readOnly
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#c9b8a8] bg-gray-50"
                   />
                 </div>
 
@@ -341,9 +387,9 @@ export default function BookingForm({
                   <input
                     type="tel"
                     placeholder="Enter your phone number"
-                    value={customer.phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#c9b8a8]"
+                    value={customer?.phone || ""}
+                    readOnly
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#c9b8a8] bg-gray-50"
                   />
                 </div>
 
@@ -354,9 +400,9 @@ export default function BookingForm({
                   <input
                     type="email"
                     placeholder="Enter your email"
-                    value={customer.email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#c9b8a8]"
+                    value={customer?.email || ""}
+                    readOnly
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#c9b8a8] bg-gray-50"
                   />
                 </div>
 
@@ -552,36 +598,40 @@ export default function BookingForm({
     );
   } else if (currentStep === 4) {
     return (
-      <div className="max-w-2xl mx-auto space-y-6">
+      <div className="max-w-3xl mx-auto space-y-6">
         {/* Customer Information */}
         <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
           <div className="bg-[#c9b8a8] text-white px-4 py-3 rounded-lg mb-6 flex items-center gap-2">
             <span className="text-lg">
               <TfiUser className="text-white" />
             </span>
-            <h3 className="font-semibold">Customer information</h3>
+            <h3 className="font-semibold text-md">Customer information</h3>
           </div>
 
           <div className="space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-gray-600 mb-1">
+              <label className="block text-sm font-semibold text-gray-600 mb-1">
                 Customer Name
               </label>
-              <p className="text-gray-900 font-medium">{customer.fullName}</p>
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-gray-600 mb-1">
-                Phone Number
-              </label>
               <p className="text-gray-900 font-medium">
-                {customer.phoneNumber}
+                {customer?.fullName || "N/A"}
               </p>
             </div>
             <div>
-              <label className="block text-xs font-semibold text-gray-600 mb-1">
+              <label className="block text-sm font-semibold text-gray-600 mb-1">
+                Phone Number
+              </label>
+              <p className="text-gray-900 font-medium">
+                {customer?.phone || "N/A"}
+              </p>
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-600 mb-1">
                 Email
               </label>
-              <p className="text-gray-900 font-medium">{customer.email}</p>
+              <p className="text-gray-900 font-medium">
+                {customer?.email || "N/A"}
+              </p>
             </div>
           </div>
         </div>
@@ -595,11 +645,11 @@ export default function BookingForm({
 
           <div className="space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-gray-600 mb-3">
+              <label className="block text-sm font-semibold text-gray-600 mb-3">
                 Room Number:
               </label>
               <div className="space-y-2">
-                {getSelectedRoomObjects().map((room, index) => (
+                {rooms.map((room, index) => (
                   <div
                     key={index}
                     className="flex justify-between items-center py-2 border-b border-gray-200"
@@ -608,7 +658,7 @@ export default function BookingForm({
                       {room.roomNumber}
                     </span>
                     <span className="text-[#c9b8a8] font-semibold">
-                      {room.roomType.basePrice.toLocaleString()} VND
+                      {room.roomType?.basePrice?.toLocaleString() || "0"} VND
                     </span>
                   </div>
                 ))}
@@ -616,7 +666,7 @@ export default function BookingForm({
             </div>
 
             <div className="flex justify-between items-center py-2 border-t border-gray-200 mt-4">
-              <label className="text-xs font-semibold text-gray-600">
+              <label className="text-sm font-semibold text-gray-600">
                 Checkin Date:
               </label>
               <span className="text-gray-900 font-medium">
@@ -625,7 +675,7 @@ export default function BookingForm({
             </div>
 
             <div className="flex justify-between items-center py-2">
-              <label className="text-xs font-semibold text-gray-600">
+              <label className="text-sm font-semibold text-gray-600">
                 Checkout Date:
               </label>
               <span className="text-gray-900 font-medium">
@@ -634,7 +684,7 @@ export default function BookingForm({
             </div>
 
             <div className="flex justify-between items-center py-2 border-t border-gray-200 mt-4">
-              <label className="text-xs font-semibold text-gray-600">
+              <label className="text-sm font-semibold text-gray-600">
                 Total room costs:
               </label>
               <span className="text-[#c9b8a8] font-semibold">
@@ -670,7 +720,7 @@ export default function BookingForm({
           </div>
 
           <div className="flex justify-between items-center py-3 border-t border-gray-200 mt-4">
-            <label className="text-xs font-semibold text-gray-600">
+            <label className="text-sm font-semibold text-gray-600">
               Total service costs:
             </label>
             <span className="text-[#c9b8a8] font-semibold">
@@ -700,8 +750,19 @@ export default function BookingForm({
               <label className="text-sm font-semibold text-gray-900">
                 Vouchers
               </label>
-              <span className="text-[#c9b8a8] text-sm font-medium cursor-pointer hover:underline">
-                {customerVouchers && customerVouchers.length > 0
+              <span
+                onClick={() => setIsVoucherModalOpen(true)}
+                className="text-[#c9b8a8] text-sm font-medium cursor-pointer hover:underline"
+              >
+                {selectedVoucher && selectedVoucher.length > 0
+                  ? selectedVoucher.length === 1
+                    ? `${selectedVoucher[0].voucher.voucherName} (${
+                        selectedVoucher[0].voucher.discountType === "PERCENT"
+                          ? `-${selectedVoucher[0].voucher.discountPercentage}%`
+                          : `-${selectedVoucher[0].voucher.discountValue?.toLocaleString()} VND`
+                      })`
+                    : `${selectedVoucher.length} vouchers applied`
+                  : customerVouchers && customerVouchers.length > 0
                   ? "Choose voucher"
                   : "No vouchers available"}
               </span>
@@ -720,8 +781,8 @@ export default function BookingForm({
               <label className="text-sm font-semibold text-gray-900">
                 Discount value:
               </label>
-              <span className="text-gray-900 font-semibold">
-                {discountValue.toLocaleString()} VND
+              <span className="text-red-600 font-semibold">
+                -{discountValue.toLocaleString()} VND
               </span>
             </div>
 
@@ -780,6 +841,17 @@ export default function BookingForm({
             </button>
           </div>
         </div>
+
+        {/* Voucher Selection Modal */}
+        <CustomerVoucherModal
+          isOpen={isVoucherModalOpen}
+          onClose={() => setIsVoucherModalOpen(false)}
+          availableVouchers={customerVouchers}
+          onSelectVoucher={(vouchers) => {
+            setSelectedVoucher(vouchers);
+            setIsVoucherModalOpen(false);
+          }}
+        />
       </div>
     );
   }

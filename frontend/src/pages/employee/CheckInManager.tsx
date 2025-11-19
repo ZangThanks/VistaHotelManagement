@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { FaPlus } from "react-icons/fa";
-import useModal from "../../hooks/Checkin/useModal";
+import useModal from "../../hooks/useModal";
 import StatusCards from "../../components/checkin/StatusCards";
 import SearchFilter from "../../components/checkin/SearchFilter";
 import CheckinTabs from "../../components/checkin/CheckinTabs";

@@ -1,6 +1,7 @@
 package com.hotelvista.controller;
 
 import com.hotelvista.model.Booking;
+import com.hotelvista.model.BookingDetail;
 import com.hotelvista.service.BookingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -49,5 +50,15 @@ public class BookingController {
     @GetMapping("/search")
     public List<Booking> searchBookings(@RequestParam(required = false) String keyword) {
         return service.searchBookings(keyword);
+    }
+
+    @GetMapping("/create-booking-id")
+    public String generateBookingID() {
+        return service.generateBookingID();
+    }
+
+    @GetMapping("/room/{roomNumber}")
+    public List<Booking> findAllByRoom_RoomNumber(@PathVariable("roomNumber") String roomNumber) {
+        return service.findAllByRoom_RoomNumber(roomNumber);
     }
 }

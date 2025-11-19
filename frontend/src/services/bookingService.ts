@@ -56,6 +56,16 @@ export const searchBookings = async (keyword: string) => {
   }
 };
 
+export const generateBookingID = async () => {
+  try {
+    const response = await api.get(`${ENDPOINT}/create-booking-id`);
+    return response.data;
+  } catch (error) {
+    console.error("Error generating booking ID:", error);
+    throw error;
+  }
+};
+
 // export const deleteBooking = async (id) => {
 //   try {
 //     await axios.delete(`${API_URL}/${id}`);

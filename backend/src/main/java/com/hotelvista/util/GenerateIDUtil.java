@@ -8,5 +8,4 @@ public class GenerateIDUtil {
         return prefix + uuid.substring(0, length - prefix.length());
     }
 
-    
 }
