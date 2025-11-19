@@ -123,7 +123,7 @@ const IncidentCard: React.FC<IncidentCardProps> = ({ incident, onClick }) => {
 
                     {incident.assignedTo && (
                         <div className="text-sm text-gray-600 font-medium">
-                            <span className="text-gray-500">Người xử lý:</span>{' '}
+                            <span className="text-gray-500">Phản hồi:</span>{' '}
                             {incident.assignedTo}
                         </div>
                     )}
