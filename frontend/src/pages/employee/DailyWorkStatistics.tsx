@@ -9,7 +9,7 @@ import {
     Calendar,
 } from 'lucide-react';
 
-export default function App() {
+export default function DailyWorkStatistics() {
     const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
     const [tasks, setTasks] = useState([]);
     const [search, setSearch] = useState('');

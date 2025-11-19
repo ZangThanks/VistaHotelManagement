@@ -19,7 +19,7 @@ import AddInfoForm from '../../../components/info_management/AddInfoForm';
 import { getAll } from '../../../services/newsService';
 import type { NewsItem } from '../../../types/News';
 import EditNewsModal from '../../../components/news/EditNewsModal';
-const InfoManagement: React.FC = () => {
+const NewsList: React.FC = () => {
     const navigate = useNavigate();
     const [newsList, setNewsList] = useState<NewsItem[]>([]);
     const [filteredList, setFilteredList] = useState<NewsItem[]>([]);
@@ -221,4 +221,4 @@ const InfoManagement: React.FC = () => {
     );
 };
 
-export default InfoManagement;
+export default NewsList;
