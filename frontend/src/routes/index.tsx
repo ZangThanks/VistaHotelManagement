@@ -57,22 +57,6 @@ export const router = createBrowserRouter([
       { path: "room-management", element: <RoomManagement /> },
     ],
   },
-  {
-    path: "",
-    element: <EmployeeLayout />,
-    children: [
-      { path: "newsPage", element: <NewsPage /> },
-      { path: "bookingPage", element: <BookingPage /> },
-    ],
-  },
-  {
-    path: "",
-    element: <MainLayout />,
-    children: [
-      { path: "/newsPage", element: <NewsPage /> },
-      { path: "/home", element: <Home /> },
-    ],
-  },
     {
         path: 'auth',
         element: <AuthLayout />,
