@@ -1,4 +1,4 @@
-import { createBrowserRouter } from 'react-router-dom';
+import { createBrowserRouter } from "react-router-dom";
 
 // Layouts
 import AuthLayout from "../layouts/AuthLayout";
@@ -19,10 +19,12 @@ import NewsPage from "../pages/employee/NewsPage";
 import CheckInManager from "../pages/employee/CheckInManager";
 import CheckOutManager from "../pages/employee/CheckOutManager";
 import IncidentManagement from "../pages/employee/IncidentManagement";
+import DailyWorkStatistics from "../pages/employee/DailyWorkStatistics";
 
 // Admin pages
 import BookingPage from "../pages/admin/booking/BookingPage";
 import InfoManagement from "../pages/admin/infomation/InfoManagement";
+import NewsList from "../pages/admin/infomation/NewsList";
 import ServiceManagement from "../pages/admin/ServiceManagement";
 import Dashboard from "../pages/admin/dashboard/Dashboard";
 import RoomManagement from "../pages/admin/room/RoomManagement";
@@ -35,6 +37,7 @@ import IncidentReport from "../pages/customer/IncidentReport";
 import NewsDetail from "../components/news/NewsDetail";
 
 export const router = createBrowserRouter([
+    // AUTH
     {
         path: "auth",
         element: <AuthLayout />,
@@ -46,6 +49,7 @@ export const router = createBrowserRouter([
         ],
     },
 
+    // EMPLOYEE
     {
         path: "employee",
         element: <EmployeeLayout />,
@@ -54,9 +58,11 @@ export const router = createBrowserRouter([
             { path: "incidents", element: <IncidentManagement /> },
             { path: "bookingPage", element: <BookingPage /> },
             { path: "newsPage", element: <NewsPage /> },
+            { path: "daily", element: <DailyWorkStatistics /> },
         ],
     },
 
+    // ADMIN
     {
         path: "admin",
         element: <AdminLayout />,
@@ -64,7 +70,8 @@ export const router = createBrowserRouter([
             { path: "", element: <Dashboard /> },
             { path: "checkin", element: <CheckInManager /> },
             { path: "checkout", element: <CheckOutManager /> },
-            { path: "info", element: <InfoManagement /> },
+            { path: "info", element: <NewsList /> }, // NewsList thay InfoManagement
+            { path: "info/manage", element: <InfoManagement /> }, // nếu bạn cần InfoManagement
             { path: "info/:id", element: <NewsDetail /> },
             { path: "services", element: <ServiceManagement /> },
             { path: "room-management", element: <RoomManagement /> },
@@ -72,6 +79,7 @@ export const router = createBrowserRouter([
         ],
     },
 
+    // MAIN USER AREA
     {
         path: "",
         element: <MainLayout />,
@@ -83,12 +91,14 @@ export const router = createBrowserRouter([
         ],
     },
 
+    // CUSTOMER
     {
         path: "customer",
         element: <CustomerLayout />,
         children: [
             { path: "room/list", element: <RoomList /> },
             { path: "room/:id", element: <RoomDetail /> },
+            { path: "bookingPage", element: <BookingPage /> },
         ],
     },
 ]);
