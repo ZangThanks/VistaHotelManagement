@@ -3,12 +3,19 @@ import {getAllRooms } from '../../services/roomService';
 import type { Room } from '../../types/Room';
 import RoomCard from '../../components/RoomCard';
 import Dropdown from '../../components/Dropdown';
-import Header from '../../components/Header';
+import RoomCompareBar from '../../components/customer/RoomCompareBar';
+import RoomCompareModal from '../../components/customer/RoomCompareModal';
 
 export default function RoomList() {
     const [rooms, setRooms] = useState<Room[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    // Compare functionality
+    const [compareRooms, setCompareRooms] = useState<Room[]>([]);
+    const [showCompareModal, setShowCompareModal] = useState(false);
+    const [isModalMinimized, setIsModalMinimized] = useState(false);
+    const MAX_COMPARE = 3;
 
     // Filters
     const [selectedType, setSelectedType] = useState('');
@@ -103,6 +110,45 @@ export default function RoomList() {
         setSortOrder('');
         setCheckIn('');
         setCheckOut('');
+    };
+
+    // Compare handlers
+    const handleCompareToggle = (room: Room) => {
+        setCompareRooms((prev) => {
+            const exists = prev.some((r) => r.roomNumber === room.roomNumber);
+            if (exists) {
+                return prev.filter((r) => r.roomNumber !== room.roomNumber);
+            } else {
+                if (prev.length >= MAX_COMPARE) {
+                    alert(`Bạn chỉ có thể so sánh tối đa ${MAX_COMPARE} phòng`);
+                    return prev;
+                }
+                return [...prev, room];
+            }
+        });
+    };
+
+    const handleRemoveFromCompare = (roomNumber: string) => {
+        setCompareRooms((prev) =>
+            prev.filter((r) => r.roomNumber !== roomNumber),
+        );
+    };
+
+    const handleClearCompare = () => {
+        setCompareRooms([]);
+    };
+
+    const handleOpenCompareModal = () => {
+        if (compareRooms.length < 2) {
+            alert('Vui lòng chọn ít nhất 2 phòng để so sánh');
+            return;
+        }
+        setShowCompareModal(true);
+    };
+
+    const handleCloseCompareModal = () => {
+        setShowCompareModal(false);
+        setIsModalMinimized(false);
     };
 
     // Sort options for Dropdown
@@ -621,21 +667,48 @@ export default function RoomList() {
                           </div>
                       )}
 
-                      {/* Room Cards Grid */}
-                      {!loading && !error && displayedRooms.length > 0 && (
-                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-                              {displayedRooms.map((r) => (
-                                  <div
-                                      key={r.roomNumber}
-                                      className="transform transition-all duration-300 hover:scale-[1.02]"
-                                  >
-                                      <RoomCard room={r} />
-                                  </div>
-                              ))}
-                          </div>
-                      )}
-                  </main>
-              </div>
+                    {/* Room Cards Grid */}
+                    {!loading && !error && displayedRooms.length > 0 && (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                            {displayedRooms.map((r) => (
+                                <div
+                                    key={r.roomNumber}
+                                    className="transform transition-all duration-300 hover:scale-[1.02]"
+                                >
+                                    <RoomCard
+                                        room={r}
+                                        onCompareToggle={handleCompareToggle}
+                                        isInCompare={compareRooms.some(
+                                            (cr) =>
+                                                cr.roomNumber === r.roomNumber,
+                                        )}
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </main>
+            </div>
+
+            {/* Compare Bar - Hidden when modal is minimized */}
+            {!isModalMinimized && (
+                <RoomCompareBar
+                    selectedRooms={compareRooms}
+                    onRemove={handleRemoveFromCompare}
+                    onCompare={handleOpenCompareModal}
+                    onClear={handleClearCompare}
+                />
+            )}
+
+            {/* Compare Modal */}
+            {showCompareModal && (
+                <RoomCompareModal
+                    rooms={compareRooms}
+                    onClose={handleCloseCompareModal}
+                    onRemoveRoom={handleRemoveFromCompare}
+                    onMinimizeChange={setIsModalMinimized}
+                />
+            )}
 
               {/* Custom Scrollbar Styles */}
               <style>{`
