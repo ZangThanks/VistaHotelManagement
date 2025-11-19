@@ -35,6 +35,11 @@ public class Service {
     @Enumerated(EnumType.STRING)
     private ServiceCategory serviceCategory;
 
+    @ElementCollection
+    @CollectionTable(name = "service_images", joinColumns = @JoinColumn(name = "service_id"))
+    @Column(name = "images_url")
+    private List<String> images;
+
     @ToString.Exclude
     @JsonIgnore
     @OneToMany(mappedBy = "service")

@@ -12,7 +12,7 @@ export const getAll = async () => {
   }
 };
 
-export const getById = async (id) => {
+export const getById = async (id: string) => {
   try {
     const response = await axiosInstance.get(`${ENDPOINT}/${id}`);
     return response.data;

@@ -20,6 +20,8 @@ import RoomList from "../pages/customer/RoomList";
 import InfoManagement from "../pages/admin/infomation/InfoManagement";
 import RoomDetail from '../pages/customer/RoomDetail';
 import CustomerLayout from '../layouts/CustomerLayout';
+import NewsDetail from '../components/news/NewsDetail';
+import ServiceList from '../pages/customer/ServiceList';
 
 export const router = createBrowserRouter([
     {
@@ -48,6 +50,7 @@ export const router = createBrowserRouter([
             { path: 'checkin', element: <CheckInManager /> },
             { path: 'checkout', element: <CheckOutManager /> },
             { path: 'info', element: <InfoManagement /> },
+            { path: 'info/:id', element: <NewsDetail /> },
         ],
     },
     {
@@ -70,6 +73,7 @@ export const router = createBrowserRouter([
         path: 'customer',
         element: <CustomerLayout />,
         children: [
+            { path: 'service', element: <ServiceList /> },
             { path: 'room', element: <RoomList /> },
             { path: 'room/:id', element: <RoomDetail /> },
         ],

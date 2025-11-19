@@ -1,8 +1,8 @@
 import { api } from './apiClient';
 
-const ENDPOINT = '/room';
+const ENDPOINT = '/rooms';
 
-export const getAll = async () => {
+export const getAllRoom = async () => {
     try {
         const response = await api.get(ENDPOINT);
         return response.data;
@@ -15,6 +15,7 @@ export const getAll = async () => {
 export const getById = async (id: string) => {
   try {
     const response = await api.get(`${ENDPOINT}/${id}`)
+    console.log("=========RESPONSE DATA: " + response.data);
     return response.data;
   } catch (error) {
     console.error('Error fetching room by ID:', error);
