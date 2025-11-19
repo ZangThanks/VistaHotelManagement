@@ -1,3 +1,4 @@
+import type { BookingDetail } from "./BookingDetail";
 import type { Customer } from "./Customer";
 import type { Employee } from "./Employee";
 
@@ -39,4 +40,5 @@ export interface Booking {
   totalCost?: number | null;
   customer?: Customer | null;
   employee?: Employee | null;
+  bookingDetails: BookingDetail[];
 }
