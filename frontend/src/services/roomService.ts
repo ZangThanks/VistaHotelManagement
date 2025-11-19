@@ -95,9 +95,9 @@ export const getNextRoomNumber = async (floor: number, roomTypeId: string) => {
 
     // Map ID loại phòng thành tiền tố
     const typePrefixMap: { [key: string]: string } = {
-      "STE": "STE",
-      "STD": "STD",
-      "DLX": "DLX",
+      STE: "STE",
+      STD: "STD",
+      DLX: "DLX",
     };
 
     const prefix = typePrefixMap[roomTypeId] || "RM";
@@ -138,7 +138,7 @@ export const getNextRoomNumber = async (floor: number, roomTypeId: string) => {
 
 // Cập nhật trạng thái phòng
 export const updateRoomStatus = async (
-  roomNumber: string, 
+  roomNumber: string,
   newStatus: RoomStatus,
   note?: string
 ): Promise<Room> => {

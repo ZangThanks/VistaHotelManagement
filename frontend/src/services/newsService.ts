@@ -1,10 +1,10 @@
-import { axiosInstance } from "../config/api";
+import { api } from "./apiClient";
 
 const ENDPOINT = "/news";
 
 export const getAll = async () => {
   try {
-    const response = await axiosInstance.get(ENDPOINT);
+    const response = await api.get(ENDPOINT);
     return response.data;
   } catch (error) {
     console.error("Error fetching services:", error);
@@ -13,7 +13,7 @@ export const getAll = async () => {
 };
 export const getHighlighted = async () => {
   try {
-    const response = await axiosInstance.get(`${ENDPOINT}/highlight`);
+    const response = await api.get(`${ENDPOINT}/highlight`);
     return response.data;
   } catch (error) {
     console.error("❌ Error fetching highlighted news:", error);
@@ -21,6 +21,6 @@ export const getHighlighted = async () => {
   }
 };
 export const getNewsById = async (id: string) => {
-  const response = await axiosInstance.get(`${ENDPOINT}/${id}`);
+  const response = await api.get(`${ENDPOINT}/${id}`);
   return response.data;
 };

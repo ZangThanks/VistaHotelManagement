@@ -1,52 +1,32 @@
-import type { Room } from "./Room";
-import type { Customer } from "./Customer";
-
-export type BookingStatus =
-  | "PENDING"
-  | "CHECKED_IN"
-  | "CHECKED_OUT"
-  | "CANCELLED";
-export type PaymentStatus =
-  | "PENDING"
-  | "COMPLETED"
-  | "FAILED"
-  | "REFUNDED"
-  | "CANCELLED";
-export type InvoiceType =
-  | "ROOM_BOOKING"
-  | "SERVICE"
-  | "ADDITIONAL_FEE"
-  | "REFUND";
-
-export interface BookingDetail {
-  room: Room;
-  roomPrice: number;
-}
-
 export interface Booking {
   bookingID: string;
   checkInDate: string;
   checkOutDate: string;
   numberOfGuests: number;
-  status: BookingStatus;
+  status: "PENDING" | "CONFIRMED" | "CHECKED_IN" | "CHECKED_OUT" | "CANCELLED";
   specialRequests?: string;
   bookingDate: string;
   cancellationDate?: string;
-  hourlyRate?: number;
-  duration?: number;
-  packageType?: string;
+  hourlyRate?: number | null;
+  duration: number;
+  packageType: string;
   totalAmount: number;
-  paymentStatus: PaymentStatus;
-  invoiceType: InvoiceType;
+  paymentStatus: "PENDING" | "PAID" | "REFUNDED" | "PARTIAL";
+  invoiceType?: string | null;
   totalCost: number;
   customer: Customer;
-  employee?: {
-    id: string;
-    fullName: string;
-    email?: string;
-    phone?: string;
-  };
+  employee?: Employee;
   bookingDetails: BookingDetail[];
+  earlyCheckin?: EarlyCheckin | null;
+}
+
+export interface EarlyCheckin {
+  id?: string;
+  requestTime: string;
+  earlyCheckInTime: string;
+  approvalStatus: "PENDING" | "APPROVED" | "REJECTED";
+  additionalFee: number;
+  notes?: string;
 }
 
 export interface RoomBooking {
@@ -56,7 +36,16 @@ export interface RoomBooking {
   guestName: string;
   checkIn: Date;
   checkOut: Date;
-  status: "pending" | "checked-in" | "checked-out" | "cancelled";
+  status: "pending" | "confirmed" | "checked-in" | "checked-out" | "cancelled";
   numberOfGuests: number;
   totalAmount: number;
+  specialRequests?: string;
+  paymentStatus?: string;
+  customer?: any;
+  bookingDetails?: any[];
+  earlyCheckin?: EarlyCheckin | null;
 }
+
+import type { Customer } from "./Customer";
+import type { Employee } from "./Employee";
+import type { BookingDetail } from "./BookingDetail";

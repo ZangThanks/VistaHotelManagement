@@ -2,33 +2,7 @@ import React, { useState, useEffect } from "react";
 import { FaCalendarCheck, FaWalking, FaClock, FaSearch } from "react-icons/fa";
 import { searchBookings } from "../../services/bookingService";
 import IDScannerModal, { type IDCardInfo } from "./IDScannerModal";
-
-interface Booking {
-  bookingID: string;
-  checkInDate: string;
-  checkOutDate: string;
-  numberOfGuests: number;
-  status: string;
-  specialRequests: string;
-  bookingDate: string;
-  packageType: string;
-  totalAmount: number;
-  paymentStatus: string;
-  customer: {
-    id: string;
-    fullName: string;
-    email: string;
-    phone: string;
-  };
-  bookingDetails: Array<{
-    room: {
-      roomNumber: string;
-      floor: number;
-      status: string;
-    };
-    roomPrice: number;
-  }>;
-}
+import type { Booking } from "../../types/Booking";
 
 function ManualCheckinModal({ isOpen, onClose }) {
   const [activeOption, setActiveOption] = useState("booking");
@@ -39,13 +13,11 @@ function ManualCheckinModal({ isOpen, onClose }) {
   const [checkOutTime, setCheckOutTime] = useState("");
   const [hourlyRate, setHourlyRate] = useState({ rate: 45, percentage: 45 });
 
-  // States for Existing Booking search
   const [searchKeyword, setSearchKeyword] = useState("");
   const [searchResults, setSearchResults] = useState<Booking[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
 
-  // States for ID Card Scanner
   const [showIDScanner, setShowIDScanner] = useState(false);
 
   useEffect(() => {
@@ -137,9 +109,8 @@ function ManualCheckinModal({ isOpen, onClose }) {
     try {
       const results = await searchBookings(searchKeyword);
       setSearchResults(results);
-
       if (results.length === 0) {
-        alert("No bookings found matching your search criteria");
+        alert("Không tìm thấy booking");
       }
     } catch (error) {
       console.error("Error searching bookings:", error);
@@ -149,7 +120,6 @@ function ManualCheckinModal({ isOpen, onClose }) {
     }
   };
 
-  // Handle Enter key press in search input
   const handleSearchKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       handleSearchBookings();
@@ -364,14 +334,18 @@ function ManualCheckinModal({ isOpen, onClose }) {
                                 {booking.customer.fullName}
                               </td>
                               <td className="py-3 px-4">
-                                {booking.customer.phone}
+                                {booking.customer.fullName}
                               </td>
                               <td className="py-3 px-4">
                                 {formatDate(booking.checkInDate)}
                               </td>
                               <td className="py-3 px-4">
-                                {booking.bookingDetails
-                                  .map((detail) => detail.room.roomNumber)
+                                {(booking.bookingDetails ?? [])
+                                  .map(
+                                    (detail) =>
+                                      detail.room?.roomNumber ||
+                                      detail.room?.roomNumber
+                                  )
                                   .join(", ")}
                               </td>
                               <td className="py-3 px-4">

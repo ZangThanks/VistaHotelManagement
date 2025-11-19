@@ -30,10 +30,10 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
   const collapseTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const menuItems = [
-    { 
-        icon: <FaTachometerAlt />, 
-        label: "Dashboard", 
-        path: "/admin/dashboard" 
+    {
+      icon: <FaTachometerAlt />,
+      label: "Dashboard",
+      path: "/admin/dashboard",
     },
     {
       icon: <MdMeetingRoom />,
@@ -48,12 +48,12 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
     {
       icon: <LuMapPinCheckInside />,
       label: "Check-in Management",
-      path: "/checkin-management",
+      path: "/admin/checkin",
     },
     {
       icon: <IoBagCheckOutline />,
       label: "Check-out Management",
-      path: "/checkout-management",
+      path: "/admin/checkout",
     },
     {
       icon: <FaCalendarAlt />,
