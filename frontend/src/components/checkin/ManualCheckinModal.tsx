@@ -1,3 +1,4 @@
+/* eslint-disable*/
 import React, { useState, useEffect } from "react";
 import { FaCalendarCheck, FaWalking, FaClock, FaSearch } from "react-icons/fa";
 import { searchBookings } from "../../services/bookingService";

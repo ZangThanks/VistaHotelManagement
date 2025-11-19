@@ -23,7 +23,8 @@ import NewsDetail from "../components/news/NewsDetail.tsx";
 import RoomManagement from "../pages/admin/room/RoomManagement.tsx";
 import RoomDetail from "../pages/customer/RoomDetail.tsx";
 import CustomerLayout from "../layouts/CustomerLayout.tsx";
-import NewsList from "../pages/admin/infomation/NewsList.tsx";
+import DailyWorkStatistics from '../pages/employee/DailyWorkStatistics.tsx';
+import NewsList from '../pages/admin/infomation/NewsList.tsx';
 
 export const router = createBrowserRouter([
   {
@@ -39,7 +40,10 @@ export const router = createBrowserRouter([
   {
     path: "employee",
     element: <EmployeeLayout />,
-    children: [{ path: "customer/list", element: <CustomerList /> }],
+    children: [
+      { path: "customer/list", element: <CustomerList /> },
+      { path: "bookingPage", element: <BookingPage /> },
+    ],
   },
   {
     path: "admin",
@@ -53,22 +57,50 @@ export const router = createBrowserRouter([
       { path: "room-management", element: <RoomManagement /> },
     ],
   },
-  {
-    path: "",
-    element: <MainLayout />,
-    children: [
-      { path: "/newsPage", element: <NewsPage /> },
-      { path: "/home", element: <Home /> },
-      { path: "/bookingPage", element: <BookingPage /> },
-    ],
-  },
-  {
-    path: "customer",
-    element: <CustomerLayout />,
-    children: [
-      { path: "room", element: <RoomList /> },
-      { path: "room/:id", element: <RoomDetail /> },
-      { path: "bookingPage", element: <BookingPage /> },
-    ],
-  },
+    {
+        path: 'auth',
+        element: <AuthLayout />,
+        children: [
+            { path: 'login', element: <Login /> },
+            { path: 'register', element: <Register /> },
+            // { path: "forgot-password", element: <ForgotPassword /> },
+            // { path: "reset-password", element: <ResetPassword /> },
+        ],
+    },
+    {
+        path: 'employee',
+        element: <EmployeeLayout />,
+        children: [
+            { path: 'customer/list', element: <CustomerList /> },
+            { path: 'bookingPage', element: <BookingPage /> },
+            { path: 'daily', element: <DailyWorkStatistics /> },
+        ],
+    },
+    {
+        path: 'admin',
+        element: <AdminLayout />,
+        children: [
+            { path: '', element: <CheckInManager /> },
+            { path: 'checkin', element: <CheckInManager /> },
+            { path: 'checkout', element: <CheckOutManager /> },
+            { path: 'info', element: <NewsList /> },
+        ],
+    },
+    {
+        path: '',
+        element: <MainLayout />,
+        children: [
+            { path: '/newsPage', element: <NewsPage /> },
+            { path: '/home', element: <Home /> },
+        ],
+    },
+    {
+        path: 'customer',
+        element: <CustomerLayout />,
+        children: [
+            { path: 'room/list', element: <RoomList /> },
+            { path: 'room/:id', element: <RoomDetail /> },
+            { path: 'bookingPage', element: <BookingPage /> },
+        ],
+    },
 ]);
