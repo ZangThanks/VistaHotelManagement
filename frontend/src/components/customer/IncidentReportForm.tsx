@@ -4,8 +4,8 @@ import type {
     IncidentPriority,
     IncidentFormData,
 } from '../../types/Incident';
-import FloatingInput from '../FloatingInput';
-import Button from '../Button';
+import FloatingInput from '../common/FloatingInput';
+import Button from '../common/Button';
 import { Upload, X, AlertCircle } from 'lucide-react';
 
 interface IncidentReportFormProps {

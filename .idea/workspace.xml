@@ -1,96 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
   <component name="ChangeListManager">
     <list default="true" id="5b77a0df-fa02-4183-ba33-d674796f0428" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/.name" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/components/common/Pagination.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/components/common/TabNavigation.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/components/dialog/ConfirmDialog.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/components/room/RoomFilters.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/components/room/RoomStatCard.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/components/room/modal/AddRoomModal.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/components/room/modal/BookingInfoPopup.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/components/room/modal/ChangeStatusModal.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/components/room/modal/EditRoomModal.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/components/room/modal/RoomDetailModal.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/components/room/view/RoomCalendarView.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/components/room/view/RoomCardView.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/components/room/view/RoomStatusBoard.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/components/room/view/RoomTableView.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/pages/admin/dashboard/Dashboard.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/pages/admin/room/RoomManagement.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/services/cloudinaryService.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/services/productService.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/types/Booking.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/types/BookingDetail.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/types/CustomerVoucher.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/types/Employee.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/types/IDCardInfo.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/types/Review.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/types/Service.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/types/Voucher.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/src/utils/roomValidators.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/scripts/srcipts_vistahotel.sql" beforeDir="false" afterPath="$PROJECT_DIR$/backend/scripts/srcipts_vistahotel.sql" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/hotelvista/config/CorsConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/hotelvista/config/CorsConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/hotelvista/config/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/hotelvista/config/SecurityConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/hotelvista/controller/AuthController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/hotelvista/controller/AuthController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/hotelvista/controller/BookingController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/hotelvista/controller/BookingController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/hotelvista/controller/EarlyCheckinController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/hotelvista/controller/EarlyCheckinController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/hotelvista/dto/LoginRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/hotelvista/dto/LoginRequest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/hotelvista/dto/RegisterRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/hotelvista/dto/RegisterRequest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/hotelvista/model/Booking.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/hotelvista/model/Booking.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/hotelvista/model/Customer.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/hotelvista/model/Customer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/hotelvista/model/EarlyCheckin.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/hotelvista/model/EarlyCheckin.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/hotelvista/model/enums/ServiceCategory.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/hotelvista/model/enums/ServiceCategory.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/hotelvista/repository/BookingDetailRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/hotelvista/repository/BookingDetailRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/hotelvista/repository/RoomRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/hotelvista/repository/RoomRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/hotelvista/repository/ServiceRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/hotelvista/repository/ServiceRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/hotelvista/security/JwtAuthenticationFilter.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/hotelvista/security/JwtAuthenticationFilter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/hotelvista/security/JwtTokenProvider.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/hotelvista/security/JwtTokenProvider.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/hotelvista/service/EarlyCheckinService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/hotelvista/service/EarlyCheckinService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/hotelvista/service/PromotionService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/hotelvista/service/PromotionService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/hotelvista/service/ServiceService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/hotelvista/service/ServiceService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/hotelvista/util/GenerateIDUtil.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/hotelvista/util/GenerateIDUtil.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/application.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/.env" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/.env" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/Button.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/common/Button.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/Calendar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/common/Calendar.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/Dropdown.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/Dropdown.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/FloatingInput.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/common/FloatingInput.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/Header.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/Header.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/HeaderHome.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/HeaderHome.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/Input.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/common/Input.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/Sidebar.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/Sidebar.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/Toast.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/Toast.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/booking/BookingForm.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/booking/BookingForm.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/checkin/IDScannerModal.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/checkin/IDScannerModal.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/checkin/ManualCheckinModal.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/checkin/ManualCheckinModal.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/checkin/StatusCards.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/checkin/StatusCards.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/components/checkin/TomorrowTab.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/components/checkin/TomorrowTab.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/context/ThemeContext.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/context/ThemeContext.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/index.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/index.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/admin/Dashboard.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/admin/Reports.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/admin/RoomManagement.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/auth/ForgotPassword.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/auth/ForgotPassword.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/auth/Login.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/auth/Login.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/auth/Register.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/auth/Register.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/auth/ResetPassword.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/auth/ResetPassword.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/customer/MyBookings.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/customer/RoomDetail.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/customer/RoomDetail.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/customer/RoomSearch.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/pages/employee/CheckInManager.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/pages/employee/CheckInManager.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/routes/index.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/routes/index.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/services/apiClient.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/services/apiClient.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/services/authService.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/services/authService.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/services/bookingService.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/services/bookingService.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/services/roomService.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/services/roomService.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/types/Customer.ts" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/types/Customer.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/utils/formatters.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/utils/formatters.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.name" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.name" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -113,11 +28,15 @@
   "keyToString": {
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "Merging doankhoe",
+    "git-widget-placeholder": "doankhoe",
     "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "F:/WWWDoAn/vistal_hotel_website/backend",
     "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
+    "ts.external.directory.path": "F:\\WWWDoAn\\vistal_hotel_website\\frontend\\node_modules\\typescript\\lib",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
@@ -137,7 +56,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1763531338833</updated>
-      <workItem from="1763531340075" duration="179000" />
+      <workItem from="1763531340075" duration="531000" />
     </task>
     <servers />
   </component>

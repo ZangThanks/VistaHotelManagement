@@ -19,7 +19,8 @@ public enum ServiceCategory {
     WELLNESS("WELLNESS"),
     TRANSPORTATION("TRANSPORTATION"),
     RECREATION("RECREATION");
-}
-
     private String serviceCategory;
 }
+
+
+
