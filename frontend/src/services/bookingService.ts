@@ -55,9 +55,9 @@ export const convertToRoomBooking = (booking: Booking): RoomBooking[] => {
   // Mỗi booking có thể có nhiều phòng trong bookingDetails
   return booking.bookingDetails.map((detail) => ({
     id: booking.bookingID,
-    roomId: detail.room.roomNumber || "",
-    roomNumber: detail.room.roomNumber || "",
-    guestName: booking.customer.fullName,
+    roomId: String(detail.room.roomNumber ?? ""),
+    roomNumber: String(detail.room.roomNumber ?? ""),
+    guestName: booking.customer?.fullName ?? "",
     checkIn: new Date(booking.checkInDate),
     checkOut: new Date(booking.checkOutDate),
     status:

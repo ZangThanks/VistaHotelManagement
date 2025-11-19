@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import type { Customer } from '../../types/Customer';
-import { saveCustomer } from '../../services/CustomerService';
+import { saveCustomer } from '../../services/customerService';
 
 interface EditCustomerModalProps {
     show: boolean;

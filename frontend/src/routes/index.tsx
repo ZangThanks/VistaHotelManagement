@@ -32,6 +32,8 @@ import NewsList from '../pages/admin/infomation/NewsList.tsx';
 import ServiceList from '../pages/customer/ServiceList.tsx';
 import IncidentReport from '../pages/customer/IncidentReport.tsx';
 import ServiceManagement from '../pages/admin/ServiceManagement.tsx';
+import BookingDetail from '../pages/admin/booking/BookingDetail.tsx';
+import { Contact } from 'lucide-react';
 
 export const router = createBrowserRouter([
     // AUTH
@@ -85,6 +87,8 @@ export const router = createBrowserRouter([
             { path: "home", element: <Home /> },
             { path: "newsPage", element: <NewsPage /> },
             { path: "incident-report", element: <IncidentReport /> },
+            { path: '/contact', element: <Contact /> },
+            { path: '/bookingPage', element: <BookingPage /> },
         ],
     },
 
@@ -97,6 +101,7 @@ export const router = createBrowserRouter([
             { path: 'room/:id', element: <RoomDetail /> },
             { path: 'service', element: <ServiceList /> },
             { path: 'bookingPage', element: <BookingPage /> },
+            { path: 'booking/:id', element: <BookingDetail /> },
         ],
     },
 ]);

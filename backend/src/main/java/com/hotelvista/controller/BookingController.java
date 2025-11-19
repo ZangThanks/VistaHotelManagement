@@ -60,4 +60,5 @@ public class BookingController {
     public List<Booking> findAllByRoom_RoomNumber(@PathVariable("roomNumber") String roomNumber) {
         return service.findAllByRoom_RoomNumber(roomNumber);
     }
+
 }

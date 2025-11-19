@@ -1,4 +1,3 @@
-/* eslint-disable */
 import React from 'react';
 import { FaSearch, FaFilter } from 'react-icons/fa';
 

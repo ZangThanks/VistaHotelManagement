@@ -8,7 +8,7 @@ const MainLayout: React.FC = () => {
             <div>
                 <Outlet />
             </div>
-            <div >
+            <div className="relative z-50">
                 <Footer />
             </div>
         </div>
