@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { FaPlus } from "react-icons/fa";
 import useModal from "../../hooks/Checkin/useModal";
 import StatusCards from "../../components/checkin/StatusCards";
@@ -16,6 +16,7 @@ const CheckInManager: React.FC = () => {
   const [activeTab, setActiveTab] = useState("today");
   const [currentDate, setCurrentDate] = useState(new Date());
   const [bookings, setBookings] = useState([]);
+  const [filteredBookings, setFilteredBookings] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const {
@@ -30,23 +31,41 @@ const CheckInManager: React.FC = () => {
   } = useModal();
   const [selectedGuest, setSelectedGuest] = useState(null);
 
-  const fetchedBookings = async () => {
+  const fetchedBookings = useCallback(async () => {
     try {
       setLoading(true);
       const data = await getAll();
-      // console.log("=====Voucher: " + JSON.stringify(data, null, 2));
+      console.log("=====LIST BOOKING: " + JSON.stringify(data, null, 2));
       setBookings(data);
+      filterBookingsByDate(data, currentDate);
       setLoading(false);
       setError("");
     } catch (err) {
       setError("Failed to fetch bookings: " + err);
       setLoading(false);
     }
+  }, [currentDate]);
+
+  //Lọc theo ngày checkin
+  const filterBookingsByDate = (bookingList, date) => {
+    const filtered = bookingList.filter((booking) => {
+      const checkInDate = new Date(booking.checkInDate);
+      return (
+        checkInDate.getDate() === date.getDate() &&
+        checkInDate.getMonth() === date.getMonth() &&
+        checkInDate.getFullYear() === date.getFullYear()
+      );
+    });
+    setFilteredBookings(filtered);
   };
 
   useEffect(() => {
     fetchedBookings();
-  }, []);
+  }, [fetchedBookings]);
+
+  useEffect(() => {
+    filterBookingsByDate(bookings, currentDate);
+  }, [currentDate, bookings]);
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
@@ -172,7 +191,7 @@ const CheckInManager: React.FC = () => {
             {activeTab === "today" && (
               <TodayTab
                 onViewDetails={handleOpenDetailsModal}
-                bookings={bookings}
+                bookings={filteredBookings}
               />
             )}
             {activeTab === "tomorrow" && (
@@ -184,13 +203,13 @@ const CheckInManager: React.FC = () => {
             {activeTab === "early" && (
               <EarlyTab
                 onViewDetails={handleOpenDetailsModal}
-                bookings={bookings}
+                bookings={filteredBookings}
               />
             )}
             {activeTab === "hourly" && (
               <HourlyTab
                 onViewDetails={handleOpenDetailsModal}
-                bookings={bookings}
+                bookings={filteredBookings}
               />
             )}
           </div>

@@ -10,6 +10,7 @@ import {
   FaCog,
   FaChevronRight,
 } from "react-icons/fa";
+import { MdMeetingRoom } from "react-icons/md";
 import { RiInfoCardFill } from "react-icons/ri";
 import { IoBagCheckOutline } from "react-icons/io5";
 import { LuMapPinCheckInside } from "react-icons/lu";
@@ -29,11 +30,20 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
   const collapseTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const menuItems = [
-    { icon: <FaTachometerAlt />, label: "Dashboard", path: "/" },
+    {
+      icon: <FaTachometerAlt />,
+      label: "Dashboard",
+      path: "/admin/dashboard",
+    },
+    {
+      icon: <MdMeetingRoom />,
+      label: "Room Management",
+      path: "/admin/room-management",
+    },
     {
       icon: <RiInfoCardFill />,
       label: "Information Management",
-      path: "/admin/info",
+      path: "/info-management",
     },
     {
       icon: <LuMapPinCheckInside />,
@@ -95,8 +105,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
         damping: 30,
       }}
       className={cn(
-        //linear-gradient(90deg,  45%,  80%)
-        "h-screen bg-gradient-to-br from-[#f8ebd6]  to-[#ffffff] flex flex-col fixed z-30 shadow-lg pt-6",
+        "h-screen bg-gradient-to-br from-[#F8EBD6] via-[#F0E0C0] to-white flex flex-col fixed z-30 shadow-lg pt-6",
         "border-r border-[#D9C9A8]/30",
         className
       )}

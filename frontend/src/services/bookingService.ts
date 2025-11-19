@@ -1,9 +1,10 @@
 import { axiosInstance } from "../config/api";
 import { api } from "./apiClient";
+import type { Booking, RoomBooking } from "../types/Booking";
 
 const ENDPOINT = "/bookings";
 
-export const getAll = async () => {
+export const getAll = async (): Promise<Booking[]> => {
   try {
     const response = await axiosInstance.get(ENDPOINT);
     console.log("=========DATAAAA: " + response.data);
@@ -14,7 +15,7 @@ export const getAll = async () => {
   }
 };
 
-export const getBookingById = async (id: string) => {
+export const getBookingById = async (id: string): Promise<Booking> => {
   try {
     const response = await api.get(`${ENDPOINT}/${id}`);
     return response.data;
@@ -24,7 +25,7 @@ export const getBookingById = async (id: string) => {
   }
 };
 
-export const createBooking = async (booking: object) => {
+export const createBooking = async (booking: object): Promise<Booking> => {
   try {
     const response = await api.post(`${ENDPOINT}/save`, booking);
     return response.data;
@@ -34,7 +35,10 @@ export const createBooking = async (booking: object) => {
   }
 };
 
-export const updateBooking = async (id: string, booking: object) => {
+export const updateBooking = async (
+  id: string,
+  booking: object
+): Promise<Booking> => {
   try {
     const response = await api.put(`${ENDPOINT}/edit/${id}`, booking);
     return response.data;
@@ -43,6 +47,53 @@ export const updateBooking = async (id: string, booking: object) => {
     throw error;
   }
 };
+
+/**
+ * Convert API Booking to UI RoomBooking format for calendar view
+ */
+export const convertToRoomBooking = (booking: Booking): RoomBooking[] => {
+  // Mỗi booking có thể có nhiều phòng trong bookingDetails
+  return booking.bookingDetails.map((detail) => ({
+    id: booking.bookingID,
+    roomId: detail.room.roomNumber || "",
+    roomNumber: detail.room.roomNumber || "",
+    guestName: booking.customer.fullName,
+    checkIn: new Date(booking.checkInDate),
+    checkOut: new Date(booking.checkOutDate),
+    status:
+      booking.status === "CHECKED_IN"
+        ? "checked-in"
+        : booking.status === "CHECKED_OUT"
+        ? "checked-out"
+        : booking.status === "PENDING"
+        ? "pending"
+        : booking.status === "CANCELLED"
+        ? "cancelled"
+        : ("pending" as const),
+    numberOfGuests: booking.numberOfGuests,
+    totalAmount: booking.totalAmount,
+  }));
+};
+
+/**
+ * Get all bookings and convert to RoomBooking format
+ */
+export const getAllRoomBookings = async (): Promise<RoomBooking[]> => {
+  try {
+    const bookings = await getAll();
+    const roomBookings: RoomBooking[] = [];
+
+    bookings.forEach((booking) => {
+      roomBookings.push(...convertToRoomBooking(booking));
+    });
+
+    return roomBookings;
+  } catch (error) {
+    console.error("Error fetching room bookings:", error);
+  }
+  return [];
+}
+
 
 export const searchBookings = async (keyword: string) => {
   try {
@@ -56,6 +107,7 @@ export const searchBookings = async (keyword: string) => {
   }
 };
 
+
 // export const deleteBooking = async (id) => {
 //   try {
 //     await axios.delete(`${API_URL}/${id}`);
@@ -65,3 +117,13 @@ export const searchBookings = async (keyword: string) => {
 //     throw error;
 //   }
 // };
+
+export default {
+  getAll,
+  getBookingById,
+  createBooking,
+  updateBooking,
+  getAllRoomBookings,
+  convertToRoomBooking,
+};
+

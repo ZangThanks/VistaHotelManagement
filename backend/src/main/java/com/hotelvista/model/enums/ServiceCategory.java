@@ -12,11 +12,14 @@ import lombok.ToString;
 public enum ServiceCategory {
     FOOD_BEVERAGE("FOOD BEVERAGE"),
     LAUNDRY("LAUNDRY"),
-
     SPA("SPA"),
     TRANSPORT("TRANSPORT"),
     TOUR("TOUR"),
-    OTHER("OTHER");
+    OTHER("OTHER"),
+    WELLNESS("WELLNESS"),
+    TRANSPORTATION("TRANSPORTATION"),
+    RECREATION("RECREATION");
+}
 
     private String serviceCategory;
 }
