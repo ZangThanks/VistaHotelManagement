@@ -1,6 +1,5 @@
 package com.hotelvista.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hotelvista.model.enums.ReportType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

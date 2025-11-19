@@ -2,8 +2,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import type { Room } from "../../types/Room";
+import Calendar from "../../components/Calendar";
 import RoomCard from "../../components/RoomCard";
-import Calendar from "../../components/common/Calendar";
 
 function formatCurrency(v: number) {
   return new Intl.NumberFormat("vi-VN", {
@@ -135,7 +135,10 @@ export default function RoomDetail() {
       <div className="container mx-auto px-6 py-10">
         {/* back + breadcrumb */}
         <div className="mb-6">
-          <Link to="/rooms" className="text-sm text-gray-600 hover:underline">
+          <Link
+            to="/customer/room"
+            className="text-sm text-gray-600 hover:underline"
+          >
             ← Back to Rooms
           </Link>
         </div>
