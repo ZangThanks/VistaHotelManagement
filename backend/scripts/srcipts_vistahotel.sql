@@ -143,25 +143,25 @@ INSERT INTO booking_details (room_price, booking_id, room_id, review_id) VALUES
 (1500000, 'BOOK004', 'DLX202', NULL);
 -- BOOKING SERVICES
 INSERT INTO booking_services (quantity, service_price, total_amount, booking_id, service_id) VALUES
-                                                                                                 (2, 80000, 160000, 'BOOK001', 'SV001'),
-                                                                                                 (1, 35000, 35000, 'BOOK002', 'SV002'),
-                                                                                                 (3, 50000, 150000, 'BOOK002', 'SV003'),
-                                                                                                 (1, 45000, 45000, 'BOOK003', 'SV004');
+(2, 80000, 160000, 'BOOK001', 'SV001'),
+(1, 35000, 35000, 'BOOK002', 'SV002'),
+(3, 50000, 150000, 'BOOK002', 'SV003'),
+(1, 45000, 45000, 'BOOK003', 'SV004');
 
 -- EARLY CHECKINS
 INSERT INTO early_checkins (request_id, additional_fee, approval_status, request_date, request_time, booking_id) VALUES
-                                                                                                                                  ('EC001', 450000, 'APPROVED', '2024-06-10 08:00:00', '2024-06-10 08:00:00', 'BOOK002'),
-                                                                                                                                  ('EC002', 900000, 'PENDING', '2024-06-15 07:30:00', '2024-06-15 07:30:00', 'BOOK001');
+('EC001', 450000, 'APPROVED', '2024-06-10 08:00:00', '2024-06-10 08:00:00', 'BOOK002'),
+('EC002', 900000, 'PENDING', '2024-06-15 07:30:00', '2024-06-15 07:30:00', 'BOOK001');
 
 -- MAINTENANCE REQUESTS
 INSERT INTO maintenance_requests (request_id, actual_cost, assigned_to, completion_date, description, estimated_time, prioty, request_date, status, booking_id) VALUES
-                                                                                                                                                                    ('MR001', 500000, 'EMP002', '2024-06-01 16:00:00', 'Sửa điều hòa phòng DLX201', 2, 'HIGH', '2024-06-01 14:00:00', 'COMPLETED', 'BOOK002'),
-                                                                                                                                                                    ('MR002', 200000, 'EMP002', NULL, 'Thay bóng đèn phòng STD103', 1, 'LOW', '2024-06-01 15:00:00', 'PENDING', NULL),
-                                                                                                                                                                    ('MR003', 150000, 'EMP004', NULL, 'Sửa vòi sen phòng STE301', 1, 'MEDIUM', '2024-06-02 10:00:00', 'PENDING', 'BOOK003');
+('MR001', 500000, 'EMP002', '2024-06-01 16:00:00', 'Sửa điều hòa phòng DLX201', 2, 'HIGH', '2024-06-01 14:00:00', 'COMPLETED', 'BOOK002'),
+('MR002', 200000, 'EMP002', NULL, 'Thay bóng đèn phòng STD103', 1, 'LOW', '2024-06-01 15:00:00', 'PENDING', NULL),
+('MR003', 150000, 'EMP004', NULL, 'Sửa vòi sen phòng STE301', 1, 'MEDIUM', '2024-06-02 10:00:00', 'PENDING', 'BOOK003');
 
 -- REPORTS
 INSERT INTO reports (report_id, generated_date, report_period, report_type, employee_id) VALUES
-                                                                                             ('REP001', '2024-06-01 18:00:00', '2024-06', 'OCCUPANCY', 'EMP003'),
-                                                                                             ('REP002', '2024-06-01 18:00:00', '2024-06', 'REVENUE', 'EMP003'),
-                                                                                             ('REP003', '2024-06-02 09:00:00', '2024-06', 'MAINTENANCE', 'EMP002'),
-                                                                                             ('REP004', '2024-06-03 10:00:00', '2024-06', 'SERVICE', 'EMP005');
+('REP001', '2024-06-01 18:00:00', '2024-06', 'OCCUPANCY', 'EMP003'),
+('REP002', '2024-06-01 18:00:00', '2024-06', 'REVENUE', 'EMP003'),
+('REP003', '2024-06-02 09:00:00', '2024-06', 'MAINTENANCE', 'EMP002'),
+('REP004', '2024-06-03 10:00:00', '2024-06', 'SERVICE', 'EMP005');

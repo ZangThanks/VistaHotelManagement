@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import {getAllRoom } from '../../services/roomService';
+import {getAllRooms } from '../../services/roomService';
 import type { Room } from '../../types/Room';
 import RoomCard from '../../components/RoomCard';
 import Dropdown from '../../components/Dropdown';
@@ -37,7 +37,7 @@ export default function RoomList() {
     // Fetch rooms
     useEffect(() => {
         setLoading(true);
-          getAllRoom()
+          getAllRooms()
             .then((data) => {
                 setRooms(Array.isArray(data) ? data : []);
                 setError(null);
