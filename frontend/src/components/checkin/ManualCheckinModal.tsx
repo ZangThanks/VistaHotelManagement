@@ -2,33 +2,7 @@ import React, { useState, useEffect } from "react";
 import { FaCalendarCheck, FaWalking, FaClock, FaSearch } from "react-icons/fa";
 import { searchBookings } from "../../services/bookingService";
 import IDScannerModal, { type IDCardInfo } from "./IDScannerModal";
-
-interface Booking {
-  bookingID: string;
-  checkInDate: string;
-  checkOutDate: string;
-  numberOfGuests: number;
-  status: string;
-  specialRequests: string;
-  bookingDate: string;
-  packageType: string;
-  totalAmount: number;
-  paymentStatus: string;
-  customer: {
-    id: string;
-    fullName: string;
-    email: string;
-    phone: string;
-  };
-  bookingDetails: Array<{
-    room: {
-      roomNumber: string;
-      floor: number;
-      status: string;
-    };
-    roomPrice: number;
-  }>;
-}
+import type { Booking } from "../../types/Booking";
 
 function ManualCheckinModal({ isOpen, onClose }) {
   const [activeOption, setActiveOption] = useState("booking");

@@ -136,9 +136,9 @@ INSERT INTO booking_services (quantity, service_price, total_amount, booking_id,
                                                                                                  (1, 45000, 45000, 'BOOK003', 'SV004');
 
 -- EARLY CHECKINS
-INSERT INTO early_checkins (request_id, additional_fee, approval_status, approve_by, request_date, request_time, customer_id) VALUES
-                                                                                                                                  ('EC001', 450000, 'APPROVED', 'EMP001', '2024-06-10 08:00:00', '2024-06-10 08:00:00', 'CUST001'),
-                                                                                                                                  ('EC002', 900000, 'PENDING', NULL, '2024-06-15 07:30:00', '2024-06-15 07:30:00', 'CUST002');
+INSERT INTO early_checkins (request_id, additional_fee, approval_status, request_date, request_time, booking_id) VALUES
+                                                                                                                                  ('EC001', 450000, 'APPROVED', '2024-06-10 08:00:00', '2024-06-10 08:00:00', 'BOOK002'),
+                                                                                                                                  ('EC002', 900000, 'PENDING', '2024-06-15 07:30:00', '2024-06-15 07:30:00', 'BOOK001');
 
 -- MAINTENANCE REQUESTS
 INSERT INTO maintenance_requests (request_id, actual_cost, assigned_to, completion_date, description, estimated_time, prioty, request_date, status, booking_id) VALUES

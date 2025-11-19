@@ -29,6 +29,7 @@ public class ServiceService {
         return repo.findAllByAvailability(availability);
     }
 
+
     public List<com.hotelvista.model.Service> findAllByServiceNameContainingIgnoreCase(String serviceName) {
         return repo.findAllByServiceNameContainingIgnoreCase(serviceName);
     }

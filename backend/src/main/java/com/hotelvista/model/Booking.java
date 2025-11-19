@@ -86,4 +86,7 @@ public class Booking {
     @JsonIgnore
     @OneToMany(mappedBy = "booking")
     private List<MaintenanceRequest> maintenanceRequests;
+
+    @OneToOne
+    private EarlyCheckin earlyCheckin;
 }

@@ -32,13 +32,11 @@ public class EarlyCheckin {
     @Column(name = "additional_fee")
     private double additionalFee;
 
-    @Column(name = "approve_by", columnDefinition = "NVARCHAR(255)")
-    private String approveBy;
-
     @Column(name = "request_date")
     private LocalDateTime requestDate;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "customer_id")
-    private Customer customer;
+    @OneToOne
+    @JoinColumn(name = "booking_id")
+    private Booking booking;
+
 }

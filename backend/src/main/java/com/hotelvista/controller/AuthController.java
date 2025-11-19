@@ -6,31 +6,36 @@ import com.hotelvista.model.Customer;
 import com.hotelvista.model.enums.Gender;
 import com.hotelvista.model.enums.MemberShipLevel;
 import com.hotelvista.model.enums.UserRole;
+import com.hotelvista.security.JwtTokenProvider;
 import com.hotelvista.service.CustomerService;
 import com.hotelvista.util.GenerateIDUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
-import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Controller xử lý các API liên quan đến xác thực và ủy quyền.
+ * Bao gồm đăng ký, đăng nhập, làm mới token và xác thực token.
+ */
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/auth")
 public class AuthController {
 
     private final CustomerService service;
-
     private final PasswordEncoder passwordEncoder;
+    private final JwtTokenProvider jwtTokenProvider;
 
     /**
-     * Đăng ký tài khoản mới.
-     *
+     * API đăng ký tài khoản khách hàng mới.
+     * Thực hiện validate thông tin, kiểm tra trùng lặp và tạo tài khoản mới.
+     * 
      * @param req đối tượng RegisterRequest chứa thông tin đăng ký
-     * @return kết quả đăng ký
+     * @return Map chứa trạng thái, thông báo và dữ liệu người dùng mới (nếu thành công)
      */
     @PostMapping("/register")
     public Map<String, Object> register(@RequestBody RegisterRequest req) {
@@ -61,12 +66,9 @@ public class AuthController {
             return Map.of("success", false, "message", "Tên đăng nhập đã được sử dụng");
         }
 
-        // Sinh mã khách hàng: CUSTddMMyyyyXXXX
-        String newCustomerId = generateCustomerId();
-
         // Tạo customer
         Customer c = new Customer();
-        c.setId(newCustomerId);
+        c.setId(GenerateIDUtil.generateID("CU", 8));
         c.setUserName(req.getUserName());
         c.setFullName(req.getFullName());
         c.setEmail(req.getEmail());
@@ -78,7 +80,6 @@ public class AuthController {
         c.setLoyaltyPoints(0);
         c.setMemberShipLevel(MemberShipLevel.BRONZE);
 
-        // mã hóa password
         String encodedPassword = passwordEncoder.encode(req.getPassword());
         c.setPassword(encodedPassword);
 
@@ -86,40 +87,26 @@ public class AuthController {
         service.save(c);
 
         // Trả về Response
+        Map<String, Object> userData = new HashMap<>();
+        userData.put("id", c.getId());
+        userData.put("userName", c.getUserName());
+        userData.put("fullName", c.getFullName());
+        userData.put("email", c.getEmail());
+        userData.put("phone", c.getPhone());
+
         return Map.of(
                 "success", true,
                 "message", "Đăng ký thành công!",
-                "data", c
+                "data", userData
         );
     }
 
     /**
-     * Sinh mã khách hàng mới theo định dạng CUSTddMMyyyyXXXX
-     *
-     * @return mã khách hàng mới
-     */
-    private String generateCustomerId() {
-        String datePart = new SimpleDateFormat("ddMMyy").format(new Date());
-        String prefix = "CUS" + datePart;
-
-        // Lấy khách hàng cuối cùng trong ngày từ DB
-        Customer lastCustomer = service.findLastCustomerOfDay(prefix);
-        int nextNumber = 1;
-
-        if (lastCustomer != null && lastCustomer.getId() != null) {
-            String lastId = lastCustomer.getId();
-            String numberPart = lastId.substring(lastId.length() - 4); // 4 số cuối
-            nextNumber = Integer.parseInt(numberPart) + 1;
-        }
-
-        return prefix + String.format("%04d", nextNumber);
-    }
-
-    /**
-     * Đăng nhập tài khoản.
-     *
-     * @param req đối tượng LoginRequest chứa thông tin đăng nhập
-     * @return kết quả đăng nhập
+     * API đăng nhập vào hệ thống.
+     * Xác thực thông tin đăng nhập và tạo JWT tokens (access token và refresh token).
+     * 
+     * @param req đối tượng LoginRequest chứa email/phone và mật khẩu
+     * @return Map chứa trạng thái, thông báo, dữ liệu người dùng và tokens (nếu thành công)
      */
     @PostMapping("/login")
     public Map<String, Object> login(@RequestBody LoginRequest req) {
@@ -143,14 +130,124 @@ public class AuthController {
             return Map.of("success", false, "message", "Mật khẩu không đúng");
         }
 
-        // TODO: Tạo JWT token
-        String fakeToken = "FAKE_TOKEN_" + user.getId();
-
-        return Map.of(
-                "success", true,
-                "message", "Đăng nhập thành công",
-                "data", user,
-                "token", fakeToken
+        // Tạo JWT token
+        String accessToken = jwtTokenProvider.generateToken(
+                user.getId(),
+                user.getUserName(),
+                user.getUserRole().toString()
         );
+
+        String refreshToken = jwtTokenProvider.generateRefreshToken(user.getId());
+
+        // Tạo user data response (không bao gồm password)
+        Map<String, Object> userData = new HashMap<>();
+        userData.put("id", user.getId());
+        userData.put("userName", user.getUserName());
+        userData.put("fullName", user.getFullName());
+        userData.put("email", user.getEmail());
+        userData.put("phone", user.getPhone());
+        userData.put("address", user.getAddress());
+        userData.put("gender", user.getGender());
+        userData.put("userRole", user.getUserRole());
+        userData.put("joinedDate", user.getJoinedDate());
+        userData.put("loyaltyPoints", user.getLoyaltyPoints());
+        userData.put("memberShipLevel", user.getMemberShipLevel());
+
+        // Response
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("message", "Đăng nhập thành công");
+        response.put("data", userData);
+        response.put("accessToken", accessToken);
+        response.put("refreshToken", refreshToken);
+
+        return response;
     }
+
+    /**
+     * API làm mới access token bằng refresh token.
+     * Sử dụng khi access token hết hạn để lấy access token mới mà không cần đăng nhập lại.
+     * 
+     * @param authHeader header Authorization chứa refresh token (Bearer token)
+     * @return Map chứa trạng thái, thông báo và access token mới (nếu thành công)
+     */
+    @PostMapping("/refresh-token")
+    public Map<String, Object> refreshToken(@RequestHeader("Authorization") String authHeader) {
+        try {
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                return Map.of("success", false, "message", "Token không hợp lệ");
+            }
+
+            String refreshToken = authHeader.substring(7);
+
+            if (!jwtTokenProvider.validateToken(refreshToken)) {
+                return Map.of("success", false, "message", "Refresh token không hợp lệ");
+            }
+
+            String userId = jwtTokenProvider.getUserIdFromToken(refreshToken);
+            Customer user = service.findById(userId);
+
+            if (user == null) {
+                return Map.of("success", false, "message", "Người dùng không tồn tại");
+            }
+
+            // Tạo access token mới
+            String newAccessToken = jwtTokenProvider.generateToken(
+                    user.getId(),
+                    user.getUserName(),
+                    user.getUserRole().toString()
+            );
+
+            return Map.of(
+                    "success", true,
+                    "message", "Token đã được làm mới",
+                    "token", newAccessToken
+            );
+
+        } catch (Exception e) {
+            return Map.of("success", false, "message", "Không thể làm mới token");
+        }
+    }
+
+    /**
+     * API xác thực tính hợp lệ của token.
+     * Kiểm tra token có còn hiệu lực hay không và trả về thông tin người dùng.
+     * 
+     * @param authHeader header Authorization chứa access token (Bearer token)
+     * @return Map chứa trạng thái, thông báo và thông tin người dùng (nếu token hợp lệ)
+     */
+    @GetMapping("/validate")
+    public Map<String, Object> validateToken(@RequestHeader("Authorization") String authHeader) {
+        try {
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                return Map.of("success", false, "message", "Token không hợp lệ");
+            }
+
+            String token = authHeader.substring(7);
+
+            if (jwtTokenProvider.validateToken(token)) {
+                String userId = jwtTokenProvider.getUserIdFromToken(token);
+                Customer user = service.findById(userId);
+
+                if (user == null) {
+                    return Map.of("success", false, "message", "Người dùng không tồn tại");
+                }
+
+                Map<String, Object> userData = new HashMap<>();
+                userData.put("id", user.getId());
+                userData.put("userName", user.getUserName());
+                userData.put("fullName", user.getFullName());
+                userData.put("email", user.getEmail());
+                userData.put("phone", user.getPhone());
+                userData.put("userRole", user.getUserRole());
+
+                return Map.of("success", false, "message", userData);
+            } else {
+                return Map.of("success", false, "message", "Token đã hết hạn");
+            }
+        } catch (Exception e) {
+            return Map.of("success", false, "message", "Token không hợp lệ");
+        }
+    }
+
 }

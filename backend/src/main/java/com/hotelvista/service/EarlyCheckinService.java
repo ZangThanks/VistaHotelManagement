@@ -33,7 +33,6 @@ public class EarlyCheckinService {
     public EarlyCheckin createPendingRequest(Customer customer, LocalDateTime requestTime, double roomPrice) {
         EarlyCheckin ec = new EarlyCheckin();
         ec.setRequestID(generateRequestId());
-        ec.setCustomer(customer);
         ec.setRequestDate(LocalDateTime.now());
         ec.setRequestTime(requestTime);
         ec.setApprovalStatus(ApprovalStatus.PENDING);
@@ -54,7 +53,6 @@ public class EarlyCheckinService {
         if (ec == null) return null;
 
         ec.setApprovalStatus(status);
-        ec.setApproveBy(staffName);
 
         return repo.save(ec);
     }

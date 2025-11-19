@@ -24,9 +24,8 @@ public class BookingController {
         return service.save(booking);
     }
 
-    @PutMapping("/edit/{id}")
-    public boolean update(@RequestBody Booking booking, @PathVariable("id") String bookingId) {
-        booking.setBookingID(bookingId);
+    @PutMapping("/edit")
+    public boolean update(@RequestBody Booking booking) {
         return service.save(booking);
     }
 
@@ -44,10 +43,5 @@ public class BookingController {
     @GetMapping("/customer/{id}")
     public List<Booking> findAllByCustomer_Id(@PathVariable("id") String customerId) {
         return service.findAllByCustomer_Id(customerId);
-    }
-
-    @GetMapping("/search")
-    public List<Booking> searchBookings(@RequestParam(required = false) String keyword) {
-        return service.searchBookings(keyword);
     }
 }
