@@ -18,4 +18,5 @@ public class MaintenanceRequestDTO {
     private String assignedTo;
     private int estimatedTime;
     private double actualCost;
+    private String imageUrl;
 }

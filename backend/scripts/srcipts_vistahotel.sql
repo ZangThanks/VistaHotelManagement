@@ -2,9 +2,9 @@ USE vistalhoteldbs;
 
 -- ROOM TYPES
 INSERT INTO room_types (room_type_id, area, base_price, description, max_occupancy, type_name) VALUES
-('STD', 22, 900000, 'Phòng tiêu chuẩn, phù hợp cho 2 người, view thành phố', 2, 'Standard'),
-('DLX', 32, 1500000, 'Phòng Deluxe, rộng rãi, ban công, view biển', 3, 'Deluxe'),
-('STE', 50, 3000000, 'Phòng Suite, cao cấp, phòng khách riêng, view toàn cảnh', 4, 'Suite');
+                                                                                                   ('STD', 22, 900000, 'Phòng tiêu chuẩn, phù hợp cho 2 người, view thành phố', 2, 'Standard'),
+                                                                                                   ('DLX', 32, 1500000, 'Phòng Deluxe, rộng rãi, ban công, view biển', 3, 'Deluxe'),
+                                                                                                   ('STE', 50, 3000000, 'Phòng Suite, cao cấp, phòng khách riêng, view toàn cảnh', 4, 'Suite');
 
 -- ROOM TYPE AMENTIES
 INSERT INTO room_type_amenties (room_type_id, amenties) VALUES
@@ -22,14 +22,14 @@ INSERT INTO room_type_amenties (room_type_id, amenties) VALUES
 
 -- ROOMS
 INSERT INTO rooms (room_number, floor, last_cleaned, notes, status, room_type_id) VALUES
-                                                                          ('STD101', 1, '2024-06-01 12:00:00', 'Sạch sẽ', 'AVAILABLE','STD'),
-                                                                          ('STD102', 1, '2024-06-01 13:00:00', 'Sạch sẽ', 'BOOKED', 'STD'),
-                                                                          ('STD103', 1, '2024-06-01 14:00:00', 'Đang bảo trì', 'MAINTENANCE', 'STD'),
-                                                                          ('DLX201', 2, '2024-06-01 11:00:00', 'Sạch sẽ', 'AVAILABLE', 'DLX'),
-                                                                          ('DLX202', 2, '2024-06-01 12:30:00', 'Đang dọn dẹp', 'CLEANING', 'DLX'),
-                                                                          ('DLX203', 2, '2024-06-01 13:30:00', 'Sạch sẽ', 'AVAILABLE', 'DLX'),
-                                                                          ('STE301', 3, '2024-06-01 10:00:00', 'Sạch sẽ', 'AVAILABLE', 'STE'),
-                                                                          ('STE302', 3, '2024-06-01 09:00:00', 'Sạch sẽ', 'BOOKED', 'STE');
+                                                                                      ('STD101', 1, '2024-06-01 12:00:00', 'Sạch sẽ', 'AVAILABLE','STD'),
+                                                                                      ('STD102', 1, '2024-06-01 13:00:00', 'Sạch sẽ', 'BOOKED', 'STD'),
+                                                                                      ('STD103', 1, '2024-06-01 14:00:00', 'Đang bảo trì', 'MAINTENANCE', 'STD'),
+                                                                                      ('DLX201', 2, '2024-06-01 11:00:00', 'Sạch sẽ', 'AVAILABLE', 'DLX'),
+                                                                                      ('DLX202', 2, '2024-06-01 12:30:00', 'Đang dọn dẹp', 'CLEANING', 'DLX'),
+                                                                                      ('DLX203', 2, '2024-06-01 13:30:00', 'Sạch sẽ', 'AVAILABLE', 'DLX'),
+                                                                                      ('STE301', 3, '2024-06-01 10:00:00', 'Sạch sẽ', 'AVAILABLE', 'STE'),
+                                                                                      ('STE302', 3, '2024-06-01 09:00:00', 'Sạch sẽ', 'BOOKED', 'STE');
 -- ROOM IMAGES
 INSERT INTO room_images (room_id, images_url) VALUES
                                                   ('STD101', 'https://pix8.agoda.net/hotelImages/7394456/87898656/a9ed80d50120f6b39035912334b2c530.jpg?ce=0&s=600x'),
@@ -137,8 +137,8 @@ INSERT INTO booking_services (quantity, service_price, total_amount, booking_id,
 
 -- EARLY CHECKINS
 INSERT INTO early_checkins (request_id, additional_fee, approval_status, request_date, request_time, booking_id) VALUES
-                                                                                                                                  ('EC001', 450000, 'APPROVED', '2024-06-10 08:00:00', '2024-06-10 08:00:00', 'BOOK002'),
-                                                                                                                                  ('EC002', 900000, 'PENDING', '2024-06-15 07:30:00', '2024-06-15 07:30:00', 'BOOK001');
+                                                                                                                     ('EC001', 450000, 'APPROVED', '2024-06-10 08:00:00', '2024-06-10 08:00:00', 'BOOK002'),
+                                                                                                                     ('EC002', 900000, 'PENDING', '2024-06-15 07:30:00', '2024-06-15 07:30:00', 'BOOK001');
 
 -- MAINTENANCE REQUESTS
 INSERT INTO maintenance_requests (request_id, actual_cost, assigned_to, completion_date, description, estimated_time, prioty, request_date, status, booking_id) VALUES

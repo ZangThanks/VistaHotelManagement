@@ -7,6 +7,7 @@ import type {
 import FloatingInput from '../common/FloatingInput';
 import Button from '../common/Button';
 import { Upload, X, AlertCircle } from 'lucide-react';
+import { uploadImageToCloudinary } from '../../services/cloudinaryService';
 
 interface IncidentReportFormProps {
     bookingId: string;
@@ -66,7 +67,7 @@ const IncidentReportForm: React.FC<IncidentReportFormProps> = ({
         description: '',
     });
 
-    const [, setImageFile] = useState<File | null>(null);
+    const [imageFile, setImageFile] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
@@ -149,7 +150,30 @@ const IncidentReportForm: React.FC<IncidentReportFormProps> = ({
         setIsSubmitting(true);
 
         try {
-            await onSubmit(formData);
+            // Nếu có ảnh, upload lên Cloudinary trước
+            let imageUrl: string | undefined;
+            if (imageFile) {
+                try {
+                    const uploadResult = await uploadImageToCloudinary(
+                        imageFile,
+                    );
+                    imageUrl = uploadResult.secure_url;
+                    console.log('✅ Đã upload ảnh lên Cloudinary:', imageUrl);
+                } catch (uploadError) {
+                    console.error('❌ Lỗi upload ảnh:', uploadError);
+                    setErrors({
+                        submit: 'Không thể tải ảnh lên. Vui lòng thử lại.',
+                    });
+                    setIsSubmitting(false);
+                    return;
+                }
+            }
+
+            // Gửi form data cùng với imageUrl
+            await onSubmit({
+                ...formData,
+                imageUrl,
+            });
         } catch (error) {
             console.error('Error submitting incident report:', error);
             setErrors({

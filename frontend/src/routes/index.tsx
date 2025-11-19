@@ -23,7 +23,7 @@ import DailyWorkStatistics from "../pages/employee/DailyWorkStatistics";
 
 // Admin pages
 import BookingPage from "../pages/admin/booking/BookingPage";
-import InfoManagement from "../pages/admin/infomation/InfoManagement";
+import InfoManagement from "../pages/admin/infomation/NewsList";
 import NewsList from "../pages/admin/infomation/NewsList";
 import ServiceManagement from "../pages/admin/ServiceManagement";
 import Dashboard from "../pages/admin/dashboard/Dashboard";

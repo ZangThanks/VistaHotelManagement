@@ -34,6 +34,7 @@ const mapMaintenanceToIncident = (
         priority: maintenance.prioty,
         title: title,
         description: description,
+        imageUrl: maintenance.imageUrl, // URL ảnh từ Cloudinary
         status: maintenance.status,
         reportedDate: maintenance.requestDate,
         resolvedDate: maintenance.completionDate,
@@ -144,6 +145,7 @@ export const incidentService = {
             status: 'PENDING',
             bookingId: formData.bookingId,
             estimatedTime: 0,
+            imageUrl: formData.imageUrl, // Gửi URL ảnh từ Cloudinary
         };
 
         console.log('📤 Sending incident to backend:', requestData);

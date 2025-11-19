@@ -30,6 +30,7 @@ export interface MaintenanceRequest {
     completionDate?: string; // LocalDateTime from backend
     estimatedTime?: number;
     actualCost?: number;
+    imageUrl?: string; // URL ảnh từ Cloudinary
     bookingId?: string; // Direct bookingId field (when booking object not populated)
     booking?: {
         bookingID: string;
@@ -51,6 +52,7 @@ export interface IncidentReport {
     priority: IncidentPriority;
     title: string; // Extracted from description
     description: string;
+    imageUrl?: string; // URL ảnh từ Cloudinary
     status: IncidentStatus;
     reportedDate: string;
     resolvedDate?: string;
@@ -73,6 +75,7 @@ export interface CreateIncidentRequest {
     status?: IncidentStatus;
     bookingId: string; // Required by backend
     estimatedTime?: number;
+    imageUrl?: string; // URL ảnh từ Cloudinary
 }
 
 // Frontend form data
@@ -82,4 +85,5 @@ export interface IncidentFormData {
     priority: IncidentPriority;
     title: string;
     description: string;
+    imageUrl?: string; // URL ảnh từ Cloudinary
 }

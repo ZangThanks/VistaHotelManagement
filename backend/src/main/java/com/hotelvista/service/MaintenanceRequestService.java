@@ -71,6 +71,7 @@ public class MaintenanceRequestService {
         request.setAssignedTo(dto.getAssignedTo());
         request.setEstimatedTime(dto.getEstimatedTime());
         request.setActualCost(dto.getActualCost());
+        request.setImageUrl(dto.getImageUrl());
         request.setRequestDate(LocalDateTime.now());
         
         // Convert bookingId string to Booking object

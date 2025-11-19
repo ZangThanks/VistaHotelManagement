@@ -175,7 +175,7 @@ const IncidentManagement: React.FC = () => {
             </div>
 
             {/* Statistics Cards */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                     <div className="bg-white rounded-lg shadow-sm p-5 border border-gray-200">
                         <div className="flex items-center justify-between">
@@ -316,17 +316,20 @@ const IncidentManagement: React.FC = () => {
                 ) : (
                     <div className="bg-white rounded-lg shadow-sm overflow-hidden">
                         <div className="overflow-x-auto">
-                            <table className="w-full">
+                            <table className="w-full min-w-[1400px]">
                                 <thead className="bg-gray-50 border-b border-gray-200">
                                     <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[180px]">
                                             Mã sự cố
                                         </th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             Khách hàng
                                         </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[350px]">
                                             Tiêu đề
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Hình ảnh
                                         </th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             Độ ưu tiên
@@ -365,10 +368,10 @@ const IncidentManagement: React.FC = () => {
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4">
-                                                <div className="text-sm text-gray-900 font-medium max-w-xs truncate">
+                                                <div className="text-sm text-gray-900 font-medium min-w-[250px] max-w-md">
                                                     {incident.title}
                                                 </div>
-                                                <div className="text-xs text-gray-500 max-w-xs truncate flex items-center gap-1">
+                                                <div className="text-xs text-gray-500 min-w-[250px] max-w-md line-clamp-2">
                                                     {incident.description}
                                                 </div>
                                                 {incident.assignedTo && (
@@ -377,6 +380,28 @@ const IncidentManagement: React.FC = () => {
                                                             💬 Đã phản hồi
                                                         </span>
                                                     </div>
+                                                )}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                {incident.imageUrl ? (
+                                                    <a
+                                                        href={incident.imageUrl}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="block"
+                                                    >
+                                                        <img
+                                                            src={
+                                                                incident.imageUrl
+                                                            }
+                                                            alt="Incident"
+                                                            className="w-16 h-16 object-cover rounded-lg hover:scale-110 transition-transform cursor-pointer border border-gray-200"
+                                                        />
+                                                    </a>
+                                                ) : (
+                                                    <span className="text-xs text-gray-400 italic">
+                                                        Không có ảnh
+                                                    </span>
                                                 )}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
