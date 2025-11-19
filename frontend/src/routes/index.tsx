@@ -29,6 +29,9 @@ import RoomDetail from "../pages/customer/RoomDetail.tsx";
 import CustomerLayout from "../layouts/CustomerLayout.tsx";
 import DailyWorkStatistics from '../pages/employee/DailyWorkStatistics.tsx';
 import NewsList from '../pages/admin/infomation/NewsList.tsx';
+import ServiceList from '../pages/customer/ServiceList.tsx';
+import IncidentReport from '../pages/customer/IncidentReport.tsx';
+import ServiceManagement from '../pages/admin/ServiceManagement.tsx';
 
 export const router = createBrowserRouter([
     // AUTH
@@ -65,7 +68,7 @@ export const router = createBrowserRouter([
             { path: "checkin", element: <CheckInManager /> },
             { path: "checkout", element: <CheckOutManager /> },
             { path: "info", element: <NewsList /> }, // NewsList thay InfoManagement
-            { path: "info/manage", element: <InfoManagement /> }, // nếu bạn cần InfoManagement
+            // { path: "info/manage", element: <InfoManagement /> }, // nếu bạn cần InfoManagement
             { path: "info/:id", element: <NewsDetail /> },
             { path: "services", element: <ServiceManagement /> },
             { path: "room-management", element: <RoomManagement /> },

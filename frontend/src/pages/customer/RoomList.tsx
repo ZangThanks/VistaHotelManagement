@@ -5,6 +5,7 @@ import RoomCard from '../../components/RoomCard';
 import Dropdown from '../../components/Dropdown';
 import RoomCompareBar from '../../components/customer/RoomCompareBar';
 import RoomCompareModal from '../../components/customer/RoomCompareModal';
+import Header from '../../components/Header';
 
 export default function RoomList() {
     const [rooms, setRooms] = useState<Room[]>([]);
