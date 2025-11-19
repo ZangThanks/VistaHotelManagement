@@ -108,9 +108,7 @@ function ManualCheckinModal({ isOpen, onClose }) {
     setIsSearching(true);
     try {
       const results = await searchBookings(searchKeyword);
-      // console.log("BOOKING SEARCH: ", results);
       setSearchResults(results);
-
       if (results.length === 0) {
         alert("Không tìm thấy booking");
       }
@@ -122,7 +120,6 @@ function ManualCheckinModal({ isOpen, onClose }) {
     }
   };
 
-  // Handle Enter key press in search input
   const handleSearchKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       handleSearchBookings();
@@ -337,14 +334,18 @@ function ManualCheckinModal({ isOpen, onClose }) {
                                 {booking.customer.fullName}
                               </td>
                               <td className="py-3 px-4">
-                                {booking.customer.phone}
+                                {booking.customer.fullName}
                               </td>
                               <td className="py-3 px-4">
                                 {formatDate(booking.checkInDate)}
                               </td>
                               <td className="py-3 px-4">
-                                {booking.bookingDetails
-                                  .map((detail) => detail.room.roomNumber)
+                                {(booking.bookingDetails ?? [])
+                                  .map(
+                                    (detail) =>
+                                      detail.room?.roomNumber ||
+                                      detail.room?.roomNumber
+                                  )
                                   .join(", ")}
                               </td>
                               <td className="py-3 px-4">
