@@ -10,7 +10,7 @@ import {
     createBooking,
     generateBookingID,
 } from '../../services/bookingService';
-import { getById } from '../../services/customerService';
+import { getById } from '../../services/CustomerService';
 import {
     getByCustomerIdAndStateTrue,
     saveCustomerVoucher,

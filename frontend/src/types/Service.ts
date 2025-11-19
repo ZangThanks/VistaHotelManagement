@@ -1,4 +1,10 @@
-export type ServiceCategory = 'FOOD BEVERAGE' | 'LAUNDRY' | string;
+export type ServiceCategory =
+    | 'FOOD_BEVERAGE'
+    | 'WELLNESS'
+    | 'TRANSPORTATION'
+    | 'RECREATION'
+    | 'LAUNDRY'
+    | string;
 
 export interface Service {
     serviceID: string;
@@ -6,7 +12,8 @@ export interface Service {
     description: string;
     price: number;
     serviceCategory: ServiceCategory;
-    available: boolean;
+    availability: boolean;
     images: string[] | null;
+    serviceHours?: string | null;
     bookingServices: string[] | null;
 }

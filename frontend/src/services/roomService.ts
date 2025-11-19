@@ -80,7 +80,7 @@ export const deleteRoom = async (id: string) => {
 // Lấy danh sách loại phòng
 export const getAllRoomTypes = async () => {
     try {
-        const response = await api.get('/room-type');
+        const response = await api.get('/room-types');
         return response.data;
     } catch (error) {
         console.error('Error fetching room types:', error);

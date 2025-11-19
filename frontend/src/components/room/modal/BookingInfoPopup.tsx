@@ -8,7 +8,7 @@ import {
   FaDollarSign,
 } from "react-icons/fa";
 import type { Room } from "../view/RoomTableView";
-import type { RoomBooking } from "../view/RoomCalendarView";
+import type { RoomBooking } from '../../../types/Booking';
 import { formatVND } from "../../../utils/formatters";
 
 interface BookingInfoPopupProps {
@@ -45,6 +45,11 @@ const BookingInfoPopup: React.FC<BookingInfoPopupProps> = ({
       label: "Cancelled",
       bg: "bg-gray-400",
       text: "text-gray-900",
+    },
+    confirmed: {
+      label: "Confirmed",
+      bg: "bg-blue-500",
+      text: "text-blue-50",
     },
   };
 

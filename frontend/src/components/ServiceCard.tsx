@@ -1,7 +1,6 @@
 import React from 'react';
 import type { Service } from '../types/Service';
 
-
 const ServiceCard: React.FC<{ service: Service }> = ({ service }) => {
     return (
         <article className="service-card bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow duration-300">
@@ -14,7 +13,9 @@ const ServiceCard: React.FC<{ service: Service }> = ({ service }) => {
                 className="w-full h-40 object-cover"
             />
             <div className="p-4">
-                <h4 className="text-base font-semibold mb-2">{service.serviceName}</h4>
+                <h4 className="text-base font-semibold mb-2">
+                    {service.serviceName}
+                </h4>
                 {/* <div className="flex items-center gap-3 text-xs mb-2">
                     <span className="flex items-center text-yellow-500">
                         ⭐ {service.rating ?? '—'}
