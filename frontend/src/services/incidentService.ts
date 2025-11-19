@@ -22,11 +22,14 @@ const mapMaintenanceToIncident = (
             ? descLines.slice(1).join('\n')
             : maintenance.description;
 
+    // Try to get bookingId from root level first, then from booking object
+    const bookingId = maintenance.bookingId || maintenance.booking?.bookingID;
+
     return {
         id: maintenance.requestID,
         customerId: maintenance.booking?.customer?.id || '',
         customerName: maintenance.booking?.customer?.fullName || 'N/A',
-        bookingId: maintenance.booking?.bookingID,
+        bookingId: bookingId,
         category: 'OTHER', // Default category since backend doesn't have category field
         priority: maintenance.prioty,
         title: title,
@@ -56,16 +59,66 @@ export const incidentService = {
         return response.data.map(mapMaintenanceToIncident);
     },
 
-    // Get incidents for a specific customer (filter by customer ID)
+    // Get incidents for a specific customer (filter by customer ID or booking ID)
     getCustomerIncidents: async (
         customerId: string,
+        bookingId?: string,
     ): Promise<IncidentReport[]> => {
         const response = await api.get<MaintenanceRequest[]>(
             MAINTENANCE_BASE_URL,
         );
-        const filtered = response.data.filter(
-            (req) => req.booking?.customer?.id === customerId,
+
+        console.log('🔍 Total incidents from API:', response.data.length);
+        console.log(
+            '🔍 Looking for customer ID:',
+            customerId,
+            'or booking ID:',
+            bookingId,
         );
+        console.log(
+            '🔍 All incidents:',
+            response.data.map((req) => ({
+                id: req.requestID,
+                bookingId: req.booking?.bookingID,
+                customerId: req.booking?.customer?.id,
+                customerName: req.booking?.customer?.fullName,
+            })),
+        );
+
+        // Filter by customer ID OR booking ID (fallback if customer data not populated)
+        const filtered = response.data.filter((req) => {
+            const matchesCustomer = req.booking?.customer?.id === customerId;
+            // Check both root level bookingId and nested booking.bookingID
+            const reqBookingId = req.bookingId || req.booking?.bookingID;
+            const matchesBooking = bookingId
+                ? reqBookingId === bookingId
+                : false;
+
+            console.log('🔍 Checking incident:', {
+                requestId: req.requestID,
+                rootBookingId: req.bookingId,
+                nestedBookingId: req.booking?.bookingID,
+                finalBookingId: reqBookingId,
+                searchBookingId: bookingId,
+                bookingIdMatch: matchesBooking,
+                customerId: req.booking?.customer?.id,
+                customerIdMatch: matchesCustomer,
+                willInclude: matchesCustomer || matchesBooking,
+            });
+
+            return matchesCustomer || matchesBooking;
+        });
+
+        console.log('🔍 Filtered incidents:', filtered.length);
+        console.log(
+            '🔍 Filtered data:',
+            filtered.map((req) => ({
+                id: req.requestID,
+                bookingId: req.booking?.bookingID,
+                customerId: req.booking?.customer?.id,
+            })),
+        );
+
         return filtered.map(mapMaintenanceToIncident);
     },
 
@@ -93,11 +146,25 @@ export const incidentService = {
             estimatedTime: 0,
         };
 
+        console.log('📤 Sending incident to backend:', requestData);
+
         const response = await api.post<MaintenanceRequest>(
-            `${MAINTENANCE_BASE_URL}/save`,
+            `${MAINTENANCE_BASE_URL}/create`,
             requestData,
         );
-        return mapMaintenanceToIncident(response.data);
+
+        console.log('📥 Backend response:', response.data);
+
+        const incident = mapMaintenanceToIncident(response.data);
+
+        // IMPORTANT: Backend might not return booking object, so preserve bookingId
+        if (!incident.bookingId && formData.bookingId) {
+            console.log('⚠️ Backend did not return bookingId, using form data');
+            incident.bookingId = formData.bookingId;
+        }
+
+        console.log('✅ Final incident object:', incident);
+        return incident;
     },
 
     // Update incident status and notes

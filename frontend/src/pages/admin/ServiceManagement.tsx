@@ -1,4 +1,15 @@
 import React, { useEffect, useState } from 'react';
+import {
+    Plus,
+    Search,
+    Edit,
+    Sparkles,
+    Coffee,
+    Droplets,
+    Car,
+    Map,
+    Package,
+} from 'lucide-react';
 import type { Service } from '../../services/serviceService';
 import { getAll } from '../../services/serviceService';
 import AddServiceModal from '../../components/service/AddServiceModal';
@@ -96,6 +107,30 @@ const ServiceManagement: React.FC = () => {
         return labels[category] || category;
     };
 
+    const getCategoryIcon = (category: string): React.ReactNode => {
+        const icons: Record<string, React.ReactNode> = {
+            LAUNDRY: <Droplets className="w-5 h-5" />,
+            FOOD_BEVERAGE: <Coffee className="w-5 h-5" />,
+            SPA: <Sparkles className="w-5 h-5" />,
+            TRANSPORT: <Car className="w-5 h-5" />,
+            TOUR: <Map className="w-5 h-5" />,
+            OTHER: <Package className="w-5 h-5" />,
+        };
+        return icons[category] || <Package className="w-5 h-5" />;
+    };
+
+    const getCategoryColor = (category: string) => {
+        const colors: Record<string, string> = {
+            LAUNDRY: 'bg-sky-100 text-sky-700 border-sky-200',
+            FOOD_BEVERAGE: 'bg-orange-100 text-orange-700 border-orange-200',
+            SPA: 'bg-rose-100 text-rose-700 border-rose-200',
+            TRANSPORT: 'bg-emerald-100 text-emerald-700 border-emerald-200',
+            TOUR: 'bg-violet-100 text-violet-700 border-violet-200',
+            OTHER: 'bg-gray-100 text-gray-700 border-gray-200',
+        };
+        return colors[category] || colors.OTHER;
+    };
+
     // Tính toán phân trang
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -107,296 +142,386 @@ const ServiceManagement: React.FC = () => {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center h-screen">
-                <div className="text-xl text-gray-600">Đang tải...</div>
+            <div className="flex flex-col items-center justify-center h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50">
+                <div className="relative">
+                    <div className="w-16 h-16 border-4 border-[#CCBDA3]/30 border-t-[#CCBDA3] rounded-full animate-spin"></div>
+                    <Sparkles className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-6 h-6 text-[#CCBDA3] animate-pulse" />
+                </div>
+                <p className="mt-4 text-lg text-gray-700 font-medium">
+                    Đang tải...
+                </p>
             </div>
         );
     }
 
     return (
-        <div className="p-6 bg-gray-50 min-h-screen">
-            {/* Header */}
-            <div className="mb-6">
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                    Quản Lý Dịch Vụ
-                </h1>
-                <p className="text-gray-600">
-                    Thêm mới và cập nhật thông tin dịch vụ khách sạn
-                </p>
-            </div>
-
-            {error && (
-                <div className="mb-4 p-4 bg-red-100 text-red-700 rounded-lg">
-                    {error}
-                </div>
-            )}
-
-            {/* Filters and Search */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
-                <div className="flex flex-wrap gap-4 items-center justify-between">
-                    <div className="flex gap-2 flex-wrap">
-                        <button
-                            onClick={() => setCategoryFilter('ALL')}
-                            className={`px-4 py-2 rounded-lg font-medium transition ${
-                                categoryFilter === 'ALL'
-                                    ? 'bg-blue-600 text-white'
-                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                            }`}
-                        >
-                            Tất cả
-                        </button>
-                        <button
-                            onClick={() => setCategoryFilter('LAUNDRY')}
-                            className={`px-4 py-2 rounded-lg font-medium transition ${
-                                categoryFilter === 'LAUNDRY'
-                                    ? 'bg-blue-600 text-white'
-                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                            }`}
-                        >
-                            Giặt là
-                        </button>
-                        <button
-                            onClick={() => setCategoryFilter('FOOD_BEVERAGE')}
-                            className={`px-4 py-2 rounded-lg font-medium transition ${
-                                categoryFilter === 'FOOD_BEVERAGE'
-                                    ? 'bg-blue-600 text-white'
-                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                            }`}
-                        >
-                            Đồ ăn & Thức uống
-                        </button>
-                        <button
-                            onClick={() => setCategoryFilter('SPA')}
-                            className={`px-4 py-2 rounded-lg font-medium transition ${
-                                categoryFilter === 'SPA'
-                                    ? 'bg-blue-600 text-white'
-                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                            }`}
-                        >
-                            Spa
-                        </button>
-                        <button
-                            onClick={() => setCategoryFilter('TRANSPORT')}
-                            className={`px-4 py-2 rounded-lg font-medium transition ${
-                                categoryFilter === 'TRANSPORT'
-                                    ? 'bg-blue-600 text-white'
-                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                            }`}
-                        >
-                            Vận chuyển
-                        </button>
-                        <button
-                            onClick={() => setCategoryFilter('TOUR')}
-                            className={`px-4 py-2 rounded-lg font-medium transition ${
-                                categoryFilter === 'TOUR'
-                                    ? 'bg-blue-600 text-white'
-                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                            }`}
-                        >
-                            Tour du lịch
-                        </button>
-                    </div>
-
-                    <div className="flex gap-3">
-                        <input
-                            type="text"
-                            placeholder="Tìm kiếm dịch vụ..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-64"
-                        />
-                        <button
-                            onClick={() => setShowAddModal(true)}
-                            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium flex items-center gap-2"
-                        >
-                            <i className="fa-solid fa-plus"></i>
-                            Thêm Dịch Vụ
-                        </button>
+        <div className="min-h-screen bg-gradient-to-br from-amber-50 via-cream-50 to-orange-50">
+            <div className="p-6 lg:p-8">
+                {/* Header with Gradient */}
+                <div className="mb-8">
+                    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#CCBDA3] via-[#b8a88a] to-[#a89976] p-8 shadow-xl">
+                        <div className="absolute inset-0 bg-black opacity-5"></div>
+                        <div className="relative z-10">
+                            <div className="flex items-center gap-3 mb-3">
+                                <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
+                                    <Sparkles className="w-8 h-8 text-white" />
+                                </div>
+                                <h1 className="text-4xl font-bold text-white">
+                                    Quản Lý Dịch Vụ
+                                </h1>
+                            </div>
+                            <p className="text-white/90 text-lg">
+                                Thêm mới và cập nhật thông tin dịch vụ khách sạn
+                            </p>
+                            <div className="mt-4 flex items-center gap-6">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                                    <span className="text-white/80 text-sm">
+                                        {services.length} dịch vụ
+                                    </span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <div
+                                        className="w-2 h-2 bg-white rounded-full animate-pulse"
+                                        style={{ animationDelay: '0.2s' }}
+                                    ></div>
+                                    <span className="text-white/80 text-sm">
+                                        {filteredServices.length} hiển thị
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        {/* Decorative elements */}
+                        <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
+                        <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
                     </div>
                 </div>
-            </div>
 
-            {/* Service Table */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                <table className="w-full">
-                    <thead className="bg-gray-50 border-b border-gray-200">
-                        <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Mã DV
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Tên Dịch Vụ
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Danh Mục
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Giá
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Giờ Hoạt Động
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Trạng Thái
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Hành Động
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                        {filteredServices.length === 0 ? (
-                            <tr>
-                                <td
-                                    colSpan={7}
-                                    className="px-6 py-8 text-center text-gray-500"
-                                >
-                                    Không tìm thấy dịch vụ nào
-                                </td>
-                            </tr>
-                        ) : (
-                            currentItems.map((service) => (
-                                <tr
-                                    key={service.serviceID}
-                                    className="hover:bg-gray-50"
-                                >
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                        {service.serviceID}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        {service.serviceName}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                                        {getCategoryLabel(
-                                            service.serviceCategory,
-                                        )}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-blue-600">
-                                        {formatPrice(service.price)}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                                        {service.serviceHours || 'N/A'}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                                        {service.availability ? (
-                                            <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">
-                                                Khả dụng
-                                            </span>
-                                        ) : (
-                                            <span className="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium">
-                                                Không khả dụng
-                                            </span>
-                                        )}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                                        <button
-                                            onClick={() =>
-                                                handleEditClick(service)
-                                            }
-                                            className="text-blue-600 hover:text-blue-800 font-medium"
-                                        >
-                                            <i className="fa-solid fa-edit mr-1"></i>
-                                            Sửa
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))
-                        )}
-                    </tbody>
-                </table>
-            </div>
+                {error && (
+                    <div className="mb-4 p-4 bg-red-100 text-red-700 rounded-lg">
+                        {error}
+                    </div>
+                )}
 
-            {/* Pagination */}
-            {filteredServices.length > 0 && (
-                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mt-4">
-                    <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-700">
-                            Hiển thị{' '}
-                            <span className="font-bold text-gray-900">
-                                {indexOfFirstItem + 1}
-                            </span>{' '}
-                            -{' '}
-                            <span className="font-bold text-gray-900">
-                                {Math.min(
-                                    indexOfLastItem,
-                                    filteredServices.length,
-                                )}
-                            </span>{' '}
-                            / {filteredServices.length} dịch vụ
-                        </span>
+                {/* Filters and Search */}
+                <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-[#CCBDA3]/20 p-6 mb-6">
+                    <div className="flex flex-wrap gap-4 items-center justify-between">
+                        <div className="flex gap-3 flex-wrap">
+                            <button
+                                onClick={() => setCategoryFilter('ALL')}
+                                className={`group px-5 py-2.5 rounded-xl font-medium transition-all duration-300 flex items-center gap-2 ${
+                                    categoryFilter === 'ALL'
+                                        ? 'bg-gradient-to-r from-[#CCBDA3] to-[#b8a88a] text-white shadow-lg scale-105'
+                                        : 'bg-amber-50 text-gray-700 hover:bg-amber-100 hover:scale-105'
+                                }`}
+                            >
+                                <Package className="w-4 h-4" />
+                                Tất cả
+                            </button>
+                            <button
+                                onClick={() => setCategoryFilter('LAUNDRY')}
+                                className={`group px-5 py-2.5 rounded-xl font-medium transition-all duration-300 flex items-center gap-2 ${
+                                    categoryFilter === 'LAUNDRY'
+                                        ? 'bg-sky-600 text-white shadow-lg scale-105'
+                                        : 'bg-sky-50 text-sky-700 hover:bg-sky-100 hover:scale-105'
+                                }`}
+                            >
+                                <Droplets className="w-4 h-4" />
+                                Giặt là
+                            </button>
+                            <button
+                                onClick={() =>
+                                    setCategoryFilter('FOOD_BEVERAGE')
+                                }
+                                className={`group px-5 py-2.5 rounded-xl font-medium transition-all duration-300 flex items-center gap-2 ${
+                                    categoryFilter === 'FOOD_BEVERAGE'
+                                        ? 'bg-orange-600 text-white shadow-lg scale-105'
+                                        : 'bg-orange-50 text-orange-700 hover:bg-orange-100 hover:scale-105'
+                                }`}
+                            >
+                                <Coffee className="w-4 h-4" />
+                                Đồ ăn & Thức uống
+                            </button>
+                            <button
+                                onClick={() => setCategoryFilter('SPA')}
+                                className={`group px-5 py-2.5 rounded-xl font-medium transition-all duration-300 flex items-center gap-2 ${
+                                    categoryFilter === 'SPA'
+                                        ? 'bg-rose-600 text-white shadow-lg scale-105'
+                                        : 'bg-rose-50 text-rose-700 hover:bg-rose-100 hover:scale-105'
+                                }`}
+                            >
+                                <Sparkles className="w-4 h-4" />
+                                Spa
+                            </button>
+                            <button
+                                onClick={() => setCategoryFilter('TRANSPORT')}
+                                className={`group px-5 py-2.5 rounded-xl font-medium transition-all duration-300 flex items-center gap-2 ${
+                                    categoryFilter === 'TRANSPORT'
+                                        ? 'bg-emerald-600 text-white shadow-lg scale-105'
+                                        : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:scale-105'
+                                }`}
+                            >
+                                <Car className="w-4 h-4" />
+                                Vận chuyển
+                            </button>
+                            <button
+                                onClick={() => setCategoryFilter('TOUR')}
+                                className={`group px-5 py-2.5 rounded-xl font-medium transition-all duration-300 flex items-center gap-2 ${
+                                    categoryFilter === 'TOUR'
+                                        ? 'bg-violet-600 text-white shadow-lg scale-105'
+                                        : 'bg-violet-50 text-violet-700 hover:bg-violet-100 hover:scale-105'
+                                }`}
+                            >
+                                <Map className="w-4 h-4" />
+                                Tour du lịch
+                            </button>
+                        </div>
 
-                        {/* Phân trang */}
-                        {totalPages > 1 && (
-                            <div className="flex items-center gap-2">
-                                <button
-                                    onClick={() =>
-                                        setCurrentPage((prev) =>
-                                            Math.max(1, prev - 1),
-                                        )
+                        <div className="flex gap-3">
+                            <div className="relative">
+                                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                <input
+                                    type="text"
+                                    placeholder="Tìm kiếm dịch vụ..."
+                                    value={searchTerm}
+                                    onChange={(e) =>
+                                        setSearchTerm(e.target.value)
                                     }
-                                    disabled={currentPage === 1}
-                                    className={`w-10 h-10 rounded-full flex items-center justify-center transition border-2 text-lg ${
-                                        currentPage === 1
-                                            ? 'bg-white border-gray-300 text-gray-400 cursor-not-allowed'
-                                            : 'bg-white border-white text-gray-900 hover:bg-gray-100'
-                                    }`}
-                                >
-                                    ‹
-                                </button>
+                                    className="pl-12 pr-4 py-3 border-2 border-[#CCBDA3]/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#CCBDA3] focus:border-transparent w-64 transition-all duration-300"
+                                />
+                            </div>
+                            <button
+                                onClick={() => setShowAddModal(true)}
+                                className="px-6 py-3 bg-gradient-to-r from-[#CCBDA3] to-[#b8a88a] text-white rounded-xl hover:shadow-lg hover:scale-105 font-medium flex items-center gap-2 transition-all duration-300"
+                            >
+                                <Plus className="w-5 h-5" />
+                                Thêm Dịch Vụ
+                            </button>
+                        </div>
+                    </div>
+                </div>
 
-                                {Array.from(
-                                    { length: totalPages },
-                                    (_, i) => i + 1,
-                                ).map((page) => (
+                {/* Service Table */}
+                <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-[#CCBDA3]/20 overflow-hidden">
+                    <div className="overflow-x-auto">
+                        <table className="w-full min-w-[1200px]">
+                            <thead className="bg-gradient-to-r from-[#CCBDA3]/20 to-[#b8a88a]/20 border-b-2 border-[#CCBDA3]/30">
+                                <tr>
+                                    <th className="px-8 py-5 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">
+                                        Mã DV
+                                    </th>
+                                    <th className="px-8 py-5 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">
+                                        Tên Dịch Vụ
+                                    </th>
+                                    <th className="px-8 py-5 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">
+                                        Danh Mục
+                                    </th>
+                                    <th className="px-8 py-5 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">
+                                        Giá
+                                    </th>
+                                    <th className="px-8 py-5 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">
+                                        Giờ Hoạt Động
+                                    </th>
+                                    <th className="px-8 py-5 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">
+                                        Trạng Thái
+                                    </th>
+                                    <th className="px-8 py-5 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">
+                                        Hành Động
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody className="bg-white/50 divide-y divide-gray-100">
+                                {filteredServices.length === 0 ? (
+                                    <tr>
+                                        <td
+                                            colSpan={7}
+                                            className="px-8 py-16 text-center"
+                                        >
+                                            <div className="flex flex-col items-center justify-center">
+                                                <div className="w-20 h-20 bg-[#CCBDA3]/10 rounded-full flex items-center justify-center mb-4">
+                                                    <Package className="w-10 h-10 text-[#CCBDA3]" />
+                                                </div>
+                                                <p className="text-gray-600 text-xl font-medium">
+                                                    Không tìm thấy dịch vụ nào
+                                                </p>
+                                                <p className="text-gray-400 text-base mt-2">
+                                                    Thử điều chỉnh bộ lọc của
+                                                    bạn
+                                                </p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ) : (
+                                    currentItems.map((service, index) => (
+                                        <tr
+                                            key={service.serviceID}
+                                            className="hover:bg-white/80 transition-all duration-200 group"
+                                            style={{
+                                                animationDelay: `${
+                                                    index * 50
+                                                }ms`,
+                                            }}
+                                        >
+                                            <td className="px-8 py-5 whitespace-nowrap">
+                                                <span className="text-base font-bold text-gray-900 bg-gradient-to-r from-[#CCBDA3]/20 to-[#b8a88a]/20 px-4 py-2 rounded-lg border border-[#CCBDA3]/30">
+                                                    #{service.serviceID}
+                                                </span>
+                                            </td>
+                                            <td className="px-8 py-5 whitespace-nowrap">
+                                                <span className="text-base font-semibold text-gray-900">
+                                                    {service.serviceName}
+                                                </span>
+                                            </td>
+                                            <td className="px-8 py-5 whitespace-nowrap">
+                                                <span
+                                                    className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold border ${getCategoryColor(
+                                                        service.serviceCategory,
+                                                    )}`}
+                                                >
+                                                    {getCategoryIcon(
+                                                        service.serviceCategory,
+                                                    )}
+                                                    {getCategoryLabel(
+                                                        service.serviceCategory,
+                                                    )}
+                                                </span>
+                                            </td>
+                                            <td className="px-8 py-5 whitespace-nowrap">
+                                                <span className="text-base font-bold bg-gradient-to-r from-[#CCBDA3] to-[#a89976] bg-clip-text text-transparent">
+                                                    {formatPrice(service.price)}
+                                                </span>
+                                            </td>
+                                            <td className="px-8 py-5 whitespace-nowrap text-base text-gray-600 font-medium">
+                                                {service.serviceHours || 'N/A'}
+                                            </td>
+                                            <td className="px-8 py-5 whitespace-nowrap">
+                                                {service.availability ? (
+                                                    <span className="inline-flex items-center gap-2 px-4 py-2 bg-green-100 text-green-800 rounded-lg text-sm font-bold border border-green-200">
+                                                        <div className="w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse"></div>
+                                                        Khả dụng
+                                                    </span>
+                                                ) : (
+                                                    <span className="inline-flex items-center gap-2 px-4 py-2 bg-red-100 text-red-800 rounded-lg text-sm font-bold border border-red-200">
+                                                        <div className="w-2.5 h-2.5 bg-red-500 rounded-full"></div>
+                                                        Không khả dụng
+                                                    </span>
+                                                )}
+                                            </td>
+                                            <td className="px-8 py-5 whitespace-nowrap">
+                                                <button
+                                                    onClick={() =>
+                                                        handleEditClick(service)
+                                                    }
+                                                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-amber-50 text-amber-800 rounded-lg hover:bg-[#CCBDA3] hover:text-white font-semibold transition-all duration-300 group-hover:scale-105 border-2 border-amber-200 hover:border-[#CCBDA3]"
+                                                >
+                                                    <Edit className="w-4 h-4" />
+                                                    Sửa
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                {/* Pagination */}
+                {filteredServices.length > 0 && (
+                    <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border border-[#CCBDA3]/20 p-6 mt-6">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                                <div className="px-5 py-3 bg-gradient-to-r from-[#CCBDA3]/10 to-[#b8a88a]/10 rounded-xl border border-[#CCBDA3]/30">
+                                    <span className="text-base text-gray-700">
+                                        Hiển thị{' '}
+                                        <span className="font-bold bg-gradient-to-r from-[#CCBDA3] to-[#a89976] bg-clip-text text-transparent">
+                                            {indexOfFirstItem + 1}
+                                        </span>{' '}
+                                        -{' '}
+                                        <span className="font-bold bg-gradient-to-r from-[#CCBDA3] to-[#a89976] bg-clip-text text-transparent">
+                                            {Math.min(
+                                                indexOfLastItem,
+                                                filteredServices.length,
+                                            )}
+                                        </span>{' '}
+                                        / {filteredServices.length} dịch vụ
+                                    </span>
+                                </div>
+                            </div>
+
+                            {/* Phân trang */}
+                            {totalPages > 1 && (
+                                <div className="flex items-center gap-2">
                                     <button
-                                        key={page}
-                                        onClick={() => setCurrentPage(page)}
-                                        className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition border-2 ${
-                                            currentPage === page
-                                                ? 'bg-gray-900 text-white border-gray-900 shadow-md'
-                                                : 'bg-white text-gray-900 border-white hover:bg-gray-100'
+                                        onClick={() =>
+                                            setCurrentPage((prev) =>
+                                                Math.max(1, prev - 1),
+                                            )
+                                        }
+                                        disabled={currentPage === 1}
+                                        className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-300 text-lg font-bold ${
+                                            currentPage === 1
+                                                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                                : 'bg-white text-gray-700 hover:bg-gradient-to-r hover:from-[#CCBDA3] hover:to-[#b8a88a] hover:text-white shadow-md hover:scale-105 border border-[#CCBDA3]/20'
                                         }`}
                                     >
-                                        {page}
+                                        ‹
                                     </button>
-                                ))}
 
-                                <button
-                                    onClick={() =>
-                                        setCurrentPage((prev) =>
-                                            Math.min(totalPages, prev + 1),
-                                        )
-                                    }
-                                    disabled={currentPage === totalPages}
-                                    className={`w-10 h-10 rounded-full flex items-center justify-center transition border-2 text-lg ${
-                                        currentPage === totalPages
-                                            ? 'bg-white border-gray-300 text-gray-400 cursor-not-allowed'
-                                            : 'bg-white border-white text-gray-900 hover:bg-gray-100'
-                                    }`}
-                                >
-                                    ›
-                                </button>
-                            </div>
-                        )}
+                                    {Array.from(
+                                        { length: totalPages },
+                                        (_, i) => i + 1,
+                                    ).map((page) => (
+                                        <button
+                                            key={page}
+                                            onClick={() => setCurrentPage(page)}
+                                            className={`w-12 h-12 rounded-xl flex items-center justify-center font-bold transition-all duration-300 ${
+                                                currentPage === page
+                                                    ? 'bg-gradient-to-r from-[#CCBDA3] to-[#b8a88a] text-white shadow-lg scale-110 border-2 border-[#CCBDA3]'
+                                                    : 'bg-white text-gray-700 hover:bg-[#CCBDA3]/10 shadow-md hover:scale-105 border border-[#CCBDA3]/20'
+                                            }`}
+                                        >
+                                            {page}
+                                        </button>
+                                    ))}
+
+                                    <button
+                                        onClick={() =>
+                                            setCurrentPage((prev) =>
+                                                Math.min(totalPages, prev + 1),
+                                            )
+                                        }
+                                        disabled={currentPage === totalPages}
+                                        className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-300 text-lg font-bold ${
+                                            currentPage === totalPages
+                                                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                                : 'bg-white text-gray-700 hover:bg-gradient-to-r hover:from-[#CCBDA3] hover:to-[#b8a88a] hover:text-white shadow-md hover:scale-105 border border-[#CCBDA3]/20'
+                                        }`}
+                                    >
+                                        ›
+                                    </button>
+                                </div>
+                            )}
+                        </div>
                     </div>
-                </div>
-            )}
+                )}
 
-            {/* Modals */}
-            {showAddModal && (
-                <AddServiceModal
-                    onClose={() => setShowAddModal(false)}
-                    onSuccess={handleAddSuccess}
-                />
-            )}
+                {/* Modals */}
+                {showAddModal && (
+                    <AddServiceModal
+                        onClose={() => setShowAddModal(false)}
+                        onSuccess={handleAddSuccess}
+                    />
+                )}
 
-            {showEditModal && selectedService && (
-                <EditServiceModal
-                    service={selectedService}
-                    onClose={() => setShowEditModal(false)}
-                    onSuccess={handleEditSuccess}
-                />
-            )}
+                {showEditModal && selectedService && (
+                    <EditServiceModal
+                        service={selectedService}
+                        onClose={() => setShowEditModal(false)}
+                        onSuccess={handleEditSuccess}
+                    />
+                )}
+            </div>
         </div>
     );
 };

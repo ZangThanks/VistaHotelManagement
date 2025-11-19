@@ -30,6 +30,7 @@ export interface MaintenanceRequest {
     completionDate?: string; // LocalDateTime from backend
     estimatedTime?: number;
     actualCost?: number;
+    bookingId?: string; // Direct bookingId field (when booking object not populated)
     booking?: {
         bookingID: string;
         customer?: {

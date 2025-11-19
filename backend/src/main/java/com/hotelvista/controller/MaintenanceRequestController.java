@@ -1,5 +1,6 @@
 package com.hotelvista.controller;
 
+import com.hotelvista.dto.MaintenanceRequestDTO;
 import com.hotelvista.model.MaintenanceRequest;
 import com.hotelvista.model.enums.RequestStatus;
 import com.hotelvista.service.MaintenanceRequestService;
@@ -34,6 +35,11 @@ public class MaintenanceRequestController {
     @PostMapping("/save")
     public MaintenanceRequest insertOrUpdate(@RequestBody MaintenanceRequest request) {
         return service.insertOrUpdate(request);
+    }
+
+    @PostMapping("/create")
+    public MaintenanceRequest createFromDTO(@RequestBody MaintenanceRequestDTO dto) {
+        return service.insertFromDTO(dto);
     }
 
     @DeleteMapping("/delete/{id}")
