@@ -24,6 +24,7 @@ import NewsDetail from "../components/news/NewsDetail";
 import InfoManagement from "../pages/admin/infomation/InfoManagement";
 import Dashboard from "../pages/admin/dashboard/Dashboard";
 import RoomManagement from "../pages/admin/room/RoomManagement";
+import PromotionManagement from "../pages/admin/promotion/PromotionManagement";
 
 export const router = createBrowserRouter([
   {
@@ -54,6 +55,7 @@ export const router = createBrowserRouter([
       { path: "info", element: <InfoManagement /> },
       { path: "info/:id", element: <NewsDetail /> },
       { path: "room-management", element: <RoomManagement /> },
+      { path: "promotions", element: <PromotionManagement /> },
     ],
   },
   {

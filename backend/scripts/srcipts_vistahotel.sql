@@ -80,12 +80,15 @@ INSERT INTO promotion_types(promotion_type_id, promotion_type_name, description)
 
 
 -- PROMOTIONS
-INSERT INTO promotions (promotion_id, description, discount_type, is_active, promotion_name, admin_id, promotion_type_id) VALUES
-                                                                                                                              ('PROMO001', 'Giảm giá mùa hè 10%', 'PERCENT', b'1', 'Summer Sale', 'ADMIN001', 'PROMTYPECM'),
-                                                                                                                              ('PROMO002', 'Giảm giá lễ hội 200.000 VND', 'FIXED', b'1', 'Festival Discount', 'ADMIN001', 'PROMTYPECM'),
-                                                                                                                              ('PROMO003', 'Giảm giá cho khách đặt phòng Standard lần đầu 10%', 'PERCENT', b'1', 'First-booking discount for Standard Room', 'ADMIN001', 'PROMTYPEFB'),
-                                                                                                                              ('PROMO004', 'Giảm giá cho khách đặt phòng Deluxe lần đầu 12%', 'PERCENT', b'1', 'First-booking discount for Deluxe Room', 'ADMIN001', 'PROMTYPEFB'),
-                                                                                                                              ('PROMO005', 'Giảm giá cho khách đặt phòng Suite lần đầu 15%', 'PERCENT', b'1', 'First-booking discount for Suite Room', 'ADMIN001', 'PROMTYPEFB');
+INSERT INTO promotions
+(promotion_id, description, discount_type, is_active, promotion_name, admin_id, promotion_type_id)
+VALUES
+    ('PROMO001', 'Giảm giá mùa hè 10%', 'PERCENT', b'1', 'Summer Sale', 'ADMIN001', 'PROMTYPECM'),
+    ('PROMO002', 'Giảm giá lễ hội 200.000 VND', 'FIXED', b'1', 'Festival Discount', 'ADMIN001', 'PROMTYPECM'),
+    ('PROMO003', 'Giảm giá cho khách đặt phòng Standard lần đầu 10%', 'PERCENT', b'1', 'First-booking discount for Standard Room', 'ADMIN001', 'PROMTYPEFB'),
+    ('PROMO004', 'Giảm giá cho khách đặt phòng Deluxe lần đầu 12%', 'PERCENT', b'1', 'First-booking discount for Deluxe Room', 'ADMIN001', 'PROMTYPEFB'),
+    ('PROMO005', 'Giảm giá cho khách đặt phòng Suite lần đầu 15%', 'PERCENT', b'1', 'First-booking discount for Suite Room', 'ADMIN001', 'PROMTYPEFB');
+
 
 -- ROOM TYPE PROMOTIONS
 INSERT INTO room_type_promotions (discount_value, end_date, start_date, room_type_id, promotion_id) VALUES

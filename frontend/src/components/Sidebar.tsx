@@ -11,7 +11,7 @@ import {
   FaChevronRight,
 } from "react-icons/fa";
 import { MdMeetingRoom } from "react-icons/md";
-import { RiInfoCardFill } from "react-icons/ri";
+import { RiInfoCardFill, RiDiscountPercentFill  } from "react-icons/ri";
 import { IoBagCheckOutline } from "react-icons/io5";
 import { LuMapPinCheckInside } from "react-icons/lu";
 import { cn } from "../utils/cn";
@@ -62,6 +62,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
     },
     { icon: <FaUsers />, label: "Guests", path: "/guests" },
     { icon: <MdRoomService />, label: "Services", path: "/services" },
+    { icon: <RiDiscountPercentFill />, label: "Promotions", path: "/admin/promotions" },
     { icon: <FaChartLine />, label: "Reports", path: "/reports" },
     { icon: <FaCog />, label: "Settings", path: "/settings" },
   ];
