@@ -30,7 +30,7 @@ INSERT INTO rooms (room_number, floor, last_cleaned, notes, status, room_type_id
                                                                           ('DLX203', 2, '2024-06-01 13:30:00', 'Sạch sẽ', 'AVAILABLE', 'DLX'),
                                                                           ('STE301', 3, '2024-06-01 10:00:00', 'Sạch sẽ', 'AVAILABLE', 'STE'),
                                                                           ('STE302', 3, '2024-06-01 09:00:00', 'Sạch sẽ', 'BOOKED', 'STE');
--- ROOM TYPE IMAGES
+-- ROOM IMAGES
 INSERT INTO room_images (room_id, images_url) VALUES
                                                   ('STD101', 'https://pix8.agoda.net/hotelImages/7394456/87898656/a9ed80d50120f6b39035912334b2c530.jpg?ce=0&s=600x'),
                                                   ('STD101', 'https://pix8.agoda.net/hotelImages/7394456/93823858/036cf046c58da8fff1cf92aaf3aa7f37.jpg?ce=2&s=600x'),
@@ -44,10 +44,10 @@ INSERT INTO room_images (room_id, images_url) VALUES
                                                   ('STE302', 'https://pix8.agoda.net/property/73668369/0/ab0f949fe65b213cc9b1ad2f32c3271f.jpeg?ce=2&s=600x');
 -- CUSTOMERS
 INSERT INTO customers (customer_id, address, email, full_name, PASSWORD, joined_date, phone, user_name, user_role, birth_date, gender, loyalty_points, membership_level) VALUES
-                                                                                                                                                                             ('CUST001', 'TP.HCM', 'nguyenvana@gmail.com', 'Nguyễn Văn A', 'hashedpw1','2025-10-20', '0901234567', 'nguyenvana', 'CUSTOMER', '1990-05-20', 'MALE', 12000, 'SILVER'),
-                                                                                                                                                                             ('CUST002', 'TP.HCM', 'tranthib@gmail.com', 'Trần Thị B', 'hashedpw2', '2025-10-20', '0912345678', 'tranthib', 'CUSTOMER', '1988-08-15', 'FEMALE', 55000, 'GOLD'),
-                                                                                                                                                                             ('CUST003', 'TP.HCM', 'lequocd@gmail.com', 'Lê Quốc D', 'hashedpw3', '2025-10-20', '0923456789', 'lequocd', 'CUSTOMER', '1995-12-01', 'MALE', 2500, 'BRONZE'),
-                                                                                                                                                                             ('CUST004', 'TP.HCM', 'phamthic@gmail.com', 'Phạm Thị C', 'hashedpw4', '2025-10-20', '0934567890', 'phamthic', 'CUSTOMER', '1992-03-10', 'FEMALE', 105000, 'PLATINUM');
+                                                                                                                                                                             ('CUS0811250001', 'TP.HCM', 'nguyenvana@gmail.com', 'Nguyễn Văn A', 'hashedpw1','2025-10-20', '0901234567', 'nguyenvana', 'CUSTOMER', '1990-05-20', 'MALE', 12000, 'SILVER'),
+                                                                                                                                                                             ('CUS0811250002', 'TP.HCM', 'tranthib@gmail.com', 'Trần Thị B', 'hashedpw2', '2025-10-20', '0912345678', 'tranthib', 'CUSTOMER', '1988-08-15', 'FEMALE', 55000, 'GOLD'),
+                                                                                                                                                                             ('CUS0811250003', 'TP.HCM', 'lequocd@gmail.com', 'Lê Quốc D', 'hashedpw3', '2025-10-20', '0923456789', 'lequocd', 'CUSTOMER', '1995-12-01', 'MALE', 2500, 'BRONZE'),
+                                                                                                                                                                             ('CUS0811250004', 'TP.HCM', 'phamthic@gmail.com', 'Phạm Thị C', 'hashedpw4', '2025-10-20', '0934567890', 'phamthic', 'CUSTOMER', '1992-03-10', 'FEMALE', 105000, 'PLATINUM');
 
 -- EMPLOYEES (Using the specified names)
 INSERT INTO employees (employee_id, address, email, full_name, password, phone, user_name, user_role, department, hire_date, position, salary) VALUES

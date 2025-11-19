@@ -17,9 +17,10 @@ import CheckOutManager from "../pages/employee/CheckOutManager";
 import Home from "../pages/customer/Home";
 import RoomList from "../pages/customer/RoomList";
 // import NewsDetail from "../components/news/NewsDetail";
-import InfoManagement from "../pages/admin/infomation/InfoManagement";
+import InfoManagement from "../pages/admin/infomation/NewsList";
 import RoomDetail from '../pages/customer/RoomDetail';
 import CustomerLayout from '../layouts/CustomerLayout';
+import DailyWorkStatistics from '../pages/employee/DailyWorkStatistics';
 
 export const router = createBrowserRouter([
     {
@@ -38,6 +39,7 @@ export const router = createBrowserRouter([
         children: [
             { path: 'customer/list', element: <CustomerList /> },
             { path: 'bookingPage', element: <BookingPage /> },
+            { path: 'daily', element: <DailyWorkStatistics /> },
         ],
     },
     {
@@ -48,14 +50,6 @@ export const router = createBrowserRouter([
             { path: 'checkin', element: <CheckInManager /> },
             { path: 'checkout', element: <CheckOutManager /> },
             { path: 'info', element: <InfoManagement /> },
-        ],
-    },
-    {
-        path: '',
-        element: <EmployeeLayout />,
-        children: [
-            { path: 'newsPage', element: <NewsPage /> },
-            { path: 'bookingPage', element: <BookingPage /> },
         ],
     },
     {
@@ -72,6 +66,7 @@ export const router = createBrowserRouter([
         children: [
             { path: 'room', element: <RoomList /> },
             { path: 'room/:id', element: <RoomDetail /> },
+            { path: 'bookingPage', element: <BookingPage /> },
         ],
     },
 ]);

@@ -35,7 +35,7 @@ const InfoManagement: React.FC = () => {
         setIsEditModalOpen(true);
     };
 
-    // 🧠 Gọi API
+    // Gọi API
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -49,7 +49,7 @@ const InfoManagement: React.FC = () => {
         fetchData();
     }, []);
 
-    // 🔎 Lọc & sắp xếp
+    // Lọc & sắp xếp
     useEffect(() => {
         let filtered = [...newsList];
 
