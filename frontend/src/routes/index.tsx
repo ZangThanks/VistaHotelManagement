@@ -33,6 +33,8 @@ import ServiceList from '../pages/customer/ServiceList.tsx';
 import IncidentReport from '../pages/customer/IncidentReport.tsx';
 import ServiceManagement from '../pages/admin/ServiceManagement.tsx';
 import BookingDetail from '../pages/admin/booking/BookingDetail.tsx';
+import PromotionManagement from '../pages/admin/promotion/PromotionManagement.tsx';
+
 import { Contact } from 'lucide-react';
 
 export const router = createBrowserRouter([
@@ -75,6 +77,7 @@ export const router = createBrowserRouter([
             { path: 'services', element: <ServiceManagement /> },
             { path: 'room-management', element: <RoomManagement /> },
             { path: 'bookingPage', element: <BookingPage /> },
+            { path: 'promotions', element: <PromotionManagement /> },
         ],
     },
 
