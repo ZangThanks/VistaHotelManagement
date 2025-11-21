@@ -1,5 +1,8 @@
+/* eslint-disable */
 import React from "react";
-import { FaCheck, FaEye, FaConciergeBell } from "react-icons/fa";
+import { FaCheck, FaEye } from "react-icons/fa";
+import type { Booking } from "../../types/Booking";
+import { checkIn } from "../../services/bookingService";
 
 const formatCheckInTime = (dateString) => {
   if (!dateString) return "N/A";
@@ -34,7 +37,35 @@ const getPaymentStatus = (status) => {
   }
 };
 
-// Kiểm tra xem ngày check-in có phải hôm nay không
+const handleCheckIn = async (bookingId: string, originalBooking) => {
+  if (
+    !window.confirm(
+      `Are you sure you want to check in guest: ${originalBooking.guest.name}?`
+    )
+  ) {
+    return;
+  }
+
+  try {
+    await checkIn(bookingId);
+    alert(`Check-in successful for ${originalBooking.guest.name}!`);
+
+    //TODO: LÀM MỚI GIAO DIỆN
+    // if (onRefresh) {
+    //   onRefresh();
+    // }
+  } catch (error: any) {
+    console.error("Check-in error:", error);
+
+    const errorMessage =
+      error.response?.data?.message ||
+      error.message ||
+      "Failed to check in. Please try again.";
+    alert(`Check-in failed: ${errorMessage}`);
+  }
+};
+
+// Check ngày check-in
 const isToday = (dateString) => {
   if (!dateString) return false;
   const checkInDate = new Date(dateString);
@@ -48,21 +79,22 @@ const isToday = (dateString) => {
 };
 
 function TodayTab({ onViewDetails, bookings = [] }) {
-  // Lọc bookings: chỉ lấy những booking có status CHECKED_IN và checkInDate là hôm nay
-  const filteredBookings = bookings.filter(
-    (booking) => booking.status === "CHECKED_IN" && isToday(booking.checkInDate)
+  const filteredBookings = bookings.filter((booking) =>
+    isToday(booking.checkInDate)
   );
 
-  const todayCheckins = filteredBookings.map((booking) => ({
+  const todayCheckins = filteredBookings.map((booking: Booking) => ({
     id: booking.bookingID,
     guest: {
       name: booking.customer?.fullName || "Guest",
       email: booking.customer?.email || "No email",
       image: " ",
     },
-    room: `${booking.bookingDetails[0]?.room?.roomNumber || "N/A"} - ${
-      booking.bookingDetails[0]?.room?.roomType?.typeName || "Standard"
+
+    room: `${booking.bookingDetails?.[0]?.room?.roomNumber || "N/A"} - ${
+      booking.bookingDetails?.[0]?.room?.roomType?.typeName || "Standard"
     }`,
+
     checkInTime: formatCheckInTime(booking.checkInDate),
     status: getStatus(booking.status),
     trustScore: getTrustScore(booking.customer?.loyaltyPoints),
@@ -184,12 +216,15 @@ function TodayTab({ onViewDetails, bookings = [] }) {
               </td>
               <td className="py-4 px-4">
                 <div className="flex gap-1">
-                  <button
-                    title="Check In"
-                    className="w-8 h-8 rounded-full bg-[#F5F0EB] hover:bg-[#EBE3D7] transition flex items-center justify-center"
-                  >
-                    <FaCheck size={14} />
-                  </button>
+                  {booking.status !== "CHECKED_IN" && (
+                    <button
+                      title="Check In"
+                      onClick={() => handleCheckIn(booking.id, booking)}
+                      className="w-8 h-8 rounded-full bg-green-100 hover:bg-green-200 text-green-700 transition flex items-center justify-center"
+                    >
+                      <FaCheck size={14} />
+                    </button>
+                  )}
                   <button
                     title="View Details"
                     className="w-8 h-8 rounded-full bg-[#F5F0EB] hover:bg-[#EBE3D7] transition flex items-center justify-center"

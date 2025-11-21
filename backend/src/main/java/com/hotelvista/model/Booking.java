@@ -2,6 +2,7 @@ package com.hotelvista.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hotelvista.model.enums.BookingStatus;
+import com.hotelvista.model.enums.BookingType;
 import com.hotelvista.model.enums.InvoiceType;
 import com.hotelvista.model.enums.PaymentStatus;
 import jakarta.persistence.*;
@@ -28,6 +29,12 @@ public class Booking {
 
     @Column(name = "check_out_date")
     private LocalDateTime checkOutDate;
+
+    @Column(name = "actual_check_in_time")
+    private LocalDateTime actualCheckInTime;
+
+    @Column(name = "actual_check_out_time")
+    private LocalDateTime actualCheckoutTime;
 
     @Column(name = "number_of_guests")
     private Integer numberOfGuests;
@@ -90,4 +97,7 @@ public class Booking {
 
     @OneToOne
     private EarlyCheckin earlyCheckin;
+
+    @Enumerated(EnumType.STRING)
+    private BookingType type;
 }

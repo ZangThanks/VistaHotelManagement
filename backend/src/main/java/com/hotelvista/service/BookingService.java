@@ -1,7 +1,10 @@
 package com.hotelvista.service;
 
+import com.hotelvista.exception.BadRequestException;
 import com.hotelvista.model.Booking;
 import com.hotelvista.model.BookingDetail;
+import com.hotelvista.model.enums.ApprovalStatus;
+import com.hotelvista.model.enums.BookingStatus;
 import com.hotelvista.repository.BookingRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
@@ -81,4 +84,56 @@ public class BookingService {
     public List<Booking> findAllByRoom_RoomNumber(String roomNumber) {
         return repo.findAllByRoom_RoomNumber(roomNumber);
     }
+    /**
+     * Check-in a booking
+     */
+    @Transactional
+    public Booking checkIn(String bookingId) {
+
+        Booking booking = repo.findById(bookingId)
+                .orElseThrow(() -> new BadRequestException("Booking not found: " + bookingId));
+
+        // Validate
+        if (booking.getStatus() == BookingStatus.CHECKED_IN) {
+            throw new BadRequestException("Booking is already checked in");
+        }
+
+        if (booking.getStatus() == BookingStatus.CHECKED_OUT) {
+            throw new BadRequestException("Cannot check in a checked out booking");
+        }
+
+        if (booking.getStatus() == BookingStatus.CANCELLED) {
+            throw new BadRequestException("Cannot check in a cancelled booking");
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime checkInDate = booking.getCheckInDate();
+
+        boolean canCheckIn = false;
+
+        if (now.toLocalDate().isEqual(checkInDate.toLocalDate()) || now.isAfter(checkInDate)) {
+            canCheckIn = true;
+        }
+
+        if (booking.getEarlyCheckin() != null &&
+                booking.getEarlyCheckin().getApprovalStatus() == ApprovalStatus.APPROVED) {
+
+            LocalDateTime earlyCheckInTime = booking.getEarlyCheckin().getRequestDate();
+
+            if (now.isAfter(earlyCheckInTime) || now.isEqual(earlyCheckInTime)) {
+                canCheckIn = true;
+            }
+        }
+
+        if (!canCheckIn) {
+            throw new BadRequestException("Check-in time has not arrived yet");
+        }
+
+        // Update
+        booking.setStatus(BookingStatus.CHECKED_IN);
+        booking.setActualCheckInTime(now);
+
+        return repo.save(booking);
+    }
+
 }

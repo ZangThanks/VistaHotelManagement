@@ -1,46 +1,84 @@
-/* eslint-disable */
-import React from "react";
+import React, { useMemo } from "react";
 import { FaCalendarCheck, FaKey, FaClock, FaCalendarDay } from "react-icons/fa";
+import type { Booking } from "../../types/Booking";
 
-function StatusCards({ bookings = [] }) {
-  const totalToday = bookings.length;
-  const completedCheckins = bookings.filter(
-    (booking) => booking.status === "CHECKED_OUT"
-  ).length;
-  const pendingCheckins = bookings.filter(
-    (booking) => booking.status === "CONFIRMED" || booking.status === "PENDING"
-  ).length;
-  const earlyRequests = bookings.filter((booking) => {
-    return booking.specialRequests?.toLowerCase().includes("early");
-  }).length;
+interface StatusCardsProps {
+  bookings: Booking[];
+}
+
+const StatusCards: React.FC<StatusCardsProps> = ({ bookings = [] }) => {
+  const stats = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const isToday = (dateString: string) => {
+      const checkInDate = new Date(dateString);
+      checkInDate.setHours(0, 0, 0, 0);
+      return checkInDate.getTime() === today.getTime();
+    };
+
+    // totalToday: checkInDate là hôm nay và status là CHECKED_IN
+    const totalToday = bookings.filter(
+      (booking) =>
+        isToday(booking.checkInDate) && booking.status === "CHECKED_IN"
+    ).length;
+
+    // completedCheckins: status = CHECKED_OUT và checkInDate là hôm nay
+    const completedCheckins = bookings.filter(
+      (booking) =>
+        isToday(booking.checkInDate) && booking.status === "CHECKED_OUT"
+    ).length;
+
+    // pendingCheckins: status = CONFIRMED và checkInDate là hôm nay
+    const pendingCheckins = bookings.filter(
+      (booking) => isToday(booking.checkInDate) && booking.status === "PENDING"
+    ).length;
+
+    // earlyRequests: status = CHECKED_IN, checkInDate là hôm nay,
+    // earlyCheckin khác null và approvalStatus = APPROVED
+    const earlyRequests = bookings.filter(
+      (booking) =>
+        isToday(booking.checkInDate) &&
+        booking.status === "CHECKED_IN" &&
+        booking.earlyCheckin !== null &&
+        booking.earlyCheckin?.approvalStatus === "APPROVED"
+    ).length;
+
+    return {
+      totalToday,
+      completedCheckins,
+      pendingCheckins,
+      earlyRequests,
+    };
+  }, [bookings]);
 
   const cards = [
     {
       icon: <FaCalendarCheck />,
       iconColor: "#00C853",
       bgColor: "rgba(0, 200, 83, 0.1)",
-      count: totalToday || 0,
+      count: stats.totalToday,
       title: "Today's Check-ins",
     },
     {
       icon: <FaKey />,
       iconColor: "#2196F3",
       bgColor: "rgba(33, 150, 243, 0.1)",
-      count: completedCheckins || 0,
+      count: stats.completedCheckins,
       title: "Completed Check-ins",
     },
     {
       icon: <FaClock />,
       iconColor: "#FF9800",
       bgColor: "rgba(255, 152, 0, 0.1)",
-      count: pendingCheckins || 0,
+      count: stats.pendingCheckins,
       title: "Pending Check-ins",
     },
     {
       icon: <FaCalendarDay />,
       iconColor: "#CCBDA3",
       bgColor: "rgba(204, 189, 163, 0.1)",
-      count: earlyRequests || 0,
+      count: stats.earlyRequests,
       title: "Early Check-in Requests",
     },
   ];
@@ -66,6 +104,6 @@ function StatusCards({ bookings = [] }) {
       ))}
     </div>
   );
-}
+};
 
 export default StatusCards;

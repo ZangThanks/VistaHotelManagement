@@ -1,6 +1,7 @@
 /* eslint-disable */
 import React from "react";
 import { FaCheck, FaEye, FaClock } from "react-icons/fa";
+import type { Booking } from "../../types/Booking";
 
 const formatTime = (dateString) => {
   if (!dateString) return "N/A";
@@ -8,7 +9,7 @@ const formatTime = (dateString) => {
   return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 };
 
-const calculateDuration = (startDate, endDate) => {
+const calculateDuration = (startDate: String, endDate: String) => {
   if (!startDate || !endDate) return "N/A";
 
   const start = new Date(startDate);
@@ -19,24 +20,25 @@ const calculateDuration = (startDate, endDate) => {
   return diffHrs + " hours";
 };
 
-const isHourlyBooking = (booking) => {
+const isHourlyBooking = (booking: Booking) => {
   if (!booking) return false;
-  return booking.hourlyRate !== null && booking.duration < 24;
+  return booking.type === "HOURLY" && booking.duration < 24;
 };
 
 const HourlyTab = ({ onViewDetails, bookings = [] }) => {
   const hourlyBookings = bookings
-    .filter((booking) => isHourlyBooking(booking))
-    .map((booking) => ({
+    .filter((booking: Booking) => isHourlyBooking(booking))
+    .map((booking: Booking) => ({
       id: booking.bookingID,
       guest: {
         name: booking.customer?.fullName || "Guest",
         email: booking.customer?.email || "No email",
         image: "https://randomuser.me/api/portraits/men/52.jpg",
       },
-      room: `${booking.bookingDetails[0]?.room?.roomNumber || "N/A"} - ${
-        booking.bookingDetails[0]?.room?.roomType?.typeName || "Standard"
+      room: `${booking.bookingDetails?.[0]?.room?.roomNumber || "N/A"} - ${
+        booking.bookingDetails?.[0]?.room?.roomType?.typeName || "Standard"
       }`,
+      type: booking.type,
       duration: booking.duration + " hours",
       checkInTime: formatTime(booking.checkInDate),
       checkOutTime: formatTime(booking.checkOutDate),
@@ -45,38 +47,7 @@ const HourlyTab = ({ onViewDetails, bookings = [] }) => {
       }%)`,
     }));
 
-  // TODO: GET API
-  const displayBookings =
-    hourlyBookings.length > 0
-      ? hourlyBookings
-      : [
-          {
-            id: "HR-23062501",
-            guest: {
-              name: "Thomas Harris",
-              email: "thomas.h@example.com",
-              image: "https://randomuser.me/api/portraits/men/52.jpg",
-            },
-            room: "210 - Standard King",
-            duration: "4 hours",
-            checkInTime: "13:00 PM",
-            checkOutTime: "17:00 PM",
-            rate: "$45 (45%)",
-          },
-          {
-            id: "HR-23062502",
-            guest: {
-              name: "Lisa Taylor",
-              email: "lisa.t@example.com",
-              image: "https://randomuser.me/api/portraits/women/44.jpg",
-            },
-            room: "307 - Deluxe King",
-            duration: "6 hours",
-            checkInTime: "10:00 AM",
-            checkOutTime: "16:00 PM",
-            rate: "$78 (65%)",
-          },
-        ];
+  const displayBookings = hourlyBookings.length > 0 ? hourlyBookings : [];
 
   if (hourlyBookings.length === 0 && bookings.length > 0) {
     return (

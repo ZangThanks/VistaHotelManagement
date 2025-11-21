@@ -37,14 +37,6 @@ const isTomorrowBooking = (booking: Booking) => {
   tomorrow.setDate(tomorrow.getDate() + 1);
 
   const checkInDate = new Date(booking.checkInDate);
-  console.log("========================================================");
-  console.log(
-    booking.bookingID +
-      "=> NGÀY MAI: " +
-      tomorrow +
-      " NGÀY CỦA BOOKING: " +
-      checkInDate
-  );
   return (
     checkInDate.getDate() === tomorrow.getDate() &&
     checkInDate.getMonth() === tomorrow.getMonth() &&
@@ -70,44 +62,15 @@ const TomorrowTab = ({
         email: booking.customer?.email || "No email",
         image: "https://randomuser.me/api/portraits/men/22.jpg",
       },
-      room: `${booking.bookingDetails[0]?.room?.roomNumber || "N/A"} - ${
-        booking.bookingDetails[0]?.room?.roomType?.typeName || "Standard"
+      room: `${booking.bookingDetails?.[0]?.room?.roomNumber || "N/A"} - ${
+        booking.bookingDetails?.[0]?.room?.roomType?.typeName || "Standard"
       }`,
       checkInTime: formatCheckInTime(booking.checkInDate),
       trustScore: getTrustScore(booking.customer?.loyaltyPoints),
       paymentStatus: getPaymentStatus(booking.paymentStatus),
     }));
 
-  // TODO GET API
-  const displayBookings =
-    tomorrowBookings.length > 0
-      ? tomorrowBookings
-      : [
-          {
-            id: "VH-23062601",
-            guest: {
-              name: "David Miller",
-              email: "david.m@example.com",
-              image: "https://randomuser.me/api/portraits/men/22.jpg",
-            },
-            room: "305 - Deluxe King",
-            checkInTime: "14:00 PM",
-            trustScore: { value: 75, level: "medium" },
-            paymentStatus: { type: "partial", label: "Partial (30%)" },
-          },
-          {
-            id: "VH-23062602",
-            guest: {
-              name: "Jessica Brown",
-              email: "jessica.b@example.com",
-              image: "https://randomuser.me/api/portraits/women/36.jpg",
-            },
-            room: "410 - Suite",
-            checkInTime: "15:00 PM",
-            trustScore: { value: 95, level: "high" },
-            paymentStatus: { type: "checkout", label: "Pay at Checkout" },
-          },
-        ];
+  const displayBookings = tomorrowBookings.length > 0 ? tomorrowBookings : [];
 
   if (tomorrowBookings.length === 0 && bookings.length > 0) {
     return (
@@ -175,10 +138,6 @@ const TomorrowTab = ({
                     <span className="text-sm font-semibold">
                       {booking.trustScore.value}
                     </span>
-                  </div>
-                  <div className="text-xs text-center mt-1">
-                    {booking.trustScore.level.charAt(0).toUpperCase() +
-                      booking.trustScore.level.slice(1)}
                   </div>
                 </div>
               </td>

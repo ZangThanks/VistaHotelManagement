@@ -1,6 +1,7 @@
 /* eslint-disable */
 import React from "react";
 import { FaCheck, FaTimes, FaEye, FaComment } from "react-icons/fa";
+import type { Booking } from "../../types/Booking";
 
 const formatTime = (dateString) => {
   if (!dateString) return "N/A";
@@ -8,12 +9,12 @@ const formatTime = (dateString) => {
   return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 };
 
-const hasEarlyCheckinRequest = (booking) => {
+const hasEarlyCheckinRequest = (booking: Booking) => {
   if (!booking) return false;
-  return booking.specialRequests?.toLowerCase().includes("early") || false;
+  return Boolean(booking?.earlyCheckin);
 };
 
-const calculateEarlyFee = (booking) => {
+const calculateEarlyFee = (booking: Booking) => {
   if (!booking) return "$0";
   const regularCheckIn = new Date();
   regularCheckIn.setHours(14, 0, 0, 0);
@@ -47,17 +48,16 @@ const EarlyTab = ({ onViewDetails, bookings = [] }) => {
         .toString()
         .padStart(2, "0")}`;
 
+      //TODO: NHỚ sửa cái url khách hàng
       return {
         id: requestId,
         guest: {
           name: booking.customer?.fullName || "Guest",
           email: booking.customer?.email || "No email",
-          image: `https://randomuser.me/api/portraits/${
-            index % 2 === 0 ? "women" : "men"
-          }/${Math.floor(Math.random() * 70) + 10}.jpg`,
+          image: booking.customer?.url || "",
         },
-        room: `${booking.bookingDetails[0]?.room?.roomNumber || "N/A"} - ${
-          booking.bookingDetails[0]?.room?.roomType?.typeName || "Standard"
+        room: `${booking.bookingDetails?.[0]?.room?.roomNumber || "N/A"} - ${
+          booking.bookingDetails?.[0]?.room?.roomType?.typeName || "Standard"
         }`,
         regularCheckIn: "14:00 PM",
         requestedTime:
@@ -75,51 +75,7 @@ const EarlyTab = ({ onViewDetails, bookings = [] }) => {
       };
     });
 
-  // TODO: GET API
-  const displayRequests =
-    earlyCheckIns.length > 0
-      ? earlyCheckIns
-      : [
-          {
-            id: "ER-23062501",
-            guest: {
-              name: "Olivia Davis",
-              email: "olivia.d@example.com",
-              image: "https://randomuser.me/api/portraits/women/12.jpg",
-            },
-            room: "302 - Deluxe King",
-            regularCheckIn: "14:00 PM",
-            requestedTime: "10:30 AM",
-            earlyFee: "$65 (30%)",
-            status: "pending",
-          },
-          {
-            id: "ER-23062502",
-            guest: {
-              name: "Michael Chen",
-              email: "michael.c@example.com",
-              image: "https://randomuser.me/api/portraits/men/77.jpg",
-            },
-            room: "506 - Suite",
-            regularCheckIn: "14:00 PM",
-            requestedTime: "07:00 AM",
-            earlyFee: "$125 (50%)",
-            status: "approved",
-          },
-          {
-            id: "ER-23062503",
-            guest: {
-              name: "Amanda Wilson",
-              email: "amanda.w@example.com",
-              image: "https://randomuser.me/api/portraits/women/32.jpg",
-            },
-            room: "205 - Standard Twin",
-            regularCheckIn: "14:00 PM",
-            requestedTime: "11:30 AM",
-            earlyFee: "$45 (20%)",
-            status: "unavailable",
-          },
-        ];
+  const displayRequests = earlyCheckIns.length > 0 ? earlyCheckIns : [];
 
   if (earlyCheckIns.length === 0 && bookings.length > 0) {
     return (
