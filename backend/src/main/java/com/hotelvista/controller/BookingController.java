@@ -3,13 +3,10 @@ package com.hotelvista.controller;
 import com.hotelvista.model.Booking;
 import com.hotelvista.service.BookingService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/bookings")
@@ -48,6 +45,7 @@ public class BookingController {
         return service.findAllByCustomer_Id(customerId);
     }
 
+    // http://localhost:8080/bookings/search?keyword=BKG001
     @GetMapping("/search")
     public List<Booking> searchBookings(@RequestParam(required = false) String keyword) {
         return service.searchBookings(keyword);

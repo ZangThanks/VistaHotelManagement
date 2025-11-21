@@ -1,38 +1,70 @@
-import React from "react";
+import React, { useState } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faBars, faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons';
+import { faUser } from '@fortawesome/free-solid-svg-icons';
+import MenuSidebar from './MenuSidebar';
+import SearchSidebar from './SearchSidebar';
+import { Link } from 'react-router-dom';
 
-const Header: React.FC<{ onMenuClick: () => void }> = ({ onMenuClick }) => {
+import type { NavItem } from '../types/Header';
+
+const navItems: NavItem[] = [
+    { label: 'Overview', path: '/home' },
+    { label: 'About Us', path: '/contact' },
+    { label: 'Accommodation', path: '/customer/room/list' },
+    { label: 'Services', path: '/services' },
+    { label: 'Events', path: '/newsPage' },
+    { label: 'Exclusive Offers', path: '/customer/promotion/list' },
+    { label: 'My bookings', path: '/customer/booking/mybookings' },
+];
+
+const Header: React.FC = () => {
+    const [menuOpen, setMenuOpen] = useState(false);
+    const [searchOpen, setSearchOpen] = useState(false);
+
     return (
-        <div className="relative flex items-center px-4 py-2 bg-[#F5F0EB] shadow">
-            {/* Nút Menu bên trái */}
+        <div className="relative flex items-center px-6 py-4 bg-[#F5F0EB] shadow">
             <button
-                onClick={onMenuClick}
-                aria-label="Menu"
-                className="text-2xl text-gray-800 hover:text-amber-700 transition duration-200"
+                onClick={() => setMenuOpen(true)}
+                className="text-2xl text-black hover:text-amber-400 transition"
             >
-                <i className="fa-solid fa-bars"></i>
+                <FontAwesomeIcon icon={faBars} />
             </button>
 
-            <button className="text-xl ml-2 text-gray-700 hover:opacity-75 transition">
-                <i className="fa-solid fa-magnifying-glass"></i>
+            <button
+                onClick={() => setSearchOpen(true)}
+                className="ml-3 text-xl text-black hover:text-amber-400 transition"
+            >
+                <FontAwesomeIcon icon={faMagnifyingGlass} />
             </button>
-            {/* Logo ở giữa */}
-            <img
-                src="/src/assets/images/logo.png"
-                alt="Company Logo"
-                className=" w-13 absolute left-1/2 -translate-x-1/2"
+
+            <Link to="/home" className="absolute left-1/2 -translate-x-1/2">
+                <img
+                    src="/src/assets/images/logo.png"
+                    className="w-13 cursor-pointer"
+                    alt="logo"
+                />
+            </Link>
+
+            <button className="ml-auto">
+                <button className="flex items-center text-black hover:opacity-80 transition">
+                    <FontAwesomeIcon
+                        icon={faUser}
+                        className=" text-black text-2xl"
+                    />
+                </button>
+            </button>
+
+            <MenuSidebar
+                isOpen={menuOpen}
+                onClose={() => setMenuOpen(false)}
+                navItems={navItems}
             />
 
-            {/* Avatar bên phải */}
-            <button
-                aria-label="User profile"
-                className="ml-auto rounded-full hover:opacity-80 transition"
-            >
-                <img
-                    src="/src/assets/images/avt.png"
-                    alt="User avatar"
-                    className="h-10 w-10 rounded-full"
-                />
-            </button>
+            <SearchSidebar
+                isOpen={searchOpen}
+                onClose={() => setSearchOpen(false)}
+            />
         </div>
     );
 };

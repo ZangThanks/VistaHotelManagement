@@ -1,5 +1,4 @@
-/* eslint-disable */
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import StatusCards from '../../components/checkout/StatusCards';
 import SearchFilter from '../../components/checkout/SearchFilter';
 import CheckoutTabs from '../../components/checkout/CheckoutTabs';
@@ -18,7 +17,7 @@ export default function CheckOutManager() {
         useState(false);
     const [showPaymentSuccessModal, setShowPaymentSuccessModal] =
         useState(false);
-    const [selectedBookingId, setSelectedBookingId] = useState('');
+    const [, setSelectedBookingId] = useState('');
     const [paymentData, setPaymentData] = useState({
         bookingId: '',
         guestName: 'Sarah Johnson',

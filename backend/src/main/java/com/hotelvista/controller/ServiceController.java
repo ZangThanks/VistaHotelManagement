@@ -10,6 +10,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/services")
+@CrossOrigin(origins = "http://localhost:5173")
 public class ServiceController {
     @Autowired
     private ServiceService service;
@@ -32,5 +33,16 @@ public class ServiceController {
     @GetMapping("/category")
     public List<Service> findAllByServiceCategory(@RequestParam ServiceCategory serviceCategory) {
         return service.findAllByServiceCategory(serviceCategory);
+    }
+
+    @PostMapping("")
+    public Service save(@RequestBody Service serviceData) {
+        service.save(serviceData);
+        return serviceData;
+    }
+
+    @DeleteMapping("/{id}")
+    public void deleteById(@PathVariable String id) {
+        service.deleteById(id);
     }
 }
