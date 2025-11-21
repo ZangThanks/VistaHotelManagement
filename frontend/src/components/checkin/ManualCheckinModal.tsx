@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { FaCalendarCheck, FaWalking, FaClock, FaSearch } from "react-icons/fa";
 import { searchBookings } from "../../services/bookingService";
-import IDScannerModal, { type IDCardInfo } from "./IDScannerModal";
+import IDScannerModal from "./IDScannerModal";
+import type { IDCardInfo } from "../../types/IDCardInfo";
 import type { Booking } from "../../types/Booking";
 
-function ManualCheckinModal({ isOpen, onClose }) {
+type ManualCheckinModalProps = { isOpen: boolean; onClose: () => void };
+
+function ManualCheckinModal({ isOpen, onClose }: ManualCheckinModalProps) {
   const [activeOption, setActiveOption] = useState("booking");
   const [roomType, setRoomType] = useState("");
-  const [availableRooms, setAvailableRooms] = useState([]);
+  const [availableRooms, setAvailableRooms] = useState<string[]>([]);
   const [checkInTime, setCheckInTime] = useState("");
   const [duration, setDuration] = useState("4");
   const [checkOutTime, setCheckOutTime] = useState("");
@@ -22,7 +25,7 @@ function ManualCheckinModal({ isOpen, onClose }) {
 
   useEffect(() => {
     if (roomType) {
-      let rooms = [];
+      let rooms: string[] = [];
       switch (roomType) {
         case "standard":
           rooms = [
@@ -61,11 +64,11 @@ function ManualCheckinModal({ isOpen, onClose }) {
     }
   }, [checkInTime, duration]);
 
-  const updateHourlyRate = (hours) => {
+  const updateHourlyRate = (hours: number) => {
     const baseRate = 100;
     let percentage;
 
-    switch (parseInt(hours)) {
+    switch (hours) {
       case 1:
         percentage = 15;
         break;
@@ -343,9 +346,13 @@ function ManualCheckinModal({ isOpen, onClose }) {
                                 {formatDate(booking.checkInDate)}
                               </td>
                               <td className="py-3 px-4">
-                                {booking.bookingDetails
-                                  .map((detail) => detail.room.roomNumber)
-                                  .join(", ")}
+                                {Array.isArray(booking.bookingDetails) &&
+                                booking.bookingDetails.length > 0
+                                  ? booking.bookingDetails
+                                      .map((detail) => detail?.room?.roomNumber)
+                                      .filter(Boolean)
+                                      .join(", ")
+                                  : "-"}
                               </td>
                               <td className="py-3 px-4">
                                 <span
@@ -662,7 +669,7 @@ function ManualCheckinModal({ isOpen, onClose }) {
                     <textarea
                       id="specialRequests"
                       name="specialRequests"
-                      rows="3"
+                      rows={3}
                       className="w-full p-2.5 border border-[#EBE3D7] rounded-md"
                     ></textarea>
                   </div>

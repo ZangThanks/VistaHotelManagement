@@ -21,6 +21,8 @@ import type { CustomerVoucher } from "../../types/CustomerVoucher";
 import type { Room } from "../../types/Room";
 import { getRoomById } from "../../services/roomService";
 import CustomerVoucherModal from "./CustomerVoucherModal";
+import { RiHotelFill, RiHotelLine } from "react-icons/ri";
+import { TbHotelService } from "react-icons/tb";
 
 interface BookingFormProps {
   currentStep: number;
@@ -639,7 +641,9 @@ export default function BookingForm({
         {/* Room Information */}
         <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
           <div className="bg-[#c9b8a8] text-white px-4 py-3 rounded-lg mb-6 flex items-center gap-2">
-            <span className="text-lg">🏨</span>
+            <span className="text-lg">
+              <RiHotelLine className="text-white" />
+            </span>
             <h3 className="font-semibold">Room Information</h3>
           </div>
 
@@ -732,7 +736,9 @@ export default function BookingForm({
         {/* Booking Summary */}
         <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
           <div className="bg-[#c9b8a8] text-white px-4 py-3 rounded-lg mb-6 flex items-center gap-2">
-            <span className="text-lg">📋</span>
+            <span className="text-lg">
+              <TbHotelService className="text-white" />
+            </span>
             <h3 className="font-semibold">Booking</h3>
           </div>
 

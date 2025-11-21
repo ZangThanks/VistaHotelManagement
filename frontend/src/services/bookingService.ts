@@ -116,6 +116,18 @@ export const generateBookingID = async () => {
   }
 };
 
+export const generateQRPayment = async (bookingId: string) => {
+  try {
+    const response = await api.get(`${ENDPOINT}/payment-qr/${bookingId}`, {
+      responseType: "blob",
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error generating QR payment:", error);
+    throw error;
+  }
+};
+
 // export const deleteBooking = async (id) => {
 //   try {
 //     await axios.delete(`${API_URL}/${id}`);

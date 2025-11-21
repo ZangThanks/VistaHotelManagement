@@ -41,8 +41,8 @@ export interface RoomBooking {
   totalAmount: number;
   specialRequests?: string;
   paymentStatus?: string;
-  customer?: any;
-  bookingDetails?: any[];
+  customer?: unknown;
+  bookingDetails?: unknown[];
   earlyCheckin?: EarlyCheckin | null;
 }
 

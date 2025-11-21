@@ -24,6 +24,7 @@ import RoomManagement from "../pages/admin/room/RoomManagement.tsx";
 import RoomDetail from "../pages/customer/RoomDetail.tsx";
 import CustomerLayout from "../layouts/CustomerLayout.tsx";
 import NewsList from "../pages/admin/infomation/NewsList.tsx";
+import PaymentPage from "../pages/admin/booking/PaymentPage.tsx";
 
 export const router = createBrowserRouter([
   {
@@ -60,6 +61,7 @@ export const router = createBrowserRouter([
       { path: "/newsPage", element: <NewsPage /> },
       { path: "/home", element: <Home /> },
       { path: "/bookingPage", element: <BookingPage /> },
+      { path: "/paymentPage", element: <PaymentPage /> },
     ],
   },
   {
