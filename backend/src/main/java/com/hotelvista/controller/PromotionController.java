@@ -58,7 +58,7 @@ public class PromotionController {
     }
 
     @GetMapping("/find/{id}")
-    public Promotion findById(String id) {
+    public Promotion findById(@PathVariable String id) {
         return promotionService.findById(id);
     }
 

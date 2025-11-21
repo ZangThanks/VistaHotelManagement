@@ -4,7 +4,7 @@ export interface RoomType {
     description?: string;
     area?: number;
     maxOccupancy?: number;
-    amenities?: string[];
+    amenties?: string[]; // Backend uses 'amenties' (typo in Java model)
     basePrice?: number;
     [key: string]: unknown;
 }

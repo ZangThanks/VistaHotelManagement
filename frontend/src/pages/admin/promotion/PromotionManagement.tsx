@@ -12,6 +12,7 @@ import PromotionTableView from "../../../components/promotion/view/PromotionTabl
 import AddPromotionModal from "../../../components/promotion/modal/AddPromotionModal";
 import PromotionDetailModal from "../../../components/promotion/modal/PromotionDetailModal";
 import ConfirmDialog from "../../../components/dialog/ConfirmDialog";
+import Pagination from "../../../components/common/Pagination";
 import type { Promotion } from "../../../types/Promotion";
 import { useToastContext } from "../../../hooks/useToastContext";
 import {
@@ -28,6 +29,10 @@ const PromotionManagement: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
   const [discountTypeFilter, setDiscountTypeFilter] = useState("all");
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editPromotion, setEditPromotion] = useState<Promotion | null>(null);
@@ -124,6 +129,17 @@ const PromotionManagement: React.FC = () => {
 
     return matchesSearch && matchesStatus && matchesType && matchesDiscountType;
   });
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredPromotions.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedPromotions = filteredPromotions.slice(startIndex, endIndex);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, statusFilter, typeFilter, discountTypeFilter]);
 
   // Stats
   const stats = {
@@ -397,13 +413,30 @@ const PromotionManagement: React.FC = () => {
             </div>
           ) : (
             <PromotionTableView
-              promotions={filteredPromotions}
+              promotions={paginatedPromotions}
               onEdit={setEditPromotion}
               onToggleStatus={handleToggleStatus}
               onViewDetails={setDetailPromotion}
             />
           )}
         </motion.div>
+
+        {/* Pagination */}
+        {!loading && filteredPromotions.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+          >
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+              itemsPerPage={itemsPerPage}
+              totalItems={filteredPromotions.length}
+            />
+          </motion.div>
+        )}
 
         {/* Add/Edit Modal */}
         <AddPromotionModal

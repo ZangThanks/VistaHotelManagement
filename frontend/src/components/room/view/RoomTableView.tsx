@@ -98,7 +98,8 @@ const RoomTableView: React.FC<RoomTableViewProps> = ({
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: index * 0.05 }}
-                                className="hover:bg-gray-50 transition-colors"
+                                className="hover:bg-gray-50 transition-colors cursor-pointer"
+                                onClick={() => onView(room)}
                             >
                                 <td className="px-6 py-4 whitespace-nowrap">
                                     <div className="flex items-center">
@@ -143,21 +144,30 @@ const RoomTableView: React.FC<RoomTableViewProps> = ({
                                 <td className="px-6 py-4 whitespace-nowrap text-center">
                                     <div className="flex items-center justify-center gap-2">
                                         <button
-                                            onClick={() => onView(room)}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                onView(room);
+                                            }}
                                             className="text-[#1976d2] hover:text-[#1565c0] transition-colors p-2 hover:bg-blue-50 rounded-lg cursor-pointer"
                                             title="View details"
                                         >
                                             <FaEye className="text-lg" />
                                         </button>
                                         <button
-                                            onClick={() => onEdit(room)}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                onEdit(room);
+                                            }}
                                             className="text-[#2e7d32] hover:text-[#1b5e20] transition-colors p-2 hover:bg-green-50 rounded-lg cursor-pointer"
                                             title="Edit"
                                         >
                                             <FaEdit className="text-lg" />
                                         </button>
                                         <button
-                                            onClick={() => onDelete(room)}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                onDelete(room);
+                                            }}
                                             className="text-[#c62828] hover:text-[#b71c1c] transition-colors p-2 hover:bg-red-50 rounded-lg cursor-pointer"
                                             title="Delete"
                                         >

@@ -34,6 +34,8 @@ import IncidentReport from '../pages/customer/IncidentReport.tsx';
 import ServiceManagement from '../pages/admin/ServiceManagement.tsx';
 import BookingDetail from '../pages/admin/booking/BookingDetail.tsx';
 import PromotionManagement from '../pages/admin/promotion/PromotionManagement.tsx';
+import PromotionTypeManagement from '../pages/admin/promotion/PromotionTypeManagement.tsx';
+import RoomTypeManagement from '../pages/admin/room/RoomTypeManagement.tsx';
 
 import { Contact } from 'lucide-react';
 
@@ -78,6 +80,8 @@ export const router = createBrowserRouter([
             { path: 'room-management', element: <RoomManagement /> },
             { path: 'bookingPage', element: <BookingPage /> },
             { path: 'promotions', element: <PromotionManagement /> },
+            { path: 'promotion-types', element: <PromotionTypeManagement /> },
+            { path: 'room-types', element: <RoomTypeManagement /> },
         ],
     },
 

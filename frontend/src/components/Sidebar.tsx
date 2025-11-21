@@ -11,11 +11,15 @@ import {
   FaChevronRight,
 } from "react-icons/fa";
 import { MdMeetingRoom } from "react-icons/md";
-import { RiInfoCardFill, RiDiscountPercentFill  } from "react-icons/ri";
+import {
+  RiInfoCardFill,
+  RiDiscountPercentFill
+} from "react-icons/ri";
 import { IoBagCheckOutline } from "react-icons/io5";
 import { LuMapPinCheckInside } from "react-icons/lu";
 import { cn } from "../utils/cn";
-import { MdRoomService } from "react-icons/md";
+import { MdRoomService, MdDiscount } from "react-icons/md";
+import { BiSolidCategory } from "react-icons/bi";
 import { motion } from "framer-motion";
 
 interface SidebarProps {
@@ -37,8 +41,13 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
     },
     {
       icon: <MdMeetingRoom />,
-      label: "Room Management",
+      label: "Rooms",
       path: "/admin/room-management",
+    },
+    {
+      icon: <BiSolidCategory />,
+      label: "Room Types",
+      path: "/admin/room-types",
     },
     {
       icon: <RiInfoCardFill />,
@@ -62,7 +71,16 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
     },
     { icon: <FaUsers />, label: "Guests", path: "/guests" },
     { icon: <MdRoomService />, label: "Services", path: "/services" },
-    { icon: <RiDiscountPercentFill />, label: "Promotions", path: "/admin/promotions" },
+    {
+      icon: <RiDiscountPercentFill />,
+      label: "Promotions",
+      path: "/admin/promotions",
+    },
+    {
+      icon: <MdDiscount />,
+      label: "Promotion Types",
+      path: "/admin/promotion-types",
+    },
     { icon: <FaChartLine />, label: "Reports", path: "/reports" },
     { icon: <FaCog />, label: "Settings", path: "/settings" },
   ];
