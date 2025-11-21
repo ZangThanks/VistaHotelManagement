@@ -8,11 +8,12 @@ import lombok.ToString;
 @AllArgsConstructor
 @ToString
 public enum PaymentStatus {
-    PENDING("PENDING"),
-    COMPLETED("COMPLETED"),
-    FAILED("FAILED"),
-    REFUNDED("REFUNDED"),
-    CANCELLED("CANCELLED");
+    PENDING("Pending"),
+    COMPLETED("Completed"),
+    PAID("Paid"),
+    FAILED("Failed"),
+    REFUNDED("Refunded"),
+    CANCELLED("Cancelled");
 
     private String paymentStatus;
 }

@@ -10,11 +10,11 @@ import lombok.ToString;
 @AllArgsConstructor
 @NoArgsConstructor
 public enum OrderStatus {
-    PLACE("PLACE"),
-    PREPARING("PREPARING"),
-    READY("READY"),
-    DELIVERED("DELIVERED"),
-    CANCELLED("CANCELLED");
+    PLACE("Place"),
+    PREPARING("Preparing"),
+    READY("Ready"),
+    DELIVERED("Delivered"),
+    CANCELLED("Cancelled");
 
     private String orderStatus;
 }

@@ -11,9 +11,9 @@ import lombok.ToString;
 @Getter
 public enum PaymentMethod {
     VNPAY_QR("VNPAY QR"),
-    CREDIT_CARD("CREDIT CARD"),
-    BANK_TRANSFER("BANK TRANSFER"),
-    CASH("CASH");
+    CREDIT_CARD("Credit Card"),
+    BANK_TRANSFER("Bank Transfer"),
+    CASH("Cash");
 
     private String paymentMethod;
 }

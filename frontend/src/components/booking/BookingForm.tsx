@@ -1,5 +1,6 @@
 /* eslint-disable */
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Calendar } from "lucide-react";
 import BookingCalendar from "../common/Calendar";
 import { TfiUser, TfiMore } from "react-icons/tfi";
@@ -21,7 +22,7 @@ import type { CustomerVoucher } from "../../types/CustomerVoucher";
 import type { Room } from "../../types/Room";
 import { getRoomById } from "../../services/roomService";
 import CustomerVoucherModal from "./CustomerVoucherModal";
-import { RiHotelFill, RiHotelLine } from "react-icons/ri";
+import { RiHotelLine } from "react-icons/ri";
 import { TbHotelService } from "react-icons/tb";
 
 interface BookingFormProps {
@@ -53,6 +54,7 @@ export default function BookingForm({
   currentStep,
   setCurrentStep,
 }: BookingFormProps) {
+  const navigate = useNavigate();
   const [checkInDate, setCheckInDate] = useState<Date | null>(
     new Date(2025, 8, 18)
   );
@@ -72,7 +74,7 @@ export default function BookingForm({
   const [loading, setLoading] = useState(true);
   const [selectedPaymentMethod, setSelectedPaymentMethod] =
     useState<PaymentMethod>(PAYMENT_METHODS[0]);
-  const [selectedRoom] = useState<string[]>(["DLX201"]);
+  const [selectedRoom] = useState<string[]>(["STD102"]);
   const [rooms, setRooms] = useState<Room[]>([]);
   const [bookingID, setBookingID] = useState<string>("");
   const [isVoucherModalOpen, setIsVoucherModalOpen] = useState(false);
@@ -256,17 +258,35 @@ export default function BookingForm({
       paymentMethod: selectedPaymentMethod,
     };
 
+    console.log("Booking payload:", payload);
+    console.log("Booking ID before save:", bookingID);
+
     try {
       setLoading(true);
-      await createBooking(payload as any);
+      const savedBooking = await createBooking(payload as any);
+
+      console.log("Saved booking response:", savedBooking);
 
       for (const cv of selectedVoucher) {
         cv.state = false;
         await saveCustomerVoucher(cv);
       }
 
-      alert("Booking saved successfully.");
-      setCurrentStep(4);
+      // Ensure we pass the booking with proper bookingID
+      const bookingToPass = {
+        ...payload,
+        ...(savedBooking || {}),
+        bookingID: savedBooking?.bookingID || bookingID,
+        customer: savedBooking?.customer || customer,
+      };
+
+      console.log("Navigating to payment with:", bookingToPass);
+
+      navigate("/payment", {
+        state: {
+          booking: bookingToPass,
+        },
+      });
     } catch (err: any) {
       console.error(err);
       setError("Failed to save booking: " + (err?.message || err));
