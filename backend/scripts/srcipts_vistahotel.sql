@@ -33,9 +33,12 @@ INSERT INTO rooms (room_number, floor, last_cleaned, notes, status, room_type_id
 
 -- ROOM TYPE IMAGES
 INSERT INTO room_images (room_id, images_url) VALUES
+
+('STD101', 'https://res.cloudinary.com/dk8gvar3y/image/upload/v1763548281/travel-1677347_1280_bxcvrh.jpg'),
+('STD101', 'https://res.cloudinary.com/dk8gvar3y/image/upload/v1763548281/travel-1677347_1280_bxcvrh.jpg'),
+('STD101', 'https://res.cloudinary.com/dk8gvar3y/image/upload/v1763548240/hotel-1749602_1280_ci7gbv.jpg'),
 ('STD101', 'https://pix8.agoda.net/hotelImages/7394456/87898656/a9ed80d50120f6b39035912334b2c530.jpg?ce=0&s=600x'),
 ('STD101', 'https://pix8.agoda.net/hotelImages/7394456/93823858/036cf046c58da8fff1cf92aaf3aa7f37.jpg?ce=2&s=600x'),
-('STD101', 'https://q-xx.bstatic.com/xdata/images/hotel/max1024x768/629950678.jpg?k=519c28836f153d0fc993144aca31868f5489a3d1590a2af8ba7be2d2b5de05a9&o=&s=600x'),
 ('DLX201', 'https://pix8.agoda.net/hotelImages/7394456/87898656/a12bb62e00b1bd42f5bcd4168742230a.jpg?ce=2&s=600x'),
 ('DLX202', 'https://q-xx.bstatic.com/xdata/images/hotel/max1024x768/629964341.jpg?k=119039eeeec43b29489f366935c93223415e50bca6c94593a0baa3b4f0f1f473&o=&s=600x'),
 ('STE301', 'https://pix8.agoda.net/property/73668369/0/ab0f949fe65b213cc9b1ad2f32c3271f.jpeg?ce=2&s=600x'),
@@ -73,6 +76,13 @@ INSERT INTO services (service_id, availability, description, price, service_cate
 ('SV003', b'1', 'Giặt ủi quần áo', 50000, 'LAUNDRY', '08:00-20:00', 'Giặt ủi'),
 ('SV004', b'1', 'Bánh ngọt tráng miệng', 45000, 'FOOD_BEVERAGE', '06:00-22:00', 'Bánh ngọt'),
 ('SV005', b'1', 'Nước ép cam', 40000, 'FOOD_BEVERAGE', '06:00-22:00', 'Nước ép cam');
+
+INSERT INTO service_images(service_id, images_url) VALUES
+('SV001', 'https://res.cloudinary.com/dk8gvar3y/image/upload/v1763537227/washing-machine-4124121_1280_sys95s.jpg'),
+('SV002', 'https://res.cloudinary.com/dk8gvar3y/image/upload/v1763537484/towel-8445521_1280_lnbep7.jpg'),
+('SV003', 'https://res.cloudinary.com/dk8gvar3y/image/upload/v1763537491/interior-8813803_1280_beoav9.jpg'),
+('SV004', 'https://res.cloudinary.com/dk8gvar3y/image/upload/v1763537531/interior-8813800_1280_inm40k.jpg'),
+('SV005', 'https://res.cloudinary.com/dk8gvar3y/image/upload/v1763537341/washing-machine-9262103_1280_dxw3xm.jpg');
 
 -- PROMOTION TYPE
 INSERT INTO promotion_types(promotion_type_id, promotion_type_name, description) VALUES
@@ -113,8 +123,10 @@ INSERT INTO reviews (review_id, comment, is_anonymous, location, rating, review_
 
 -- REVIEW IMAGES
 INSERT INTO review_images (review_id, images_url) VALUES
-('REVIEW001', 'https://pix6.agoda.net/generic/1914dfbcc7b41e97914aba5bc16c9c4c.jpeg?ce=2&s=600x'),
-('REVIEW002', 'https://pix6.agoda.net/generic/3b8d10c7e47b2e3d0752db3d16711471.jpeg?ce=2&s=600x');
+('REVIEW001', 'https://res.cloudinary.com/dk8gvar3y/image/upload/v1763549637/hotel-room-5858067_1280_auoi0o.jpg'),
+('REVIEW001', 'https://res.cloudinary.com/dk8gvar3y/image/upload/v1763549646/living-room-4809590_1280_avtvye.jpg'),
+('REVIEW002', 'https://res.cloudinary.com/dk8gvar3y/image/upload/v1763549658/cosy-2648851_1280_hborix.jpg'),
+('REVIEW002', 'https://res.cloudinary.com/dk8gvar3y/image/upload/v1763549643/curtain-1758853_1280_exc0tv.jpg');
 
 -- BOOKINGS
 INSERT INTO bookings (booking_id, booking_date, cancellation_date, check_in_date, check_out_date, duration, hourly_rate, number_of_guests, package_type, payment_status, special_requests, status, total_amount, total_cost, customer_id, employee_id) VALUES
@@ -131,25 +143,25 @@ INSERT INTO booking_details (room_price, booking_id, room_id, review_id) VALUES
 (1500000, 'BOOK004', 'DLX202', NULL);
 -- BOOKING SERVICES
 INSERT INTO booking_services (quantity, service_price, total_amount, booking_id, service_id) VALUES
-                                                                                                 (2, 80000, 160000, 'BOOK001', 'SV001'),
-                                                                                                 (1, 35000, 35000, 'BOOK002', 'SV002'),
-                                                                                                 (3, 50000, 150000, 'BOOK002', 'SV003'),
-                                                                                                 (1, 45000, 45000, 'BOOK003', 'SV004');
+(2, 80000, 160000, 'BOOK001', 'SV001'),
+(1, 35000, 35000, 'BOOK002', 'SV002'),
+(3, 50000, 150000, 'BOOK002', 'SV003'),
+(1, 45000, 45000, 'BOOK003', 'SV004');
 
 -- EARLY CHECKINS
 INSERT INTO early_checkins (request_id, additional_fee, approval_status, request_date, request_time, booking_id) VALUES
-                                                                                                                                  ('EC001', 450000, 'APPROVED', '2024-06-10 08:00:00', '2024-06-10 08:00:00', 'BOOK002'),
-                                                                                                                                  ('EC002', 900000, 'PENDING', '2024-06-15 07:30:00', '2024-06-15 07:30:00', 'BOOK001');
+('EC001', 450000, 'APPROVED', '2024-06-10 08:00:00', '2024-06-10 08:00:00', 'BOOK002'),
+('EC002', 900000, 'PENDING', '2024-06-15 07:30:00', '2024-06-15 07:30:00', 'BOOK001');
 
 -- MAINTENANCE REQUESTS
 INSERT INTO maintenance_requests (request_id, actual_cost, assigned_to, completion_date, description, estimated_time, prioty, request_date, status, booking_id) VALUES
-                                                                                                                                                                    ('MR001', 500000, 'EMP002', '2024-06-01 16:00:00', 'Sửa điều hòa phòng DLX201', 2, 'HIGH', '2024-06-01 14:00:00', 'COMPLETED', 'BOOK002'),
-                                                                                                                                                                    ('MR002', 200000, 'EMP002', NULL, 'Thay bóng đèn phòng STD103', 1, 'LOW', '2024-06-01 15:00:00', 'PENDING', NULL),
-                                                                                                                                                                    ('MR003', 150000, 'EMP004', NULL, 'Sửa vòi sen phòng STE301', 1, 'MEDIUM', '2024-06-02 10:00:00', 'PENDING', 'BOOK003');
+('MR001', 500000, 'EMP002', '2024-06-01 16:00:00', 'Sửa điều hòa phòng DLX201', 2, 'HIGH', '2024-06-01 14:00:00', 'COMPLETED', 'BOOK002'),
+('MR002', 200000, 'EMP002', NULL, 'Thay bóng đèn phòng STD103', 1, 'LOW', '2024-06-01 15:00:00', 'PENDING', NULL),
+('MR003', 150000, 'EMP004', NULL, 'Sửa vòi sen phòng STE301', 1, 'MEDIUM', '2024-06-02 10:00:00', 'PENDING', 'BOOK003');
 
 -- REPORTS
 INSERT INTO reports (report_id, generated_date, report_period, report_type, employee_id) VALUES
-                                                                                             ('REP001', '2024-06-01 18:00:00', '2024-06', 'OCCUPANCY', 'EMP003'),
-                                                                                             ('REP002', '2024-06-01 18:00:00', '2024-06', 'REVENUE', 'EMP003'),
-                                                                                             ('REP003', '2024-06-02 09:00:00', '2024-06', 'MAINTENANCE', 'EMP002'),
-                                                                                             ('REP004', '2024-06-03 10:00:00', '2024-06', 'SERVICE', 'EMP005');
+('REP001', '2024-06-01 18:00:00', '2024-06', 'OCCUPANCY', 'EMP003'),
+('REP002', '2024-06-01 18:00:00', '2024-06', 'REVENUE', 'EMP003'),
+('REP003', '2024-06-02 09:00:00', '2024-06', 'MAINTENANCE', 'EMP002'),
+('REP004', '2024-06-03 10:00:00', '2024-06', 'SERVICE', 'EMP005');

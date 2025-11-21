@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/room-type")
+@RequestMapping("/room-types")
 public class RoomTypeController {
     private final RoomTypeService service;
 

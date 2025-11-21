@@ -1,4 +1,4 @@
-USE vistalhoteldbs
+USE vistalhoteldbs;
 
 -- ROOM TYPES
 INSERT INTO room_types (room_type_id, area, base_price, description, max_occupancy, type_name) VALUES

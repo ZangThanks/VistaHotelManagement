@@ -1,4 +1,3 @@
-/* eslint-disable */
 export default function CheckoutTabs({
     activeTab,
     setActiveTab,

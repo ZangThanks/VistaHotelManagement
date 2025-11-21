@@ -1,4 +1,3 @@
-/* eslint-disable */
 import { useEffect, useRef } from 'react';
 
 export default function ModalContainer({

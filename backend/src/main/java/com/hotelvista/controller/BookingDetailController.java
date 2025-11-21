@@ -28,4 +28,5 @@ public class BookingDetailController {
     public List<BookingDetail> findAllByBooking_BookingID(@PathVariable("id") String bookingBookingID) {
         return service.findAllByBooking_BookingID(bookingBookingID);
     }
+
 }

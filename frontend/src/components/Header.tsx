@@ -1,93 +1,72 @@
-import React, { useState } from "react";
-import { getById } from "../services/customerService";
-import type { Customer } from "../types/Customer";
+import React, { useState } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faBars, faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons';
+import { faUser } from '@fortawesome/free-solid-svg-icons';
+import MenuSidebar from './MenuSidebar';
+import SearchSidebar from './SearchSidebar';
+import { Link } from 'react-router-dom';
 
-const Header: React.FC<{ onMenuClick: () => void }> = ({ onMenuClick }) => {
-  const [customer, setCustomer] = useState<Customer>();
-  const [, setError] = useState("");
-  const [, setLoading] = useState(true);
+import type { NavItem } from '../types/Header';
 
-  const getInitials = (name?: string) => {
-    if (!name) return "";
-    return name
-      .split(" ")
-      .filter(Boolean)
-      .map((n) => n[0].toUpperCase())
-      .join("");
-  };
+const navItems: NavItem[] = [
+    { label: 'Overview', path: '/home' },
+    { label: 'About Us', path: '/contact' },
+    { label: 'Accommodation', path: '/customer/room/list' },
+    { label: 'Services', path: '/services' },
+    { label: 'Events', path: '/newsPage' },
+    { label: 'Exclusive Offers', path: '/customer/promotion/list' },
+    { label: 'My bookings', path: '/customer/booking/mybookings' },
+];
 
-  const _cust = customer as unknown as Record<string, unknown> | undefined;
-  const avatarUrl =
-    (_cust?.avatarUrl as string) || (_cust?.avatar as string) || "";
+const Header: React.FC = () => {
+    const [menuOpen, setMenuOpen] = useState(false);
+    const [searchOpen, setSearchOpen] = useState(false);
 
-  React.useEffect(() => {
-    fetchData();
-  }, []);
+    return (
+        <div className="relative flex items-center px-6 py-4 bg-[#F5F0EB] shadow">
+            <button
+                onClick={() => setMenuOpen(true)}
+                className="text-2xl text-black hover:text-amber-400 transition"
+            >
+                <FontAwesomeIcon icon={faBars} />
+            </button>
 
-  const fetchData = async () => {
-    try {
-      const userDataStr = localStorage.getItem("user");
-      const userData = userDataStr ? JSON.parse(userDataStr) : null;
-      const customerId = userData?.data?.id || userData?.id;
+            <button
+                onClick={() => setSearchOpen(true)}
+                className="ml-3 text-xl text-black hover:text-amber-400 transition"
+            >
+                <FontAwesomeIcon icon={faMagnifyingGlass} />
+            </button>
 
-      if (customerId) {
-        const cust = await getById(customerId);
-        setCustomer(cust);
-      }
-      setLoading(false);
-      setError("");
-    } catch (err) {
-      console.error("Error fetching data:", err);
-      setError("Failed to fetch data: " + err);
-    } finally {
-      setLoading(false);
-    }
-  };
+            <Link to="/home" className="absolute left-1/2 -translate-x-1/2">
+                <img
+                    src="/src/assets/images/logo.png"
+                    className="w-13 cursor-pointer"
+                    alt="logo"
+                />
+            </Link>
 
-  return (
-    <div className="relative flex items-center px-4 py-2 bg-[#F5F0EB] shadow">
-      {/* Nút Menu bên trái */}
-      <button
-        onClick={onMenuClick}
-        aria-label="Menu"
-        className="text-2xl text-gray-800 hover:text-amber-700 transition duration-200"
-      >
-        <i className="fa-solid fa-bars"></i>
-      </button>
+            <button className="ml-auto">
+                <button className="flex items-center text-black hover:opacity-80 transition">
+                    <FontAwesomeIcon
+                        icon={faUser}
+                        className=" text-black text-2xl"
+                    />
+                </button>
+            </button>
 
-      <button className="text-xl ml-2 text-gray-700 hover:opacity-75 transition">
-        <i className="fa-solid fa-magnifying-glass"></i>
-      </button>
-      {/* Logo ở giữa */}
-      <img
-        src="/src/assets/images/logo.png"
-        alt="Company Logo"
-        className=" w-13 absolute left-1/2 -translate-x-1/2"
-      />
+            <MenuSidebar
+                isOpen={menuOpen}
+                onClose={() => setMenuOpen(false)}
+                navItems={navItems}
+            />
 
-      {/* Avatar bên 
-      phải */}
-      <button
-        aria-label="User profile"
-        className="ml-auto flex items-center gap-2 hover:opacity-80 transition"
-      >
-        <span className="hidden sm:inline text-sm font-medium text-gray-800">
-          {customer?.fullName}
-        </span>
-        {avatarUrl ? (
-          <img
-            src={avatarUrl}
-            alt="User avatar"
-            className="h-10 w-10 rounded-full object-cover"
-          />
-        ) : (
-          <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center text-sm font-semibold text-gray-700">
-            {getInitials(customer?.fullName || customer?.userName) || "U"}
-          </div>
-        )}
-      </button>
-    </div>
-  );
+            <SearchSidebar
+                isOpen={searchOpen}
+                onClose={() => setSearchOpen(false)}
+            />
+        </div>
+    );
 };
 
 export default Header;

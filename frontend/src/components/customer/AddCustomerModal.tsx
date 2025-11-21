@@ -46,7 +46,7 @@ const AddCustomerModal: React.FC<CustomerModalProps> = ({
                         </label>
                         <input
                             type="text"
-                            value={form.fullName}
+                            value={form.fullName ?? ''}
                             onChange={(e) =>
                                 setForm({ ...form, fullName: e.target.value })
                             }
@@ -59,7 +59,7 @@ const AddCustomerModal: React.FC<CustomerModalProps> = ({
                         </label>
                         <input
                             type="email"
-                            value={form.email}
+                            value={form.email ?? ''}
                             onChange={(e) =>
                                 setForm({ ...form, email: e.target.value })
                             }
@@ -72,7 +72,7 @@ const AddCustomerModal: React.FC<CustomerModalProps> = ({
                         </label>
                         <input
                             type="text"
-                            value={form.phone}
+                            value={form.phone ?? ''}
                             onChange={(e) =>
                                 setForm({ ...form, phone: e.target.value })
                             }
@@ -85,7 +85,7 @@ const AddCustomerModal: React.FC<CustomerModalProps> = ({
                         </label>
                         <input
                             type="date"
-                            value={form.birthDate}
+                            value={form.birthDate ?? ''}
                             onChange={(e) =>
                                 setForm({ ...form, birthDate: e.target.value })
                             }
@@ -97,7 +97,7 @@ const AddCustomerModal: React.FC<CustomerModalProps> = ({
                             Giới tính
                         </label>
                         <select
-                            value={form.gender}
+                            value={form.gender ?? 'MALE'}
                             onChange={(e) =>
                                 setForm({
                                     ...form,
@@ -116,7 +116,7 @@ const AddCustomerModal: React.FC<CustomerModalProps> = ({
                             Hạng thành viên
                         </label>
                         <select
-                            value={form.memberShipLevel}
+                            value={form.memberShipLevel ?? 'SILVER'}
                             onChange={(e) =>
                                 setForm({
                                     ...form,
@@ -137,7 +137,7 @@ const AddCustomerModal: React.FC<CustomerModalProps> = ({
                         </label>
                         <input
                             type="number"
-                            value={form.loyaltyPoints}
+                            value={form.loyaltyPoints ?? 0}
                             onChange={(e) =>
                                 setForm({
                                     ...form,
