@@ -29,7 +29,7 @@ const PromotionDetailModal: React.FC<PromotionDetailModalProps> = ({
     if (typeof promotionType === "string") {
       return promotionType;
     }
-    return promotionType?.promotionTypeName || "N/A";
+    return promotionType?.promotionTYPEName || "N/A";
   };
 
   const formatDate = (dateString: string) => {
@@ -77,12 +77,12 @@ const PromotionDetailModal: React.FC<PromotionDetailModalProps> = ({
                   <div className="flex items-center gap-3">
                     <span
                       className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
-                        promotion.isActive
+                        promotion.active
                           ? "bg-green-100 text-green-800"
                           : "bg-gray-100 text-gray-800"
                       }`}
                     >
-                      {promotion.isActive ? "Active" : "Inactive"}
+                      {promotion.active ? "Active" : "Inactive"}
                     </span>
                     <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-700">
                       {promotion.promotionID}
@@ -91,7 +91,7 @@ const PromotionDetailModal: React.FC<PromotionDetailModalProps> = ({
                 </div>
                 <button
                   onClick={onClose}
-                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
                 >
                   <FaTimes className="text-gray-600 text-xl" />
                 </button>
@@ -128,7 +128,7 @@ const PromotionDetailModal: React.FC<PromotionDetailModalProps> = ({
 
                   <div className="flex items-start gap-3 p-4 bg-blue-50 rounded-lg">
                     <div className="p-2 bg-blue-100 rounded-lg">
-                      {promotion.discountType === "percentage" ? (
+                      {promotion.discountType === "PERCENT" ? (
                         <FaPercentage className="text-blue-600" />
                       ) : (
                         <FaDollarSign className="text-blue-600" />
@@ -180,7 +180,7 @@ const PromotionDetailModal: React.FC<PromotionDetailModalProps> = ({
                                 </div>
                                 <div className="text-right">
                                   <div className="text-2xl font-bold text-[#b27c1f]">
-                                    {promotion.discountType === "percentage"
+                                    {promotion.discountType === "PERCENT"
                                       ? `${rtp.discountValue}%`
                                       : formatVND(rtp.discountValue)}
                                   </div>
