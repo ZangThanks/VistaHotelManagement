@@ -21,4 +21,5 @@ export interface Customer {
   joinedDate: string; // YYYY-MM-DD
   loyaltyPoints: number;
   memberShipLevel: MemberShipLevel;
+  reputationPoint: number;
 }

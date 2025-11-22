@@ -10,8 +10,8 @@ import lombok.ToString;
 @NoArgsConstructor
 @ToString
 public enum ApprovalStatus {
-    PENDING("PENDING"),
-    APPROVED("APPROVED"),
-    REJECTED("REJECTED");
+    PENDING("Pending"),
+    APPROVED("Approved"),
+    REJECTED("Rejected");
     private String approvalStatus;
 }
