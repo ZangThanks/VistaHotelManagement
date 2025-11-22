@@ -46,14 +46,14 @@ const Header: React.FC = () => {
                 />
             </Link>
 
-            <button className="ml-auto">
+            <div className="ml-auto">
                 <button className="flex items-center text-black hover:opacity-80 transition">
                     <FontAwesomeIcon
                         icon={faUser}
                         className=" text-black text-2xl"
                     />
                 </button>
-            </button>
+            </div>
 
             <MenuSidebar
                 isOpen={menuOpen}

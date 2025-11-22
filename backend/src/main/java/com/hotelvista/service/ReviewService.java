@@ -1,5 +1,6 @@
 package com.hotelvista.service;
 
+import com.hotelvista.dto.CustomerReviewDTO;
 import com.hotelvista.model.Review;
 import com.hotelvista.repository.ReviewRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +17,7 @@ public class ReviewService {
     public ReviewService(ReviewRepository repo) {
         this.repo = repo;
     }
-    public List<Review> getReviewByRoomNumber(String roomNumber) {
+    public List<CustomerReviewDTO> getReviewByRoomNumber(String roomNumber) {
         return repo.getReviewByRoomID(roomNumber);
     }
 }

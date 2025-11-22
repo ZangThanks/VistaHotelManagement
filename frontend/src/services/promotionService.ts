@@ -1,6 +1,6 @@
 import {api} from "./apiClient";
 import type { Promotion } from "../types/Promotion";
-import type { RoomTypePromotion } from "../types/RoomTypePromotion";
+// import type { RoomTypePromotion } from "../types/RoomTypePromotion";
 
 const ENDPOINT = "/promotions";
 

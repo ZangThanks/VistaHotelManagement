@@ -165,3 +165,10 @@ INSERT INTO reports (report_id, generated_date, report_period, report_type, empl
 ('REP002', '2024-06-01 18:00:00', '2024-06', 'REVENUE', 'EMP003'),
 ('REP003', '2024-06-02 09:00:00', '2024-06', 'MAINTENANCE', 'EMP002'),
 ('REP004', '2024-06-03 10:00:00', '2024-06', 'SERVICE', 'EMP005');
+
+SELECT c.*, r.*
+FROM booking_details bdl
+         JOIN reviews r ON bdl.review_id = r.review_id
+         JOIN bookings b ON bdl.booking_id = b.booking_id
+        JOIN customers c ON b.customer_id = c.customer_id
+     WHERE bdl.room_id = 'STD101'
