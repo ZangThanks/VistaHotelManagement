@@ -36,6 +36,7 @@ import BookingDetail from '../pages/admin/booking/BookingDetail.tsx';
 import PromotionManagement from '../pages/admin/promotion/PromotionManagement.tsx';
 import PromotionTypeManagement from '../pages/admin/promotion/PromotionTypeManagement.tsx';
 import RoomTypeManagement from '../pages/admin/room/RoomTypeManagement.tsx';
+import VoucherManagement from '../pages/admin/voucher/VoucherManagement.tsx';
 
 import { Contact } from 'lucide-react';
 
@@ -81,6 +82,7 @@ export const router = createBrowserRouter([
             { path: 'bookingPage', element: <BookingPage /> },
             { path: 'promotions', element: <PromotionManagement /> },
             { path: 'promotion-types', element: <PromotionTypeManagement /> },
+            { path: 'vouchers', element: <VoucherManagement /> },
             { path: 'room-types', element: <RoomTypeManagement /> },
         ],
     },
