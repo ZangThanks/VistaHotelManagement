@@ -100,7 +100,7 @@ export default function DistributionTab({
             <select
               value={selectedVoucherId}
               onChange={(e) => setSelectedVoucherId(e.target.value)}
-              className="w-full px-4 py-2 border border-[#ebe3d7] rounded-lg focus:ring-2 focus:ring-[#6b5e4c] focus:border-transparent"
+              className="w-full px-4 py-2 border border-[#ebe3d7] rounded-lg focus:ring-2 focus:ring-[#6b5e4c] focus:border-transparent cursor-pointer"
             >
               <option value="">Choose a voucher...</option>
               {activeVouchers.map((voucher) => (
@@ -117,7 +117,7 @@ export default function DistributionTab({
           <button
             onClick={handleDistribute}
             disabled={!selectedVoucherId}
-            className="w-full bg-[#6b5e4c] text-white py-3 rounded-lg hover:bg-[#5a4d3d] transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="w-full bg-[#6b5e4c] text-white py-3 rounded-lg hover:bg-[#5a4d3d] transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2"
           >
             <Send className="w-4 h-4" />
             <span>Select Recipients</span>

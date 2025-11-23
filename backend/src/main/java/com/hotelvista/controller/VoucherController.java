@@ -43,7 +43,7 @@ public class VoucherController {
      * @param voucher
      * @return
      */
-    @PostMapping
+    @PostMapping("/create")
     public ResponseEntity<?> saveVoucher(@RequestBody Voucher voucher) {
         boolean saved = service.save(voucher);
         return saved
@@ -69,10 +69,29 @@ public class VoucherController {
      * @param status
      * @return
      */
-    @PutMapping("/{id}/status/{status}")
-    public ResponseEntity<?> toggleVoucherStatus(@PathVariable String id, @PathVariable boolean status) {
+    @PatchMapping("/{id}/status/{status}")
+    public ResponseEntity<String> toggleVoucherStatus(@PathVariable String id, @PathVariable boolean status) {
         return service.toggleActive(id, status)
                 ? ResponseEntity.ok("Cập nhật trạng thái voucher thành công")
+                : ResponseEntity.badRequest().body("Không thể cập nhật voucher");
+    }
+
+    @GetMapping("/customerID={id}")
+    public List<Voucher> findVouchersBy_CustomerID(@PathVariable String id) {
+        return service.findVouchersBy_CustomerID(id);
+    }
+
+    /**
+     * Cập nhật thông tin voucher
+     * @param id - ID của voucher cần cập nhật
+     * @param voucher - Thông tin voucher mới
+     * @return
+     */
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateVoucher(@PathVariable String id, @RequestBody Voucher voucher) {
+        boolean updated = service.update(id, voucher);
+        return updated
+                ? ResponseEntity.ok("Cập nhật voucher thành công")
                 : ResponseEntity.badRequest().body("Không thể cập nhật voucher");
     }
 }

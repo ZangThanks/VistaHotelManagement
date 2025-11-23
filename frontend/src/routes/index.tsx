@@ -14,7 +14,7 @@ import ResetPassword from '../pages/auth/ResetPassword';
 import CustomerList from '../pages/employee/CustomerList';
 import NewsPage from '../pages/employee/NewsPage';
 import AdminLayout from '../layouts/AdminLayout';
-import BookingPage from '../pages/admin/booking/BookingPage';
+import BookingPage from '../pages/customer/booking/BookingPage.tsx';
 import MainLayout from '../layouts/MainLayout';
 import CheckInManager from '../pages/employee/CheckInManager';
 import CheckOutManager from '../pages/employee/CheckOutManager';
@@ -24,7 +24,7 @@ import Home from '../pages/customer/Home';
 import RoomList from '../pages/customer/RoomList';
 import Dashboard from '../pages/admin/dashboard/Dashboard.tsx';
 import NewsDetail from '../components/news/NewsDetail.tsx';
-import RoomManagement from '../pages/admin/room/RoomManagement.tsx';
+import RoomManagement from '../pages/employee/room/RoomManagement.tsx';
 import RoomDetail from '../pages/customer/RoomDetail.tsx';
 import CustomerLayout from '../layouts/CustomerLayout.tsx';
 import DailyWorkStatistics from '../pages/employee/DailyWorkStatistics.tsx';
@@ -35,8 +35,9 @@ import ServiceManagement from '../pages/admin/ServiceManagement.tsx';
 import BookingDetail from '../pages/admin/booking/BookingDetail.tsx';
 import PromotionManagement from '../pages/admin/promotion/PromotionManagement.tsx';
 import PromotionTypeManagement from '../pages/admin/promotion/PromotionTypeManagement.tsx';
-import RoomTypeManagement from '../pages/admin/room/RoomTypeManagement.tsx';
+import RoomTypeManagement from '../pages/employee/room/RoomTypeManagement.tsx';
 import VoucherManagement from '../pages/admin/voucher/VoucherManagement.tsx';
+import VoucherList from '../pages/customer/VoucherList.tsx';
 
 import { Contact } from 'lucide-react';
 
@@ -114,6 +115,8 @@ export const router = createBrowserRouter([
             { path: 'service', element: <ServiceList /> },
             { path: 'bookingPage', element: <BookingPage /> },
             { path: 'booking/:id', element: <BookingDetail /> },
+            { path: 'vouchers', element: <VoucherList /> },
+            { path: 'vouchers/:customerId', element: <VoucherList /> },
         ],
     },
 ]);

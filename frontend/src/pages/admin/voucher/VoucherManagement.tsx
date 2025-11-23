@@ -4,7 +4,6 @@ import {
   FaTicketAlt,
   FaCheckCircle,
   FaClock,
-  FaTimesCircle,
   FaGift,
   FaUsers,
   FaCalendarAlt,
@@ -19,6 +18,7 @@ import VoucherFormModal from "../../../components/voucher/VoucherFormModal";
 import DistributeVoucherModal from "../../../components/voucher/DistributeVoucherModal";
 import DistributionTab from "../../../components/voucher/DistributionTab";
 import AutoEventsTab from "../../../components/voucher/AutoEventsTab";
+import ConfirmDialog from "../../../components/dialog/ConfirmDialog";
 import voucherService from "../../../services/voucherService";
 import type { Voucher } from "../../../types/Voucher";
 
@@ -30,7 +30,7 @@ const VoucherManagement: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<
-    "all" | "active" | "inactive" | "expired"
+    "all" | "active" | "inactive"
   >("all");
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -39,6 +39,7 @@ const VoucherManagement: React.FC = () => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDistributeModalOpen, setIsDistributeModalOpen] = useState(false);
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
   const [selectedVoucher, setSelectedVoucher] = useState<Voucher | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -46,6 +47,7 @@ const VoucherManagement: React.FC = () => {
 
   useEffect(() => {
     loadVouchers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadVouchers = async () => {
@@ -62,20 +64,15 @@ const VoucherManagement: React.FC = () => {
   };
 
   const filteredVouchers = useMemo(() => {
-    const now = new Date();
     return vouchers.filter((voucher) => {
       const matchesSearch =
         voucher.voucherName.toLowerCase().includes(searchQuery.toLowerCase()) ||
         voucher.voucherID.toLowerCase().includes(searchQuery.toLowerCase());
 
-      const endDate = new Date(voucher.endDate);
-      const isExpired = endDate < now;
-
       const matchesStatus =
         statusFilter === "all" ||
-        (statusFilter === "active" && voucher.isActive && !isExpired) ||
-        (statusFilter === "inactive" && !voucher.isActive) ||
-        (statusFilter === "expired" && isExpired);
+        (statusFilter === "active" && voucher.isActive) ||
+        (statusFilter === "inactive" && !voucher.isActive);
 
       return matchesSearch && matchesStatus;
     });
@@ -92,45 +89,55 @@ const VoucherManagement: React.FC = () => {
   }, [searchQuery, statusFilter]);
 
   const stats = useMemo(() => {
-    const now = new Date();
     const total = vouchers.length;
-    const active = vouchers.filter(
-      (v) => v.isActive && new Date(v.endDate) >= now
-    ).length;
+    const active = vouchers.filter((v) => v.isActive).length;
     const inactive = vouchers.filter((v) => !v.isActive).length;
-    const expired = vouchers.filter((v) => new Date(v.endDate) < now).length;
-    return { total, active, inactive, expired };
+    return { total, active, inactive };
   }, [vouchers]);
 
-  const handleToggleStatus = async (voucher: Voucher) => {
+  const handleToggleStatus = (voucher: Voucher) => {
+    setSelectedVoucher(voucher);
+    setIsConfirmDialogOpen(true);
+  };
+
+  const confirmToggleStatus = async () => {
+    if (!selectedVoucher) return;
+
     try {
       await voucherService.toggleVoucherStatus(
-        voucher.voucherID,
-        !voucher.isActive
+        selectedVoucher.voucherID,
+        !selectedVoucher.isActive
       );
       toast?.success(
         `Voucher ${
-          voucher.isActive ? "deactivated" : "activated"
+          selectedVoucher.isActive ? "deactivated" : "activated"
         } successfully!`
       );
       await loadVouchers();
     } catch (error) {
       console.error("Error toggling voucher status:", error);
       toast?.error("Failed to update voucher status");
+    } finally {
+      setIsConfirmDialogOpen(false);
+      setSelectedVoucher(null);
     }
   };
 
   const handleSubmit = async (data: Partial<Voucher>) => {
     try {
       setSubmitting(true);
-      await voucherService.saveVoucher(data);
-      toast?.success(
-        data.voucherID
-          ? "Voucher updated successfully!"
-          : "Voucher created successfully!"
-      );
+      if (selectedVoucher) {
+        // Update existing voucher
+        await voucherService.updateVoucher(selectedVoucher.voucherID, data);
+        toast?.success("Voucher updated successfully!");
+      } else {
+        // Create new voucher
+        await voucherService.saveVoucher(data);
+        toast?.success("Voucher created successfully!");
+      }
       setIsAddModalOpen(false);
       setIsEditModalOpen(false);
+      setSelectedVoucher(null);
       await loadVouchers();
     } catch (error) {
       console.error("Error saving voucher:", error);
@@ -139,6 +146,25 @@ const VoucherManagement: React.FC = () => {
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const handleEdit = (voucher: Voucher) => {
+    setSelectedVoucher(voucher);
+    setIsEditModalOpen(true);
+  };
+
+  const handleRowClick = (voucher: Voucher, e: React.MouseEvent) => {
+    // Ignore clicks on buttons
+    const target = e.target as HTMLElement;
+    if (target.closest("button")) {
+      return;
+    }
+    handleEdit(voucher);
+  };
+
+  const handleCloseEditModal = () => {
+    setIsEditModalOpen(false);
+    setSelectedVoucher(null);
   };
 
   const handleDistributionSuccess = () => {
@@ -174,7 +200,7 @@ const VoucherManagement: React.FC = () => {
         {activeTab === "management" && (
           <button
             onClick={() => setIsAddModalOpen(true)}
-            className="bg-[#6b5e4c] text-white px-6 py-3 rounded-lg hover:bg-[#5a4d3d] transition-colors flex items-center gap-2 font-semibold"
+            className="bg-[#6b5e4c] text-white px-6 py-3 rounded-lg hover:bg-[#5a4d3d] transition-colors flex items-center gap-2 font-semibold cursor-pointer"
           >
             <FaPlus />
             Add Voucher
@@ -186,55 +212,49 @@ const VoucherManagement: React.FC = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="grid grid-cols-1 md:grid-cols-4 gap-4"
+        className="grid grid-cols-1 md:grid-cols-3 gap-4"
       >
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-[#ebe3d7]">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-600 text-sm">Total Vouchers</p>
-              <p className="text-3xl font-bold text-[#6b5e4c] mt-2">
-                {stats.total}
-              </p>
-            </div>
-            <FaTicketAlt className="text-4xl text-[#6b5e4c] opacity-20" />
+        <motion.div
+          className="bg-white p-2 px-4 rounded-xl shadow-sm border border-[#ebe3d7] flex items-center gap-4"
+          whileHover={{ y: -5, boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}
+          transition={{ type: 'spring', stiffness: 300 }}
+        >
+          <div className="w-14 h-14 rounded-lg bg-[#fff8e1] flex items-center justify-center">
+            <FaTicketAlt className="text-2xl text-[#f57c00]" />
           </div>
-        </div>
+          <div className="flex-1">
+            <h3 className="text-xl font-bold text-gray-800">{stats.total}</h3>
+            <p className="text-sm text-gray-600">Total Vouchers</p>
+          </div>
+        </motion.div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-[#ebe3d7]">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-600 text-sm">Active</p>
-              <p className="text-3xl font-bold text-green-600 mt-2">
-                {stats.active}
-              </p>
-            </div>
-            <FaCheckCircle className="text-4xl text-green-600 opacity-20" />
+        <motion.div
+          className="bg-white p-2 px-4 rounded-xl shadow-sm border border-[#ebe3d7] flex items-center gap-4"
+          whileHover={{ y: -5, boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}
+          transition={{ type: 'spring', stiffness: 300 }}
+        >
+          <div className="w-14 h-14 rounded-lg bg-[#e8f5e9] flex items-center justify-center">
+            <FaCheckCircle className="text-2xl text-[#2e7d32]" />
           </div>
-        </div>
+          <div className="flex-1">
+            <h3 className="text-xl font-bold text-gray-800">{stats.active}</h3>
+            <p className="text-sm text-gray-600">Active</p>
+          </div>
+        </motion.div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-[#ebe3d7]">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-600 text-sm">Inactive</p>
-              <p className="text-3xl font-bold text-gray-600 mt-2">
-                {stats.inactive}
-              </p>
-            </div>
-            <FaClock className="text-4xl text-gray-600 opacity-20" />
+        <motion.div
+          className="bg-white p-2 px-4 rounded-xl shadow-sm border border-[#ebe3d7] flex items-center gap-4"
+          whileHover={{ y: -5, boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}
+          transition={{ type: 'spring', stiffness: 300 }}
+        >
+          <div className="w-14 h-14 rounded-lg bg-[#ffebee] flex items-center justify-center">
+            <FaClock className="text-2xl text-[#c62828]" />
           </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-[#ebe3d7]">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-600 text-sm">Expired</p>
-              <p className="text-3xl font-bold text-red-600 mt-2">
-                {stats.expired}
-              </p>
-            </div>
-            <FaTimesCircle className="text-4xl text-red-600 opacity-20" />
+          <div className="flex-1">
+            <h3 className="text-xl font-bold text-gray-800">{stats.inactive}</h3>
+            <p className="text-sm text-gray-600">Inactive</p>
           </div>
-        </div>
+        </motion.div>
       </motion.div>
 
       {/* Tabs */}
@@ -247,7 +267,7 @@ const VoucherManagement: React.FC = () => {
         <div className="flex gap-2">
           <button
             onClick={() => setActiveTab("management")}
-            className={`flex-1 px-6 py-3 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2 ${
+            className={`flex-1 px-6 py-3 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2 cursor-pointer ${
               activeTab === "management"
                 ? "bg-[#6b5e4c] text-white"
                 : "text-gray-600 hover:bg-gray-100"
@@ -258,7 +278,7 @@ const VoucherManagement: React.FC = () => {
           </button>
           <button
             onClick={() => setActiveTab("distribution")}
-            className={`flex-1 px-6 py-3 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2 ${
+            className={`flex-1 px-6 py-3 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2 cursor-pointer ${
               activeTab === "distribution"
                 ? "bg-[#6b5e4c] text-white"
                 : "text-gray-600 hover:bg-gray-100"
@@ -269,7 +289,7 @@ const VoucherManagement: React.FC = () => {
           </button>
           <button
             onClick={() => setActiveTab("events")}
-            className={`flex-1 px-6 py-3 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2 ${
+            className={`flex-1 px-6 py-3 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2 cursor-pointer ${
               activeTab === "events"
                 ? "bg-[#6b5e4c] text-white"
                 : "text-gray-600 hover:bg-gray-100"
@@ -306,12 +326,11 @@ const VoucherManagement: React.FC = () => {
               onChange={(e) =>
                 setStatusFilter(e.target.value as typeof statusFilter)
               }
-              className="px-4 py-2 border border-[#ebe3d7] rounded-lg focus:ring-2 focus:ring-[#6b5e4c] focus:border-transparent"
+              className="px-4 py-2 border border-[#ebe3d7] rounded-lg focus:ring-2 focus:ring-[#6b5e4c] focus:border-transparent cursor-pointer"
             >
               <option value="all">All Status</option>
               <option value="active">Active</option>
               <option value="inactive">Inactive</option>
-              <option value="expired">Expired</option>
             </select>
           </div>
 
@@ -340,14 +359,11 @@ const VoucherManagement: React.FC = () => {
                 </thead>
                 <tbody className="bg-white divide-y divide-[#ebe3d7]">
                   {paginatedVouchers.map((voucher) => {
-                    const now = new Date();
-                    const endDate = new Date(voucher.endDate);
-                    const isExpired = endDate < now;
-
                     return (
                       <tr
                         key={voucher.voucherID}
-                        className="hover:bg-[#f5f0eb] transition-colors"
+                        onClick={(e) => handleRowClick(voucher, e)}
+                        className="hover:bg-[#f5f0eb] transition-colors cursor-pointer"
                       >
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div>
@@ -362,8 +378,10 @@ const VoucherManagement: React.FC = () => {
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm font-semibold text-[#6b5e4c]">
                             {voucher.discountType === "PERCENT"
-                              ? `${voucher.discountValue}%`
-                              : `${voucher.discountValue?.toLocaleString()}đ`}
+                              ? `${voucher.discountPercentage || 0}%`
+                              : `${
+                                  voucher.discountValue?.toLocaleString() || 0
+                                }đ`}
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
@@ -374,15 +392,13 @@ const VoucherManagement: React.FC = () => {
                             -
                           </div>
                           <div className="text-sm text-gray-900">
-                            {endDate.toLocaleDateString("vi-VN")}
+                            {new Date(voucher.endDate).toLocaleDateString(
+                              "vi-VN"
+                            )}
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          {isExpired ? (
-                            <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                              Expired
-                            </span>
-                          ) : voucher.isActive ? (
+                          {voucher.isActive ? (
                             <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
                               Active
                             </span>
@@ -394,18 +410,15 @@ const VoucherManagement: React.FC = () => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                           <button
-                            onClick={() => {
-                              setSelectedVoucher(voucher);
-                              setIsEditModalOpen(true);
-                            }}
-                            className="text-[#6b5e4c] hover:text-[#5a4d3d] transition-colors"
+                            onClick={() => handleEdit(voucher)}
+                            className="text-[#6b5e4c] hover:text-[#5a4d3d] transition-colors cursor-pointer"
                             title="Edit"
                           >
                             <FaEdit className="inline" />
                           </button>
                           <button
                             onClick={() => handleToggleStatus(voucher)}
-                            className={`transition-colors ${
+                            className={`transition-colors cursor-pointer ${
                               voucher.isActive
                                 ? "text-red-600 hover:text-red-800"
                                 : "text-green-600 hover:text-green-800"
@@ -416,7 +429,7 @@ const VoucherManagement: React.FC = () => {
                           </button>
                           <button
                             onClick={() => handleOpenDistributeModal(voucher)}
-                            className="text-blue-600 hover:text-blue-800 transition-colors"
+                            className="text-blue-600 hover:text-blue-800 transition-colors cursor-pointer"
                             title="Distribute"
                           >
                             <FaUsers className="inline" />
@@ -455,14 +468,17 @@ const VoucherManagement: React.FC = () => {
       {/* Modals */}
       <VoucherFormModal
         isOpen={isAddModalOpen}
-        onClose={() => setIsAddModalOpen(false)}
+        onClose={() => {
+          setIsAddModalOpen(false);
+          setSelectedVoucher(null);
+        }}
         onSubmit={handleSubmit}
         submitting={submitting}
       />
 
       <VoucherFormModal
         isOpen={isEditModalOpen}
-        onClose={() => setIsEditModalOpen(false)}
+        onClose={handleCloseEditModal}
         onSubmit={handleSubmit}
         voucher={selectedVoucher}
         submitting={submitting}
@@ -473,6 +489,24 @@ const VoucherManagement: React.FC = () => {
         onClose={() => setIsDistributeModalOpen(false)}
         voucher={selectedVoucher}
         onSuccess={handleDistributionSuccess}
+      />
+
+      <ConfirmDialog
+        isOpen={isConfirmDialogOpen}
+        onClose={() => {
+          setIsConfirmDialogOpen(false);
+          setSelectedVoucher(null);
+        }}
+        onConfirm={confirmToggleStatus}
+        title={`${
+          selectedVoucher?.isActive ? "Deactivate" : "Activate"
+        } Voucher`}
+        message={`Are you sure you want to ${
+          selectedVoucher?.isActive ? "deactivate" : "activate"
+        } the voucher "${selectedVoucher?.voucherName}"?`}
+        type="warning"
+        confirmText={selectedVoucher?.isActive ? "Deactivate" : "Activate"}
+        cancelText="Cancel"
       />
     </div>
   );

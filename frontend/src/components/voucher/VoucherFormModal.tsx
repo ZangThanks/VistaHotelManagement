@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import type { Voucher } from "../../types/Voucher";
+import { validateVoucherForm } from "../../utils/voucherValidators";
 
 interface VoucherFormModalProps {
   isOpen: boolean;
@@ -28,19 +29,36 @@ const VoucherFormModal: React.FC<VoucherFormModalProps> = ({
     isActive: true,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     if (isOpen) {
       if (voucher) {
+        console.log("Loading voucher into form:", voucher); // Debug log
+        console.log(
+          "Voucher isActive value:",
+          voucher.isActive,
+          "Type:",
+          typeof voucher.isActive
+        ); // Debug log
+
+        // Explicitly handle isActive - if it's false, keep it false, otherwise default to true
+        const isActiveValue =
+          voucher.isActive !== undefined && voucher.isActive !== null
+            ? Boolean(voucher.isActive)
+            : true;
+
+        console.log("Setting isActive to:", isActiveValue); // Debug log
+
         setFormData({
-          voucherID: voucher.voucherID,
-          voucherName: voucher.voucherName,
-          discountType: voucher.discountType,
-          discountPercentage: voucher.discountPercentage,
-          discountValue: voucher.discountValue,
-          startDate: voucher.startDate,
-          endDate: voucher.endDate,
-          isActive: voucher.isActive,
+          voucherID: voucher.voucherID || "",
+          voucherName: voucher.voucherName || "",
+          discountType: voucher.discountType || "PERCENT",
+          discountPercentage: voucher.discountPercentage ?? 0,
+          discountValue: voucher.discountValue ?? 0,
+          startDate: voucher.startDate || new Date(),
+          endDate: voucher.endDate || new Date(),
+          isActive: isActiveValue,
         });
       } else {
         setFormData({
@@ -55,47 +73,39 @@ const VoucherFormModal: React.FC<VoucherFormModalProps> = ({
         });
       }
       setErrors({});
+      setTouched({});
     }
   }, [isOpen, voucher]);
 
+  // Realtime validation
+  useEffect(() => {
+    if (Object.keys(touched).length > 0) {
+      const newErrors = validateVoucherForm(formData);
+      setErrors(newErrors);
+    }
+  }, [formData, touched]);
+
+  const handleFieldChange = (
+    field: string,
+    value: string | number | boolean | Date
+  ) => {
+    setFormData({ ...formData, [field]: value });
+    setTouched({ ...touched, [field]: true });
+  };
+
+  const handleFieldBlur = (field: string) => {
+    setTouched({ ...touched, [field]: true });
+  };
+
   const validate = (): boolean => {
-    const newErrors: Record<string, string> = {};
+    // Mark all fields as touched on submit
+    const allFields = Object.keys(formData).reduce(
+      (acc, key) => ({ ...acc, [key]: true }),
+      {}
+    );
+    setTouched(allFields);
 
-    if (!formData.voucherID?.trim()) {
-      newErrors.voucherID = "Voucher ID is required";
-    }
-    if (!formData.voucherName?.trim()) {
-      newErrors.voucherName = "Voucher name is required";
-    }
-    if (
-      formData.discountType === "PERCENT" &&
-      (!formData.discountPercentage ||
-        formData.discountPercentage <= 0 ||
-        formData.discountPercentage > 100)
-    ) {
-      newErrors.discountPercentage =
-        "Discount percentage must be between 1 and 100";
-    }
-    if (
-      formData.discountType === "FIXED" &&
-      (!formData.discountValue || formData.discountValue <= 0)
-    ) {
-      newErrors.discountValue = "Discount value must be greater than 0";
-    }
-    if (!formData.startDate) {
-      newErrors.startDate = "Start date is required";
-    }
-    if (!formData.endDate) {
-      newErrors.endDate = "End date is required";
-    }
-    if (
-      formData.startDate &&
-      formData.endDate &&
-      new Date(formData.endDate) <= new Date(formData.startDate)
-    ) {
-      newErrors.endDate = "End date must be after start date";
-    }
-
+    const newErrors = validateVoucherForm(formData);
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -105,7 +115,14 @@ const VoucherFormModal: React.FC<VoucherFormModalProps> = ({
     if (!validate()) return;
 
     try {
-      await onSubmit(formData);
+      // Ensure isActive is explicitly included
+      const submitData: Partial<Voucher> = {
+        ...formData,
+        isActive: formData.isActive ?? true,
+      };
+      console.log("Submitting voucher data:", submitData); // Debug log
+      console.log("isActive value being submitted:", submitData.isActive); // Debug log
+      await onSubmit(submitData);
       onClose();
     } catch (error) {
       console.error("Error submitting form:", error);
@@ -143,16 +160,17 @@ const VoucherFormModal: React.FC<VoucherFormModalProps> = ({
               <input
                 type="text"
                 value={formData.voucherID}
-                onChange={(e) =>
-                  setFormData({ ...formData, voucherID: e.target.value })
-                }
+                onChange={(e) => handleFieldChange("voucherID", e.target.value)}
+                onBlur={() => handleFieldBlur("voucherID")}
                 disabled={!!voucher}
                 className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6b5e4c] ${
-                  errors.voucherID ? "border-red-500" : "border-gray-300"
+                  touched.voucherID && errors.voucherID
+                    ? "border-red-500"
+                    : "border-gray-300"
                 } ${voucher ? "bg-gray-100" : ""}`}
                 placeholder="e.g., SUMMER2024"
               />
-              {errors.voucherID && (
+              {touched.voucherID && errors.voucherID && (
                 <p className="text-red-500 text-xs mt-1">{errors.voucherID}</p>
               )}
             </div>
@@ -165,14 +183,17 @@ const VoucherFormModal: React.FC<VoucherFormModalProps> = ({
                 type="text"
                 value={formData.voucherName}
                 onChange={(e) =>
-                  setFormData({ ...formData, voucherName: e.target.value })
+                  handleFieldChange("voucherName", e.target.value)
                 }
+                onBlur={() => handleFieldBlur("voucherName")}
                 className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6b5e4c] ${
-                  errors.voucherName ? "border-red-500" : "border-gray-300"
+                  touched.voucherName && errors.voucherName
+                    ? "border-red-500"
+                    : "border-gray-300"
                 }`}
                 placeholder="Summer Discount"
               />
-              {errors.voucherName && (
+              {touched.voucherName && errors.voucherName && (
                 <p className="text-red-500 text-xs mt-1">
                   {errors.voucherName}
                 </p>
@@ -187,8 +208,9 @@ const VoucherFormModal: React.FC<VoucherFormModalProps> = ({
             <select
               value={formData.discountType}
               onChange={(e) =>
-                setFormData({ ...formData, discountType: e.target.value })
+                handleFieldChange("discountType", e.target.value)
               }
+              onBlur={() => handleFieldBlur("discountType")}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6b5e4c] cursor-pointer"
             >
               <option value="PERCENT">Percentage (%)</option>
@@ -203,15 +225,16 @@ const VoucherFormModal: React.FC<VoucherFormModalProps> = ({
               </label>
               <input
                 type="number"
-                value={formData.discountPercentage}
+                value={formData.discountPercentage ?? 0}
                 onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    discountPercentage: parseFloat(e.target.value),
-                  })
+                  handleFieldChange(
+                    "discountPercentage",
+                    parseFloat(e.target.value) || 0
+                  )
                 }
+                onBlur={() => handleFieldBlur("discountPercentage")}
                 className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6b5e4c] ${
-                  errors.discountPercentage
+                  touched.discountPercentage && errors.discountPercentage
                     ? "border-red-500"
                     : "border-gray-300"
                 }`}
@@ -219,7 +242,7 @@ const VoucherFormModal: React.FC<VoucherFormModalProps> = ({
                 max="100"
                 step="0.1"
               />
-              {errors.discountPercentage && (
+              {touched.discountPercentage && errors.discountPercentage && (
                 <p className="text-red-500 text-xs mt-1">
                   {errors.discountPercentage}
                 </p>
@@ -232,20 +255,23 @@ const VoucherFormModal: React.FC<VoucherFormModalProps> = ({
               </label>
               <input
                 type="number"
-                value={formData.discountValue}
+                value={formData.discountValue ?? 0}
                 onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    discountValue: parseFloat(e.target.value),
-                  })
+                  handleFieldChange(
+                    "discountValue",
+                    parseFloat(e.target.value) || 0
+                  )
                 }
+                onBlur={() => handleFieldBlur("discountValue")}
                 className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6b5e4c] ${
-                  errors.discountValue ? "border-red-500" : "border-gray-300"
+                  touched.discountValue && errors.discountValue
+                    ? "border-red-500"
+                    : "border-gray-300"
                 }`}
                 min="0"
                 step="1000"
               />
-              {errors.discountValue && (
+              {touched.discountValue && errors.discountValue && (
                 <p className="text-red-500 text-xs mt-1">
                   {errors.discountValue}
                 </p>
@@ -266,16 +292,16 @@ const VoucherFormModal: React.FC<VoucherFormModalProps> = ({
                     : ""
                 }
                 onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    startDate: new Date(e.target.value),
-                  })
+                  handleFieldChange("startDate", new Date(e.target.value))
                 }
+                onBlur={() => handleFieldBlur("startDate")}
                 className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6b5e4c] ${
-                  errors.startDate ? "border-red-500" : "border-gray-300"
+                  touched.startDate && errors.startDate
+                    ? "border-red-500"
+                    : "border-gray-300"
                 }`}
               />
-              {errors.startDate && (
+              {touched.startDate && errors.startDate && (
                 <p className="text-red-500 text-xs mt-1">{errors.startDate}</p>
               )}
             </div>
@@ -292,16 +318,16 @@ const VoucherFormModal: React.FC<VoucherFormModalProps> = ({
                     : ""
                 }
                 onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    endDate: new Date(e.target.value),
-                  })
+                  handleFieldChange("endDate", new Date(e.target.value))
                 }
+                onBlur={() => handleFieldBlur("endDate")}
                 className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6b5e4c] ${
-                  errors.endDate ? "border-red-500" : "border-gray-300"
+                  touched.endDate && errors.endDate
+                    ? "border-red-500"
+                    : "border-gray-300"
                 }`}
               />
-              {errors.endDate && (
+              {touched.endDate && errors.endDate && (
                 <p className="text-red-500 text-xs mt-1">{errors.endDate}</p>
               )}
             </div>
@@ -311,10 +337,8 @@ const VoucherFormModal: React.FC<VoucherFormModalProps> = ({
             <input
               type="checkbox"
               id="isActive"
-              checked={formData.isActive}
-              onChange={(e) =>
-                setFormData({ ...formData, isActive: e.target.checked })
-              }
+              checked={formData.isActive ?? true}
+              onChange={(e) => handleFieldChange("isActive", e.target.checked)}
               className="w-4 h-4 text-[#6b5e4c] border-gray-300 rounded focus:ring-[#6b5e4c] cursor-pointer"
             />
             <label

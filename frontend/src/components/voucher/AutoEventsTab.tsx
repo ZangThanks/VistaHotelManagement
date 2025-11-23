@@ -194,7 +194,7 @@ export default function AutoEventsTab({ vouchers }: AutoEventsTabProps) {
 
                       <button
                         onClick={() => handleConfigureEvent(event.id)}
-                        className="w-full text-sm flex items-center justify-between px-3 py-2 bg-white border border-[#ebe3d7] rounded-lg hover:bg-[#f5f0eb] transition-colors"
+                        className="w-full text-sm flex items-center justify-between px-3 py-2 bg-white border border-[#ebe3d7] rounded-lg hover:bg-[#f5f0eb] transition-colors cursor-pointer"
                       >
                         <span className="flex items-center gap-2">
                           <Settings className="w-4 h-4" />
@@ -254,7 +254,7 @@ export default function AutoEventsTab({ vouchers }: AutoEventsTabProps) {
                       )
                     );
                   }}
-                  className="w-full px-4 py-2 border border-[#ebe3d7] rounded-lg focus:ring-2 focus:ring-[#6b5e4c] focus:border-transparent"
+                  className="w-full px-4 py-2 border border-[#ebe3d7] rounded-lg focus:ring-2 focus:ring-[#6b5e4c] focus:border-transparent cursor-pointer"
                 >
                   <option value="">Choose a voucher...</option>
                   {activeVouchers.map((voucher) => (
@@ -325,7 +325,7 @@ export default function AutoEventsTab({ vouchers }: AutoEventsTabProps) {
                     }}
                     min="0"
                     step="100"
-                    className="w-full px-4 py-2 border border-[#ebe3d7] rounded-lg focus:ring-2 focus:ring-[#6b5e4c] focus:border-transparent"
+                    className="w-full px-4 py-2 border border-[#ebe3d7] rounded-lg focus:ring-2 focus:ring-[#6b5e4c] focus:border-transparent cursor-pointer"
                   />
                   <p className="text-xs text-gray-500 mt-1">
                     Trigger when customer reaches this point threshold
@@ -337,7 +337,7 @@ export default function AutoEventsTab({ vouchers }: AutoEventsTabProps) {
             <div className="p-6 border-t border-[#ebe3d7] flex gap-3">
               <button
                 onClick={() => setConfigModalOpen(false)}
-                className="flex-1 px-4 py-2 border border-[#ebe3d7] text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                className="flex-1 px-4 py-2 border border-[#ebe3d7] text-gray-700 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
               >
                 Cancel
               </button>
