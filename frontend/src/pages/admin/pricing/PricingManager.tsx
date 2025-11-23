@@ -1,5 +1,5 @@
 /*eslint-disable*/
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import type { RoomType } from '../../../types/RoomType';
 import {
     getAllRoomTypes,
@@ -26,6 +26,7 @@ import {
     TableRow,
 } from '../../../components/Table';
 import { Edit2, X, Check } from 'lucide-react';
+import Dropdown from '../../../components/Dropdown'; // use same Dropdown as RoomList
 import { data } from 'react-router-dom';
 
 type SeasonRule = {
@@ -62,6 +63,32 @@ export default function PricingManager() {
 
     const [rowEditing, setRowEditing] = useState<string | null>(null);
     const [priceEdits, setPriceEdits] = useState<Record<string, number>>({});
+
+    // sort by price state
+    const [sortOrder, setSortOrder] = useState<'price_asc' | 'price_desc' | ''>(
+        '',
+    );
+
+    // dropdown options (used by custom Dropdown)
+    const sortOptions = [
+        { value: '', label: 'All' },
+        { value: 'price_asc', label: 'Price: Low → High' },
+        { value: 'price_desc', label: 'Price: High → Low' },
+    ];
+
+    const getPrice = (rt: RoomType) =>
+        Number((rt as any).basePrice ?? (rt as any).roomPrice ?? 0);
+
+    // memoized sorted list (empty = original order)
+    const sortedRooms = useMemo(() => {
+        const list = [...roomTypes];
+        if (sortOrder === 'price_asc') {
+            list.sort((a, b) => getPrice(a) - getPrice(b));
+        } else if (sortOrder === 'price_desc') {
+            list.sort((a, b) => getPrice(b) - getPrice(a));
+        }
+        return list;
+    }, [roomTypes, sortOrder]);
 
     useEffect(() => {
         loadRoomTypes();
@@ -198,10 +225,24 @@ export default function PricingManager() {
             {activeTab === 'base' && (
                 <Card>
                     <CardHeader className="mt-6">
-                        <CardTitle>Base Prices</CardTitle>
-                        <CardDescription>
-                            Manage base nightly prices
-                        </CardDescription>
+                        <div className="flex items-center justify-between w-full">
+                            <div>
+                                <CardTitle>Base Prices</CardTitle>
+                                <CardDescription>
+                                    Manage base nightly prices
+                                </CardDescription>
+                            </div>
+
+                            <div className="w-56">
+                                <Dropdown
+                                    options={sortOptions}
+                                    value={sortOrder}
+                                    onChange={(v) => setSortOrder(v as any)}
+                                    className="w-full"
+                                    placeholder="Sort"
+                                />
+                            </div>
+                        </div>
                     </CardHeader>
 
                     <CardContent>
@@ -225,7 +266,7 @@ export default function PricingManager() {
                             </TableHeader>
 
                             <TableBody>
-                                {roomTypes.map((rt) => {
+                                {sortedRooms.map((rt) => {
                                     const idStr = String(rt.roomTypeID);
 
                                     const base = (rt as any).basePrice ?? 0;
