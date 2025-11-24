@@ -19,6 +19,7 @@ import BasePricesTab from './components/BasePricesTab';
 import SeasonalTab from './components/SeasonalTab';
 import ByHourTab from './components/ByHourTab';
 import ExtraFeesTab from './components/ExtraFeesTab';
+import ConfirmDialog from '../../../components/dialog/ConfirmDialog';
 
 export default function PricingManager() {
     const [roomTypes, setRoomTypes] = useState<RoomType[]>([]);
@@ -214,6 +215,17 @@ export default function PricingManager() {
         }
     }
 
+    // Success dialog state
+    const [successDialog, setSuccessDialog] = useState<{
+        isOpen: boolean;
+        title: string;
+        message: string;
+    }>({
+        isOpen: false,
+        title: '',
+        message: '',
+    });
+
     async function handleAddSeason() {
         // basic validation
         if (
@@ -257,7 +269,12 @@ export default function PricingManager() {
             await saveSeasonalPriceWithRoomTypes(payload);
             setNewSeason({ roomTypes: [] });
             await loadSeasonalPrices();
-            alert('Seasonal price created successfully!');
+            // Show success dialog
+            setSuccessDialog({
+                isOpen: true,
+                title: 'Success!',
+                message: `Seasonal pricing rule "${newSeason.name}" has been created successfully.`,
+            });
         } catch (err: any) {
             console.error('Error adding seasonal price', err);
             alert(err?.message ?? 'Add failed');
@@ -339,7 +356,12 @@ export default function PricingManager() {
             setNewSeason({ roomTypes: [] });
             await loadSeasonalPrices();
             console.log('Data reloaded, checking result...');
-            alert('Seasonal price updated successfully!');
+            // Show success dialog
+            setSuccessDialog({
+                isOpen: true,
+                title: 'Updated Successfully!',
+                message: `Seasonal pricing rule "${newSeason.name}" has been updated successfully.`,
+            });
         } catch (err: any) {
             console.error('Error updating seasonal price', err);
             alert(err?.message ?? 'Update failed');
@@ -530,6 +552,22 @@ export default function PricingManager() {
             {activeTab === 'byHour' && <ByHourTab />}
 
             {activeTab === 'extra' && <ExtraFeesTab />}
+
+            {/* Success Dialog */}
+            <ConfirmDialog
+                isOpen={successDialog.isOpen}
+                onClose={() =>
+                    setSuccessDialog({ isOpen: false, title: '', message: '' })
+                }
+                onConfirm={() =>
+                    setSuccessDialog({ isOpen: false, title: '', message: '' })
+                }
+                title={successDialog.title}
+                message={successDialog.message}
+                type="success"
+                confirmText="OK"
+                cancelText=""
+            />
         </div>
     );
 }
