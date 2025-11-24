@@ -58,11 +58,24 @@ public class PromotionController {
     }
 
     @GetMapping("/find/{id}")
-    public Promotion findById(String id) {
+    public Promotion findById(@PathVariable String id) {
         return promotionService.findById(id);
     }
 
-
-
-
+    @PatchMapping("/{promotionID}/status")
+    public ResponseEntity<String> updatePromotionStatus(
+        @PathVariable String promotionID,
+        @RequestParam boolean active
+    ) {
+        try {
+            boolean success = promotionService.updatePromotionStatus(promotionID, active);
+            if (success) {
+                return ResponseEntity.ok("Promotion status updated successfully");
+            } else {
+                return ResponseEntity.status(500).body("Failed to update promotion status");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error: " + e.getMessage());
+        }
+    }
 }

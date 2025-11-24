@@ -33,7 +33,7 @@ const RoomStatCard: React.FC<RoomStatCardProps> = ({
 }) => {
     return (
         <motion.div
-            className="bg-white p-6 rounded-xl shadow-sm border border-[#ebe3d7] flex items-center gap-4"
+            className="bg-white p-2 px-4 rounded-xl shadow-sm border border-[#ebe3d7] flex items-center gap-4"
             whileHover={{ y: -5, boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}
             transition={{ type: 'spring', stiffness: 300 }}
         >
@@ -43,8 +43,8 @@ const RoomStatCard: React.FC<RoomStatCardProps> = ({
                 <Icon className={`text-2xl ${iconColor}`} />
             </div>
             <div className="flex-1">
-                <h3 className="text-3xl font-bold text-gray-800">{value}</h3>
-                <p className="text-sm text-gray-600 mt-1">{label}</p>
+                <h3 className="text-xl font-bold text-gray-800">{value}</h3>
+                <p className="text-sm text-gray-600 ">{label}</p>
                 {trend && (
                     <div className="flex items-center gap-1 mt-2">
                         <span
