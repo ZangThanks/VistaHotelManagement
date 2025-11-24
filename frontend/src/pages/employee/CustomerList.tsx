@@ -5,6 +5,7 @@ import AddCustomerModal from '../../components/customer/AddCustomerModal';
 import EditCustomerModal from '../../components/customer/EditCustomerModal';
 import type { Customer } from '../../types/Customer';
 import { getAll } from '../../services/customerService';
+
 // Component thống kê nhỏ
 type StatCardProps = {
     icon: string;
@@ -32,45 +33,43 @@ const StatCard: React.FC<StatCardProps> = ({ icon, label, value, color }) => (
 );
 
 type FilterSectionProps = {
-    onFilterChange: (filterId: string) => void;
+  onFilterChange: (filterId: string) => void;
 };
 
 const FilterSection: React.FC<FilterSectionProps> = ({ onFilterChange }) => {
-    const [active, setActive] = useState('all');
-    const filters = [
-        { id: 'all', label: 'Tất cả', icon: 'fa-list' },
-        { id: 'bronze', label: 'Bronze', icon: 'fa-medal' },
-        { id: 'silver', label: 'Silver', icon: 'fa-certificate' },
-        { id: 'gold', label: 'Gold', icon: 'fa-star' },
-        { id: 'platinum', label: 'Platinum', icon: 'fa-gem' },
-    ];
+  const [active, setActive] = useState("all");
+  const filters = [
+    { id: "all", label: "Tất cả", icon: "fa-list" },
+    { id: "bronze", label: "Bronze", icon: "fa-medal" },
+    { id: "silver", label: "Silver", icon: "fa-certificate" },
+    { id: "gold", label: "Gold", icon: "fa-star" },
+    { id: "platinum", label: "Platinum", icon: "fa-gem" },
+  ];
 
-    return (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
-            <h3 className="text-sm font-bold text-gray-900 mb-3">
-                Lọc khách hàng
-            </h3>
-            <div className="flex flex-wrap gap-2">
-                {filters.map((f) => (
-                    <button
-                        key={f.id}
-                        onClick={() => {
-                            setActive(f.id);
-                            onFilterChange(f.id);
-                        }}
-                        className={`flex items-center gap-1 px-4 py-2 rounded-lg font-semibold transition duration-200 text-xs ${
-                            active === f.id
-                                ? 'bg-gray-900 text-white shadow-md hover:bg-gray-800'
-                                : 'bg-[#F5F0EB] text-gray-700 hover:bg-gray-200 border border-gray-300'
-                        }`}
-                    >
-                        <i className={`fa-solid ${f.icon}`}></i>
-                        {f.label}
-                    </button>
-                ))}
-            </div>
-        </div>
-    );
+  return (
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+      <h3 className="text-sm font-bold text-gray-900 mb-3">Lọc khách hàng</h3>
+      <div className="flex flex-wrap gap-2">
+        {filters.map((f) => (
+          <button
+            key={f.id}
+            onClick={() => {
+              setActive(f.id);
+              onFilterChange(f.id);
+            }}
+            className={`flex items-center gap-1 px-4 py-2 rounded-lg font-semibold transition duration-200 text-xs ${
+              active === f.id
+                ? "bg-gray-900 text-white shadow-md hover:bg-gray-800"
+                : "bg-[#F5F0EB] text-gray-700 hover:bg-gray-200 border border-gray-300"
+            }`}
+          >
+            <i className={`fa-solid ${f.icon}`}></i>
+            {f.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
 };
 
 export default function CustomerList() {
