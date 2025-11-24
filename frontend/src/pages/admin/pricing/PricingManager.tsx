@@ -6,44 +6,19 @@ import {
     getRoomTypeById,
     saveRoomType,
 } from '../../../services/roomTypeService';
-import holidayService from '../../../services/HolidayService';
-
 import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from '../../../components/my-card/components/ui/card';
-import { Button } from '../../../components/my-button/components/ui/button';
-import { Input } from '../../../components/my-input/components/ui/input';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '../../../components/Table';
-import { Edit2, X, Check } from 'lucide-react';
-import Dropdown from '../../../components/Dropdown'; // use same Dropdown as RoomList
-import { data } from 'react-router-dom';
+    getAllSeasonalPrices_RoomType,
+    saveSeasonalPriceWithRoomTypes,
+    deleteSeasonalPrice,
+} from '../../../services/SeasonPriceService';
 
-type SeasonRule = {
-    id?: string;
-    name: string;
-    start: string;
-    end: string;
-    mode: 'multiplier' | 'fixed';
-    value: number;
-};
+import type { SeasonPrice } from '../../../types/SeasonPrice';
 
-type SpecialPrice = {
-    id?: string;
-    date: string;
-    price: number;
-    note?: string;
-};
+// Replace large per-tab JSX with component usage — keep logic/state in this file
+import BasePricesTab from './components/BasePricesTab';
+import SeasonalTab from './components/SeasonalTab';
+import ByHourTab from './components/ByHourTab';
+import ExtraFeesTab from './components/ExtraFeesTab';
 
 export default function PricingManager() {
     const [roomTypes, setRoomTypes] = useState<RoomType[]>([]);
@@ -63,6 +38,20 @@ export default function PricingManager() {
 
     const [rowEditing, setRowEditing] = useState<string | null>(null);
     const [priceEdits, setPriceEdits] = useState<Record<string, number>>({});
+
+    // SEASONAL PRICING state
+    const [seasonalPrices, setSeasonalPrices] = useState<SeasonPrice[]>([]);
+    const [newSeason, setNewSeason] = useState<{
+        name?: string;
+        multiplier?: number;
+        startDate?: string;
+        endDate?: string;
+        description?: string;
+        roomTypes?: string[]; // new: selected room type ids or ["ALL"]
+    }>({
+        roomTypes: [],
+    });
+    const [seasonLoading, setSeasonLoading] = useState(false);
 
     // sort by price state
     const [sortOrder, setSortOrder] = useState<'price_asc' | 'price_desc' | ''>(
@@ -99,6 +88,11 @@ export default function PricingManager() {
         else setEditing(null);
     }, [selectedId]);
 
+    // load seasonal prices when component mounts or when user switches to season tab
+    useEffect(() => {
+        if (activeTab === 'season') loadSeasonalPrices();
+    }, [activeTab]);
+
     async function loadRoomTypes() {
         setLoading(true);
         try {
@@ -107,7 +101,6 @@ export default function PricingManager() {
             if (data?.length && !selectedId) {
                 setSelectedId(String(data[0].id ?? data[0].typeId));
             }
-            console.log('Rerender PricingManager', data);
         } catch (e) {
             console.error(e);
             setMsg('Failed to load room types');
@@ -136,6 +129,45 @@ export default function PricingManager() {
         }
     }
 
+    async function loadSeasonalPrices() {
+        setSeasonLoading(true);
+        try {
+            // Use the API that returns PriceDTO with room type details
+            const data = await getAllSeasonalPrices_RoomType();
+
+            console.log('Loaded seasonal prices with room types:', data);
+
+            // Transform PriceDTO[] to SeasonPrice[] if needed
+            // Backend returns: { seasonalPrice: {...}, roomTypeIDs: [...] }
+            const seasonalPrices = data.map((dto: any) => {
+                console.log('Processing DTO:', dto);
+                // If backend returns PriceDTO format
+                if (dto.seasonalPrice && dto.roomTypeIDs !== undefined) {
+                    const result = {
+                        ...dto.seasonalPrice,
+                        roomTypes: dto.roomTypeIDs || [], // ensure it's an array
+                    };
+                    console.log('  -> Transformed to:', result);
+                    return result;
+                }
+                // If backend already returns SeasonPrice format
+                const result = {
+                    ...dto,
+                    roomTypes: dto.roomTypes || [], // ensure it's an array
+                };
+                console.log('  -> Using direct format:', result);
+                return result;
+            });
+
+            console.log('Normalized seasonal prices:', seasonalPrices);
+            setSeasonalPrices(seasonalPrices);
+        } catch (err) {
+            console.error('Failed to load seasonal prices', err);
+        } finally {
+            setSeasonLoading(false);
+        }
+    }
+
     function startRowEdit(roomTypeID: string, currentPrice: number) {
         if (!roomTypeID) return;
         setSelectedId(String(roomTypeID));
@@ -156,7 +188,6 @@ export default function PricingManager() {
     }
     async function saveRowPrice() {
         const targetId = rowEditing;
-        console.log('Saving price for row:', targetId);
         if (!targetId) return;
 
         const newPrice = priceEdits[targetId];
@@ -183,13 +214,255 @@ export default function PricingManager() {
         }
     }
 
+    async function handleAddSeason() {
+        // basic validation
+        if (
+            !newSeason.name ||
+            !newSeason.startDate ||
+            !newSeason.endDate ||
+            !newSeason.multiplier
+        ) {
+            alert('Please fill name, start/end dates and multiplier');
+            return;
+        }
+
+        // Build PriceDTO payload: roomTypeIDs empty array means "apply to all"
+        let roomTypeIDs: string[] = [];
+
+        if (newSeason.roomTypes && newSeason.roomTypes.length > 0) {
+            if (newSeason.roomTypes.includes('ALL')) {
+                // "ALL" selected -> send empty array (backend interprets as apply to all)
+                roomTypeIDs = [];
+            } else {
+                // Specific rooms selected -> send those IDs
+                roomTypeIDs = newSeason.roomTypes.filter((id) => id !== 'ALL');
+            }
+        }
+
+        const payload = {
+            seasonalPrice: {
+                // No id -> backend will create new
+                seasonName: newSeason.name,
+                priceMultiplier: Number(newSeason.multiplier),
+                startDate: newSeason.startDate,
+                endDate: newSeason.endDate,
+                description: newSeason.description ?? '',
+            },
+            roomTypeIDs: roomTypeIDs,
+        };
+
+        console.log('Creating seasonal price:', payload);
+
+        try {
+            await saveSeasonalPriceWithRoomTypes(payload);
+            setNewSeason({ roomTypes: [] });
+            await loadSeasonalPrices();
+            alert('Seasonal price created successfully!');
+        } catch (err: any) {
+            console.error('Error adding seasonal price', err);
+            alert(err?.message ?? 'Add failed');
+        }
+    }
+
+    async function handleEditSeason(id: number) {
+        console.log('=== handleEditSeason called ===');
+        console.log('Editing season ID:', id);
+        console.log('Current newSeason state:', newSeason);
+        console.log('Available roomTypes:', roomTypes);
+
+        // basic validation
+        if (
+            !newSeason.name ||
+            !newSeason.startDate ||
+            !newSeason.endDate ||
+            !newSeason.multiplier
+        ) {
+            alert('Please fill name, start/end dates and multiplier');
+            return;
+        }
+
+        // Build PriceDTO payload - same logic as add
+        let roomTypeIDs: string[] = [];
+
+        console.log('newSeason.roomTypes:', newSeason.roomTypes);
+
+        if (newSeason.roomTypes && newSeason.roomTypes.length > 0) {
+            if (newSeason.roomTypes.includes('ALL')) {
+                console.log('  -> User selected ALL, sending empty array');
+                roomTypeIDs = [];
+            } else {
+                console.log('  -> User selected specific rooms');
+                // Ensure we're sending the correct ID format
+                roomTypeIDs = newSeason.roomTypes
+                    .filter((id) => id !== 'ALL')
+                    .map((id) => {
+                        // Find the room type to verify it exists
+                        const rt = roomTypes.find(
+                            (r) =>
+                                String(r.roomTypeID ?? r.id ?? r.typeId) ===
+                                String(id),
+                        );
+                        if (!rt) {
+                            console.warn(`Room type not found for ID: ${id}`);
+                        } else {
+                            console.log(`  -> Mapping ${id} to room type:`, rt);
+                        }
+                        // Return the ID as-is (backend should handle the format)
+                        return String(id);
+                    });
+                console.log('  -> Filtered roomTypeIDs:', roomTypeIDs);
+            }
+        } else {
+            console.log(
+                '  -> newSeason.roomTypes is empty/null, sending empty array',
+            );
+            roomTypeIDs = [];
+        }
+
+        const payload = {
+            seasonalPrice: {
+                id: id,
+                seasonName: newSeason.name,
+                priceMultiplier: Number(newSeason.multiplier),
+                startDate: newSeason.startDate,
+                endDate: newSeason.endDate,
+                description: newSeason.description ?? '',
+            },
+            roomTypeIDs: roomTypeIDs,
+        };
+
+        console.log('Final payload to send:', JSON.stringify(payload, null, 2));
+
+        try {
+            await saveSeasonalPriceWithRoomTypes(payload);
+            console.log('Update successful, reloading data...');
+            setNewSeason({ roomTypes: [] });
+            await loadSeasonalPrices();
+            console.log('Data reloaded, checking result...');
+            alert('Seasonal price updated successfully!');
+        } catch (err: any) {
+            console.error('Error updating seasonal price', err);
+            alert(err?.message ?? 'Update failed');
+        }
+    }
+
+    async function handleDeleteSeason(id: number) {
+        if (!confirm('Delete this seasonal price?')) return;
+        try {
+            await deleteSeasonalPrice(id);
+            await loadSeasonalPrices();
+        } catch (err: any) {
+            console.error('Error deleting seasonal price', err);
+            alert(err?.message ?? 'Delete failed');
+        }
+    }
+
     const fmt = (v: number | undefined) =>
         typeof v === 'number'
             ? v.toLocaleString('vi-VN', { maximumFractionDigits: 0 })
             : '-';
 
+    // add new state near other useState declarations
+    const [roomSelectOpen, setRoomSelectOpen] = useState(false);
+
+    // helper to toggle selection; supports "ALL"
+    function toggleRoomOption(id: string) {
+        const cur = newSeason.roomTypes ?? [];
+
+        if (id === 'ALL') {
+            // Toggle ALL: if already ALL, clear all; otherwise set to ALL only
+            setNewSeason((s) => ({
+                ...s,
+                roomTypes: cur.includes('ALL') ? [] : ['ALL'],
+            }));
+            return;
+        }
+
+        // If ALL is currently selected, clear it first and select only this room
+        if (cur.includes('ALL')) {
+            setNewSeason((s) => ({ ...s, roomTypes: [id] }));
+            return;
+        }
+
+        // Toggle individual room: add if not present, remove if present
+        if (cur.includes(id)) {
+            // Remove this room from selection
+            setNewSeason((s) => ({
+                ...s,
+                roomTypes: cur.filter((x) => x !== id),
+            }));
+        } else {
+            // Add this room to selection (keep existing selections)
+            setNewSeason((s) => ({
+                ...s,
+                roomTypes: [...cur, id],
+            }));
+        }
+    }
+
+    function roomSelectionLabel() {
+        const cur = newSeason.roomTypes ?? [];
+        if (cur.length === 0) return 'Select room types';
+        if (cur.includes('ALL')) return 'All room types';
+
+        const first = roomTypes.find(
+            (r) => String(r.roomTypeID ?? r.id ?? r.typeId) === cur[0],
+        );
+        const firstLabel = first
+            ? first.typeName ?? first.name ?? cur[0]
+            : cur[0];
+        return cur.length === 1
+            ? firstLabel
+            : `${firstLabel} +${cur.length - 1} more`;
+    }
+
+    // helper: map season.roomTypes (ids) -> readable labels
+    function getSeasonRoomLabels(s: SeasonPrice) {
+        const ids = s.roomTypes ?? [];
+
+        if (ids.length === 0) {
+            return ['All room types'];
+        }
+
+        // Map room type IDs to readable labels
+        const labels = ids.map((rid) => {
+            const rt = roomTypes.find(
+                (r) => String(r.roomTypeID ?? r.id ?? r.typeId) === String(rid),
+            );
+            const label = rt
+                ? rt.typeName ?? rt.name ?? String(rid)
+                : String(rid);
+            return label;
+        });
+
+        return labels;
+    }
+
+    // helper: render up to 3 labels then "+N more"
+    function renderRoomBadges(labels: unknown[]) {
+        if (!labels || (labels as any).length === 0) return null;
+        const arr = labels as unknown[];
+        return (
+            <div className="flex flex-wrap gap-2 mt-2">
+                {arr.slice(0, 3).map((l, i) => (
+                    <span
+                        key={i}
+                        className="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-800"
+                    >
+                        {String(l)}
+                    </span>
+                ))}
+                {arr.length > 3 && (
+                    <span className="px-2 py-1 text-xs rounded-full bg-gray-50 text-gray-600">
+                        +{arr.length - 3} more
+                    </span>
+                )}
+            </div>
+        );
+    }
+
     return (
-        <div className="container mx-auto px-6 py-8">
+        <div className="container mx-auto px-2 py-2">
             <h1 className="text-2xl font-semibold mb-4">Pricing Management</h1>
 
             {/* TABS */}
@@ -221,151 +494,42 @@ export default function PricingManager() {
                 </div>
             </div>
 
-            {/* BASE PRICE TAB */}
+            {/* Render tabs using extracted components */}
             {activeTab === 'base' && (
-                <Card>
-                    <CardHeader className="mt-6">
-                        <div className="flex items-center justify-between w-full">
-                            <div>
-                                <CardTitle>Base Prices</CardTitle>
-                                <CardDescription>
-                                    Manage base nightly prices
-                                </CardDescription>
-                            </div>
-
-                            <div className="w-56">
-                                <Dropdown
-                                    options={sortOptions}
-                                    value={sortOrder}
-                                    onChange={(v) => setSortOrder(v as any)}
-                                    className="w-full"
-                                    placeholder="Sort"
-                                />
-                            </div>
-                        </div>
-                    </CardHeader>
-
-                    <CardContent>
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Room Type</TableHead>
-                                    <TableHead className="text-right">
-                                        Capacity
-                                    </TableHead>
-                                    <TableHead className="text-right">
-                                        Area
-                                    </TableHead>
-                                    <TableHead className="text-right">
-                                        Price
-                                    </TableHead>
-                                    <TableHead className="text-center">
-                                        Actions
-                                    </TableHead>
-                                </TableRow>
-                            </TableHeader>
-
-                            <TableBody>
-                                {sortedRooms.map((rt) => {
-                                    const idStr = String(rt.roomTypeID);
-
-                                    const base = (rt as any).basePrice ?? 0;
-
-                                    const isEditing = rowEditing === idStr;
-
-                                    return (
-                                        <TableRow key={idStr}>
-                                            <TableCell>{rt.typeName}</TableCell>
-
-                                            <TableCell className="text-right">
-                                                {rt.maxOccupancy}
-                                            </TableCell>
-
-                                            <TableCell className="text-right">
-                                                {rt.area ?? rt.area
-                                                    ? `${rt.area ?? rt.area} m²`
-                                                    : '—'}
-                                            </TableCell>
-
-                                            <TableCell className="text-right">
-                                                {isEditing ? (
-                                                    <div className="flex justify-end items-center gap-2">
-                                                        <Input
-                                                            type="number"
-                                                            className="w-28 h-8"
-                                                            value={
-                                                                priceEdits[
-                                                                    idStr
-                                                                ] ?? base
-                                                            }
-                                                            onChange={(e) =>
-                                                                setPriceEdits(
-                                                                    (p) => ({
-                                                                        ...p,
-                                                                        [idStr]:
-                                                                            Number(
-                                                                                e
-                                                                                    .target
-                                                                                    .value,
-                                                                            ),
-                                                                    }),
-                                                                )
-                                                            }
-                                                        />
-                                                        <span className="text-xs">
-                                                            VND
-                                                        </span>
-                                                    </div>
-                                                ) : (
-                                                    <span>{fmt(base)} VND</span>
-                                                )}
-                                            </TableCell>
-
-                                            <TableCell className="text-center">
-                                                <div className="flex items-center justify-center gap-1">
-                                                    {isEditing ? (
-                                                        <>
-                                                            <button
-                                                                onClick={() =>
-                                                                    saveRowPrice()
-                                                                }
-                                                                className="h-8 w-8 hover:bg-gray-100 rounded flex items-center justify-center"
-                                                            >
-                                                                <Check className="h-4 w-4 text-green-600" />
-                                                            </button>
-
-                                                            <button
-                                                                onClick={() =>
-                                                                    cancelRowEdit()
-                                                                }
-                                                                className="h-8 w-8 hover:bg-gray-100 rounded flex items-center justify-center"
-                                                            >
-                                                                <X className="h-4 w-4 text-red-600" />
-                                                            </button>
-                                                        </>
-                                                    ) : (
-                                                        <button
-                                                            onClick={() =>
-                                                                startRowEdit(
-                                                                    idStr,
-                                                                    base,
-                                                                )
-                                                            }
-                                                            className="h-8 w-8 hover:bg-gray-100 rounded flex items-center justify-center"
-                                                        >
-                                                            <Edit2 className="h-4 w-4" />
-                                                        </button>
-                                                    )}
-                                                </div>
-                                            </TableCell>
-                                        </TableRow>
-                                    );
-                                })}
-                            </TableBody>
-                        </Table>
-                    </CardContent>
-                </Card>
+                <BasePricesTab
+                    sortedRooms={sortedRooms}
+                    rowEditing={rowEditing}
+                    priceEdits={priceEdits}
+                    setPriceEdits={setPriceEdits}
+                    startRowEdit={startRowEdit}
+                    cancelRowEdit={cancelRowEdit}
+                    saveRowPrice={saveRowPrice}
+                    fmt={fmt}
+                />
             )}
+
+            {activeTab === 'season' && (
+                <SeasonalTab
+                    seasonLoading={seasonLoading}
+                    seasonalPrices={seasonalPrices}
+                    newSeason={newSeason}
+                    setNewSeason={setNewSeason}
+                    roomTypes={roomTypes}
+                    roomSelectOpen={roomSelectOpen}
+                    setRoomSelectOpen={setRoomSelectOpen}
+                    toggleRoomOption={toggleRoomOption}
+                    roomSelectionLabel={roomSelectionLabel}
+                    handleAddSeason={handleAddSeason}
+                    handleEditSeason={handleEditSeason}
+                    handleDeleteSeason={handleDeleteSeason}
+                    getSeasonRoomLabels={getSeasonRoomLabels}
+                    renderRoomBadges={renderRoomBadges}
+                />
+            )}
+
+            {activeTab === 'byHour' && <ByHourTab />}
+
+            {activeTab === 'extra' && <ExtraFeesTab />}
         </div>
     );
 }

@@ -46,6 +46,52 @@ INSERT INTO room_images (room_id, images_url) VALUES
 ('DLX203', 'https://pix8.agoda.net/hotelImages/7394456/93823858/036cf046c58da8fff1cf92aaf3aa7f37.jpg?ce=2&s=600x'),
 ('DLX203', 'https://q-xx.bstatic.com/xdata/images/hotel/max1024x768/629950678.jpg?k=519c28836f153d0fc993144aca31868f5489a3d1590a2af8ba7be2d2b5de05a9&o=&s=600x'),
 ('STE302', 'https://pix8.agoda.net/property/73668369/0/ab0f949fe65b213cc9b1ad2f32c3271f.jpeg?ce=2&s=600x');
+
+
+INSERT INTO seasonal_prices (season_name, price_multiplier, start_date, end_date, description)
+VALUES
+    ('Season 1', 1.2, '2025-01-01', '2025-01-31', 'Giá mặc định cho Season 1'),
+    ('Season 2', 1.3, '2025-02-01', '2025-02-28', 'Giá mặc định cho Season 2'),
+    ('Season 3', 1.4, '2025-03-01', '2025-03-31', 'Giá mặc định cho Season 3'),
+    ('Season 4', 1.0, '2025-04-01', '2025-04-30', 'Giá mặc định cho Season 4'),
+    ('Season 5', 1.5, '2025-05-01', '2025-05-31', 'Giá mặc định cho Season 5'),
+    ('Season 6', 1.0, '2025-06-01', '2025-06-30', 'Giá mặc định cho Season 6'),
+    ('Season 7', 1.8, '2025-07-01', '2025-07-31', 'Giá mặc định cho Season 7'),
+    ('Season 8', 1.0, '2025-08-01', '2025-08-31', 'Giá mặc định cho Season 8'),
+    ('Season 9', 1.2, '2025-09-01', '2025-09-30', 'Giá mặc định cho Season 9'),
+    ('Season 10', 1.1, '2025-10-01', '2025-10-31', 'Giá mặc định cho Season 10');
+
+-- STD
+INSERT INTO room_type_seasonal_price (room_type_id, seasonal_price_id) VALUES
+                                                                           ('STD', 1),
+                                                                           ('STD', 2),
+                                                                           ('STD', 3),
+                                                                           ('STD', 4),
+                                                                           ('STD', 6),
+                                                                           ('STD', 8),
+                                                                           ('STD', 9),
+                                                                           ('STD', 10);
+
+-- DLX
+INSERT INTO room_type_seasonal_price (room_type_id, seasonal_price_id) VALUES
+                                                                           ('DLX', 1),
+                                                                           ('DLX', 2),
+                                                                           ('DLX', 3),
+                                                                           ('DLX', 4),
+                                                                           ('DLX', 5),
+                                                                           ('DLX', 6),
+                                                                           ('DLX', 7),
+                                                                           ('DLX', 8),
+                                                                           ('DLX', 9),
+                                                                           ('DLX', 10);
+
+-- STE
+INSERT INTO room_type_seasonal_price (room_type_id, seasonal_price_id) VALUES
+                                                                           ('STE', 3),
+                                                                           ('STE', 5),
+                                                                           ('STE', 7),
+                                                                           ('STE', 9);
+
 -- CUSTOMERS
 INSERT INTO customers (customer_id, address, email, full_name, PASSWORD, joined_date, phone, user_name, user_role, birth_date, gender, loyalty_points, membership_level) VALUES
 ('CUST001', 'TP.HCM', 'nguyenvana@gmail.com', 'Nguyễn Văn A', 'hashedpw1','2025-10-20', '0901234567', 'nguyenvana', 'CUSTOMER', '1990-05-20', 'MALE', 12000, 'SILVER'),

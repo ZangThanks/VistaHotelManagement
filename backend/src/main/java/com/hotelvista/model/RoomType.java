@@ -27,11 +27,9 @@ public class RoomType {
 
     private Double area;
 
-    //Số lượng người lưu trú tối đa
     @Column(name = "max_occupancy")
     private Integer maxOccupancy;
 
-    //Tiện nghi (máy lạnh, nước nóng, ...)
     @ElementCollection
     @CollectionTable(name = "room_type_amenties", joinColumns = @JoinColumn(name = "room_type_id"))
     @Column(columnDefinition = "NVARCHAR(255)")
@@ -40,8 +38,6 @@ public class RoomType {
     @Column(name = "base_price")
     private Double basePrice;
 
-
-    @ToString.Exclude
     @OneToMany(mappedBy = "roomType")
     @JsonIgnore
     private List<Room> rooms;
@@ -50,4 +46,14 @@ public class RoomType {
     @OneToMany(mappedBy = "roomType")
     @JsonIgnore
     private List<RoomTypePromotion> roomTypePromotions;
+
+    @ToString.Exclude
+    @ManyToMany
+    @JoinTable(
+            name = "room_type_seasonal_price",
+            joinColumns = @JoinColumn(name = "room_type_id"),
+            inverseJoinColumns = @JoinColumn(name = "seasonal_price_id")
+    )
+    private List<SeasonalPrice> seasonalPrices;
 }
+
