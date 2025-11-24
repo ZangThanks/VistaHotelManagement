@@ -114,6 +114,8 @@ export default function CustomerList() {
             joinedDate: new Date().toISOString().split('T')[0],
             loyaltyPoints: data.loyaltyPoints ?? 0,
             memberShipLevel: data.memberShipLevel ?? 'SILVER',
+            reputationPoint: data.reputationPoint ?? 0,
+
         };
         setCustomers((prev) => [...prev, newCustomer]);
         setShowModal(false);
@@ -275,6 +277,9 @@ export default function CustomerList() {
                                         <th className="px-4 py-3 text-left text-xs font-bold text-gray-900 uppercase tracking-wide">
                                             Hạng thành viên
                                         </th>
+                                        <th className="px-4 py-3 text-left text-xs font-bold text-gray-900 uppercase tracking-wide">
+                                            Uy tín
+                                        </th>
                                         <th className="px-4 py-3 text-center text-xs font-bold text-gray-900 uppercase tracking-wide">
                                             Thao tác
                                         </th>
@@ -324,13 +329,22 @@ export default function CustomerList() {
                                                 >
                                                     {c.memberShipLevel}
                                                 </span>
+                                        </td>
+                                            <td className="px-4 py-3 text-sm text-gray-600 font-medium">
+                                                {c.reputationPoint}
                                             </td>
                                             <td className="px-4 py-3 text-center">
                                                 <div className="flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition duration-200">
-                                                    <button className="p-2 text-gray-900 hover:bg-gray-100 rounded-lg transition hover:scale-110">
+                                                    <button
+                                                        type="button"
+                                                        aria-label="Xem chi tiết"
+                                                        className="p-2 text-gray-900 hover:bg-gray-100 rounded-lg transition hover:scale-110"
+                                                    >
                                                         <i className="fa-solid fa-eye text-sm"></i>
                                                     </button>
                                                     <button
+                                                        type="button"
+                                                        aria-label="Chỉnh sửa"
                                                         onClick={() =>
                                                             handleEditCustomer(
                                                                 c,
@@ -341,7 +355,11 @@ export default function CustomerList() {
                                                         <i className="fa-solid fa-pen text-sm"></i>
                                                     </button>
 
-                                                    <button className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition hover:scale-110">
+                                                    <button
+                                                        type="button"
+                                                        aria-label="Xóa"
+                                                        className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition hover:scale-110"
+                                                    >
                                                         <i className="fa-solid fa-trash text-sm"></i>
                                                     </button>
                                                 </div>

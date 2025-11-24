@@ -14,9 +14,7 @@ const NewsPage: React.FC = () => {
     const [otherNews, setOtherNews] = useState<any[]>([]);
     const [visibleCount, setVisibleCount] = useState(3); // Hiện 3 bài
 
-    /* -------------------------------------------------------
-        Header Effect (Đổi header khi scroll quá banner)
-    ------------------------------------------------------- */
+    // Header Effect (Đổi header khi scroll quá banner)
     useEffect(() => {
         const handleScroll = () => {
             if (!bannerRef.current) return;
@@ -28,9 +26,7 @@ const NewsPage: React.FC = () => {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
-    /* -------------------------------------------------------
-        Fetch Data (Nổi bật + Khác)
-    ------------------------------------------------------- */
+        // Fetch Data (Nổi bật + Khác)
     useEffect(() => {
         const fetchNews = async () => {
             try {
@@ -56,9 +52,8 @@ const NewsPage: React.FC = () => {
 
     return (
         <div className="bg-white text-slate-800 font-sans">
-            {/* -------------------------------------------------------
-                Sticky Header Transition
-            ------------------------------------------------------- */}
+            {/* Sticky Header Transition */}
+
             <div className="fixed top-0 left-0 w-full z-[9999] transition-all duration-700">
                 {/* Transparent Header */}
                 <div
@@ -83,9 +78,7 @@ const NewsPage: React.FC = () => {
                 </div>
             </div>
 
-            {/* -------------------------------------------------------
-                Banner
-            ------------------------------------------------------- */}
+            {/* Banner */}
             <img
                 ref={bannerRef}
                 src={bannerImg}
@@ -94,9 +87,7 @@ const NewsPage: React.FC = () => {
             />
 
             <main>
-                {/* -------------------------------------------------------
-                    NỔI BẬT
-                ------------------------------------------------------- */}
+                {/* NỔI BẬT */}
                 <section className="mx-auto max-w-3xl px-4 mt-10">
                     <div className="flex justify-center">
                         <span className="text-[20px] font-serif tracking-[.25em] uppercase">
@@ -141,9 +132,7 @@ const NewsPage: React.FC = () => {
                     )}
                 </section>
 
-                {/* -------------------------------------------------------
-                    KHÁC
-                ------------------------------------------------------- */}
+                {/* KHÁC */}
                 <section className="mx-auto max-w-5xl px-4 mt-14">
                     <div className="flex justify-center">
                         <span className="text-[20px] font-serif tracking-[.25em] uppercase">
@@ -193,9 +182,7 @@ const NewsPage: React.FC = () => {
                         </article>
                     ))}
 
-                    {/* -------------------------------------------------------
-                        NÚT XEM THÊM
-                    ------------------------------------------------------- */}
+                    {/* NÚT XEM THÊM */}
                     <div className="py-10 flex justify-center">
                         {visibleCount < otherNews.length ? (
                             <button

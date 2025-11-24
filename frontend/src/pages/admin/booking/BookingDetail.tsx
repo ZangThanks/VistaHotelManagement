@@ -1,11 +1,9 @@
-'use client';
-
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import Header from '../../../components/Header';
 import {
     getBookingById,
-    getBookingDetailsById,
+    getBookingDetailsById
 } from '../../../services/bookingService';
 import type { Booking } from '../../../types/Booking';
 import type { BookingDetail } from '../../../types/BookingDetail';
@@ -24,9 +22,7 @@ export default function BookingDetailPage() {
     const [details, setDetails] = useState<BookingDetail[]>([]);
     const [loading, setLoading] = useState(true);
 
-    // ================================
     // FETCH DATA
-    // ================================
     useEffect(() => {
         if (!id) return;
 

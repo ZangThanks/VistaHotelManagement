@@ -14,7 +14,7 @@ import ResetPassword from '../pages/auth/ResetPassword';
 import CustomerList from '../pages/employee/CustomerList';
 import NewsPage from '../pages/employee/NewsPage';
 import AdminLayout from '../layouts/AdminLayout';
-import BookingPage from '../pages/admin/booking/BookingPage';
+
 import MainLayout from '../layouts/MainLayout';
 import CheckInManager from '../pages/employee/CheckInManager';
 import CheckOutManager from '../pages/employee/CheckOutManager';
@@ -35,6 +35,7 @@ import ServiceManagement from '../pages/admin/ServiceManagement.tsx';
 import BookingDetail from '../pages/admin/booking/BookingDetail.tsx';
 import Contact from '../pages/customer/Contact.tsx';
 import EmployeeList from '../pages/admin/EmployeeList.tsx';
+import BookingPage from '../pages/customer/booking/BookingPage.tsx';
 
 export const router = createBrowserRouter([
     // AUTH
