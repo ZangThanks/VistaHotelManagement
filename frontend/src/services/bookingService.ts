@@ -106,10 +106,23 @@ export const searchBookings = async (keyword: string) => {
     throw error;
   }
 };
+
 export const generateBookingID = async () => {
   try {
     const response = await api.get(`${ENDPOINT}/create-booking-id`);
     return response.data;
+  } catch (error) {
+    console.error("Error generating booking ID:", error);
+    throw error;
+  }
+};
+
+export const simulatePaymentCallback = async (
+  body: unknown
+): Promise<unknown> => {
+  try {
+    const res = await axiosInstance.post(`${ENDPOINT}/pay-callback`, body);
+    return res.data;
   } catch (error) {
     console.error("Error generating booking ID:", error);
     throw error;
