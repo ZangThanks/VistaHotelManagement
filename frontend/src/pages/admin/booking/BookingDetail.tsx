@@ -1,176 +1,303 @@
-import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { getBookingById } from '../../../services/bookingService';
-import type { Booking } from '../../../types/Booking';
-import Header from '../../../components/Header';
+'use client';
 
-const statusColor: Record<string, string> = {
-    PENDING: 'bg-yellow-100 text-yellow-700 border-yellow-300',
-    CHECKED_IN: 'bg-green-100 text-green-700 border-green-300',
-    CHECKED_OUT: 'bg-blue-100 text-blue-700 border-blue-300',
-    CANCELLED: 'bg-red-100 text-red-700 border-red-300',
+import { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import Header from '../../../components/Header';
+import {
+    getBookingById,
+    getBookingDetailsById,
+} from '../../../services/bookingService';
+import type { Booking } from '../../../types/Booking';
+import type { BookingDetail } from '../../../types/BookingDetail';
+
+const statusColor = {
+    PENDING: 'bg-amber-50 text-amber-700 border-amber-200',
+    CHECKED_IN: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    CHECKED_OUT: 'bg-sky-50 text-sky-700 border-sky-200',
+    CANCELLED: 'bg-rose-50 text-rose-700 border-rose-200',
 };
 
-export default function BookingDetail() {
+export default function BookingDetailPage() {
     const { id } = useParams();
+
     const [booking, setBooking] = useState<Booking | null>(null);
+    const [details, setDetails] = useState<BookingDetail[]>([]);
     const [loading, setLoading] = useState(true);
 
+    // ================================
+    // FETCH DATA
+    // ================================
     useEffect(() => {
         if (!id) return;
-        getBookingById(id)
-            .then((res) => {
-                setBooking(res);
-            })
-            .finally(() => setLoading(false));
+
+        (async () => {
+            try {
+                const bookingRes = await getBookingById(id);
+                setBooking(bookingRes);
+
+                const detailRes = await getBookingDetailsById(id);
+                setDetails(detailRes);
+            } catch (error) {
+                console.error('Error fetching booking detail:', error);
+            } finally {
+                setLoading(false);
+            }
+        })();
     }, [id]);
 
-    /** LOADING */
-    if (loading)
+    if (loading) {
         return (
-            <div className="flex justify-center py-20">
-                <div className="animate-spin h-10 w-10 border-4 border-gray-300 border-t-black rounded-full"></div>
+            <div className="min-h-screen flex justify-center items-center text-black">
+                Loading...
             </div>
         );
+    }
 
-    /** NOT FOUND */
-    if (!booking)
+    if (!booking) {
         return (
-            <div className="text-center py-20 text-gray-500">
-                Booking not found...
+            <div className="min-h-screen flex justify-center items-center text-black">
+                Booking Not Found
             </div>
         );
+    }
 
     return (
-        <div className="bg-[#F8F6F1] min-h-screen">
-            <Header />
+        <div className="bg-white min-h-screen">
+            {/* HEADER */}
+            <div className="bg-white border-b border-[#F5F0EB] sticky top-0 z-50">
+                <Header />
+            </div>
 
-            <div className="max-w-5xl mx-auto px-6 py-10">
-                {/* Title */}
-                <h1 className="text-3xl font-semibold tracking-wide mb-6 text-gray-800">
-                    Booking Details
-                </h1>
+            <div className="max-w-6xl mx-auto px-6 py-12">
+                {/* BACK */}
+                <div className="mb-6">
+                    <button
+                        onClick={() => window.history.back()}
+                        className="text-black hover:text-black/70 flex items-center gap-2 font-medium"
+                    >
+                        <svg
+                            className="w-5 h-5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M15 19l-7-7 7-7"
+                            />
+                        </svg>
+                        Back to Bookings
+                    </button>
+                </div>
 
-                {/* Main Card */}
-                <div className="bg-white rounded-2xl shadow-lg p-8 space-y-8">
-                    {/* Booking ID + Status */}
-                    <div className="flex justify-between items-center">
-                        <h2 className="text-xl font-semibold text-gray-700">
-                            Booking ID:{' '}
-                            <span className="text-gray-900">
+                {/* TITLE */}
+                <div className="flex justify-between items-center mb-8">
+                    <div>
+                        <h1 className="text-3xl font-bold text-black">
+                            Booking Details
+                        </h1>
+                        <p className="text-black/60">
+                            ID:{' '}
+                            <span className="font-mono font-semibold">
                                 {booking.bookingID}
                             </span>
-                        </h2>
-
-                        <span
-                            className={`px-4 py-1 rounded-full text-sm font-semibold border 
-                                ${statusColor[booking.status]}`}
-                        >
-                            {booking.status.replace('_', ' ')}
-                        </span>
+                        </p>
                     </div>
 
-                    {/* Info */}
-                    <div className="border-t pt-6 grid grid-cols-1 md:grid-cols-2 gap-8">
-                        {/* Customer Info */}
-                        <section>
-                            <h3 className="text-lg font-semibold text-gray-800 mb-3">
+                    <span
+                        className={`px-5 py-2 rounded-full text-sm font-semibold border-2 ${
+                            statusColor[
+                                booking.status as keyof typeof statusColor
+                            ]
+                        }`}
+                    >
+                        {booking.status.replace('_', ' ')}
+                    </span>
+                </div>
+
+                {/* GRID */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    {/* LEFT */}
+                    <div className="lg:col-span-2 space-y-6">
+                        {/* CUSTOMER */}
+                        <div className="bg-white rounded-2xl border p-6 border-[#F5F0EB]">
+                            <h3 className="text-xl font-bold mb-4">
                                 Customer Information
                             </h3>
-                            <div className="space-y-2 text-gray-700">
-                                <p>
-                                    <span className="font-medium">Name:</span>{' '}
-                                    {booking.customer.fullName}
-                                </p>
-                                <p>
-                                    <span className="font-medium">Phone:</span>{' '}
-                                    {booking.customer.phone}
-                                </p>
-                                <p>
-                                    <span className="font-medium">Email:</span>{' '}
-                                    {booking.customer.email}
-                                </p>
-                            </div>
-                        </section>
 
-                        {/* Dates */}
-                        <section>
-                            <h3 className="text-lg font-semibold text-gray-800 mb-3">
-                                Schedule
+                            <div className="space-y-3">
+                                <div className="p-3 bg-[#F5F0EB] rounded-lg flex gap-3">
+                                    <strong className="min-w-[70px] text-black/70">
+                                        Name
+                                    </strong>
+                                    <span>{booking.customer.fullName}</span>
+                                </div>
+                                <div className="p-3 bg-[#F5F0EB] rounded-lg flex gap-3">
+                                    <strong className="min-w-[70px] text-black/70">
+                                        Phone
+                                    </strong>
+                                    <span>{booking.customer.phone}</span>
+                                </div>
+                                <div className="p-3 bg-[#F5F0EB] rounded-lg flex gap-3">
+                                    <strong className="min-w-[70px] text-black/70">
+                                        Email
+                                    </strong>
+                                    <span>{booking.customer.email}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* SCHEDULE */}
+                        <div className="bg-white rounded-2xl border p-6 border-[#F5F0EB]">
+                            <h3 className="text-xl font-bold mb-4">Schedule</h3>
+
+                            <div className="grid grid-cols-2 gap-4 mb-4">
+                                <div className="bg-[#F5F0EB] p-4 rounded-xl">
+                                    <p className="text-black/60 text-sm">
+                                        Check-in
+                                    </p>
+                                    <p className="text-lg font-bold text-black">
+                                        {booking.checkInDate.split('T')[0]}
+                                    </p>
+                                    <p className="text-sm font-semibold text-black">
+                                        {booking.checkInDate.split('T')[1]}
+                                    </p>
+                                </div>
+                                <div className="bg-[#F5F0EB] p-4 rounded-xl">
+                                    <p className="text-black/60 text-sm">
+                                        Check-out
+                                    </p>
+                                    <p className="text-lg font-bold text-black">
+                                        {booking.checkOutDate.split('T')[0]}
+                                    </p>
+                                    <p className="text-sm font-semibold text-black">
+                                        {booking.checkOutDate.split('T')[1]}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="p-3 bg-[#F5F0EB] rounded-lg flex gap-2">
+                                <span className="font-semibold">
+                                    {booking.numberOfGuests} Guests
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* ROOMS */}
+                        <div className="bg-white rounded-2xl border p-6 border-[#F5F0EB]">
+                            <h3 className="text-xl font-bold mb-5">
+                                Rooms Booked
                             </h3>
-                            <div className="space-y-2 text-gray-700">
-                                <p>
-                                    <span className="font-medium">
-                                        Check-in:
-                                    </span>{' '}
-                                    {booking.checkInDate}
-                                </p>
-                                <p>
-                                    <span className="font-medium">
-                                        Check-out:
-                                    </span>{' '}
-                                    {booking.checkOutDate}
-                                </p>
-                                <p>
-                                    <span className="font-medium">Guests:</span>{' '}
-                                    {booking.numberOfGuests} people
-                                </p>
-                            </div>
-                        </section>
-                    </div>
 
-                    {/* Rooms Booked */}
-                    <section className="pt-4">
-                        <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                            Rooms Booked
-                        </h3>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                            {booking.bookingDetails?.length > 0 ? (
-                                booking.bookingDetails.map((detail, index) => (
+                            <div className="space-y-4">
+                                {details.map((d, index) => (
                                     <div
                                         key={index}
-                                        className="border rounded-xl p-5 shadow-sm hover:shadow-md transition bg-gray-50"
+                                        className="bg-[#F5F0EB] p-5 rounded-xl border"
                                     >
-                                        <h4 className="text-lg font-semibold text-gray-700 mb-2">
-                                            Room{' '}
-                                            {detail.room?.roomNumber ?? 'N/A'}
-                                        </h4>
+                                        <div className="flex justify-between">
+                                            <div>
+                                                <h4 className="text-lg font-bold">
+                                                    Room {d.room.roomNumber}
+                                                </h4>
+                                                <p className="text-black/60">
+                                                    {d.room.roomType?.typeName}
+                                                </p>
+                                            </div>
 
-                                        <p className="text-gray-600 text-sm">
-                                            <span className="font-medium">
-                                                Type:
-                                            </span>{' '}
-                                            {detail.room?.roomType?.typeName ??
-                                                'Unknown'}
-                                        </p>
+                                            <div className="text-right">
+                                                <p className="text-sm text-black/60">
+                                                    Price
+                                                </p>
+                                                <p className="text-lg font-bold">
+                                                    {d.roomPrice.toLocaleString()}{' '}
+                                                    VNĐ
+                                                </p>
+                                            </div>
+                                        </div>
 
-                                        <p className="text-gray-600 text-sm mt-1">
-                                            <span className="font-medium">
-                                                Base Price:
-                                            </span>{' '}
-                                            $
-                                            {detail.room?.roomType?.basePrice ??
-                                                '0'}
-                                        </p>
+                                        {/* IMAGES */}
+                                        <div className="flex mt-3 gap-2 overflow-x-auto">
+                                            {d.room.images
+                                                ?.slice(0, 3)
+                                                .map((img, idx) => (
+                                                    <img
+                                                        key={idx}
+                                                        src={img}
+                                                        className="w-24 h-20 rounded-lg object-cover border"
+                                                    />
+                                                ))}
+                                        </div>
                                     </div>
-                                ))
-                            ) : (
-                                <p className="text-gray-500 italic">
-                                    No rooms found for this booking.
-                                </p>
-                            )}
+                                ))}
+                            </div>
                         </div>
-                    </section>
+                    </div>
 
-                    {/* Payment */}
-                    <div className="text-right border-t pt-6">
-                        <p className="text-lg text-gray-700">
-                            <span className="font-semibold">Total:</span>{' '}
-                            <span className="text-2xl font-bold text-gray-900">
-                                {booking.totalAmount.toLocaleString()} VNĐ
-                            </span>
-                        </p>
+                    {/* RIGHT - PAYMENT */}
+                    <div className="space-y-6">
+                        <div className="bg-black text-white rounded-2xl p-6">
+                            <h3 className="text-lg font-semibold mb-6 border-b border-white/20 pb-3">
+                                Payment Summary
+                            </h3>
+
+                            <div className="space-y-4 mb-6">
+                                <div className="flex justify-between">
+                                    <span className="text-white/70">
+                                        Subtotal
+                                    </span>
+                                    <span>
+                                        {booking.totalAmount.toLocaleString()}{' '}
+                                        VNĐ
+                                    </span>
+                                </div>
+
+                                <div className="flex justify-between">
+                                    <span className="text-white/70">
+                                        Tax (10%)
+                                    </span>
+                                    <span>
+                                        {(
+                                            booking.totalAmount * 0.1
+                                        ).toLocaleString()}{' '}
+                                        VNĐ
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div className="border-t border-white/20 pt-4 flex justify-between items-center">
+                                <span className="text-lg font-semibold">
+                                    Total
+                                </span>
+                                <span className="text-2xl font-bold">
+                                    {(
+                                        booking.totalAmount * 1.1
+                                    ).toLocaleString()}{' '}
+                                    VNĐ
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* ACTIONS */}
+                        <div className="bg-white rounded-2xl border p-6">
+                            <h3 className="text-lg font-bold mb-4">
+                                Quick Actions
+                            </h3>
+
+                            <div className="space-y-3">
+                                <button className="w-full bg-black hover:bg-black/90 text-white py-3 rounded-xl">
+                                    Early Check-in
+                                </button>
+                                <button className="w-full bg-white border-2 border-black py-3 rounded-xl hover:bg-[#F5F0EB]">
+                                    Late Check-out
+                                </button>
+                                <button className="w-full border-2 border-black/30 py-3 rounded-xl hover:bg-[#F5F0EB]">
+                                    Report Issue
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

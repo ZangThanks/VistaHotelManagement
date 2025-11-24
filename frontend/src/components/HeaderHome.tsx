@@ -6,9 +6,9 @@ const HeaderHome: React.FC = () => {
     const navItems = [
         { label: 'Overview', path: '/home' },
         { label: 'About Us', path: '/contact' },
-        { label: 'Accommodation', path: '/customer/room/list' },
+        { label: 'Accommodation', path: '/customer/room' },
         { label: 'Services', path: '/services' },
-        { label: 'Events', path: '/newsPage' },
+        { label: 'Events', path: '/news' },
         { label: 'Exclusive Offers', path: '/customer/promotion/list' },
     ];
 

@@ -24,6 +24,17 @@ export const getBookingById = async (id: string): Promise<Booking> => {
         throw error;
     }
 };
+export const getBookingDetailsById = async (id: string) => {
+    try {
+        const response = await axiosInstance.get(
+            `/booking-details/booking/${id}`,
+        );
+        return response.data;
+    } catch (error) {
+        console.error(`Error fetching details for booking ${id}:`, error);
+        throw error;
+    }
+};
 
 export const createBooking = async (booking: object): Promise<Booking> => {
     try {
@@ -132,6 +143,7 @@ export const generateBookingID = async () => {
 export default {
     getAll,
     getBookingById,
+    getBookingDetailsById,
     createBooking,
     updateBooking,
     getAllRoomBookings,

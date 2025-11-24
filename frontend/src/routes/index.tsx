@@ -23,17 +23,18 @@ import IncidentManagement from '../pages/employee/IncidentManagement';
 import Home from '../pages/customer/Home';
 import RoomList from '../pages/customer/RoomList';
 import Dashboard from '../pages/admin/dashboard/Dashboard.tsx';
-import NewsDetail from '../components/news/NewsDetail.tsx';
+import NewsDetail from '../pages/admin/news/NewsDetail.tsx';
 import RoomManagement from '../pages/admin/room/RoomManagement.tsx';
 import RoomDetail from '../pages/customer/RoomDetail.tsx';
 import CustomerLayout from '../layouts/CustomerLayout.tsx';
 import DailyWorkStatistics from '../pages/employee/DailyWorkStatistics.tsx';
-import NewsList from '../pages/admin/infomation/NewsList.tsx';
+import NewsList from '../pages/admin/news/NewsList.tsx';
 import ServiceList from '../pages/customer/ServiceList.tsx';
 import IncidentReport from '../pages/customer/IncidentReport.tsx';
 import ServiceManagement from '../pages/admin/ServiceManagement.tsx';
 import BookingDetail from '../pages/admin/booking/BookingDetail.tsx';
-import { Contact } from 'lucide-react';
+import Contact from '../pages/customer/Contact.tsx';
+import EmployeeList from '../pages/admin/EmployeeList.tsx';
 
 export const router = createBrowserRouter([
     // AUTH
@@ -70,11 +71,13 @@ export const router = createBrowserRouter([
             { path: 'checkin', element: <CheckInManager /> },
             { path: 'checkout', element: <CheckOutManager /> },
             { path: 'info', element: <NewsList /> }, // NewsList thay InfoManagement
-            { path: 'info/manage', element: <NewsList /> }, // nếu bạn cần InfoManagement
+            // { path: 'info/manage', element: <NewsList /> }, // nếu bạn cần InfoManagement
             { path: 'info/:id', element: <NewsDetail /> },
             { path: 'services', element: <ServiceManagement /> },
             { path: 'room-management', element: <RoomManagement /> },
             { path: 'bookingPage', element: <BookingPage /> },
+            { path: 'employees', element: <EmployeeList /> },
+            // { path: 'employees/:id', element: <EmployeeDetail /> },
         ],
     },
 
@@ -85,7 +88,8 @@ export const router = createBrowserRouter([
         children: [
             { path: '/', element: <Home /> },
             { path: 'home', element: <Home /> },
-            { path: 'newsPage', element: <NewsPage /> },
+            { path: 'news', element: <NewsPage /> },
+            { path: 'news/:id', element: <NewsDetail /> },
             { path: 'incident-report', element: <IncidentReport /> },
             { path: '/contact', element: <Contact /> },
             { path: '/bookingPage', element: <BookingPage /> },
@@ -101,6 +105,7 @@ export const router = createBrowserRouter([
         element: <CustomerLayout />,
         children: [
             { path: 'room', element: <RoomList /> },
+            { path: 'room/incident', element: <IncidentReport /> },
             { path: 'room/:id', element: <RoomDetail /> },
             { path: 'service', element: <ServiceList /> },
             { path: 'bookingPage', element: <BookingPage /> },
