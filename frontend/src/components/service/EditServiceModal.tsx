@@ -21,10 +21,42 @@ const EditServiceModal: React.FC<EditServiceModalProps> = ({
         setFormData(service);
     }, [service]);
 
+    const validateServiceHours = (hours: string): boolean => {
+        if (!hours || hours.trim() === '') return false;
+        const pattern = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]\s*-\s*([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
+        return pattern.test(hours.trim());
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
         setError('');
+
+        // Validate các trường bắt buộc
+        if (!formData.serviceName || formData.serviceName.trim() === '') {
+            setError('Tên dịch vụ không được để trống');
+            setLoading(false);
+            return;
+        }
+
+        if (!formData.description || formData.description.trim() === '') {
+            setError('Mô tả không được để trống');
+            setLoading(false);
+            return;
+        }
+
+        if (!formData.price || formData.price <= 0) {
+            setError('Giá phải lớn hơn 0');
+            setLoading(false);
+            return;
+        }
+
+        // Validate giờ hoạt động
+        if (!validateServiceHours(formData.serviceHours)) {
+            setError('Giờ hoạt động không được để trống và phải đúng định dạng. Vui lòng nhập theo mẫu: 08:00-22:00');
+            setLoading(false);
+            return;
+        }
 
         try {
             const result = await saveService(formData);
@@ -91,7 +123,7 @@ const EditServiceModal: React.FC<EditServiceModalProps> = ({
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Tên Dịch Vụ
+                                Tên Dịch Vụ <span className="text-red-500">*</span>
                             </label>
                             <input
                                 type="text"
@@ -105,7 +137,7 @@ const EditServiceModal: React.FC<EditServiceModalProps> = ({
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Mô Tả
+                                Mô Tả <span className="text-red-500">*</span>
                             </label>
                             <textarea
                                 name="description"
@@ -119,7 +151,7 @@ const EditServiceModal: React.FC<EditServiceModalProps> = ({
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Giá (VNĐ)
+                                Giá (VNĐ) <span className="text-red-500">*</span>
                             </label>
                             <input
                                 type="number"
@@ -135,15 +167,17 @@ const EditServiceModal: React.FC<EditServiceModalProps> = ({
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Giờ Hoạt Động
+                                Giờ Hoạt Động <span className="text-red-500">*</span>
                             </label>
                             <input
                                 type="text"
                                 name="serviceHours"
                                 value={formData.serviceHours}
                                 onChange={handleChange}
-                                placeholder="Ví dụ: 08:00 - 22:00"
+                                placeholder="Ví dụ: 08:00-22:00 hoặc 08:00 - 22:00"
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]\s*-\s*([0-1]?[0-9]|2[0-3]):[0-5][0-9]$"
+                                required
                             />
                         </div>
 
