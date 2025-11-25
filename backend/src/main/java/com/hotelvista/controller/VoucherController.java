@@ -1,5 +1,7 @@
 package com.hotelvista.controller;
 
+import com.hotelvista.dto.DistributionCriteriaDTO;
+import com.hotelvista.dto.DistributionResultDTO;
 import com.hotelvista.model.Voucher;
 import com.hotelvista.service.VoucherService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -93,5 +95,35 @@ public class VoucherController {
         return updated
                 ? ResponseEntity.ok("Cập nhật voucher thành công")
                 : ResponseEntity.badRequest().body("Không thể cập nhật voucher");
+    }
+
+    /**
+     * Xem trước phân phối - đếm số lượng khách hàng khớp với tiêu chí
+     * @param criteria - Tiêu chí phân phối (membershipLevel, giới tính, tháng sinh, điểm trung thành tối thiểu)
+     * @return DistributionResult với số lượng khách hàng khớp
+     */
+    @PostMapping("/preview-distribution")
+    public ResponseEntity<DistributionResultDTO> previewDistribution(
+            @RequestBody DistributionCriteriaDTO criteria
+            ) {
+        DistributionResultDTO result = service.previewDistribution(criteria);
+        return ResponseEntity.ok(result);
+    }
+
+    /**
+     * Phân phối phiếu giảm giá cho khách hàng phù hợp với tiêu chí
+     * @param id - Mã phiếu giảm giá
+     * @param criteria - Tiêu chí phân phối
+     * @return DistributionResult với trạng thái thành công và số lượng
+     */
+    @PostMapping("/{id}/distribute")
+    public ResponseEntity<DistributionResultDTO> distributeVoucher(
+            @PathVariable String id,
+            @RequestBody DistributionCriteriaDTO criteria
+    ) {
+        DistributionResultDTO result = service.distributeVoucher(id, criteria);
+        return result.isSuccess()
+                ? ResponseEntity.ok(result)
+                : ResponseEntity.badRequest().body(result);
     }
 }

@@ -126,7 +126,8 @@ const VoucherManagement: React.FC = () => {
   const handleSubmit = async (data: Partial<Voucher>) => {
     try {
       setSubmitting(true);
-      if (selectedVoucher) {
+      // Kiểm tra xem hộp thoại nào đang mở để xác định đây là chỉnh sửa hay tạo
+      if (isEditModalOpen && selectedVoucher) {
         // Update existing voucher
         await voucherService.updateVoucher(selectedVoucher.voucherID, data);
         toast?.success("Voucher updated successfully!");
@@ -199,7 +200,10 @@ const VoucherManagement: React.FC = () => {
         </div>
         {activeTab === "management" && (
           <button
-            onClick={() => setIsAddModalOpen(true)}
+            onClick={() => {
+              setSelectedVoucher(null);
+              setIsAddModalOpen(true);
+            }}
             className="bg-[#6b5e4c] text-white px-6 py-3 rounded-lg hover:bg-[#5a4d3d] transition-colors flex items-center gap-2 font-semibold cursor-pointer"
           >
             <FaPlus />

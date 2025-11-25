@@ -10,5 +10,8 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class DistributionCriteriaDTO {
- 
+    private List<String> membershipLevel;
+    private List<String> gender;
+    private List<Integer> birthMonth;
+    private Integer minLoyaltyPoints;
 }

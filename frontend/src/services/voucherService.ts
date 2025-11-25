@@ -1,6 +1,5 @@
 import { api } from "./apiClient";
 import type { Voucher } from "../types/Voucher";
-import type { CustomerVoucher } from "../types/CustomerVoucher";
 
 const ENDPOINT = "/vouchers";
 
@@ -133,8 +132,8 @@ export const getVouchersByCustomerId = async (
 };
 
 /**
- * Toggle voucher active status
- */
+* Chuyển đổi trạng thái hoạt động của phiếu giảm giá
+*/
 export const toggleVoucherStatus = async (
   id: string,
   isActive: boolean
@@ -160,8 +159,8 @@ export const deleteVoucher = async (id: string): Promise<void> => {
 };
 
 /**
- * Distribute voucher to customers based on criteria
- */
+* Phân phối phiếu giảm giá cho khách hàng dựa trên tiêu chí
+*/
 export const distributeVoucher = async (
   voucherId: string,
   criteria: Record<string, unknown>
@@ -179,8 +178,8 @@ export const distributeVoucher = async (
 };
 
 /**
- * Preview customers who will receive voucher (without actually distributing)
- */
+* Xem trước những khách hàng sẽ nhận được phiếu giảm giá (mà không cần phân phối thực tế)
+*/
 export const previewDistribution = async (
   criteria: Record<string, unknown>
 ): Promise<{ count: number; message?: string; success?: boolean }> => {

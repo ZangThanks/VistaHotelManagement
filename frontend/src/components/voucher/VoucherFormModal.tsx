@@ -77,6 +77,24 @@ const VoucherFormModal: React.FC<VoucherFormModalProps> = ({
     }
   }, [isOpen, voucher]);
 
+  // Reset form when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      setFormData({
+        voucherID: "",
+        voucherName: "",
+        discountType: "PERCENT",
+        discountPercentage: 0,
+        discountValue: 0,
+        startDate: new Date(),
+        endDate: new Date(),
+        isActive: true,
+      });
+      setErrors({});
+      setTouched({});
+    }
+  }, [isOpen]);
+
   // Realtime validation
   useEffect(() => {
     if (Object.keys(touched).length > 0) {
