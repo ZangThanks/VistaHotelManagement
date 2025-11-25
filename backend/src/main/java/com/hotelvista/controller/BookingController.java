@@ -258,4 +258,9 @@ public class BookingController {
             return PaymentStatus.PAID; // Any payment received marks as paid
         }
     }
+
+    @PutMapping("/{bookingId}/check-in")
+    public Booking checkIn(@PathVariable String bookingId) {
+        return service.checkIn(bookingId);
+    }
 }

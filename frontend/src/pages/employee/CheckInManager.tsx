@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { FaPlus } from "react-icons/fa";
 import useModal from "../../hooks/useModal";
 import StatusCards from "../../components/checkin/StatusCards";
@@ -11,83 +11,184 @@ import TomorrowTab from "../../components/checkin/TomorrowTab";
 import EarlyTab from "../../components/checkin/EarlyTab";
 import HourlyTab from "../../components/checkin/HourlyTab";
 import { getAll } from "../../services/bookingService";
+import type { Booking } from "../../types/Booking";
+
+interface FilterOptions {
+  status?: string;
+  paymentStatus?: string;
+  packageType?: string;
+}
 
 const CheckInManager: React.FC = () => {
   const [activeTab, setActiveTab] = useState("today");
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [bookings, setBookings] = useState([]);
-  const [filteredBookings, setFilteredBookings] = useState([]);
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [filteredBookings, setFilteredBookings] = useState<Booking[]>([]);
+  const [searchKeyword, setSearchKeyword] = useState("");
+  const [filters, setFilters] = useState<FilterOptions>({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
   const {
     isOpen: isDetailsModalOpen,
     openModal: openDetailsModal,
     closeModal: closeDetailsModal,
   } = useModal();
+
   const {
     isOpen: isCheckinModalOpen,
     openModal: openCheckinModal,
     closeModal: closeCheckinModal,
   } = useModal();
-  const [selectedGuest, setSelectedGuest] = useState(null);
+
+  const [selectedGuest, setSelectedGuest] = useState<Booking | null>(null);
 
   const fetchedBookings = useCallback(async () => {
     try {
       setLoading(true);
       const data = await getAll();
       setBookings(data);
-      filterBookingsByDate(data, currentDate);
       setLoading(false);
       setError("");
     } catch (err) {
       setError("Failed to fetch bookings: " + err);
       setLoading(false);
     }
-  }, [currentDate]);
+  }, []);
 
-  //Lọc theo ngày checkin
-  const filterBookingsByDate = (bookingList, date) => {
-    const filtered = bookingList.filter((booking) => {
-      const checkInDate = new Date(booking.checkInDate);
-      return (
-        checkInDate.getDate() === date.getDate() &&
-        checkInDate.getMonth() === date.getMonth() &&
-        checkInDate.getFullYear() === date.getFullYear()
+  const applyFilters = useCallback(() => {
+    let filtered = [...bookings];
+
+    if (searchKeyword.trim()) {
+      const searchLower = searchKeyword.toLowerCase();
+      filtered = filtered.filter(
+        (booking) =>
+          booking.bookingID.toLowerCase().includes(searchLower) ||
+          booking.customer.fullName.toLowerCase().includes(searchLower) ||
+          booking.customer.email.toLowerCase().includes(searchLower) ||
+          booking.customer.phone.includes(searchKeyword)
       );
-    });
+    }
+
+    if (filters.status) {
+      filtered = filtered.filter((b) => b.status === filters.status);
+    }
+    if (filters.paymentStatus) {
+      filtered = filtered.filter(
+        (b) => b.paymentStatus === filters.paymentStatus
+      );
+    }
+    if (filters.packageType) {
+      filtered = filtered.filter((b) => b.packageType === filters.packageType);
+    }
+
     setFilteredBookings(filtered);
-  };
+  }, [bookings, searchKeyword, filters]);
 
   useEffect(() => {
     fetchedBookings();
   }, [fetchedBookings]);
 
   useEffect(() => {
-    filterBookingsByDate(bookings, currentDate);
-  }, [currentDate, bookings]);
+    applyFilters();
+  }, [applyFilters]);
 
-  const handleTabChange = (tab) => {
+  const handleTabChange = (tab: string) => {
     setActiveTab(tab);
   };
 
-  const changeDate = (direction) => {
+  const changeDate = (direction: number) => {
     const newDate = new Date(currentDate);
     newDate.setDate(newDate.getDate() + direction);
     setCurrentDate(newDate);
   };
 
-  const handleOpenDetailsModal = (guest) => {
+  const handleOpenDetailsModal = (guest: Booking) => {
     setSelectedGuest(guest);
     openDetailsModal();
   };
 
-  const formatDate = (date) => {
+  const handleSearch = (keyword: string) => {
+    setSearchKeyword(keyword);
+  };
+
+  const handleFilter = (newFilters: FilterOptions) => {
+    setFilters(newFilters);
+  };
+
+  const tabCounts = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    return {
+      today: filteredBookings.filter((booking) => {
+        const checkInDate = new Date(booking.checkInDate);
+        checkInDate.setHours(0, 0, 0, 0);
+        return checkInDate.getTime() === today.getTime();
+      }).length,
+
+      tomorrow: filteredBookings.filter((booking) => {
+        const checkInDate = new Date(booking.checkInDate);
+        checkInDate.setHours(0, 0, 0, 0);
+        return checkInDate.getTime() === tomorrow.getTime();
+      }).length,
+
+      early: filteredBookings.filter((booking) => booking.earlyCheckin !== null)
+        .length,
+
+      hourly: filteredBookings.filter(
+        (booking) => booking.hourlyRate !== null && booking.hourlyRate > 0
+      ).length,
+    };
+  }, [filteredBookings]);
+  const formatDate = (date: Date) => {
     return date.toLocaleDateString("en-US", {
       month: "long",
       day: "numeric",
       year: "numeric",
     });
   };
+
+  // Filter bookings by tab type
+  const getBookingsForTab = useCallback((): Booking[] => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    switch (activeTab) {
+      case "today":
+        return filteredBookings.filter((booking) => {
+          const checkInDate = new Date(booking.checkInDate);
+          checkInDate.setHours(0, 0, 0, 0);
+          return checkInDate.getTime() === today.getTime();
+        });
+
+      case "tomorrow":
+        return filteredBookings.filter((booking) => {
+          const checkInDate = new Date(booking.checkInDate);
+          checkInDate.setHours(0, 0, 0, 0);
+          return checkInDate.getTime() === tomorrow.getTime();
+        });
+
+      case "early":
+        return filteredBookings.filter(
+          (booking) => booking.earlyCheckin !== null
+        );
+
+      case "hourly":
+        return filteredBookings.filter(
+          (booking) => booking.hourlyRate !== null && booking.hourlyRate > 0
+        );
+
+      default:
+        return filteredBookings;
+    }
+  }, [activeTab, filteredBookings]);
 
   if (loading) {
     return (
@@ -104,7 +205,7 @@ const CheckInManager: React.FC = () => {
     return (
       <div className="bg-[#F5F0EB] min-h-screen flex justify-center items-center">
         <div className="bg-white p-6 rounded-lg shadow-md max-w-md w-full text-center">
-          <div className="text-red-500 text-5xl mb-4">Cảnh báo</div>
+          <div className="text-red-500 text-5xl mb-4">⚠️</div>
           <h2 className="text-2xl font-semibold mb-2">Error</h2>
           <p className="text-gray-600 mb-4">{error}</p>
           <button
@@ -117,6 +218,8 @@ const CheckInManager: React.FC = () => {
       </div>
     );
   }
+
+  const tabBookings = getBookingsForTab();
 
   return (
     <div className="bg-[#F5F0EB] min-h-screen">
@@ -145,8 +248,8 @@ const CheckInManager: React.FC = () => {
                     />
                   </svg>
                 </button>
-                <button className="px-4 py-2 border-t border-b border-[#EBE3D7] bg-white">
-                  Today: <span>{formatDate(currentDate)}</span>
+                <button className="px-4 py-2 border-t border-b border-[#EBE3D7] bg-white min-w-[200px]">
+                  {formatDate(currentDate)}
                 </button>
                 <button
                   onClick={() => changeDate(1)}
@@ -181,34 +284,85 @@ const CheckInManager: React.FC = () => {
           </div>
 
           <div className="mb-6">
-            <SearchFilter />
+            <SearchFilter onSearch={handleSearch} onFilter={handleFilter} />
           </div>
 
+          {/* Show filter results info */}
+          {(searchKeyword ||
+            filters.status ||
+            filters.paymentStatus ||
+            filters.packageType) && (
+            <div className="mb-4 bg-blue-50 border border-blue-200 rounded-lg p-3 flex justify-between items-center">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-blue-800">
+                  {searchKeyword && (
+                    <span>
+                      Searching for: <strong>"{searchKeyword}"</strong>
+                    </span>
+                  )}
+                  {filters.status && (
+                    <span className="ml-2">
+                      • Status: <strong>{filters.status}</strong>
+                    </span>
+                  )}
+                  {filters.paymentStatus && (
+                    <span className="ml-2">
+                      • Payment: <strong>{filters.paymentStatus}</strong>
+                    </span>
+                  )}
+                  {filters.packageType && (
+                    <span className="ml-2">
+                      • Package: <strong>{filters.packageType}</strong>
+                    </span>
+                  )}
+                </span>
+                <span className="ml-2 px-2 py-1 bg-blue-200 text-blue-800 rounded-full text-xs font-medium">
+                  {tabBookings.length} results
+                </span>
+              </div>
+              <button
+                onClick={() => {
+                  setSearchKeyword("");
+                  setFilters({});
+                }}
+                className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+              >
+                Clear all
+              </button>
+            </div>
+          )}
+
           <div className="bg-white rounded-lg shadow-sm">
-            <CheckinTabs activeTab={activeTab} onTabChange={handleTabChange} />
+            <CheckinTabs
+              activeTab={activeTab}
+              onTabChange={handleTabChange}
+              counts={tabCounts}
+            />
 
             {activeTab === "today" && (
               <TodayTab
                 onViewDetails={handleOpenDetailsModal}
-                bookings={filteredBookings}
+                bookings={tabBookings}
+                onRefresh={fetchedBookings}
               />
             )}
             {activeTab === "tomorrow" && (
               <TomorrowTab
                 onViewDetails={handleOpenDetailsModal}
-                bookings={bookings}
+                bookings={tabBookings}
               />
             )}
             {activeTab === "early" && (
               <EarlyTab
                 onViewDetails={handleOpenDetailsModal}
-                bookings={filteredBookings}
+                bookings={tabBookings}
+                onRefresh={fetchedBookings}
               />
             )}
             {activeTab === "hourly" && (
               <HourlyTab
                 onViewDetails={handleOpenDetailsModal}
-                bookings={filteredBookings}
+                bookings={tabBookings}
               />
             )}
           </div>
@@ -221,6 +375,7 @@ const CheckInManager: React.FC = () => {
           isOpen={isDetailsModalOpen}
           onClose={closeDetailsModal}
           guest={selectedGuest}
+          onRefresh={fetchedBookings}
         />
       )}
 
@@ -228,6 +383,7 @@ const CheckInManager: React.FC = () => {
         <ManualCheckinModal
           isOpen={isCheckinModalOpen}
           onClose={closeCheckinModal}
+          onSuccess={fetchedBookings}
         />
       )}
     </div>
