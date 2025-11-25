@@ -48,7 +48,18 @@ public class BookingController {
     
     
     @GetMapping("/search")
-    public List<Booking> searchBookings(@RequestParam String keyword) {
+    public List<Booking> searchBookings(@RequestParam(required = false) String keyword) {
         return service.searchBookings(keyword);
     }
+
+    @GetMapping("/create-booking-id")
+    public String generateBookingID() {
+        return service.generateBookingID();
+    }
+
+    @GetMapping("/room/{roomNumber}")
+    public List<Booking> findAllByRoom_RoomNumber(@PathVariable("roomNumber") String roomNumber) {
+        return service.findAllByRoom_RoomNumber(roomNumber);
+    }
+
 }

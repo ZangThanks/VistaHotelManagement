@@ -1,7 +1,7 @@
 /* Import Google Fonts - Must be first */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700;800&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700;800&display=swap");
 
-@import 'tailwindcss';
+@import "tailwindcss";
 
 /* Custom scrollbar */
 .scrollbar-thin::-webkit-scrollbar {
@@ -108,11 +108,11 @@
     --color-text: #111111;
     --color-text-dark: #f9f9f9;
 
-    /* Font families - Modern & Elegant */
-    --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
-    --font-playfair: 'Playfair Display', Georgia, serif;
-    --font-body: 'Inter', system-ui, -apple-system, sans-serif;
-    --font-heading: 'Inter', system-ui, -apple-system, sans-serif;
+    /* Font families */
+    --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+    --font-playfair: "Playfair Display", Georgia, serif;
+    --font-body: "Inter", system-ui, -apple-system, sans-serif;
+    --font-heading: "Inter", system-ui, -apple-system, sans-serif;
 
     /* Shadow + border radius */
     --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
@@ -218,26 +218,44 @@
         }
     }
 
-    input[type='checkbox'] {
+    input[type="checkbox"] {
         @apply appearance-none w-5 h-5 border-2 border-cream rounded-sm relative cursor-pointer transition-colors;
     }
 
-    input[type='checkbox']:checked {
+    input[type="checkbox"]:checked {
         @apply bg-gold border-gold;
     }
 
-    input[type='checkbox']:checked::before {
-        content: '✓';
+    input[type="checkbox"]:checked::before {
+        content: "✓";
         @apply absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-white text-xs;
     }
 }
+
 @layer utilities {
     .no-scrollbar::-webkit-scrollbar {
         display: none;
     }
-
     .no-scrollbar {
-        -ms-overflow-style: none; /* IE và Edge */
-        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none;
+        scrollbar-width: none;
     }
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #cbbda3;
+    border-radius: 50px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: #f1eee8;
+    border-radius: 50px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #b9aa92;
 }

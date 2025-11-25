@@ -1,4 +1,3 @@
-/* eslint-disable */
 import React, { type ReactNode } from 'react';
 
 interface PageHeaderProps {

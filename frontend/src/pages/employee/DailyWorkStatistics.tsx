@@ -8,10 +8,18 @@ import {
     Search,
     Calendar,
 } from 'lucide-react';
+// import type { Task } from '../../types/Task';
+export interface Task {
+    id: string;
+    name: string;
+    type: string;
+    time: string;
+    status: string;
+}
 
 export default function DailyWorkStatistics() {
     const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
-    const [tasks, setTasks] = useState([]);
+    const [tasks, setTasks] = useState<Task[]>([]);
     const [search, setSearch] = useState('');
 
     useEffect(() => {

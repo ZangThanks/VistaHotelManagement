@@ -1,6 +1,7 @@
 package com.hotelvista.service;
 
 import com.hotelvista.model.BookingDetail;
+import com.hotelvista.model.Review;
 import com.hotelvista.repository.BookingDetailRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

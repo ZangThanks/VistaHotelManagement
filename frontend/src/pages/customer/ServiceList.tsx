@@ -1,15 +1,42 @@
-import React from 'react';
-import ServiceCard, { type Service } from '../../components/ServiceCard';
+import React, { useEffect, useState } from 'react';
+import ServiceCard from '../../components/ServiceCard';
+import type { Service } from '../../types/Service';
+import { getAll } from '../../services/serviceService';
 
-interface ServiceListProps {
-    laundryServices?: Service[];
-    foodServices?: Service[];
-}
+const ServiceList = () => {
+    const [services, setServices] = useState<Service[] | null>(null);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
-const ServiceList: React.FC<ServiceListProps> = ({
-    laundryServices = [],
-    foodServices = [],
-}) => {
+   useEffect(() => {
+
+       setLoading(true);
+       setError(null);
+
+       getAll()
+           .then((data: Service[]) => {
+               setServices(Array.isArray(data) ? data : []);
+           })
+           .catch((err: Error) => {
+               setError(err?.message || 'Error loading services');
+           })
+       .finally(() => setLoading(false));
+    
+   }, []);
+  console.log('Fetched services:', services);
+    // categorize
+    const laundry = (services ?? []).filter((s) =>
+      (s.serviceCategory ?? '').toUpperCase().includes('LAUNDRY'),
+    );
+    const food = (services ?? []).filter(
+        (s) =>
+            (s.serviceCategory ?? '').toUpperCase().includes('FOOD') ||
+            (s.serviceCategory ?? '').toUpperCase().includes('BEVERAGE'),
+    );
+    const others = (services ?? []).filter(
+        (s) => !laundry.includes(s) && !food.includes(s),
+    );
+
     return (
         <div className="font-sans">
             {/* Hero Banner with fixed background */}
@@ -71,71 +98,124 @@ const ServiceList: React.FC<ServiceListProps> = ({
 
                 {/* Service List Section */}
                 <div className="max-w-7xl mx-auto py-16 bg-transparent">
-                    {/* Laundry Services */}
-                    <section className="mb-16">
-                        <div className="flex gap-10">
-                            <div className="w-64 flex-shrink-0">
-                                <h3 className="text-2xl font-bold mb-4">
-                                    Laundry
-                                </h3>
-                                <p className="text-gray-700 text-sm leading-relaxed">
-                                    We offer professional laundry services,
-                                    including washing, drying, and folding, to
-                                    make your life easier.
-                                </p>
-                            </div>
-
-                            <div className="flex-1">
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                                    {laundryServices.map((s) => (
-                                        <ServiceCard
-                                            key={s.id ?? s.name}
-                                            service={s}
-                                        />
-                                    ))}
-                                </div>
-                                <div className="text-right mt-6">
-                                    <a
-                                        href="#"
-                                        className="text-blue-600 hover:underline text-sm font-medium"
-                                    >
-                                        Read more
-                                    </a>
-                                </div>
-                            </div>
+                    {loading && (
+                        <div className="text-center py-10">
+                            Loading services…
                         </div>
-                    </section>
-
-                    {/* Food and Beverage Services */}
-                    <section className="mb-16">
-                        <div className="flex gap-8">
-                            <div className="w-64 flex-shrink-0">
-                                <h3 className="text-2xl font-bold mb-4">
-                                    Food and Beverage
-                                </h3>
-                                <p className="text-gray-700 text-sm leading-relaxed">
-                                    To awaken every sense, to elevate with
-                                    exquisite flavors. Crafted with passion and
-                                    mastery, indulge in our sumptuous coffees.
-                                </p>
-                            </div>
-
-                            <div className="flex-1">
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                                    {foodServices.map((s) => (
-                                        <ServiceCard
-                                            key={s.id ?? s.name}
-                                            service={s}
-                                        />
-                                    ))}
-                                </div>
-                            </div>
+                    )}
+                    {error && (
+                        <div className="text-center py-10 text-red-600">
+                            {error}
                         </div>
-                    </section>
+                    )}
+
+                    {!loading && !error && (
+                        <>
+                            {/* Laundry Services */}
+                            <section className="mb-16">
+                                <div className="flex gap-10">
+                                    <div className="w-64 flex-shrink-0">
+                                        <h3 className="text-2xl font-bold mb-4">
+                                            Laundry
+                                        </h3>
+                                        <p className="text-gray-700 text-sm leading-relaxed">
+                                            We offer professional laundry
+                                            services, including washing, drying,
+                                            and folding, to make your life
+                                            easier.
+                                        </p>
+                                    </div>
+
+                                    <div className="flex-1">
+                                        {laundry.length === 0 ? (
+                                            <div className="text-sm text-gray-600">
+                                                No laundry services available.
+                                            </div>
+                                        ) : (
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                                                {laundry.map((s) => (
+                                                    <ServiceCard
+                                                        key={
+                                                            s.serviceID ??
+                                                            s.serviceName
+                                                        }
+                                                        service={s as Service}
+                                                    />
+                                                ))}
+                                            </div>
+                                        )}
+                                        <div className="text-right mt-6">
+                                            <a
+                                                href="#"
+                                                className="text-blue-600 hover:underline text-sm font-medium"
+                                            >
+                                                Read more
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+
+                            {/* Food and Beverage Services */}
+                            <section className="mb-16">
+                                <div className="flex gap-8">
+                                    <div className="w-64 flex-shrink-0">
+                                        <h3 className="text-2xl font-bold mb-4">
+                                            Food and Beverage
+                                        </h3>
+                                        <p className="text-gray-700 text-sm leading-relaxed">
+                                            To awaken every sense, to elevate
+                                            with exquisite flavors. Crafted with
+                                            passion and mastery, indulge in our
+                                            sumptuous coffees.
+                                        </p>
+                                    </div>
+
+                                    <div className="flex-1">
+                                        {food.length === 0 ? (
+                                            <div className="text-sm text-gray-600">
+                                                No food & beverage services
+                                                available.
+                                            </div>
+                                        ) : (
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                                                {food.map((s) => (
+                                                    <ServiceCard
+                                                        key={
+                                                            s.serviceID ??
+                                                            s.serviceName
+                                                        }
+                                                        service={s as Service}
+                                                    />
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </section>
+
+                            {/* Other services */}
+                            {others.length > 0 && (
+                                <section className="mb-16">
+                                    <h3 className="text-2xl font-bold mb-6">
+                                        Other Services
+                                    </h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                                        {others.map((s) => (
+                                            <ServiceCard
+                                                key={
+                                                    s.serviceID ?? s.serviceName
+                                                }
+                                                service={s as Service}
+                                            />
+                                        ))}
+                                    </div>
+                                </section>
+                            )}
+                        </>
+                    )}
                 </div>
             </div>
-
-            {/* Footer: integrate your existing footer component where needed */}
         </div>
     );
 };

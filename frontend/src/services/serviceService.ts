@@ -1,25 +1,14 @@
-import { api } from "./apiClient";
+import type { Service } from '../types/Service';
+import { api } from './apiClient';
 
-const ENDPOINT = "/services";
+const ENDPOINT = '/services';
 
-// Interface Service type
-export interface Service {
-    serviceID: string;
-    serviceName: string;
-    description: string;
-    price: number;
-    availability: boolean;
-    serviceHours: string;
-    serviceCategory: string;
-}
-
-// Lấy tất cả dịch vụ
-export const getAll = async (): Promise<Service[]> => {
+export const getAll = async () => {
     try {
         const response = await api.get(ENDPOINT);
         return response.data;
     } catch (error) {
-        console.error("Error fetching services:", error);
+        console.error('Error fetching services:', error);
         throw error;
     }
 };
@@ -81,11 +70,11 @@ export const saveService = async (service: Service): Promise<Service> => {
 };
 
 // Xóa dịch vụ
-export const deleteService = async (serviceID: string): Promise<void> => {
+  export const deleteService = async (serviceID: string): Promise<void> => {
     try {
-        await api.delete(`${ENDPOINT}/${serviceID}`);
+      await api.delete(`${ENDPOINT}/${serviceID}`);
     } catch (error) {
-        console.error("Error deleting service:", error);
-        throw error;
+      console.error("Error deleting service:", error);
+      throw error;
     }
-};
+  };

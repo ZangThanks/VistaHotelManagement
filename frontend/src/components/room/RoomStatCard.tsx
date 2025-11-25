@@ -1,17 +1,17 @@
-import React from "react";
-import { motion } from "framer-motion";
-import type { IconType } from "react-icons";
+import React from 'react';
+import { motion } from 'framer-motion';
+import type { IconType } from 'react-icons';
 
 interface RoomStatCardProps {
-  icon: IconType;
-  iconBgColor: string;
-  iconColor: string;
-  value: string | number;
-  label: string;
-  trend?: {
-    value: string;
-    isPositive: boolean;
-  };
+    icon: IconType;
+    iconBgColor: string;
+    iconColor: string;
+    value: string | number;
+    label: string;
+    trend?: {
+        value: string;
+        isPositive: boolean;
+    };
 }
 
 /**
@@ -24,41 +24,43 @@ interface RoomStatCardProps {
  * @param trend - Xu hướng tăng/giảm (tùy chọn)
  */
 const RoomStatCard: React.FC<RoomStatCardProps> = ({
-  icon: Icon,
-  iconBgColor,
-  iconColor,
-  value,
-  label,
-  trend,
+    icon: Icon,
+    iconBgColor,
+    iconColor,
+    value,
+    label,
+    trend,
 }) => {
-  return (
-    <motion.div
-      className="bg-white p-6 rounded-xl shadow-sm border border-[#ebe3d7] flex items-center gap-4"
-      whileHover={{ y: -5, boxShadow: "0 10px 30px rgba(0,0,0,0.1)" }}
-      transition={{ type: "spring", stiffness: 300 }}
-    >
-      <div
-        className={`w-14 h-14 rounded-lg ${iconBgColor} flex items-center justify-center`}
-      >
-        <Icon className={`text-2xl ${iconColor}`} />
-      </div>
-      <div className="flex-1">
-        <h3 className="text-3xl font-bold text-gray-800">{value}</h3>
-        <p className="text-sm text-gray-600 mt-1">{label}</p>
-        {trend && (
-          <div className="flex items-center gap-1 mt-2">
-            <span
-              className={`text-xs font-medium ${
-                trend.isPositive ? "text-green-600" : "text-red-600"
-              }`}
+    return (
+        <motion.div
+            className="bg-white p-6 rounded-xl shadow-sm border border-[#ebe3d7] flex items-center gap-4"
+            whileHover={{ y: -5, boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}
+            transition={{ type: 'spring', stiffness: 300 }}
+        >
+            <div
+                className={`w-14 h-14 rounded-lg ${iconBgColor} flex items-center justify-center`}
             >
-              {trend.isPositive ? "↑" : "↓"} {trend.value}
-            </span>
-          </div>
-        )}
-      </div>
-    </motion.div>
-  );
+                <Icon className={`text-2xl ${iconColor}`} />
+            </div>
+            <div className="flex-1">
+                <h3 className="text-3xl font-bold text-gray-800">{value}</h3>
+                <p className="text-sm text-gray-600 mt-1">{label}</p>
+                {trend && (
+                    <div className="flex items-center gap-1 mt-2">
+                        <span
+                            className={`text-xs font-medium ${
+                                trend.isPositive
+                                    ? 'text-green-600'
+                                    : 'text-red-600'
+                            }`}
+                        >
+                            {trend.isPositive ? '↑' : '↓'} {trend.value}
+                        </span>
+                    </div>
+                )}
+            </div>
+        </motion.div>
+    );
 };
 
 export default RoomStatCard;

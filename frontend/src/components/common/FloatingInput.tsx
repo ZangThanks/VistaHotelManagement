@@ -74,7 +74,7 @@ const FloatingInput: React.FC<FloatingInputProps> = ({
                 onBlur={() => setFocused(false)}
                 className={`peer w-full bg-transparent border-0 border-b ${borderColor} ${focusBorderColor}
                     outline-none transition-colors duration-200 ${sizePad} ${leftPadding} ${rightPadding}
-                    text-gray-900 placeholder-gray-400
+                    text-white placeholder-white/50
                     ${disabled ? 'opacity-60 cursor-not-allowed' : ''}`}
                 aria-labelledby={`${inputId}-label`}
                 autoComplete="off"
