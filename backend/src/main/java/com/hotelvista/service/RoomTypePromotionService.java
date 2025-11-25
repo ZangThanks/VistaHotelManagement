@@ -58,4 +58,8 @@ public class RoomTypePromotionService {
     public void deleteByPromotionPromotionID(String promotionID) {
         repo.deleteByPromotionPromotionID(promotionID);
     }
+
+    public List<RoomTypePromotion> findByPromotion_PromotionID(String promotionPromotionID) {
+        return repo.findByPromotion_PromotionID(promotionPromotionID);
+    }
 }

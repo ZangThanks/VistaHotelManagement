@@ -4,6 +4,7 @@ import { FaUsers, FaCheckCircle } from "react-icons/fa";
 import type { Voucher } from "../../types/Voucher";
 import type { DistributionCriteria } from "../../types/CustomerVoucher";
 import voucherService from "../../services/voucherService";
+import { useToastContext } from "../../hooks/useToastContext";
 
 interface DistributeVoucherModalProps {
   isOpen: boolean;
@@ -18,6 +19,7 @@ const DistributeVoucherModal: React.FC<DistributeVoucherModalProps> = ({
   voucher,
   onSuccess,
 }) => {
+  const toast = useToastContext();
   const [criteria, setCriteria] = useState<DistributionCriteria>({
     membershipLevel: [],
     gender: [],
@@ -45,9 +47,13 @@ const DistributeVoucherModal: React.FC<DistributeVoucherModalProps> = ({
       setLoading(true);
       const result = await voucherService.previewDistribution(criteria);
       setPreviewCount(result.count);
+      if (result.count === 0) {
+        toast.error("Không tìm thấy khách hàng phù hợp với điều kiện", { duration: 3000 });
+      }
     } catch (error) {
       console.error("Error previewing distribution:", error);
       setPreviewCount(0);
+      toast.error("Lỗi khi xem trước danh sách khách hàng", { duration: 3000 });
     } finally {
       setLoading(false);
     }
@@ -58,11 +64,18 @@ const DistributeVoucherModal: React.FC<DistributeVoucherModalProps> = ({
 
     try {
       setDistributing(true);
-      await voucherService.distributeVoucher(voucher.voucherID, criteria);
-      onSuccess();
-      onClose();
+      const result = await voucherService.distributeVoucher(voucher.voucherID, criteria);
+      
+      if (result.success) {
+        toast.success(result.message || `Đã phân phối voucher cho ${result.count} khách hàng`, { duration: 3000 });
+        onSuccess();
+        onClose();
+      } else {
+        toast.error(result.message || "Không thể phân phối voucher", { duration: 3000 });
+      }
     } catch (error) {
       console.error("Error distributing voucher:", error);
+      toast.error("Lỗi khi phân phối voucher", { duration: 3000 });
     } finally {
       setDistributing(false);
     }

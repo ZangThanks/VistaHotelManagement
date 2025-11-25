@@ -52,4 +52,5 @@ public interface CustomerRepository extends JpaRepository<Customer, String> {
     @Query("SELECT c FROM Customer c WHERE c.id LIKE ?1% ORDER BY c.id DESC LIMIT 1")
     Customer findLastCustomerIdOfDay(String prefix);
 
+
 }

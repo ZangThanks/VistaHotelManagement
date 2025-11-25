@@ -165,7 +165,7 @@ export const deleteVoucher = async (id: string): Promise<void> => {
 export const distributeVoucher = async (
   voucherId: string,
   criteria: Record<string, unknown>
-): Promise<{ count: number; customerVouchers: CustomerVoucher[] }> => {
+): Promise<{ count: number; message: string; success: boolean }> => {
   try {
     const response = await api.post(
       `${ENDPOINT}/${voucherId}/distribute`,
@@ -183,10 +183,10 @@ export const distributeVoucher = async (
  */
 export const previewDistribution = async (
   criteria: Record<string, unknown>
-): Promise<{ count: number; customers: unknown[] }> => {
+): Promise<{ count: number; message?: string; success?: boolean }> => {
   try {
     const response = await api.post(
-      `${ENDPOINT}/distribution/preview`,
+      `${ENDPOINT}/preview-distribution`,
       criteria
     );
     return response.data;

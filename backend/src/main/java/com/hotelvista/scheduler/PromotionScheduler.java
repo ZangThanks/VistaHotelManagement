@@ -4,6 +4,8 @@ import com.hotelvista.model.Promotion;
 import com.hotelvista.model.RoomTypePromotion;
 import com.hotelvista.repository.PromotionRepository;
 import com.hotelvista.repository.RoomTypePromotionRepository;
+import com.hotelvista.service.PromotionService;
+import com.hotelvista.service.RoomTypePromotionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -15,10 +17,10 @@ import java.util.List;
 @Component
 public class PromotionScheduler {
     @Autowired
-    private PromotionRepository promotionRepository;
+    private PromotionService promotionService;
 
     @Autowired
-    private RoomTypePromotionRepository roomTypePromotionRepository;
+    private RoomTypePromotionService roomTypePromotionService;
 
     // Chạy mỗi ngày lúc 00:00 (midnight)
     @Scheduled(cron = "0 0 0 * * ?")
@@ -29,12 +31,12 @@ public class PromotionScheduler {
         LocalDate today = LocalDate.now();
 
         // Lấy tất cả promotions đang active
-        List<Promotion> activePromotions = promotionRepository.findAllByActive(true);
+        List<Promotion> activePromotions = promotionService.findAllByActive(true);
 
         for (Promotion promotion : activePromotions) {
             // Kiểm tra xem tất cả room type promotions đã hết hạn chưa
             List<RoomTypePromotion> roomTypePromotions =
-                    roomTypePromotionRepository.findByPromotion_PromotionID(promotion.getPromotionID());
+                    roomTypePromotionService.findByPromotion_PromotionID(promotion.getPromotionID());
 
             boolean allExpired = true;
             for (RoomTypePromotion rtp : roomTypePromotions) {
@@ -48,7 +50,7 @@ public class PromotionScheduler {
             // Nếu tất cả đều hết hạn, deactivate promotion
             if (allExpired && !roomTypePromotions.isEmpty()) {
                 promotion.setActive(false);
-                promotionRepository.save(promotion);
+                promotionService.save(promotion);
                 System.out.println("Deactivated expired promotion: " + promotion.getPromotionID());
             }
         }
