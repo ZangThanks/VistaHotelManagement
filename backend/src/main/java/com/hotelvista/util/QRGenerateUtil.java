@@ -10,13 +10,13 @@ import java.nio.charset.StandardCharsets;
 
 public class QRGenerateUtil {
     private static final String BANK_CORE = "MBBank";
-    private static final String ACCOUNT_CORE = "0949770422";
 
-    public static String buildVietQRUrl(String bank, String account, Double amount, String info) {
-        return "https://img.vietqr.io/image/" +
-                BANK_CORE + "-" + ACCOUNT_CORE + "-compact2.png?amount=" +
-                amount + "&addInfo=" +
-                URLEncoder.encode(info, StandardCharsets.UTF_8);
+    //VQRQAFMGQ4306 là tài khoản ảo trên SePay muốn test trên local thì tải ngrok - chạy ngrok http 8080
+    //Cop link generated xong cấu hình lại webhook trên sepay
+    //https://qr.sepay.vn/img?acc=VQRQAFMGQ4306&bank=MBBank&amount=100000&des=B2411250001
+    public static String buildVietQRUrl(String bookingId, Double amount) {
+        return "https://qr.sepay.vn/img?acc=VQRQAFMGQ4306&bank=" +
+                BANK_CORE + "&amount=" + amount + "&des=" + bookingId;
     }
 
     public static byte[] generateQrImage(String qrUrl) throws IOException {

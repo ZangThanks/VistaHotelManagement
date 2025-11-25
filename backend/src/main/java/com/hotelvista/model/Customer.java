@@ -48,5 +48,4 @@ public class Customer extends User{
     @JsonIgnore
     @OneToMany(mappedBy = "customer")
     private List<Booking> bookings;
-
 }

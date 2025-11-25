@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { generateQRPayment } from "../../../services/bookingService";
-import { type Payment } from "../../../services/paymentService";
+import {
+  generateQRPayment,
+  getBookingById,
+} from "../../../services/bookingService";
 import type { Booking } from "../../../types/Booking";
 
 const PaymentPage: React.FC = () => {
@@ -13,12 +15,9 @@ const PaymentPage: React.FC = () => {
   const [selectedChoice, setSelectedChoice] = useState<number>(1);
   const [loading, setLoading] = useState(false);
   const [paymentCompleted, setPaymentCompleted] = useState(false);
-  const [payment, setPayment] = useState<Payment | null>(null);
-
   const reputationPoint = booking?.customer?.reputationPoint || 0;
   const totalAmount = booking?.totalAmount || 0;
 
-  // Calculate payment amounts based on reputation
   const getPaymentInfo = () => {
     if (reputationPoint >= 0 && reputationPoint <= 40) {
       return {
@@ -61,10 +60,11 @@ const PaymentPage: React.FC = () => {
     try {
       setLoading(true);
 
-      // Generate QR code
       const blob = await generateQRPayment(booking.bookingID, choice);
       const url = URL.createObjectURL(blob);
       setImageUrl(url);
+
+      startPaymentPolling();
     } catch (error) {
       console.error("Error fetching payment image:", error);
       alert("Failed to generate QR code. Please try again.");
@@ -73,10 +73,32 @@ const PaymentPage: React.FC = () => {
     }
   };
 
+  const startPaymentPolling = async () => {
+    if (!booking?.bookingID) return;
+
+    const maxAttempts = 60; // Poll mỗi 60s
+    const delayMs = 1000; // Check mỗi 1s
+
+    for (let i = 0; i < maxAttempts; i++) {
+      await new Promise((res) => setTimeout(res, delayMs));
+
+      try {
+        const refreshed = await getBookingById(booking.bookingID);
+        if (refreshed?.paymentStatus === "PAID") {
+          setPaymentCompleted(true);
+          setTimeout(() => navigate("/"), 5000);
+          return;
+        }
+      } catch (error) {
+        console.debug("Polling attempt failed:", error);
+      }
+    }
+  };
+
   useEffect(() => {
     if (!booking) {
       alert("No booking information found. Redirecting...");
-      navigate("/booking");
+      navigate("/bookingPage");
       return;
     }
 
@@ -91,11 +113,10 @@ const PaymentPage: React.FC = () => {
 
     // Auto-generate QR for customers with reputation 0-80
     if (!paymentInfo.hasChoice) {
-      fetchQRCode(1); // Default choice for non-high reputation customers
+      fetchQRCode(1); // Default choice cho < 80
     }
 
     return () => {
-      // Cleanup
       if (imageUrl) {
         URL.revokeObjectURL(imageUrl);
       }
@@ -113,13 +134,6 @@ const PaymentPage: React.FC = () => {
 
   const handleGenerateQR = () => {
     fetchQRCode(selectedChoice);
-  };
-
-  const handlePaymentComplete = () => {
-    setPaymentCompleted(true);
-    setTimeout(() => {
-      navigate("/");
-    }, 2000);
   };
 
   if (!booking) {
@@ -257,38 +271,16 @@ const PaymentPage: React.FC = () => {
             <p className="mt-4 text-sm text-gray-600">
               Scan this QR code with your banking app to complete payment
             </p>
-
-            {/* Payment info */}
-            {payment && (
-              <div className="mt-4 p-3 bg-gray-50 rounded-lg text-xs text-left">
-                <p>
-                  <span className="font-semibold">Payment ID:</span>{" "}
-                  {payment.paymentId}
-                </p>
-                <p>
-                  <span className="font-semibold">Status:</span>{" "}
-                  {payment.status}
-                </p>
-                <p>
-                  <span className="font-semibold">Created:</span>{" "}
-                  {new Date(payment.createdAt).toLocaleString()}
-                </p>
-              </div>
-            )}
+            <p className="mt-2 text-xs text-gray-500">
+              Payment status will be automatically detected...
+            </p>
 
             <div className="mt-6 space-y-3">
-              <button
-                onClick={handlePaymentComplete}
-                className="w-full px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition"
-              >
-                I've Completed Payment (Manual)
-              </button>
               {paymentInfo.hasChoice && (
                 <button
                   onClick={() => {
                     URL.revokeObjectURL(imageUrl);
                     setImageUrl("");
-                    setPayment(null);
                   }}
                   className="w-full px-6 py-3 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition"
                 >

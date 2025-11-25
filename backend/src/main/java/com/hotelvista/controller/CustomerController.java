@@ -47,6 +47,9 @@ public class CustomerController {
      */
     @PostMapping("/save")
     public Customer createOrUpdateCustomer(@RequestBody Customer customer) {
+        if (customer.getReputationPoint() == null) {
+            customer.setReputationPoint(100);
+        }
         service.save(customer);
         return customer;
     }
