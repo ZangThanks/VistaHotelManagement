@@ -10,7 +10,9 @@ import lombok.ToString;
 @Getter
 @ToString
 public enum Gender {
-    MALE("male"), FEMALE("female"), OTHER("other");
+    MALE("Male"),
+    FEMALE("Female"),
+    OTHER("Other");
     private String gender;
 
 }

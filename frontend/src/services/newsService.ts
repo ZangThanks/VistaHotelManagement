@@ -1,26 +1,43 @@
-import { api } from "./apiClient";
+/* eslint-disable */
+import { api } from './apiClient';
+import type { News } from '../types/News';
 
-const ENDPOINT = "/news";
+const ENDPOINT = '/news';
 
+// Lấy tất cả
 export const getAll = async () => {
-  try {
     const response = await api.get(ENDPOINT);
     return response.data;
-  } catch (error) {
-    console.error("Error fetching services:", error);
-    throw error;
-  }
 };
+
+// Lấy tin nổi bật
 export const getHighlighted = async () => {
-  try {
     const response = await api.get(`${ENDPOINT}/highlight`);
     return response.data;
-  } catch (error) {
-    console.error("❌ Error fetching highlighted news:", error);
-    throw error;
-  }
 };
-export const getNewsById = async (id: string) => {
-  const response = await api.get(`${ENDPOINT}/${id}`);
-  return response.data;
+
+// Lấy tin theo newsId
+export const getNewsById = async (newsId: string): Promise<News> => {
+    const response = await api.get(`${ENDPOINT}/${newsId}`);
+    return response.data;
+};
+
+// Thêm tin tức
+export const createNews = async (data: any) => {
+    const response = await api.post(`${ENDPOINT}/create`, data);
+    return response.data;
+};
+
+// Cập nhật tin tức
+export const updateNews = async (newsId: string, data: any) => {
+    const response = await api.put(`${ENDPOINT}/update/${newsId}`, data);
+    return response.data;
+};
+
+export default {
+    getAll,
+    getHighlighted,
+    getNewsById,
+    createNews,
+    updateNews,
 };

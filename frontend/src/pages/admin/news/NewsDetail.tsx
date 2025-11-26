@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getNewsById } from '../../services/newsService';
+import { getNewsById } from '../../../services/newsService';
 import { FaArrowLeft, FaCalendarAlt, FaClock } from 'react-icons/fa';
-import type { NewsItem } from '../../types/News';
+import type { NewsItem } from '../../../types/News';
 
 export default function NewsDetail() {
     const { id } = useParams<{ id: string }>(); // Lấy newsId từ URL
@@ -17,7 +17,7 @@ export default function NewsDetail() {
             try {
                 if (!id) return;
                 const data = await getNewsById(id);
-                setNews(data);
+                setNews(data as NewsItem);
             } catch (err) {
                 setError('Không thể tải dữ liệu bài viết.');
                 console.error(err);
