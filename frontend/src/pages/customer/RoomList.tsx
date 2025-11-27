@@ -175,7 +175,7 @@ export default function RoomList() {
               }}
           >
               {/* Header Section */}
-              <div className="max-w-2xl text-center flex flex-col mx-auto pt-16 pb-8 px-4">
+              <div className="max-w-2xl text-center flex flex-col mx-auto pt-28 pb-8 px-4">
                   <h5 className="text-3xl font-semibold text-gray-800 mb-4 tracking-wide">
                       Room
                   </h5>

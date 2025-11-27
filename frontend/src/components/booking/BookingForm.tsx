@@ -8,10 +8,12 @@ import { MdOutlineRoomService, MdRoomService } from "react-icons/md";
 import { getAll } from "../../services/serviceService";
 import { CiSquareQuestion } from "react-icons/ci";
 import {
+
   createBooking,
   generateBookingID,
 } from "../../services/bookingService";
 import { getById } from "../../services/customerService";
+
 import {
   getByCustomerIdAndStateTrue,
   saveCustomerVoucher,

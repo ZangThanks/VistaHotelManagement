@@ -43,7 +43,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
     {
       icon: <RiInfoCardFill />,
       label: "Information Management",
-      path: "/info-management",
+      path: "/admin/info",
     },
     {
       icon: <LuMapPinCheckInside />,
@@ -55,11 +55,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
       label: "Check-out Management",
       path: "/admin/checkout",
     },
-    {
-      icon: <FaCalendarAlt />,
-      label: "Reservations",
-      path: "/reservations",
-    },
+    
     { icon: <FaUsers />, label: "Guests", path: "/guests" },
     { icon: <MdRoomService />, label: "Services", path: "/services" },
     { icon: <RiDiscountPercentFill />, label: "Promotions", path: "/admin/promotions" },
