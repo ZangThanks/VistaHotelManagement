@@ -14,6 +14,7 @@ export interface Booking {
   paymentStatus: "PENDING" | "PAID" | "REFUNDED" | "PARTIAL";
   invoiceType?: string | null;
   totalCost: number;
+  type: "HOURLY" | "DAILY";
   customer: Customer;
   employee?: Employee;
   bookingDetails: BookingDetail[];

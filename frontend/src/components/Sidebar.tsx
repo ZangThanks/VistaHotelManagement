@@ -11,7 +11,7 @@ import {
   FaChevronRight,
 } from "react-icons/fa";
 import { MdMeetingRoom } from "react-icons/md";
-import { RiInfoCardFill, RiDiscountPercentFill  } from "react-icons/ri";
+import { RiInfoCardFill, RiDiscountPercentFill } from "react-icons/ri";
 import { IoBagCheckOutline } from "react-icons/io5";
 import { LuMapPinCheckInside } from "react-icons/lu";
 import { cn } from "../utils/cn";
@@ -37,28 +37,32 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
     },
     {
       icon: <MdMeetingRoom />,
-      label: "Room Management",
+      label: "Room",
       path: "/admin/room-management",
     },
     {
       icon: <RiInfoCardFill />,
-      label: "Information Management",
-      path: "/admin/info",
+      label: "Information",
+      path: "/info-management",
     },
     {
       icon: <LuMapPinCheckInside />,
-      label: "Check-in Management",
+      label: "Check-in",
       path: "/admin/checkin",
     },
     {
       icon: <IoBagCheckOutline />,
-      label: "Check-out Management",
+      label: "Check-out",
       path: "/admin/checkout",
     },
-    
+
     { icon: <FaUsers />, label: "Guests", path: "/guests" },
     { icon: <MdRoomService />, label: "Services", path: "/services" },
-    { icon: <RiDiscountPercentFill />, label: "Promotions", path: "/admin/promotions" },
+    {
+      icon: <RiDiscountPercentFill />,
+      label: "Promotions",
+      path: "/admin/promotions",
+    },
     { icon: <FaChartLine />, label: "Reports", path: "/reports" },
     { icon: <FaCog />, label: "Settings", path: "/settings" },
   ];
@@ -95,14 +99,14 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
   return (
     <motion.aside
       ref={sidebarRef}
-      animate={{ width: isExpanded ? 230 : 68 }}
+      animate={{ width: isExpanded ? 200 : 68 }}
       transition={{
         type: "spring",
         stiffness: 400,
         damping: 30,
       }}
       className={cn(
-        "h-screen bg-gradient-to-br from-[#F8EBD6] via-[#F0E0C0] to-white flex flex-col fixed z-30 shadow-lg pt-6",
+        "h-screen bg-gradient-to-br from-[#f5eee3] via-[#ede0c5] to-white flex flex-col fixed z-30 shadow-lg pt-6",
         "border-r border-[#D9C9A8]/30",
         className
       )}
@@ -230,7 +234,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
       </motion.div>
 
       <motion.button
-        animate={{ rotate: isExpanded ? 180 : 0 }}
+        animate={{ rotate: isExpanded ? 150 : 0 }}
         transition={{ duration: 0.3 }}
         className="absolute -right-3 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-1.5 shadow-md border border-[#D9C9A8]/30 text-[#6B4B28]"
         onClick={() => setIsExpanded(!isExpanded)}

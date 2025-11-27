@@ -164,7 +164,48 @@ export const generateQRPayment = async (
 //     throw error;
 //   }
 // };
+export const checkIn = async (bookingId: string): Promise<Booking> => {
+  try {
+    const response = await axiosInstance.put(
+      `${ENDPOINT}/${bookingId}/check-in`
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Check-in error:", error);
+    throw error;
+  }
+};
 
+//TODO: ĐỪNG XÓA, pls
+// export const checkOut = async (bookingId: string): Promise<Booking> => {
+//   try {
+//     const response = await axiosInstance.put(
+//       `${ENDPOINT}/${bookingId}/check-out`
+//     );
+//     return response.data;
+//   } catch (error) {
+//     console.error("Check-out error:", error);
+//     throw error;
+//   }
+// };
+// export const approveEarlyCheckin = async (
+//   bookingId: string,
+//   approve: boolean
+// ): Promise<Booking> => {
+//   try {
+//     const response = await axiosInstance.put(
+//       `${ENDPOINT}/${bookingId}/early-checkin/approve`,
+//       null,
+//       {
+//         params: { approve },
+//       }
+//     );
+//     return response.data;
+//   } catch (error) {
+//     console.error("Approve early check-in error:", error);
+//     throw error;
+//   }
+// };
 export default {
   getAll,
   getBookingById,
