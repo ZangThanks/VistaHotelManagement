@@ -46,4 +46,9 @@ public class Room {
     @CollectionTable(name = "room_images", joinColumns = @JoinColumn(name = "room_id"))
     @Column(name = "images_url")
     private List<String> images;
+
+    @ToString.Exclude
+    @JsonIgnore
+    @ManyToMany(mappedBy = "items")
+    private List<CartBean> cartBeans;
 }

@@ -1,6 +1,6 @@
 /* eslint-disable */
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Calendar } from "lucide-react";
 import BookingCalendar from "../common/Calendar";
 import { TfiUser, TfiMore } from "react-icons/tfi";
@@ -8,7 +8,6 @@ import { MdOutlineRoomService, MdRoomService } from "react-icons/md";
 import { getAll } from "../../services/serviceService";
 import { CiSquareQuestion } from "react-icons/ci";
 import {
-
   createBooking,
   generateBookingID,
 } from "../../services/bookingService";
@@ -23,6 +22,7 @@ import type { Service } from "../../types/Service";
 import type { CustomerVoucher } from "../../types/CustomerVoucher";
 import type { Room } from "../../types/Room";
 import { getRoomById } from "../../services/roomService";
+import { getCartBeanByCustomerId } from "../../services/cartBeanService";
 import CustomerVoucherModal from "./CustomerVoucherModal";
 import { RiHotelLine } from "react-icons/ri";
 import { TbHotelService } from "react-icons/tb";
@@ -57,6 +57,7 @@ export default function BookingForm({
   setCurrentStep,
 }: BookingFormProps) {
   const navigate = useNavigate();
+  const location = useLocation();
   const [checkInDate, setCheckInDate] = useState<Date | null>(
     new Date(2025, 8, 18)
   );
@@ -76,7 +77,7 @@ export default function BookingForm({
   const [loading, setLoading] = useState(true);
   const [selectedPaymentMethod, setSelectedPaymentMethod] =
     useState<PaymentMethod>(PAYMENT_METHODS[0]);
-  const [selectedRoom] = useState<string[]>(["STD102"]);
+  const [selectedRoom, setSelectedRoom] = useState<string[]>([]);
   const [rooms, setRooms] = useState<Room[]>([]);
   const [bookingID, setBookingID] = useState<string>("");
   const [isVoucherModalOpen, setIsVoucherModalOpen] = useState(false);
@@ -92,13 +93,41 @@ export default function BookingForm({
       const service = await getAll();
       setServices(service);
 
-      const roomPromises = selectedRoom.map((roomId) => getRoomById(roomId));
-      const roomsData = await Promise.all(roomPromises);
-      setRooms(roomsData);
-
       const userDataStr = localStorage.getItem("user");
       const userData = userDataStr ? JSON.parse(userDataStr) : null;
       const customerId = userData?.data?.id || userData?.id;
+
+      const selectedFromCart = (location.state as any)?.selectedRooms;
+      let roomsToUse: string[] = [];
+
+      if (
+        selectedFromCart &&
+        Array.isArray(selectedFromCart) &&
+        selectedFromCart.length > 0
+      ) {
+        roomsToUse = selectedFromCart;
+        console.log("Using selected rooms from cart:", roomsToUse);
+      } else if (customerId) {
+        // Fetch all cart items from CartBean API
+        try {
+          const cart = await getCartBeanByCustomerId(customerId);
+          if (cart?.items && cart.items.length > 0) {
+            roomsToUse = cart.items
+              .map((room) => room.roomNumber)
+              .filter((num): num is string => num !== undefined);
+          }
+          console.log("Using all cart items:", roomsToUse);
+        } catch (error) {
+          console.error("Failed to fetch cart:", error);
+        }
+      }
+
+      // Update selected room state
+      setSelectedRoom(roomsToUse);
+
+      const roomPromises = roomsToUse.map((roomId) => getRoomById(roomId));
+      const roomsData = await Promise.all(roomPromises);
+      setRooms(roomsData);
 
       if (customerId) {
         const customerData = await getById(customerId);
@@ -172,6 +201,7 @@ export default function BookingForm({
     );
   };
 
+  // Tính tổng chi phí dịch vụ
   const calculateServiceCosts = () => {
     return getSelectedServiceObjects().reduce(
       (sum, service) => sum + service.price,
@@ -179,6 +209,7 @@ export default function BookingForm({
     );
   };
 
+  // Tính tổng chi phí phòng
   const calculateRoomCosts = () => {
     return rooms.reduce(
       (sum, room) => sum + (room.roomType?.basePrice || 0),
@@ -274,7 +305,6 @@ export default function BookingForm({
         await saveCustomerVoucher(cv);
       }
 
-      // Ensure we pass the booking with proper bookingID
       const bookingToPass = {
         ...payload,
         ...(savedBooking || {}),
@@ -284,7 +314,7 @@ export default function BookingForm({
 
       console.log("Navigating to payment with:", bookingToPass);
 
-      navigate("/payment", {
+      navigate("/customer/payment", {
         state: {
           booking: bookingToPass,
         },
@@ -297,10 +327,20 @@ export default function BookingForm({
     }
   };
 
-  const totalRoomCosts = calculateRoomCosts();
+  // Tính toán số ngày đặt phòng dựa trên checkin - checkout
+  const calculateNights = () => {
+    if (!checkInDate || !checkOutDate) return 1;
+    const diffTime = Math.abs(checkOutDate.getTime() - checkInDate.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays > 0 ? diffDays : 1;
+  };
+
+  const numberOfNights = calculateNights();
+  const totalRoomCosts = calculateRoomCosts() * numberOfNights;
   const totalServiceCosts = calculateServiceCosts();
   const subtotal = totalRoomCosts + totalServiceCosts;
 
+  // Tính tổng tiền giảm giá từ vouchers
   const calculateDiscount = () => {
     if (!selectedVoucher || selectedVoucher.length === 0) return 0;
     let discount = 0;

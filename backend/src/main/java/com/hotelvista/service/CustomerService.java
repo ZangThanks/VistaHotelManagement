@@ -1,5 +1,6 @@
 package com.hotelvista.service;
 
+import com.hotelvista.model.CartBean;
 import com.hotelvista.model.Customer;
 import com.hotelvista.repository.CustomerRepository;
 import org.springframework.beans.factory.annotation.Autowired;

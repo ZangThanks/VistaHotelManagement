@@ -1,7 +1,7 @@
 import { axiosInstance } from "../config/api";
 import { api } from "./apiClient";
 import type { Booking, RoomBooking } from "../types/Booking";
-import type { BookingDetail } from '../types/BookingDetail';
+import type { BookingDetail } from "../types/BookingDetail";
 
 const ENDPOINT = "/bookings";
 
@@ -25,7 +25,10 @@ export const getBookingById = async (id: string): Promise<Booking> => {
     throw error;
   }
 };
-export const getBookingDetailsById = async (id: string): Promise<BookingDetail[]> => {
+
+export const getBookingDetailsById = async (
+  id: string
+): Promise<BookingDetail[]> => {
   try {
     const response = await api.get(`${ENDPOINT}/details/${id}`);
     return response.data;
@@ -54,6 +57,18 @@ export const updateBooking = async (
     return response.data;
   } catch (error) {
     console.error(`Error updating booking ${id}:`, error);
+    throw error;
+  }
+};
+
+export const cancelBookingPayment = async (
+  bookingId: string
+): Promise<Booking> => {
+  try {
+    const response = await api.put(`${ENDPOINT}/cancel-payment/${bookingId}`);
+    return response.data;
+  } catch (error) {
+    console.error(`Error cancelling booking payment ${bookingId}:`, error);
     throw error;
   }
 };
