@@ -4,6 +4,7 @@ import com.hotelvista.dto.DistributionCriteriaDTO;
 import com.hotelvista.dto.DistributionResultDTO;
 import com.hotelvista.model.Voucher;
 import com.hotelvista.service.VoucherService;
+import com.hotelvista.util.ValidatorsUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -47,6 +48,52 @@ public class VoucherController {
      */
     @PostMapping("/create")
     public ResponseEntity<?> saveVoucher(@RequestBody Voucher voucher) {
+        // Validate voucher code
+        String codeError = ValidatorsUtil.validateVoucherCode(voucher.getVoucherID());
+        if (codeError != null) {
+            return ResponseEntity.badRequest().body(codeError);
+        }
+
+        // Validate voucher name
+        String nameError = ValidatorsUtil.validateVoucherName(voucher.getVoucherName());
+        if (nameError != null) {
+            return ResponseEntity.badRequest().body(nameError);
+        }
+
+        // Validate discount (nếu là PERCENT type)
+        if ("PERCENT".equals(voucher.getDiscountType())) {
+            String percentError = ValidatorsUtil.validateDiscountPercentage(voucher.getDiscountPercentage());
+            if (percentError != null) {
+                return ResponseEntity.badRequest().body(percentError);
+            }
+        }
+
+        // Validate discount amount (nếu là FIXED type)
+        if ("FIXED".equals(voucher.getDiscountType())) {
+            String amountError = ValidatorsUtil.validateDiscountAmount(voucher.getDiscountValue());
+            if (amountError != null) {
+                return ResponseEntity.badRequest().body(amountError);
+            }
+        }
+
+        // Validate start date
+        String startDateError = ValidatorsUtil.validateStartDate(voucher.getStartDate());
+        if (startDateError != null) {
+            return ResponseEntity.badRequest().body(startDateError);
+        }
+
+        // Validate end date
+        String endDateError = ValidatorsUtil.validateEndDate(voucher.getEndDate());
+        if (endDateError != null) {
+            return ResponseEntity.badRequest().body(endDateError);
+        }
+
+        // Validate date range
+        String dateRangeError = ValidatorsUtil.validateDateRange(voucher.getStartDate(), voucher.getEndDate());
+        if (dateRangeError != null) {
+            return ResponseEntity.badRequest().body(dateRangeError);
+        }
+
         boolean saved = service.save(voucher);
         return saved
                 ? ResponseEntity.ok("Lưu voucher thành công")
@@ -91,6 +138,52 @@ public class VoucherController {
      */
     @PutMapping("/{id}")
     public ResponseEntity<?> updateVoucher(@PathVariable String id, @RequestBody Voucher voucher) {
+        // Validate voucher code
+        String codeError = ValidatorsUtil.validateVoucherCode(voucher.getVoucherID());
+        if (codeError != null) {
+            return ResponseEntity.badRequest().body(codeError);
+        }
+
+        // Validate voucher name
+        String nameError = ValidatorsUtil.validateVoucherName(voucher.getVoucherName());
+        if (nameError != null) {
+            return ResponseEntity.badRequest().body(nameError);
+        }
+
+        // Validate discount (nếu là PERCENT type)
+        if ("PERCENT".equals(voucher.getDiscountType())) {
+            String percentError = ValidatorsUtil.validateDiscountPercentage(voucher.getDiscountPercentage());
+            if (percentError != null) {
+                return ResponseEntity.badRequest().body(percentError);
+            }
+        }
+
+        // Validate discount amount (nếu là FIXED type)
+        if ("FIXED".equals(voucher.getDiscountType())) {
+            String amountError = ValidatorsUtil.validateDiscountAmount(voucher.getDiscountValue());
+            if (amountError != null) {
+                return ResponseEntity.badRequest().body(amountError);
+            }
+        }
+
+        // Validate start date
+        String startDateError = ValidatorsUtil.validateStartDate(voucher.getStartDate());
+        if (startDateError != null) {
+            return ResponseEntity.badRequest().body(startDateError);
+        }
+
+        // Validate end date
+        String endDateError = ValidatorsUtil.validateEndDate(voucher.getEndDate());
+        if (endDateError != null) {
+            return ResponseEntity.badRequest().body(endDateError);
+        }
+
+        // Validate date range
+        String dateRangeError = ValidatorsUtil.validateDateRange(voucher.getStartDate(), voucher.getEndDate());
+        if (dateRangeError != null) {
+            return ResponseEntity.badRequest().body(dateRangeError);
+        }
+
         boolean updated = service.update(id, voucher);
         return updated
                 ? ResponseEntity.ok("Cập nhật voucher thành công")

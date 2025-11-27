@@ -33,12 +33,7 @@ import VoucherCard from "../../components/voucher/VoucherCard";
 import EmptyVoucher from "../../components/voucher/EmptyVoucher";
 import { AnimatePresence } from "framer-motion";
 
-type MenuTab =
-  | "profile"
-  | "password"
-  | "membership"
-  | "bookings"
-  | "vouchers";
+type MenuTab = "profile" | "password" | "membership" | "bookings" | "vouchers";
 
 const UserProfilePage: React.FC = () => {
   const navigate = useNavigate();

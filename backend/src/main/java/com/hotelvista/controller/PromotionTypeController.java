@@ -2,6 +2,7 @@ package com.hotelvista.controller;
 
 import com.hotelvista.model.PromotionType;
 import com.hotelvista.service.PromotionTypeService;
+import com.hotelvista.util.ValidatorsUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -44,13 +45,13 @@ public class PromotionTypeController {
     public ResponseEntity<PromotionType> save(@RequestBody PromotionType promotionType) {
         try {
             // Validate
-            if (promotionType.getPromotionTypeID() == null ||
-                    promotionType.getPromotionTypeID().trim().isEmpty()) {
+            String idError = ValidatorsUtil.validatePromotionId(promotionType.getPromotionTypeID());
+            if (idError != null) {
                 return ResponseEntity.badRequest().build();
             }
 
-            if (promotionType.getPromotionTYPEName() == null ||
-                    promotionType.getPromotionTYPEName().trim().isEmpty()) {
+            String nameError = ValidatorsUtil.validatePromotionTypeName(promotionType.getPromotionTYPEName());
+            if (nameError != null) {
                 return ResponseEntity.badRequest().build();
             }
 
@@ -78,8 +79,8 @@ public class PromotionTypeController {
             }
 
             // Validate
-            if (promotionType.getPromotionTYPEName() == null ||
-                    promotionType.getPromotionTYPEName().trim().isEmpty()) {
+            String nameError = ValidatorsUtil.validatePromotionTypeName(promotionType.getPromotionTYPEName());
+            if (nameError != null) {
                 return ResponseEntity.badRequest().build();
             }
 

@@ -84,6 +84,7 @@ public class AuthController {
         c.setUserRole(UserRole.CUSTOMER);
         c.setJoinedDate(LocalDate.now());
         c.setLoyaltyPoints(0);
+        c.setReputationPoint(100);
         c.setMemberShipLevel(MemberShipLevel.BRONZE);
 
         String encodedPassword = passwordEncoder.encode(req.getPassword());
