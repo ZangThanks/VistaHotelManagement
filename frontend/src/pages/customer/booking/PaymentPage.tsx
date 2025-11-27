@@ -102,9 +102,6 @@ const PaymentPage: React.FC = () => {
       return;
     }
 
-    console.log("Booking data received:", booking);
-    console.log("Booking ID:", booking.bookingID);
-
     if (!booking.bookingID) {
       alert("Booking ID is missing. Please try booking again.");
       navigate("/bookingPage");

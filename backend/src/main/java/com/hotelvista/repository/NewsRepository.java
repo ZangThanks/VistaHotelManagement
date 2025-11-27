@@ -16,18 +16,11 @@ public interface NewsRepository extends MongoRepository<News, String> {
      */
     List<News> findByHighlightTrue();
 
-    /**
-     * Tìm tin tức đang hoạt động theo khoảng thời gian
-     * @param now1
-     * @param now2
-     * @return
-     */
     List<News> findByStartDateBeforeAndEndDateAfter(java.time.LocalDateTime now1, java.time.LocalDateTime now2);
 
-    /**
-     * Tìm tin tức theo newsId
-     * @param newsId
-     * @return
-     */
     News findByNewsId(String newsId);
+
+    // NEWddMMyy000
+    List<News> findByNewsIdStartingWith(String prefix);
+
 }

@@ -1,3 +1,4 @@
+/* eslint-disable*/
 import { api } from "./apiClient";
 import type { Promotion } from "../types/Promotion";
 import { saveRoomTypePromotion } from "./roomTypePromotionService";

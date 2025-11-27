@@ -8,9 +8,11 @@ function BookingPage() {
 
     return (
         <div className="min-h-screen flex flex-col bg-white">
-            <Header />
+            <div className="fixed top-0 left-0 w-full z-[200]">
+                <Header />
+            </div>
 
-            <main className="flex-1 px-8 py-12">
+            <main className="flex-1 px-8 py-12 pt-28">
                 {/* Progress Indicator */}
                 <div className="flex items-center justify-center gap-8 mb-12">
                     <div className="flex items-center gap-2">
