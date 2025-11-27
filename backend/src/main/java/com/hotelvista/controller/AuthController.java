@@ -1,5 +1,6 @@
 package com.hotelvista.controller;
 
+import com.hotelvista.dto.ChangePasswordRequest;
 import com.hotelvista.dto.LoginRequest;
 import com.hotelvista.dto.RegisterRequest;
 import com.hotelvista.model.Customer;
@@ -9,6 +10,7 @@ import com.hotelvista.model.enums.UserRole;
 import com.hotelvista.security.JwtTokenProvider;
 import com.hotelvista.service.CustomerService;
 import com.hotelvista.util.GenerateIDUtil;
+import com.hotelvista.util.ValidatorsUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -58,12 +60,16 @@ public class AuthController {
         }
 
         if (req.getPhone() != null && service.findByPhone(req.getPhone()) != null) {
-            return Map.of("success", false, "message", "Số điện thoại đã đư" +
-                    "ợc sử dụng");
+            return Map.of("success", false, "message", "Số điện thoại đã được sử dụng");
         }
 
         if (service.findByUserName(req.getUserName()) != null) {
             return Map.of("success", false, "message", "Tên đăng nhập đã được sử dụng");
+        }
+
+        String passwordError = ValidatorsUtil.validatePassword(req.getPassword());
+        if (passwordError != null) {
+            return Map.of("success", false, "message", passwordError);
         }
 
         // Tạo customer
@@ -123,6 +129,11 @@ public class AuthController {
 
         if (user == null) {
             return Map.of("success", false, "message", "Tài khoản không tồn tại");
+        }
+
+        String passwordError = ValidatorsUtil.validatePassword(req.getPassword());
+        if (passwordError != null) {
+            return Map.of("success", false, "message", passwordError);
         }
 
         // Kiểm tra mật khẩu
@@ -250,4 +261,80 @@ public class AuthController {
         }
     }
 
+    /**
+     * API đổi mật khẩu người dùng.
+     * Xác thực mật khẩu hiện tại trước khi cập nhật mật khẩu mới.
+     * Áp dụng chung cho tất cả user roles (ADMIN, EMPLOYEE, CUSTOMER).
+     *
+     * @param request đối tượng ChangePasswordRequest chứa userId, mật khẩu cũ và mới
+     * @return Map chứa trạng thái và thông báo
+     */
+    @PostMapping("/change-password")
+    public Map<String, Object> changePassword(@RequestBody ChangePasswordRequest request) {
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            // Validate input
+            if (request.getUserId() == null || request.getUserId().trim().isEmpty()) {
+                response.put("success", false);
+                response.put("message", "User ID is required");
+                return response;
+            }
+
+            if (request.getCurrentPassword() == null || request.getCurrentPassword().trim().isEmpty()) {
+                response.put("success", false);
+                response.put("message", "Current Password is required");
+                return response;
+            }
+
+            if (request.getNewPassword() == null || request.getNewPassword().trim().isEmpty()) {
+                response.put("success", false);
+                response.put("message", "New Password is required");
+                return response;
+            }
+
+            // Validate password
+            String passwordError = ValidatorsUtil.validatePassword(request.getNewPassword());
+            if (passwordError != null) {
+                response.put("success", false);
+                response.put("message", passwordError);
+                return response;
+            }
+
+            // Find user (Customer - có thể mở rộng cho Employee, Admin sau)
+            Customer user = service.findById(request.getUserId());
+            if (user == null) {
+                response.put("success", false);
+                response.put("message", "User not found");
+                return response;
+            }
+
+            // Verify current password
+            if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+                response.put("success", false);
+                response.put("message", "Current password is incorrect");
+                return response;
+            }
+
+            // Kiểm tra mật khẩu mới khác mật khẩu hiện tại
+            if (passwordEncoder.matches(request.getNewPassword(), user.getPassword())) {
+                response.put("success", false);
+                response.put("message", "New password must be different from current password");
+                return response;
+            }
+
+            // Encode password
+            String encodedNewPassword = passwordEncoder.encode(request.getNewPassword());
+            user.setPassword(encodedNewPassword);
+            service.save(user);
+
+            response.put("success", true);
+            response.put("message", "Password changed successfully!");
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Error changing password: " + e.getMessage());
+        }
+
+        return response;
+    }
 }

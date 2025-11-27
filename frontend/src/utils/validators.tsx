@@ -9,12 +9,12 @@
  * validateEmail("abc"); // "Email không hợp lệ"
  */
 export const validateEmail = (email: string): string => {
-    if (!email) return 'Email không được để trống';
+  if (!email) return "Email is required";
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) return 'Email không hợp lệ';
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) return "Invalid email format";
 
-    return '';
+  return "";
 };
 
 /**
@@ -28,12 +28,12 @@ export const validateEmail = (email: string): string => {
  * validatePhone("12345"); // "Số điện thoại không hợp lệ"
  */
 export const validatePhone = (phone: string): string => {
-    if (!phone) return 'Số điện thoại không được để trống';
+  if (!phone) return "Phone number is required";
 
-    const phoneRegex = /^(0|\+84)[3|5|7|8|9][0-9]{8}$/;
-    if (!phoneRegex.test(phone)) return 'Số điện thoại không hợp lệ';
+  const phoneRegex = /^(0|\+84)[3|5|7|8|9][0-9]{8}$/;
+  if (!phoneRegex.test(phone)) return "Invalid phone number format";
 
-    return '';
+  return "";
 };
 
 /**
@@ -48,14 +48,14 @@ export const validatePhone = (phone: string): string => {
  * validateEmailOrPhone("abc"); // "Email hoặc số điện thoại không hợp lệ"
  */
 export const validateEmailOrPhone = (value: string): string => {
-    if (!value) return 'Email hoặc số điện thoại không được để trống';
+  if (!value) return "Email or phone number is required";
 
-    const phoneRegex = /^(0|\+84)[3|5|7|8|9][0-9]{8}$/;
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const phoneRegex = /^(0|\+84)[3|5|7|8|9][0-9]{8}$/;
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    if (phoneRegex.test(value) || emailRegex.test(value)) return '';
+  if (phoneRegex.test(value) || emailRegex.test(value)) return "";
 
-    return 'Email hoặc số điện thoại không hợp lệ';
+  return "Invalid email or phone number format";
 };
 
 /**
@@ -69,19 +69,20 @@ export const validateEmailOrPhone = (value: string): string => {
  * validatePassword("abc123"); // "Mật khẩu phải có ít nhất một ký tự in hoa"
  */
 export const validatePassword = (password: string): string => {
-    if (!password) return 'Mật khẩu không được để trống';
-    if (password.length < 8) return 'Mật khẩu phải có ít nhất 8 ký tự';
-    if (password.length > 50) return 'Mật khẩu không được quá 50 ký tự';
+  if (!password) return "Password is required";
+  if (password.length < 8) return "Password must be at least 8 characters";
+  if (password.length > 50) return "Password must not exceed 50 characters";
 
-    if (!/[A-Z]/.test(password))
-        return 'Mật khẩu phải có ít nhất một ký tự in hoa';
-    if (!/[a-z]/.test(password))
-        return 'Mật khẩu phải có ít nhất một ký tự thường';
-    if (!/[0-9]/.test(password)) return 'Mật khẩu phải có ít nhất một số';
-    if (!/[!@#$%^&*(),.?":{}|<>]/.test(password))
-        return 'Mật khẩu phải có ít nhất một ký tự đặc biệt';
+  if (!/[A-Z]/.test(password))
+    return "Password must contain at least one uppercase letter";
+  if (!/[a-z]/.test(password))
+    return "Password must contain at least one lowercase letter";
+  if (!/[0-9]/.test(password))
+    return "Password must contain at least one digit";
+  if (!/[!@#$%^&*(),.?":{}|<>]/.test(password))
+    return "Password must contain at least one special character";
 
-    return '';
+  return "";
 };
 
 /**
@@ -96,12 +97,13 @@ export const validatePassword = (password: string): string => {
  * validateConfirmPassword("Abc@1234", "Abc1234"); // "Mật khẩu xác nhận không khớp"
  */
 export const validateConfirmPassword = (
-    password: string,
-    confirmPassword: string,
+  password: string,
+  confirmPassword: string
 ): string => {
-    if (!confirmPassword) return 'Xác nhận mật khẩu không được để trống';
-    if (password !== confirmPassword) return 'Mật khẩu xác nhận không khớp';
-    return '';
+  if (!confirmPassword) return "Confirm password is required";
+  if (password !== confirmPassword)
+    return "Password confirmation does not match";
+  return "";
 };
 
 /**
@@ -115,16 +117,16 @@ export const validateConfirmPassword = (
  * validateFullName("A"); // "Họ và tên phải có ít nhất 2 ký tự"
  */
 export const validateFullName = (fullName: string): string => {
-    if (!fullName) return 'Họ và tên không được để trống';
+  if (!fullName) return "Full name is required";
 
-    const trimmed = fullName.trim();
-    if (trimmed.length < 2) return 'Họ và tên phải có ít nhất 2 ký tự';
-    if (trimmed.length > 100) return 'Họ và tên không được quá 100 ký tự';
+  const trimmed = fullName.trim();
+  if (trimmed.length < 2) return "Full name must be at least 2 characters";
+  if (trimmed.length > 100) return "Full name must not exceed 100 characters";
 
-    const nameRegex = /^[a-zA-ZÀ-ỹ\s]+$/;
-    if (!nameRegex.test(trimmed)) return 'Họ và tên chỉ được chứa chữ cái';
+  const nameRegex = /^[a-zA-ZÀ-ỹ\s]+$/;
+  if (!nameRegex.test(trimmed)) return "Full name can only contain letters";
 
-    return '';
+  return "";
 };
 
 /**
@@ -138,13 +140,13 @@ export const validateFullName = (fullName: string): string => {
  * validateUserName("ab"); // "Tên đăng nhập phải có ít nhất 6 ký tự"
  */
 export const validateUserName = (userName: string): string => {
-    if (!userName) return 'Tên đăng nhập không được để trống';
+  if (!userName) return "Username is required";
 
-    const trimmed = userName.trim();
-    if (trimmed.length < 6) return 'Tên đăng nhập phải có ít nhất 6 ký tự';
-    if (trimmed.length > 30) return 'Tên đăng nhập không được quá 30 ký tự';
+  const trimmed = userName.trim();
+  if (trimmed.length < 6) return "Username must be at least 6 characters";
+  if (trimmed.length > 30) return "Username must not exceed 30 characters";
 
-    return '';
+  return "";
 };
 
 /**
@@ -159,13 +161,13 @@ export const validateUserName = (userName: string): string => {
  * detectInputType("abc"); // "unknown"
  */
 export const detectInputType = (
-    value: string,
-): 'email' | 'phone' | 'unknown' => {
-    const phoneRegex = /^(0|\+84)[3|5|7|8|9][0-9]{8}$/;
-    if (phoneRegex.test(value)) return 'phone';
+  value: string
+): "email" | "phone" | "unknown" => {
+  const phoneRegex = /^(0|\+84)[3|5|7|8|9][0-9]{8}$/;
+  if (phoneRegex.test(value)) return "phone";
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (emailRegex.test(value)) return 'email';
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (emailRegex.test(value)) return "email";
 
-    return 'unknown';
+  return "unknown";
 };
