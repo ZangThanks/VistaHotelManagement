@@ -29,6 +29,7 @@ public class Review {
     @Column(name = "service_quantity")
     private int serviceQuality;
 
+    //cấp độ của comment
     private int location;
 
     @Column(name = "value_for_money")
@@ -40,6 +41,7 @@ public class Review {
     @Column(name = "review_date")
     private LocalDateTime reviewDate;
 
+    //ẩn danh
     @Column(name = "is_anonymous")
     private boolean isAnonymous;
 
