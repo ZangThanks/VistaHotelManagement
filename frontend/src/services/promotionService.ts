@@ -2,6 +2,7 @@
 import { api } from "./apiClient";
 import type { Promotion } from "../types/Promotion";
 import { saveRoomTypePromotion } from "./roomTypePromotionService";
+// import type { RoomTypePromotion } from "../types/RoomTypePromotion";
 
 const ENDPOINT = "/promotions";
 
