@@ -103,7 +103,12 @@ const PaymentPage: React.FC = () => {
 
       try {
         const refreshed = await getBookingById(booking.bookingID);
-        if (refreshed?.paymentStatus === "PAID") {
+        if (
+          refreshed?.paymentStatus === "PAID" ||
+          refreshed?.paymentStatus === "PERCENTAGE_30" ||
+          refreshed?.paymentStatus === "PERCENTAGE_50" ||
+          refreshed?.paymentStatus === "COMPLETED"
+        ) {
           setPaymentCompleted(true);
           setTimeout(() => navigate("/"), 5000);
           return;
@@ -213,7 +218,7 @@ const PaymentPage: React.FC = () => {
         {showTimer && !paymentCompleted && !paymentExpired && (
           <div className="mb-6">
             <CountdownTimer
-              durationInMinutes={1}
+              durationInMinutes={15}
               onExpire={handlePaymentExpiry}
             />
           </div>
