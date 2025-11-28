@@ -48,6 +48,24 @@ export const createBooking = async (booking: object): Promise<Booking> => {
   }
 };
 
+export const saveBookingWithDetails = async (
+  booking: object,
+  bookingDetails: object[],
+  bookingServices: object[]
+): Promise<boolean> => {
+  try {
+    const response = await api.post(`${ENDPOINT}/save-booking`, {
+      booking,
+      bookingDetails,
+      bookingServices,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error saving booking with details:", error);
+    throw error;
+  }
+};
+
 export const updateBooking = async (
   id: string,
   booking: object

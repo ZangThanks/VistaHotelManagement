@@ -16,7 +16,7 @@ import java.util.List;
 public class BookingDetail {
     @Id
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "room_id")
+    @JoinColumn(name = "room_number")
     private Room room;
 
     @Id

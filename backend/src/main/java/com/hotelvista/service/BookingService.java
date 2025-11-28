@@ -3,9 +3,14 @@ package com.hotelvista.service;
 import com.hotelvista.exception.BadRequestException;
 import com.hotelvista.model.Booking;
 import com.hotelvista.model.BookingDetail;
+import com.hotelvista.model.Room;
 import com.hotelvista.model.enums.ApprovalStatus;
 import com.hotelvista.model.enums.BookingStatus;
+import com.hotelvista.repository.BookingDetailRepository;
 import com.hotelvista.repository.BookingRepository;
+import com.hotelvista.repository.BookingServiceRepository;
+import com.hotelvista.repository.RoomRepository;
+import com.hotelvista.repository.ServiceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +25,18 @@ public class BookingService {
     @Autowired
     private BookingRepository repo;
 
+    @Autowired
+    private BookingServiceRepository serviceRepo;
+
+    @Autowired
+    private BookingDetailRepository detailRepo;
+
+    @Autowired
+    private RoomRepository roomRepo;
+
+    @Autowired
+    private ServiceRepository serviceRepository;
+
     @Transactional(readOnly = true)
     public List<Booking> findAll() {
         return repo.findAll();
@@ -33,24 +50,59 @@ public class BookingService {
     @Transactional(rollbackFor = Exception.class)
     public boolean save(Booking booking) {
         try {
-            Booking savedBooking = repo.save(booking);
-            if (savedBooking.getBookingDetails() != null) {
-                for (BookingDetail detail : savedBooking.getBookingDetails()) {
-                    detail.setBooking(booking);
-                }
-            }
-            if (savedBooking.getBookingServices() != null) {
-                for (com.hotelvista.model.BookingService bs : savedBooking.getBookingServices()) {
-                    bs.setBooking(booking);
-                }
-            }
-
             repo.save(booking);
             return true;
         } catch (Exception e) {
+            System.err.println("ERROR saving booking: " + e.getMessage());
             e.printStackTrace();
         }
         return false;
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public boolean saveBooking(Booking booking, List<BookingDetail> bookingDetails, List<com.hotelvista.model.BookingService> bookingServices) {
+        try {
+            // Step 1: Save booking first to persist it
+            Booking savedBooking = repo.save(booking);
+            System.out.println("Booking saved: " + savedBooking.getBookingID());
+
+            // Step 2: Process bookingDetails
+            if(bookingDetails != null && !bookingDetails.isEmpty()) {
+                System.out.println("Processing " + bookingDetails.size() + " booking details");
+                for (BookingDetail detail : bookingDetails) {
+                    // Load full Room entity
+                    Room room = roomRepo.findById(detail.getRoom().getRoomNumber())
+                        .orElseThrow(() -> new BadRequestException("Room not found: " + detail.getRoom().getRoomNumber()));
+                    
+                    detail.setRoom(room);
+                    detail.setBooking(savedBooking);  // Use savedBooking
+                    detailRepo.save(detail);
+                    System.out.println("Saved booking detail for room: " + room.getRoomNumber());
+                }
+            }
+
+            // Step 3: Process bookingServices
+            if(bookingServices != null && !bookingServices.isEmpty()) {
+                System.out.println("Processing " + bookingServices.size() + " booking services");
+                for (com.hotelvista.model.BookingService service : bookingServices) {
+                    // Load full Service entity
+                    com.hotelvista.model.Service svc = serviceRepository.findById(service.getService().getServiceID())
+                        .orElseThrow(() -> new BadRequestException("Service not found: " + service.getService().getServiceID()));
+                    
+                    service.setService(svc);
+                    service.setBooking(savedBooking);  // Use savedBooking
+                    serviceRepo.save(service);
+                    System.out.println("Saved booking service: " + svc.getServiceID());
+                }
+            }
+
+            System.out.println("All booking data saved successfully");
+            return true;
+        } catch (Exception e) {
+            System.err.println("ERROR saving booking: " + e.getMessage());
+            e.printStackTrace();
+            throw e;  // Re-throw to trigger transaction rollback
+        }
     }
 
     public boolean deleteById(String id) {
@@ -93,6 +145,7 @@ public class BookingService {
     public List<Booking> findAllByRoom_RoomNumber(String roomNumber) {
         return repo.findAllByRoom_RoomNumber(roomNumber);
     }
+
     /**
      * Check-in a booking
      */
