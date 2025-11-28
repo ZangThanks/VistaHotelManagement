@@ -32,6 +32,7 @@ import VoucherFilter from "../../components/voucher/VoucherFilter";
 import VoucherCard from "../../components/voucher/VoucherCard";
 import EmptyVoucher from "../../components/voucher/EmptyVoucher";
 import { AnimatePresence } from "framer-motion";
+import { changePassword } from "../../services/authService";
 
 type MenuTab = "profile" | "password" | "membership" | "bookings" | "vouchers";
 
@@ -199,7 +200,7 @@ const UserProfilePage: React.FC = () => {
   const handleChangePassword = async (data: PasswordChangeRequest) => {
     if (!profile) return;
 
-    await userProfileService.changePassword(profile.id, data);
+    await changePassword(profile.id, data);
   };
 
   const handleLogoutClick = () => {

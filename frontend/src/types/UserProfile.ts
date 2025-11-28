@@ -1,6 +1,3 @@
-import type { Customer } from "./Customer";
-import type { Employee } from "./Employee";
-
 export type UserRole = "CUSTOMER" | "EMPLOYEE" | "ADMIN" | string;
 
 export interface UserProfile {

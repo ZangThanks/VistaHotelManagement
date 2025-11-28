@@ -3,6 +3,7 @@ package com.hotelvista.controller;
 import com.hotelvista.dto.ChangePasswordRequest;
 import com.hotelvista.dto.LoginRequest;
 import com.hotelvista.dto.RegisterRequest;
+import com.hotelvista.dto.ResetPasswordRequest;
 import com.hotelvista.model.Customer;
 import com.hotelvista.model.User;
 import com.hotelvista.model.enums.Gender;
@@ -10,10 +11,12 @@ import com.hotelvista.model.enums.MemberShipLevel;
 import com.hotelvista.model.enums.UserRole;
 import com.hotelvista.security.JwtTokenProvider;
 import com.hotelvista.service.CustomerService;
+import com.hotelvista.service.OtpService;
 import com.hotelvista.service.UserService;
 import com.hotelvista.util.GenerateIDUtil;
 import com.hotelvista.util.ValidatorsUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,6 +35,7 @@ public class AuthController {
 
     private final UserService userService;
     private final CustomerService service;
+    private final OtpService otpService;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
 
@@ -329,4 +333,77 @@ public class AuthController {
 
         return response;
     }
+
+    @PostMapping("/send-otp")
+    public Map<String, Object> sendOtp(@RequestBody Map<String, String> req) {
+        String email = req.get("email");
+        if (email == null || email.isEmpty()) {
+            return Map.of("success", false, "message", "Email is required");
+        }
+
+        String otp = otpService.generateOtp(email);
+
+        return Map.of(
+                "success", true,
+                "message", "OTP generated",
+                "otp", otp
+        );
+    }
+
+    @PostMapping("/verify-otp")
+    public Map<String, Object> verifyOtp(@RequestBody Map<String, String> req) {
+        String email = req.get("email");
+        String otp = req.get("otp");
+
+        if (email == null || otp == null) {
+            return Map.of("success", false, "message", "Email and OTP are required");
+        }
+
+        boolean valid = otpService.verifyOtp(email, otp);
+
+        return Map.of(
+                "success", valid,
+                "message", valid ? "OTP is valid" : "OTP is invalid"
+        );
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordRequest req) {
+
+        if (req.getEmail() == null || req.getEmail().isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "message", "Email is required"
+            ));
+        }
+
+        if (req.getNewPassword() == null || req.getNewPassword().isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "message", "New password is required"
+            ));
+        }
+
+        // Validate password mạnh
+        String error = ValidatorsUtil.validatePassword(req.getNewPassword());
+        if (error != null) {
+            return ResponseEntity.badRequest().body(Map.of("success", false, "message", error));
+        }
+
+        boolean ok = userService.resetPasswordByEmail(req.getEmail(), req.getNewPassword());
+
+        if (!ok) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "message", "Email not found"
+            ));
+        }
+
+        return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "Password reset successful"
+        ));
+    }
+
+
 }

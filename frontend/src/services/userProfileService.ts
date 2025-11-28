@@ -1,14 +1,12 @@
 import { api } from "./apiClient";
 import type {
   UserProfile,
-  PasswordChangeRequest,
   ProfileUpdateRequest,
 } from "../types/UserProfile";
 import type { Customer } from "../types/Customer";
 import type { Booking } from "../types/Booking";
 
 const CUSTOMER_ENDPOINT = "/customers";
-const AUTH_ENDPOINT = "/auth";
 
 /**
  * Lấy thông tin khách hàng theo ID
@@ -38,33 +36,6 @@ export const updateCustomerProfile = async (
   } catch (error) {
     console.error("Error updating customer profile:", error);
     throw error;
-  }
-};
-
-/**
- * Đổi mật khẩu người dùng
- * Backend endpoint: POST /auth/change-password
- * Request body: { userId, currentPassword, newPassword }
- */
-export const changePassword = async (
-  userId: string,
-  data: PasswordChangeRequest
-): Promise<{ success: boolean; message: string }> => {
-  try {
-const AUTH_ENDPOINT = "/auth";
-    const response = await api.post(`${AUTH_ENDPOINT}/change-password`, {
-      userId: userId,
-      currentPassword: data.currentPassword,
-      newPassword: data.newPassword,
-    });
-    return {
-      success: true,
-      message: response.data.message || "Password changed successfully!",
-    };
-  } catch (error: unknown) {
-    console.error("Error changing password:", error);
-    const err = error as { response?: { data?: { message?: string } } };
-    throw new Error(err.response?.data?.message || "Failed to change password");
   }
 };
 
@@ -113,7 +84,6 @@ export const updateUserInStorage = (user: UserProfile): void => {
 const userProfileService = {
   getCustomerProfile,
   updateCustomerProfile,
-  changePassword,
   getCustomerBookings,
   getCurrentUserFromStorage,
   updateUserInStorage,
