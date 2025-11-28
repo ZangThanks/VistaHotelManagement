@@ -854,10 +854,20 @@ export default function ByHourTab() {
             <ConfirmDialog
                 isOpen={notify.isOpen}
                 onClose={() =>
-                    setNotify((s) => ({ ...s, isOpen: false, title: '', message: '' }))
+                    setNotify((s) => ({
+                        ...s,
+                        isOpen: false,
+                        title: '',
+                        message: '',
+                    }))
                 }
                 onConfirm={() =>
-                    setNotify((s) => ({ ...s, isOpen: false, title: '', message: '' }))
+                    setNotify((s) => ({
+                        ...s,
+                        isOpen: false,
+                        title: '',
+                        message: '',
+                    }))
                 }
                 title={notify.title}
                 message={notify.message}
