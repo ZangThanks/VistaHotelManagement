@@ -75,6 +75,11 @@ public class BookingController {
         return service.findAllByRoom_RoomNumber(roomNumber);
     }
 
+    @PutMapping("/{bookingId}/check-in")
+    public Booking checkIn(@PathVariable String bookingId) {
+        return service.checkIn(bookingId);
+    }
+
     @GetMapping(value = "/payment-qr/{bookingId}", produces = MediaType.IMAGE_PNG_VALUE)
     public ResponseEntity<byte[]> getPaymentQr(@PathVariable String bookingId, @RequestParam(defaultValue = "0") int choice) throws IOException {
         Booking booking = service.findById(bookingId);
@@ -160,9 +165,9 @@ public class BookingController {
             Customer customer = booking.getCustomer();
             double receivedAmount = data.getTransferAmount();
             double totalAmount = booking.getTotalAmount();
-            
+
             PaymentStatus newStatus = determinePaymentStatus(receivedAmount, totalAmount, customer);
-            
+
             // Log amount validation
             double expectedAmount = calculateExpectedPaymentAmount(booking, customer);
             if (expectedAmount > 0 && Math.abs(receivedAmount - expectedAmount) > 0.01) {
@@ -172,7 +177,7 @@ public class BookingController {
             // Update booking payment status
             booking.setPaymentStatus(newStatus);
             boolean saved = service.save(booking);
-            
+
             if (saved) {
                 System.out.println("SUCCESS: Booking " + bookingId + " payment status updated to " + newStatus);
                 System.out.println("Amount received: " + receivedAmount + " / Total: " + totalAmount);
@@ -205,17 +210,17 @@ public class BookingController {
         // Bank format: Look for booking ID pattern B + 10 digits
         // Example: "Qafmgq4306  SEPAY7974 1  108449638088-B2411250005-CHUYEN TIEN..."
         // Booking ID format: B[ddMMyy][sequence] e.g., B2411250005
-        
+
         // Use regex to find booking ID pattern in the entire text
         Pattern pattern = java.util.regex.Pattern.compile("B\\d{10}");
         Matcher matcher = pattern.matcher(text);
-        
+
         if (matcher.find()) {
             String bookingId = matcher.group();
             System.out.println("Extracted booking ID using regex pattern: " + bookingId);
             return bookingId;
         }
-        
+
         System.out.println("No booking ID found in text");
         return null;
     }
@@ -226,7 +231,7 @@ public class BookingController {
     private double calculateExpectedPaymentAmount(Booking booking, Customer customer) {
         double totalAmount = booking.getTotalAmount();
         int reputation = customer.getReputationPoint();
-        
+
         if (reputation >= 0 && reputation <= 40) {
             return totalAmount; // 100% prepayment
         } else if (reputation > 40 && reputation <= 80) {
@@ -245,9 +250,9 @@ public class BookingController {
         if (paidAmount <= 0) {
             return PaymentStatus.PENDING;
         }
-        
+
         double percentage = (paidAmount / totalAmount) * 100;
-        
+
         if (percentage >= 99) { // Allow small tolerance
             return PaymentStatus.PAID;
         } else if (percentage >= 45 && percentage < 55) {
@@ -259,8 +264,4 @@ public class BookingController {
         }
     }
 
-    @PutMapping("/{bookingId}/check-in")
-    public Booking checkIn(@PathVariable String bookingId) {
-        return service.checkIn(bookingId);
-    }
 }
