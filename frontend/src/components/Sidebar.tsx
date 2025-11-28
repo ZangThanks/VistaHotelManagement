@@ -69,6 +69,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
       label: "Reservations",
       path: "/reservations",
     },
+
     { icon: <FaUsers />, label: "Guests", path: "/guests" },
     { icon: <MdRoomService />, label: "Services", path: "/services" },
     {

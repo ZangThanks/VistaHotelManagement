@@ -4,6 +4,7 @@ import com.hotelvista.dto.PaymentWebhookDTO;
 import com.hotelvista.model.Booking;
 import com.hotelvista.model.BookingDetail;
 import com.hotelvista.model.Customer;
+import com.hotelvista.model.enums.BookingStatus;
 import com.hotelvista.model.enums.PaymentStatus;
 import com.hotelvista.service.BookingDetailService;
 import com.hotelvista.service.BookingService;
@@ -24,9 +25,6 @@ import java.util.regex.Pattern;
 public class BookingController {
     @Autowired
     private BookingService service;
-
-    @Autowired
-    private BookingDetailService detailService;
 
     @GetMapping("")
     public List<Booking> findAll() {
@@ -107,6 +105,36 @@ public class BookingController {
         return ResponseEntity.ok(qrImage);
     }
 
+    @DeleteMapping("/remove/{id}")
+    public boolean delete(@PathVariable("id") String id) {
+        return service.deleteById(id);
+    }
+
+    @PutMapping("/cancel-payment/{bookingId}")
+    public ResponseEntity<Booking> cancelBookingPayment(@PathVariable String bookingId) {
+        try {
+            Booking booking = service.findById(bookingId);
+            if (booking == null) {
+                return ResponseEntity.notFound().build();
+            }
+
+            booking.setPaymentStatus(PaymentStatus.CANCELLED);
+            booking.setStatus(BookingStatus.CANCELLED);
+            boolean saved = service.save(booking);
+
+            if (saved) {
+                System.out.println("Booking " + bookingId + " payment cancelled due to timeout");
+                return ResponseEntity.ok(booking);
+            } else {
+                return ResponseEntity.internalServerError().build();
+            }
+        } catch (Exception e) {
+            System.err.println("Error cancelling booking payment: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
     @PostMapping("/pay-callback")
     public ResponseEntity<String> handleSePayCallback(@RequestBody PaymentWebhookDTO data) {
         try {
@@ -134,7 +162,7 @@ public class BookingController {
             }
 
             // Lấy booking ID từ content or description
-            // Real format: "Qafmgq4306 SEPAY7974 1 108444155680-B2411250004-CHUYEN TIEN-OQCH00042LgQ-MOMO108444155680MOMO"
+            // Format: "Qafmgq4306 SEPAY7974 1 108444155680-B2411250004-CHUYEN TIEN-OQCH00042LgQ-MOMO108444155680MOMO"
             String content = data.getContent();
             String description = data.getDescription();
             String bookingId = extractBookingId(content, description);
@@ -155,13 +183,13 @@ public class BookingController {
                 return ResponseEntity.badRequest().body("Booking not found: " + bookingId);
             }
 
-            // Check if already paid
+            // Check nếu đã paid
             if (booking.getPaymentStatus() == PaymentStatus.PAID) {
                 System.out.println("Warning: Booking " + bookingId + " is already paid");
                 return ResponseEntity.ok("Booking already marked as paid");
             }
 
-            // Valid amount and determine status
+            // Xác định amount và status
             Customer customer = booking.getCustomer();
             double receivedAmount = data.getTransferAmount();
             double totalAmount = booking.getTotalAmount();
@@ -263,5 +291,4 @@ public class BookingController {
             return PaymentStatus.PAID; // Any payment received marks as paid
         }
     }
-
 }

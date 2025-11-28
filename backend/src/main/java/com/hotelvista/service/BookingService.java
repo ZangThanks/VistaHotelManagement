@@ -53,6 +53,16 @@ public class BookingService {
         return false;
     }
 
+    public boolean deleteById(String id) {
+        try {
+            repo.deleteById(id);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     @Transactional(readOnly = true)
     public List<Booking> findAllByBookingDateBetween(LocalDateTime bookingDateAfter, LocalDateTime bookingDateBefore) {
         return repo.findAllByBookingDateBetween(bookingDateAfter, bookingDateBefore);

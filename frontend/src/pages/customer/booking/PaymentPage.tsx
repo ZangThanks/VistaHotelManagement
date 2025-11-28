@@ -3,8 +3,10 @@ import { useLocation, useNavigate } from "react-router-dom";
 import {
   generateQRPayment,
   getBookingById,
+  cancelBookingPayment,
 } from "../../../services/bookingService";
 import type { Booking } from "../../../types/Booking";
+import CountdownTimer from "../../../components/common/CountdownTimer";
 
 const PaymentPage: React.FC = () => {
   const location = useLocation();
@@ -14,7 +16,11 @@ const PaymentPage: React.FC = () => {
   const [imageUrl, setImageUrl] = useState<string>("");
   const [selectedChoice, setSelectedChoice] = useState<number>(1);
   const [loading, setLoading] = useState(false);
+
   const [paymentCompleted, setPaymentCompleted] = useState(false);
+  const [paymentExpired, setPaymentExpired] = useState(false);
+  const [showTimer, setShowTimer] = useState(false);
+
   const reputationPoint = booking?.customer?.reputationPoint || 0;
   const totalAmount = booking?.totalAmount || 0;
 
@@ -57,12 +63,25 @@ const PaymentPage: React.FC = () => {
       return;
     }
 
+    // Skip qr nếu chọn pay at check-out
+    if (choice === 0) {
+      setLoading(true);
+      setTimeout(() => {
+        setLoading(false);
+        setPaymentCompleted(true);
+        setTimeout(() => navigate("/"), 3000);
+      }, 1000);
+      return;
+    }
+
     try {
       setLoading(true);
 
       const blob = await generateQRPayment(booking.bookingID, choice);
       const url = URL.createObjectURL(blob);
       setImageUrl(url);
+      // Start countdown timer
+      setShowTimer(true);
 
       startPaymentPolling();
     } catch (error) {
@@ -95,6 +114,24 @@ const PaymentPage: React.FC = () => {
     }
   };
 
+  const handlePaymentExpiry = async () => {
+    if (!booking?.bookingID) return;
+
+    try {
+      setPaymentExpired(true);
+      await cancelBookingPayment(booking.bookingID);
+
+      setTimeout(() => {
+        alert("Payment time has expired. Your booking has been cancelled.");
+        navigate("/customer/bookingPage");
+      }, 2000);
+    } catch (error) {
+      console.error("Error cancelling booking:", error);
+      alert("Payment time expired. Please try booking again.");
+      navigate("/customer/bookingPage");
+    }
+  };
+
   useEffect(() => {
     if (!booking) {
       alert("No booking information found. Redirecting...");
@@ -108,7 +145,7 @@ const PaymentPage: React.FC = () => {
       return;
     }
 
-    // Auto-generate QR for customers with reputation 0-80
+    // Auto-generate QR cho uy tín 0-80
     if (!paymentInfo.hasChoice) {
       fetchQRCode(1); // Default choice cho < 80
     }
@@ -171,6 +208,25 @@ const PaymentPage: React.FC = () => {
         <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
           <p className="text-sm text-blue-800">{paymentInfo.message}</p>
         </div>
+
+        {/* Countdown Timer */}
+        {showTimer && !paymentCompleted && !paymentExpired && (
+          <div className="mb-6">
+            <CountdownTimer
+              durationInMinutes={1}
+              onExpire={handlePaymentExpiry}
+            />
+          </div>
+        )}
+
+        {/* Payment Expired Message */}
+        {paymentExpired && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-sm text-red-800 font-semibold">
+              ⚠️ Payment time has expired. Your booking is being cancelled...
+            </p>
+          </div>
+        )}
 
         {/* Payment Options for High Reputation Customers */}
         {paymentInfo.hasChoice && !imageUrl && (
@@ -236,7 +292,7 @@ const PaymentPage: React.FC = () => {
               onClick={handleGenerateQR}
               className="w-full mt-6 px-6 py-3 bg-[#c9b8a8] text-white font-semibold rounded-lg hover:bg-[#b8a896] transition"
             >
-              Get Payment QR Code
+              {selectedChoice === 0 ? "Confirm Booking" : "Get Payment QR Code"}
             </button>
           </div>
         )}
