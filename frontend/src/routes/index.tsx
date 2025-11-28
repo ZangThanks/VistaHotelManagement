@@ -24,7 +24,7 @@ import Home from "../pages/customer/Home";
 import RoomList from "../pages/customer/RoomList";
 import Dashboard from "../pages/admin/dashboard/Dashboard.tsx";
 import NewsDetail from "../pages/admin/news/NewsDetail.tsx";
-import RoomManagement from "../pages/admin/room/RoomManagement.tsx";
+import RoomManagement from "../pages/employee/room/RoomManagement.tsx";
 import RoomDetail from "../pages/customer/RoomDetail.tsx";
 import CustomerLayout from "../layouts/CustomerLayout.tsx";
 import DailyWorkStatistics from "../pages/employee/DailyWorkStatistics.tsx";
@@ -38,6 +38,7 @@ import EmployeeList from "../pages/admin/EmployeeList.tsx";
 import BookingPage from "../pages/customer/booking/BookingPage.tsx";
 import RoomCart from "../pages/admin/booking/RoomCart.tsx";
 import PaymentPage from "../pages/customer/booking/PaymentPage.tsx";
+import UserProfilePage from "../pages/customer/UserProfile.tsx";
 
 export const router = createBrowserRouter([
   // AUTH
@@ -62,6 +63,7 @@ export const router = createBrowserRouter([
       { path: "bookingPage", element: <BookingPage /> },
       { path: "newsPage", element: <NewsPage /> },
       { path: "daily", element: <DailyWorkStatistics /> },
+      { path: "profile", element: <UserProfilePage /> },
     ],
   },
 
@@ -81,6 +83,7 @@ export const router = createBrowserRouter([
       { path: "bookingPage", element: <BookingPage /> },
       { path: "employees", element: <EmployeeList /> },
       // { path: 'employees/:id', element: <EmployeeDetail /> },
+      { path: "profile", element: <UserProfilePage /> },
     ],
   },
 
@@ -114,6 +117,7 @@ export const router = createBrowserRouter([
       { path: "booking/:id", element: <BookingDetail /> },
       { path: "cart", element: <RoomCart /> },
       { path: "payment", element: <PaymentPage /> },
+      { path: "profile", element: <UserProfilePage /> },
     ],
   },
 ]);
