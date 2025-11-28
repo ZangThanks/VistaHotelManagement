@@ -1,6 +1,7 @@
 package com.hotelvista.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -8,7 +9,6 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import java.util.List;
-import java.util.Objects;
 
 @Entity
 @Data
@@ -55,5 +55,12 @@ public class RoomType {
             inverseJoinColumns = @JoinColumn(name = "seasonal_price_id")
     )
     private List<SeasonalPrice> seasonalPrices;
+
+    // Trỏ về chính sách giá (Shared Policy)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "hourly_rate_policy_id")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    private HourlyRatePolicy hourlyRatePolicy;
+
 }
 

@@ -1,10 +1,29 @@
 USE vistalhoteldbs;
+INSERT INTO hourly_rate_policy (id, policy_name, weekend_surcharge)
+VALUES (1, 'Chính sách tiêu chuẩn 2025-2026', 15.0);
+
+INSERT INTO policy_weekend_days (policy_id, day_of_week) VALUES
+                                                             (1, 'SATURDAY'),
+                                                             (1, 'SUNDAY');
 
 -- ROOM TYPES
-INSERT INTO room_types (room_type_id, area, base_price, description, max_occupancy, type_name) VALUES
-('STD', 22, 900000, 'Phòng tiêu chuẩn, phù hợp cho 2 người, view thành phố', 2, 'Standard'),
-('DLX', 32, 1500000, 'Phòng Deluxe, rộng rãi, ban công, view biển', 3, 'Deluxe'),
-('STE', 50, 3000000, 'Phòng Suite, cao cấp, phòng khách riêng, view toàn cảnh', 4, 'Suite');
+INSERT INTO room_types (room_type_id, area, base_price, description, max_occupancy, type_name, hourly_rate_policy_id) VALUES
+('STD', 22, 900000, 'Phòng tiêu chuẩn, phù hợp cho 2 người, view thành phố', 2, 'Standard',1),
+('DLX', 32, 1500000, 'Phòng Deluxe, rộng rãi, ban công, view biển', 3, 'Deluxe', 1),
+('STE', 50, 3000000, 'Phòng Suite, cao cấp, phòng khách riêng, view toàn cảnh', 4, 'Suite', 1);
+
+
+INSERT INTO policy_base_rates (policy_id, hours_duration, percentage) VALUES
+                                                                          (1, 1, 15.0),
+                                                                          (1, 2, 25.0),
+                                                                          (1, 3, 35.0),
+                                                                          (1, 4, 45.0),
+                                                                          (1, 5, 55.0),
+                                                                          (1, 6, 65.0),
+                                                                          (1, 7, 75.0),
+                                                                          (1, 8, 85.0),
+                                                                          (1, 9, 100.0);
+
 
 -- ROOM TYPE AMENTIES
 INSERT INTO room_type_amenties (room_type_id, amenties) VALUES
@@ -211,4 +230,3 @@ INSERT INTO reports (report_id, generated_date, report_period, report_type, empl
 ('REP002', '2024-06-01 18:00:00', '2024-06', 'REVENUE', 'EMP003'),
 ('REP003', '2024-06-02 09:00:00', '2024-06', 'MAINTENANCE', 'EMP002'),
 ('REP004', '2024-06-03 10:00:00', '2024-06', 'SERVICE', 'EMP005');
-

@@ -146,7 +146,7 @@ const BasePricesTab: FC<Props> = ({
                                                             onClick={() =>
                                                                 saveRowPrice()
                                                             }
-                                                            className="h-9 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm"
+                                                            className="h-9 px-4 bg-[#c3923c] hover:bg-[#c18216] rounded-lg text-sm font-medium shadow-sm"
                                                         >
                                                             Save
                                                         </button>
@@ -168,7 +168,7 @@ const BasePricesTab: FC<Props> = ({
                                                                 base,
                                                             )
                                                         }
-                                                        className="h-9 w-9 rounded-lg flex items-center justify-center hover:bg-gray-100 transition-colors group"
+                                                        className="h-9 w-9 rounded-lg flex items-center justify-center bg-[--color-primary] hover:bg-[ --color-secondary] transition-colors group"
                                                         title="Edit price"
                                                     >
                                                         <CiEdit className="w-5 h-5 text-gray-600 group-hover:text-gray-900" />

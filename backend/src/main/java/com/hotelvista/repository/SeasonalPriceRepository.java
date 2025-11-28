@@ -1,6 +1,5 @@
 package com.hotelvista.repository;
 
-import com.hotelvista.dto.PriceDTO;
 import com.hotelvista.model.SeasonalPrice;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

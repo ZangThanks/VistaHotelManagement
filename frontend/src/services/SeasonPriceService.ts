@@ -73,7 +73,7 @@ export const deleteSeasonalPrice = async (id: string | number) => {
 };
 
 // Additional endpoints that return PriceDTOs (seasonal prices with room-type details)
-export const getAllSeasonalPrices_RoomType = async (): Promise<any[]> => {
+export const getAllSeasonalPrices_RoomType = async (): Promise<[]> => {
     try {
         const response = await api.get(`${ENDPOINT}/room-types`);
         return response.data;

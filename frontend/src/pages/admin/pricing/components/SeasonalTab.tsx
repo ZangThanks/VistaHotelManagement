@@ -217,7 +217,7 @@ const SeasonalTab: FC<Props> = (props) => {
 
                         <Button
                             onClick={() => setModalOpen(true)}
-                            className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
+                            className="bg-[--color-primary] hover:bg-[ --color-secondary] text-white shadow-sm"
                         >
                             + Add Rule
                         </Button>
@@ -467,12 +467,12 @@ const SeasonalTab: FC<Props> = (props) => {
                                                 <TableCell className="py-4 px-6">
                                                     <div className="flex items-center justify-center gap-2">
                                                         <Button
-                                                            variant="outline"
+                                                            
                                                             size="sm"
                                                             onClick={() =>
                                                                 openEditModal(s)
                                                             }
-                                                            className="h-8 w-8 p-0 flex items-center justify-center border-0 shadow-2xs"
+                                                            className="h-8 w-8 p-0 flex items-center bg-white justify-center border-0 shadow-2xs"
                                                             title="Edit"
                                                         >
                                                             <CiEdit className="w-5 h-5" />
