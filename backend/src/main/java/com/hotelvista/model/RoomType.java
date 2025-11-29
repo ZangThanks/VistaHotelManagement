@@ -56,11 +56,14 @@ public class RoomType {
     )
     private List<SeasonalPrice> seasonalPrices;
 
-    // Trỏ về chính sách giá (Shared Policy)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "hourly_rate_policy_id")
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private HourlyRatePolicy hourlyRatePolicy;
+
+    @ManyToOne
+    @JoinColumn(name = "check_in_out_policy_id", nullable = false)
+    private CheckInCheckOutPolicy checkInPolicy;
 
 }
 
