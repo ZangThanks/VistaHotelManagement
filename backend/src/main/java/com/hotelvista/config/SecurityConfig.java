@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -59,13 +60,16 @@ public class SecurityConfig {
         );
 
         http
-                // CORS
+                // CORS & CSRF
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
 
                 // JWT Stateless session
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
+                .formLogin(AbstractHttpConfigurer::disable)
+                .httpBasic(AbstractHttpConfigurer::disable)
 
                 // Authorization rules
                 .authorizeHttpRequests(auth -> auth
@@ -79,14 +83,20 @@ public class SecurityConfig {
 //                        .requestMatchers("/admin/**").hasAuthority("ADMIN")
 //                        .requestMatchers("/employee/**").hasAnyAuthority("ADMIN", "EMPLOYEE")
 //                        .requestMatchers("/customer/**").hasAnyAuthority("ADMIN", "EMPLOYEE", "CUSTOMER")
-//                        .anyRequest().authenticated()
+                        .anyRequest().permitAll()
                 )
                 // OAuth2 Login
                 .oauth2Login(oauth -> oauth
-                        .authorizationEndpoint(a ->
-                                a.authorizationRequestResolver(resolver)
+                        .authorizationEndpoint(ep -> ep
+                                .baseUri("/oauth2/authorization")
+                                .authorizationRequestResolver(resolver)
                         )
-                        .userInfoEndpoint(user -> user.userService(customOAuth2UserService))
+                        .redirectionEndpoint(ep -> ep
+                                .baseUri("/login/oauth2/code/*")
+                        )
+                        .userInfoEndpoint(ep ->
+                                ep.userService(customOAuth2UserService)
+                        )
                         .successHandler(oAuth2SuccessHandler)
                 );
 
