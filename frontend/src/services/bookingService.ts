@@ -209,7 +209,7 @@ export const checkIn = async (bookingId: string): Promise<Booking> => {
   }
 };
 
-//TODO: ĐỪNG XÓA, pls
+//TODO: ĐỪNG XÓA, pls, OKE EM
 // export const checkOut = async (bookingId: string): Promise<Booking> => {
 //   try {
 //     const response = await axiosInstance.put(
@@ -239,6 +239,14 @@ export const checkIn = async (bookingId: string): Promise<Booking> => {
 //     throw error;
 //   }
 // };
+
+
+export const getByRoom = async (roomNumber: string) => {
+  const response = await api.get(`/bookings/room/${roomNumber}`);
+  return response.data;
+};
+
+
 export default {
   getAll,
   getBookingById,
@@ -247,4 +255,5 @@ export default {
   updateBooking,
   getAllRoomBookings,
   convertToRoomBooking,
+  getByRoom,
 };
