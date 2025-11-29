@@ -201,7 +201,7 @@ INSERT INTO bookings (booking_id, booking_date, cancellation_date, check_in_date
 ('BOOK004', '2024-06-04 12:00:00', '2024-06-05 15:00:00', '2024-06-25 14:00:00', '2024-06-27 12:00:00', 2, NULL, 2, 'Deluxe', 'REFUNDED', 'Hủy phòng do việc đột xuất', 'CANCELLED', 0, 0, 'CUST004', 'EMP005');
 
 -- BOOKING DETAILS
-INSERT INTO booking_details (room_price, booking_id, room_id, review_id) VALUES
+INSERT INTO booking_details (room_price, booking_id, room_number, review_id) VALUES
 (900000, 'BOOK001', 'STD101', 'REVIEW001'),
 (1500000, 'BOOK002', 'DLX201', 'REVIEW002'),
 (3000000, 'BOOK003', 'STE301', NULL),
