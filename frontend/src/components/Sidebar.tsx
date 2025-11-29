@@ -47,7 +47,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
     {
       icon: <BiSolidCategory />,
       label: "Room Types",
-      path: "/admin/room-types",
+      path: "/admin/room-type-management",
     },
     {
       icon: <RiInfoCardFill />,
@@ -75,17 +75,17 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
     {
       icon: <RiDiscountPercentFill />,
       label: "Promotions",
-      path: "/admin/promotions",
+      path: "/admin/promotion-management",
     },
     {
       icon: <MdDiscount />,
       label: "Promotion Types",
-      path: "/admin/promotion-types",
+      path: "/admin/promotion-type-management",
     },
     {
       icon: <BiSolidDiscount />,
       label: "Vouchers",
-      path: "/admin/vouchers",
+      path: "/admin/voucher-management",
     },
     { icon: <FaChartLine />, label: "Reports", path: "/reports" },
     { icon: <FaCog />, label: "Settings", path: "/settings" },

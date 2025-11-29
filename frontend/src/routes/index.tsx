@@ -10,6 +10,7 @@ import Login from "../pages/auth/Login";
 import Register from "../pages/auth/Register";
 import ForgotPassword from "../pages/auth/ForgotPassword";
 import ResetPassword from "../pages/auth/ResetPassword";
+import OAuthSuccess from "../pages/auth/OAuthSuccess.tsx";
 
 import CustomerList from "../pages/employee/CustomerList";
 import NewsPage from "../pages/employee/NewsPage";
@@ -39,8 +40,17 @@ import BookingPage from "../pages/customer/booking/BookingPage.tsx";
 import RoomCart from "../pages/admin/booking/RoomCart.tsx";
 import PaymentPage from "../pages/customer/booking/PaymentPage.tsx";
 import UserProfilePage from "../pages/customer/UserProfile.tsx";
+import RoomTypeManagement from "../pages/employee/room/RoomTypeManagement.tsx";
+import PromotionManagement from "../pages/admin/promotion/PromotionManagement.tsx";
+import PromotionTypeManagement from "../pages/admin/promotion/PromotionTypeManagement.tsx";
+import VoucherManagement from "../pages/admin/voucher/VoucherManagement.tsx";
 
 export const router = createBrowserRouter([
+  // OAuth 
+  {
+    path: "/oauth-success",
+    element: <OAuthSuccess />,
+  },
   // AUTH
   {
     path: "auth",
@@ -64,6 +74,8 @@ export const router = createBrowserRouter([
       { path: "newsPage", element: <NewsPage /> },
       { path: "daily", element: <DailyWorkStatistics /> },
       { path: "profile", element: <UserProfilePage /> },
+      { path: "room-management", element: <RoomManagement /> },
+      { path: "room-type-management", element: <RoomTypeManagement /> },
     ],
   },
 
@@ -80,6 +92,13 @@ export const router = createBrowserRouter([
       { path: "info/:id", element: <NewsDetail /> },
       { path: "services", element: <ServiceManagement /> },
       { path: "room-management", element: <RoomManagement /> },
+      { path: "room-type-management", element: <RoomTypeManagement /> },
+      { path: "promotion-management", element: <PromotionManagement /> },
+      {
+        path: "promotion-type-management",
+        element: <PromotionTypeManagement />,
+      },
+      { path: "voucher-management", element: <VoucherManagement /> },
       { path: "bookingPage", element: <BookingPage /> },
       { path: "employees", element: <EmployeeList /> },
       // { path: 'employees/:id', element: <EmployeeDetail /> },

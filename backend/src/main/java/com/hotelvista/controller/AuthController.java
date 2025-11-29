@@ -1,9 +1,6 @@
 package com.hotelvista.controller;
 
-import com.hotelvista.dto.ChangePasswordRequest;
-import com.hotelvista.dto.LoginRequest;
-import com.hotelvista.dto.RegisterRequest;
-import com.hotelvista.dto.ResetPasswordRequest;
+import com.hotelvista.dto.*;
 import com.hotelvista.model.Customer;
 import com.hotelvista.model.User;
 import com.hotelvista.model.enums.Gender;
@@ -166,7 +163,7 @@ public class AuthController {
                 "success", true,
                 "message", "Đăng nhập thành công",
                 "data", userData,
-                "accessToken", accessToken,
+                "token", accessToken,
                 "refreshToken", refreshToken
         );
     }
@@ -248,7 +245,7 @@ public class AuthController {
                 userData.put("phone", user.getPhone());
                 userData.put("userRole", user.getUserRole());
 
-                return Map.of("success", false, "message", userData);
+                return Map.of("success", true, "message", userData);
             } else {
                 return Map.of("success", false, "message", "Token đã hết hạn");
             }
@@ -404,6 +401,5 @@ public class AuthController {
                 "message", "Password reset successful"
         ));
     }
-
 
 }

@@ -106,6 +106,18 @@ const Login: React.FC = () => {
   // Chuyển đến đăng ký
   const handleRegister = () => navigate("/auth/register");
 
+  const handleGoogleLogin = () => {
+    window.location.href = `${
+      import.meta.env.VITE_API_BASE_URL
+    }/oauth2/authorization/google`;
+  };
+
+  const handleFacebookLogin = () => {
+    window.location.href = `${
+      import.meta.env.VITE_API_BASE_URL
+    }/oauth2/authorization/facebook`;
+  };
+
   return (
     <div className="w-full">
       <form onSubmit={onSubmit} className="flex flex-col space-y-4">
@@ -265,6 +277,7 @@ const Login: React.FC = () => {
         <div className="grid grid-cols-2 gap-3">
           <button
             type="button"
+            onClick={handleGoogleLogin}
             className="flex items-center justify-center gap-2 px-4 py-2 border border-white/50 rounded-md text-white font-medium text-sm hover:border-white hover:bg-white/10 transition-colors cursor-pointer"
           >
             <img src={googleLogo} alt="Google" className="w-5 h-5" />
@@ -272,6 +285,7 @@ const Login: React.FC = () => {
           </button>
           <button
             type="button"
+            onClick={handleFacebookLogin}
             className="flex items-center justify-center gap-2 px-4 py-2 border border-white/50 rounded-md text-white font-medium text-sm hover:border-white hover:bg-white/10 transition-colors cursor-pointer"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">

@@ -298,3 +298,21 @@ export const sendOtpEmail = async (identifier: string):
     }
   }
 }
+
+export const handleOAuthSuccess = (
+  token: string,
+  userJson: string,
+  refreshToken?: string
+) => {
+  localStorage.setItem("token", token);
+
+  // decode & parse JSON
+  const decodedUserJson = decodeURIComponent(userJson);
+  const userObj = JSON.parse(decodedUserJson);
+
+  localStorage.setItem("user", JSON.stringify(userObj));
+
+  if (refreshToken) {
+    localStorage.setItem("refreshToken", refreshToken);
+  }
+};

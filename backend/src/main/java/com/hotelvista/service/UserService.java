@@ -4,12 +4,19 @@ import com.hotelvista.model.Admin;
 import com.hotelvista.model.Customer;
 import com.hotelvista.model.Employee;
 import com.hotelvista.model.User;
+import com.hotelvista.model.enums.Gender;
+import com.hotelvista.model.enums.MemberShipLevel;
+import com.hotelvista.model.enums.UserRole;
 import com.hotelvista.repository.AdminRepository;
 import com.hotelvista.repository.CustomerRepository;
 import com.hotelvista.repository.EmployeeRepository;
+import com.hotelvista.util.GenerateIDUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
+import java.util.UUID;
 
 @Service
 public class UserService {
@@ -85,5 +92,33 @@ public class UserService {
         else if (user instanceof Employee) employeeRepo.save((Employee) user);
 
         return true;
+    }
+
+    public User createUserIfNotExists(String email, String fullName, String provider) {
+        User existing = customerRepo.findByEmail(email).orElse(null);
+        if (existing != null) return existing;
+
+        // create user mới
+        Customer c = new Customer();
+        c.setId(GenerateIDUtil.generateID("CUS", 8));
+
+        // username tự phát sinh
+        c.setUserName(email.split("@")[0] + "_" + provider);
+
+        c.setFullName(fullName);
+        c.setEmail(email);
+        c.setPhone(null);
+        c.setUserRole(UserRole.CUSTOMER);
+        c.setJoinedDate(LocalDate.now());
+        c.setGender(Gender.MALE);
+        c.setLoyaltyPoints(0);
+        c.setReputationPoint(100);
+        c.setMemberShipLevel(MemberShipLevel.BRONZE);
+
+        // mật khẩu random
+        c.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
+
+        customerRepo.save(c);
+        return c;
     }
 }
