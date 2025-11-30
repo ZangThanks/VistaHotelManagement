@@ -1,7 +1,7 @@
 import { axiosInstance } from "../config/api";
 import { api } from "./apiClient";
 import type { Booking, RoomBooking } from "../types/Booking";
-import type { BookingDetail } from "../types/BookingDetail";
+import type { BookingDetail } from '../types/BookingDetail';
 
 const ENDPOINT = "/bookings";
 
@@ -46,6 +46,24 @@ export const createBooking = async (booking: object): Promise<Booking> => {
   }
 };
 
+export const saveBookingWithDetails = async (
+  booking: object,
+  bookingDetails: object[],
+  bookingServices: object[]
+): Promise<boolean> => {
+  try {
+    const response = await api.post(`${ENDPOINT}/save-booking`, {
+      booking,
+      bookingDetails,
+      bookingServices,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error saving booking with details:", error);
+    throw error;
+  }
+};
+
 export const updateBooking = async (
   id: string,
   booking: object
@@ -55,6 +73,18 @@ export const updateBooking = async (
     return response.data;
   } catch (error) {
     console.error(`Error updating booking ${id}:`, error);
+    throw error;
+  }
+};
+
+export const cancelBookingPayment = async (
+  bookingId: string
+): Promise<Booking> => {
+  try {
+    const response = await api.put(`${ENDPOINT}/cancel-payment/${bookingId}`);
+    return response.data;
+  } catch (error) {
+    console.error(`Error cancelling booking payment ${bookingId}:`, error);
     throw error;
   }
 };
@@ -152,6 +182,16 @@ export const generateQRPayment = async (
     return response.data;
   } catch (error) {
     console.error("Error generating QR payment:", error);
+    throw error;
+  }
+};
+
+export const overlapBookingExists = async (roomNumber: string) => {
+  try {
+    const res = await api.get(`${ENDPOINT}/overlapping-bookings/${roomNumber}`);
+    return res.data;
+  } catch (error) {
+    console.error("Error checking overlap booking:", error);
     throw error;
   }
 };

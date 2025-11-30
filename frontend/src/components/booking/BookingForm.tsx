@@ -1,6 +1,6 @@
 /* eslint-disable */
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Calendar } from "lucide-react";
 import BookingCalendar from "../common/Calendar";
 import { TfiUser, TfiMore } from "react-icons/tfi";
@@ -8,9 +8,11 @@ import { MdOutlineRoomService, MdRoomService } from "react-icons/md";
 import { getAll } from "../../services/serviceService";
 import { CiSquareQuestion } from "react-icons/ci";
 import {
-
   createBooking,
   generateBookingID,
+  saveBookingWithDetails,
+  getBookingById,
+  overlapBookingExists,
 } from "../../services/bookingService";
 import { getById } from "../../services/customerService";
 
@@ -23,6 +25,7 @@ import type { Service } from "../../types/Service";
 import type { CustomerVoucher } from "../../types/CustomerVoucher";
 import type { Room } from "../../types/Room";
 import { getRoomById } from "../../services/roomService";
+import { getCartBeanByCustomerId } from "../../services/cartBeanService";
 import CustomerVoucherModal from "./CustomerVoucherModal";
 import { RiHotelLine } from "react-icons/ri";
 import { TbHotelService } from "react-icons/tb";
@@ -57,6 +60,7 @@ export default function BookingForm({
   setCurrentStep,
 }: BookingFormProps) {
   const navigate = useNavigate();
+  const location = useLocation();
   const [checkInDate, setCheckInDate] = useState<Date | null>(
     new Date(2025, 8, 18)
   );
@@ -76,11 +80,12 @@ export default function BookingForm({
   const [loading, setLoading] = useState(true);
   const [selectedPaymentMethod, setSelectedPaymentMethod] =
     useState<PaymentMethod>(PAYMENT_METHODS[0]);
-  const [selectedRoom] = useState<string[]>(["STD102"]);
+  const [selectedRoom, setSelectedRoom] = useState<string[]>([]);
   const [rooms, setRooms] = useState<Room[]>([]);
   const [bookingID, setBookingID] = useState<string>("");
   const [isVoucherModalOpen, setIsVoucherModalOpen] = useState(false);
   const [selectedVoucher, setSelectedVoucher] = useState<CustomerVoucher[]>([]);
+  const [bookedDates, setBookedDates] = useState<Date[]>([]);
 
   const fetchedData = async () => {
     try {
@@ -92,13 +97,61 @@ export default function BookingForm({
       const service = await getAll();
       setServices(service);
 
-      const roomPromises = selectedRoom.map((roomId) => getRoomById(roomId));
-      const roomsData = await Promise.all(roomPromises);
-      setRooms(roomsData);
-
       const userDataStr = localStorage.getItem("user");
       const userData = userDataStr ? JSON.parse(userDataStr) : null;
       const customerId = userData?.data?.id || userData?.id;
+
+      const selectedFromCart = (location.state as any)?.selectedRooms;
+      let roomsToUse: string[] = [];
+
+      if (
+        selectedFromCart &&
+        Array.isArray(selectedFromCart) &&
+        selectedFromCart.length > 0
+      ) {
+        roomsToUse = selectedFromCart;
+        console.log("Using selected rooms from cart:", roomsToUse);
+      } else if (customerId) {
+        // Fetch all cart items from CartBean API
+        try {
+          const cart = await getCartBeanByCustomerId(customerId);
+          if (cart?.items && cart.items.length > 0) {
+            roomsToUse = cart.items
+              .map((room) => room.roomNumber)
+              .filter((num): num is string => num !== undefined);
+          }
+          console.log("Using all cart items:", roomsToUse);
+        } catch (error) {
+          console.error("Failed to fetch cart:", error);
+        }
+      }
+
+      // Update selected room state
+      setSelectedRoom(roomsToUse);
+
+      const roomPromises = roomsToUse.map((roomId) => getRoomById(roomId));
+      const roomsData = await Promise.all(roomPromises);
+      setRooms(roomsData);
+
+      // Fetch booked dates for all selected rooms
+      if (roomsToUse.length > 0) {
+        try {
+          const bookedDatesPromises = roomsToUse.map((roomId) =>
+            overlapBookingExists(roomId)
+          );
+          const bookedDatesArrays = await Promise.all(bookedDatesPromises);
+
+          // Flatten and convert to Date objects
+          const allBookedDates = bookedDatesArrays
+            .flat()
+            .map((dateStr) => new Date(dateStr));
+
+          setBookedDates(allBookedDates);
+          console.log("Booked dates:", allBookedDates);
+        } catch (error) {
+          console.error("Failed to fetch booked dates:", error);
+        }
+      }
 
       if (customerId) {
         const customerData = await getById(customerId);
@@ -138,8 +191,6 @@ export default function BookingForm({
     totalCost: 0,
     customer: customer || null,
     employee: null,
-    bookingDetails: [{}],
-    bookingServices: [{}],
   });
 
   useEffect(() => {
@@ -147,6 +198,31 @@ export default function BookingForm({
   }, []);
 
   const handleNextStep = () => {
+    if (!checkInDate) {
+      setError("Please select a check-in date.");
+      return;
+    }
+    if (!checkOutDate) {
+      setError("Please select a check-out date.");
+      return;
+    }
+
+    const ci = new Date(checkInDate);
+    ci.setHours(0, 0, 0, 0);
+    const co = new Date(checkOutDate);
+    co.setHours(0, 0, 0, 0);
+
+    if (currentStep === 1) {
+      // Kiểm tra chồng lấn với các ngày đã được đặt
+      if (isDateRangeOverlapping(ci, co, bookedDates)) {
+        setError(
+          "The selected date range overlaps with already booked dates. Please choose different dates."
+        );
+        return;
+      } else {
+        setError("");
+      }
+    }
     if (currentStep < 4) {
       setCurrentStep(currentStep + 1);
     }
@@ -172,6 +248,7 @@ export default function BookingForm({
     );
   };
 
+  // Tính tổng chi phí dịch vụ
   const calculateServiceCosts = () => {
     return getSelectedServiceObjects().reduce(
       (sum, service) => sum + service.price,
@@ -179,11 +256,36 @@ export default function BookingForm({
     );
   };
 
+  // Tính tổng chi phí phòng
   const calculateRoomCosts = () => {
     return rooms.reduce(
       (sum, room) => sum + (room.roomType?.basePrice || 0),
       0
     );
+  };
+
+  // Kiểm tra xem khoảng thời gian checkin-checkout có chồng lấn với ngày đã đặt
+  const isDateRangeOverlapping = (
+    checkIn: Date,
+    checkOut: Date,
+    bookedDates: Date[]
+  ): boolean => {
+    // Set giờ của ngày về 00:00:00 để so sánh chính xác
+    const normalizeDate = (date: Date) => {
+      const normalized = new Date(date);
+      normalized.setHours(0, 0, 0, 0);
+      return normalized;
+    };
+
+    const ciNormalized = normalizeDate(checkIn);
+    const coNormalized = normalizeDate(checkOut);
+
+    return bookedDates.some((bookedDate) => {
+      const bookedNormalized = normalizeDate(bookedDate);
+      return (
+        bookedNormalized >= ciNormalized && bookedNormalized < coNormalized
+      );
+    });
   };
 
   const handleSaveBooking = async () => {
@@ -215,6 +317,14 @@ export default function BookingForm({
       return;
     }
 
+    // Kiểm tra chồng lấn với các ngày đã được đặt
+    if (isDateRangeOverlapping(ci, co, bookedDates)) {
+      setError(
+        "The selected date range overlaps with already booked dates. Please choose different dates."
+      );
+      return;
+    }
+
     const checkInWithTime = new Date(checkInDate);
     checkInWithTime.setHours(14, 0, 0, 0);
 
@@ -241,31 +351,48 @@ export default function BookingForm({
       bookingDate: new Date().toISOString(),
       packageType: booking.packageType || "Standard",
       totalAmount,
-      customer: customer || null,
-      bookingDetails: rooms.map((r: Room) => ({
-        room: r,
-        booking: booking,
-        roomPrice: r.roomType?.basePrice || 0,
-        review: null,
-      })),
-      bookingServices: getSelectedServiceObjects().map((s: Service) => ({
-        service: s,
-        booking: booking,
-        servicePrice: s.price,
-        quantity: 1,
-        totalAmount: s.price,
-        orderStatus: "PLACE",
-        payemntStatus: "PENDING",
-      })),
-      paymentMethod: selectedPaymentMethod,
+      paymentStatus: "PENDING",
+      customer: {
+        id: customer?.id || null,
+      },
     };
 
+    const bookingDetails = rooms.map((r: Room) => ({
+      room: {
+        roomNumber: r.roomNumber,
+      },
+      roomPrice: r.roomType?.basePrice || 0,
+      review: null,
+    }));
+
+    const bookingServices = getSelectedServiceObjects().map((s: Service) => ({
+      service: {
+        serviceID: s.serviceID,
+      },
+      servicePrice: s.price,
+      quantity: 1,
+      totalAmount: s.price,
+      orderStatus: "PLACE",
+      paymentMethod: selectedPaymentMethod,
+    }));
+
     console.log("Booking payload:", payload);
-    console.log("Booking ID before save:", bookingID);
+    console.log("Booking details: ", bookingDetails);
+    console.log("Booking services: ", bookingServices);
 
     try {
       setLoading(true);
-      const savedBooking = await createBooking(payload as any);
+      const success = await saveBookingWithDetails(
+        payload,
+        bookingDetails,
+        bookingServices
+      );
+
+      if (!success) {
+        throw new Error("Failed to save booking");
+      }
+
+      const savedBooking = await getBookingById(bookingID);
 
       console.log("Saved booking response:", savedBooking);
 
@@ -274,7 +401,6 @@ export default function BookingForm({
         await saveCustomerVoucher(cv);
       }
 
-      // Ensure we pass the booking with proper bookingID
       const bookingToPass = {
         ...payload,
         ...(savedBooking || {}),
@@ -284,7 +410,7 @@ export default function BookingForm({
 
       console.log("Navigating to payment with:", bookingToPass);
 
-      navigate("/payment", {
+      navigate("/customer/payment", {
         state: {
           booking: bookingToPass,
         },
@@ -297,10 +423,20 @@ export default function BookingForm({
     }
   };
 
-  const totalRoomCosts = calculateRoomCosts();
+  // Tính toán số ngày đặt phòng dựa trên checkin - checkout
+  const calculateNights = () => {
+    if (!checkInDate || !checkOutDate) return 1;
+    const diffTime = Math.abs(checkOutDate.getTime() - checkInDate.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays > 0 ? diffDays : 1;
+  };
+
+  const numberOfNights = calculateNights();
+  const totalRoomCosts = calculateRoomCosts() * numberOfNights;
   const totalServiceCosts = calculateServiceCosts();
   const subtotal = totalRoomCosts + totalServiceCosts;
 
+  // Tính tổng tiền giảm giá từ vouchers
   const calculateDiscount = () => {
     if (!selectedVoucher || selectedVoucher.length === 0) return 0;
     let discount = 0;
@@ -325,6 +461,13 @@ export default function BookingForm({
   if (currentStep === 1) {
     return (
       <div className="max-w-6xl mx-auto">
+        {/* Error Message */}
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-sm text-red-600">{error}</p>
+          </div>
+        )}
+
         <div className="grid grid-cols-3 gap-8">
           {/* Check-in Calendar */}
           <div className="col-span-1">
@@ -347,6 +490,7 @@ export default function BookingForm({
                 selectedDate={checkInDate}
                 onDateSelect={setCheckInDate}
                 minDate={new Date()}
+                excludedDates={bookedDates}
               />
             </div>
           </div>
@@ -376,6 +520,7 @@ export default function BookingForm({
                     ? new Date(checkInDate.getTime() + 86400000)
                     : new Date()
                 }
+                excludedDates={bookedDates}
               />
             </div>
           </div>
