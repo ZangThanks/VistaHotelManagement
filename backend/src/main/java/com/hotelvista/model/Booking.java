@@ -87,6 +87,7 @@ public class Booking {
     @OneToMany(mappedBy = "booking")
     private List<MaintenanceRequest> maintenanceRequests;
 
-    @OneToOne
+    @OneToOne(mappedBy = "booking")
+    @ToString.Exclude
     private EarlyCheckin earlyCheckin;
 }

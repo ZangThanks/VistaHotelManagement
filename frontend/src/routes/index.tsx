@@ -24,7 +24,6 @@ import Home from '../pages/customer/Home';
 import RoomList from '../pages/customer/RoomList';
 import Dashboard from '../pages/admin/dashboard/Dashboard.tsx';
 import NewsDetail from '../pages/admin/news/NewsDetail.tsx';
-import RoomManagement from '../pages/admin/room/RoomManagement.tsx';
 import RoomDetail from '../pages/customer/RoomDetail.tsx';
 import CustomerLayout from '../layouts/CustomerLayout.tsx';
 import DailyWorkStatistics from '../pages/employee/DailyWorkStatistics.tsx';
@@ -36,6 +35,7 @@ import BookingDetail from '../pages/admin/booking/BookingDetail.tsx';
 import Contact from '../pages/customer/Contact.tsx';
 import EmployeeList from '../pages/admin/EmployeeList.tsx';
 import BookingPage from '../pages/customer/booking/BookingPage.tsx';
+import RoomManagement from '../pages/employee/room/RoomManagement.tsx';
 
 export const router = createBrowserRouter([
     // AUTH

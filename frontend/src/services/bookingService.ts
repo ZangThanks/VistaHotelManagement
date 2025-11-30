@@ -1,7 +1,6 @@
 import { axiosInstance } from "../config/api";
 import { api } from "./apiClient";
 import type { Booking, RoomBooking } from "../types/Booking";
-import type { BookingDetail } from '../types/BookingDetail';
 
 const ENDPOINT = "/bookings";
 
@@ -22,15 +21,6 @@ export const getBookingById = async (id: string): Promise<Booking> => {
     return response.data;
   } catch (error) {
     console.error(`Error fetching booking ${id}:`, error);
-    throw error;
-  }
-};
-export const getBookingDetailsById = async (id: string): Promise<BookingDetail[]> => {
-  try {
-    const response = await api.get(`${ENDPOINT}/details/${id}`);
-    return response.data;
-  } catch (error) {
-    console.error(`Error fetching booking details ${id}:`, error);
     throw error;
   }
 };
@@ -168,7 +158,6 @@ export const generateQRPayment = async (
 export default {
   getAll,
   getBookingById,
-  getBookingDetailsById,
   createBooking,
   updateBooking,
   getAllRoomBookings,
