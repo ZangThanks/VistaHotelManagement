@@ -16,17 +16,23 @@ export default function RoomDetail() {
 
     const [index, setIndex] = useState(0);
 
-    const [reviews, setReviews] = useState<Review[]>([]);
+    // reviewsData: array of { customer?: any, review: Review }
+    const [reviewsData, setReviewsData] = useState<
+        { customer?: any; review: Review }[]
+    >([]);
     const [reviewsLoading, setReviewsLoading] = useState(false);
     const [reviewsError, setReviewsError] = useState<string | null>(null);
 
     // REVIEW STATS: count + average (uses optional "rating" on Review if present)
     const reviewStats = useMemo(() => {
-        const count = reviews.length;
-        const sum = reviews.reduce((s, r) => s + ((r as any).rating ?? 0), 0);
+        const count = reviewsData.length;
+        const sum = reviewsData.reduce(
+            (s, e) => s + ((e.review as any).rating ?? 0),
+            0,
+        );
         const avg = count ? +(sum / count).toFixed(1) : 0;
         return { count, avg };
-    }, [reviews]);
+    }, [reviewsData]);
 
     const renderStars = (rating?: number) => {
         const r = Math.round(rating ?? 0);
@@ -69,10 +75,11 @@ export default function RoomDetail() {
         setReviewsLoading(true);
         setReviewsError(null);
 
+        // Expecting each item: { customer: {...}, review: {...} }
         getReviewsByRoomNumber(id)
             .then((data) => {
                 if (!mounted) return;
-                setReviews(Array.isArray(data) ? data : []);
+                setReviewsData(Array.isArray(data) ? data : []);
             })
             .catch((err) => {
                 if (!mounted) return;
@@ -378,7 +385,7 @@ export default function RoomDetail() {
                 {/* REVIEWS - enhanced layout */}
                 <section className="max-w-5xl mx-auto mt-8">
                     <div className="flex items-center justify-between mb-6">
-                        <h3 className="text-xl font-semibold">Guest reviews</h3>
+                        <h3 className="text-xl font-semibold">Customer reviews</h3>
                         <div className="flex items-center gap-4">
                             <div className="flex items-baseline gap-2">
                                 <div className="text-2xl font-bold">
@@ -405,12 +412,20 @@ export default function RoomDetail() {
 
                     {/* List */}
                     <div className="grid grid-cols-1 gap-6">
-                        {reviews.map((r) => {
-                            const author = 'Guest';
-                            const rating = 0;
-                            const avatar = null;
+                        {reviewsData.map((entry, idx) => {
+                            const customer = entry.customer;
+                            const rev = entry.review;
+                            const anonymous = (rev as any).anonymous;
+                            const author = anonymous
+                                ? 'Guest'
+                                : customer?.fullName ||
+                                  customer?.userName ||
+                                  'Guest';
+                            const avatar =
+                                customer?.avatarUrl || customer?.avatar || null;
+                            const rating = (rev as any).rating ?? 0;
                             return (
-                                <article key={r.reviewID}>
+                                <article key={rev.reviewID ?? idx}>
                                     <div className="flex gap-4">
                                         <div className="flex-shrink-0">
                                             {avatar ? (
@@ -436,21 +451,80 @@ export default function RoomDetail() {
                                                     </div>
                                                     <div className="text-xs text-gray-500">
                                                         {new Date(
-                                                            r.reviewDate as any,
+                                                            rev.reviewDate as any,
                                                         ).toLocaleDateString()}
                                                     </div>
                                                 </div>
-                                                <div>{renderStars(rating)}</div>
+                                                <div className="flex items-center gap-4">
+                                                    <div>
+                                                        {renderStars(rating)}
+                                                    </div>
+                                                    <div className="text-sm text-gray-500">
+                                                        {rating || '—'}
+                                                    </div>
+                                                </div>
                                             </div>
 
                                             <p className="mt-3 text-gray-700 leading-relaxed">
-                                                {r.comment}
+                                                {rev.comment}
                                             </p>
 
-                                            {r.images &&
-                                                r.images.length > 0 && (
+                                            {/* show granular scores if present */}
+                                            <div className="mt-3 flex flex-wrap gap-3 text-xs text-gray-600">
+                                                {typeof (rev as any)
+                                                    .serviceQuality ===
+                                                    'number' && (
+                                                    <span className="px-2 py-1 bg-gray-100 rounded">
+                                                        Service:{' '}
+                                                        {
+                                                            (rev as any)
+                                                                .serviceQuality
+                                                        }
+                                                    </span>
+                                                )}
+                                                {typeof (rev as any)
+                                                    .location === 'number' && (
+                                                    <span className="px-2 py-1 bg-gray-100 rounded">
+                                                        Location:{' '}
+                                                        {(rev as any).location}
+                                                    </span>
+                                                )}
+                                                {typeof (rev as any)
+                                                    .valueForMoney ===
+                                                    'number' && (
+                                                    <span className="px-2 py-1 bg-gray-100 rounded">
+                                                        Value:{' '}
+                                                        {
+                                                            (rev as any)
+                                                                .valueForMoney
+                                                        }
+                                                    </span>
+                                                )}
+                                                {typeof (rev as any)
+                                                    .roomQuantity ===
+                                                    'number' && (
+                                                    <span className="px-2 py-1 bg-gray-100 rounded">
+                                                        Rooms:{' '}
+                                                        {
+                                                            (rev as any)
+                                                                .roomQuantity
+                                                        }
+                                                    </span>
+                                                )}
+                                                {/* show customer membership if available */}
+                                                {customer?.memberShipLevel && (
+                                                    <span className="px-2 py-1 bg-amber-50 text-amber-700 rounded">
+                                                        {
+                                                            customer.memberShipLevel
+                                                        }
+                                                    </span>
+                                                )}
+                                            </div>
+
+                                            {rev.images &&
+                                                rev.images.length > 0 && (
                                                     <div className="mt-4 grid grid-cols-3 gap-3">
-                                                        {r.images.map(
+                                                        {rev.images.map(
                                                             (src, i) => (
                                                                 <img
                                                                     key={i}

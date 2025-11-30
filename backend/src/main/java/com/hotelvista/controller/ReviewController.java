@@ -1,5 +1,6 @@
 package com.hotelvista.controller;
 
+import com.hotelvista.dto.CustomerReviewDTO;
 import com.hotelvista.model.Review;
 import com.hotelvista.service.ReviewService;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,9 +21,8 @@ public class ReviewController {
     }
 
     @GetMapping("/room/{roomNumber}")
-    public List<Review> getReviewsByRoomNumber(@PathVariable String roomNumber) {
+    public List<CustomerReviewDTO> getReviewsByRoomNumber(@PathVariable String roomNumber) {
         return reviewService.getReviewByRoomNumber(roomNumber);
     }
-
 
 }

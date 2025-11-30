@@ -37,6 +37,8 @@ import EmployeeList from '../pages/admin/EmployeeList.tsx';
 import BookingPage from '../pages/customer/booking/BookingPage.tsx';
 import RoomManagement from '../pages/employee/room/RoomManagement.tsx';
 
+import PricingManager from '../pages/admin/pricing/PricingManager.tsx';
+
 export const router = createBrowserRouter([
     // AUTH
     {
@@ -79,6 +81,7 @@ export const router = createBrowserRouter([
             { path: 'bookingPage', element: <BookingPage /> },
             { path: 'employees', element: <EmployeeList /> },
             // { path: 'employees/:id', element: <EmployeeDetail /> },
+            { path: 'pricing', element: <PricingManager /> },
         ],
     },
 
