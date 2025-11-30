@@ -40,6 +40,8 @@ import AIConcierge from "../pages/customer/AIConcierge.tsx";
 import ChatSupport from "../pages/employee/ChatSupport.tsx";
 import PricingManager from "../pages/admin/pricing/PricingManager.tsx";
 import RoomManagement from "../pages/employee/room/RoomManagement.tsx";
+import RoomCart from "../pages/admin/booking/RoomCart.tsx";
+import PaymentPage from "../pages/customer/booking/PaymentPage.tsx";
 
 export const router = createBrowserRouter([
   // AUTH
@@ -118,7 +120,9 @@ export const router = createBrowserRouter([
       { path: "room/:id", element: <RoomDetail /> },
       { path: "service", element: <ServiceList /> },
       { path: "bookingPage", element: <BookingPage /> },
+      { path: "cart", element: <RoomCart /> },
       { path: "booking/:id", element: <BookingDetail /> },
+      { path: "payment", element: <PaymentPage /> },
     ],
   },
 ]);
