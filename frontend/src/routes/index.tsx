@@ -1,8 +1,8 @@
-import { createBrowserRouter } from 'react-router-dom';
+import { createBrowserRouter } from "react-router-dom";
 
 // Layouts
-import AuthLayout from '../layouts/AuthLayout';
-import EmployeeLayout from '../layouts/EmployeeLayout';
+import AuthLayout from "../layouts/AuthLayout";
+import EmployeeLayout from "../layouts/EmployeeLayout";
 // import CustomerLayout from "../layouts/CustomerLayout";
 
 // Auth pages
@@ -24,7 +24,6 @@ import Home from "../pages/customer/Home";
 import RoomList from "../pages/customer/RoomList";
 import Dashboard from "../pages/admin/dashboard/Dashboard.tsx";
 import NewsDetail from "../pages/admin/news/NewsDetail.tsx";
-import RoomManagement from "../pages/admin/room/RoomManagement.tsx";
 import RoomDetail from "../pages/customer/RoomDetail.tsx";
 import CustomerLayout from "../layouts/CustomerLayout.tsx";
 import DailyWorkStatistics from "../pages/employee/DailyWorkStatistics.tsx";
@@ -39,7 +38,8 @@ import BookingPage from "../pages/customer/booking/BookingPage.tsx";
 import FAQ from "../pages/customer/FAQ.tsx";
 import AIConcierge from "../pages/customer/AIConcierge.tsx";
 import ChatSupport from "../pages/employee/ChatSupport.tsx";
-import PricingManager from '../pages/admin/pricing/PricingManager.tsx';
+import PricingManager from "../pages/admin/pricing/PricingManager.tsx";
+import RoomManagement from "../pages/employee/room/RoomManagement.tsx";
 
 export const router = createBrowserRouter([
   // AUTH
@@ -83,7 +83,7 @@ export const router = createBrowserRouter([
       { path: "room-management", element: <RoomManagement /> },
       { path: "bookingPage", element: <BookingPage /> },
       { path: "employees", element: <EmployeeList /> },
-        {path: 'pricing', element: <PricingManager />},
+      { path: "pricing", element: <PricingManager /> },
       // { path: 'employees/:id', element: <EmployeeDetail /> },
     ],
   },
