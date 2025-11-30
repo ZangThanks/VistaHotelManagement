@@ -12,6 +12,7 @@ import {
   generateBookingID,
   saveBookingWithDetails,
   getBookingById,
+  overlapBookingExists,
 } from "../../services/bookingService";
 import { getById } from "../../services/customerService";
 
@@ -84,6 +85,7 @@ export default function BookingForm({
   const [bookingID, setBookingID] = useState<string>("");
   const [isVoucherModalOpen, setIsVoucherModalOpen] = useState(false);
   const [selectedVoucher, setSelectedVoucher] = useState<CustomerVoucher[]>([]);
+  const [bookedDates, setBookedDates] = useState<Date[]>([]);
 
   const fetchedData = async () => {
     try {
@@ -131,6 +133,26 @@ export default function BookingForm({
       const roomsData = await Promise.all(roomPromises);
       setRooms(roomsData);
 
+      // Fetch booked dates for all selected rooms
+      if (roomsToUse.length > 0) {
+        try {
+          const bookedDatesPromises = roomsToUse.map((roomId) =>
+            overlapBookingExists(roomId)
+          );
+          const bookedDatesArrays = await Promise.all(bookedDatesPromises);
+
+          // Flatten and convert to Date objects
+          const allBookedDates = bookedDatesArrays
+            .flat()
+            .map((dateStr) => new Date(dateStr));
+
+          setBookedDates(allBookedDates);
+          console.log("Booked dates:", allBookedDates);
+        } catch (error) {
+          console.error("Failed to fetch booked dates:", error);
+        }
+      }
+
       if (customerId) {
         const customerData = await getById(customerId);
         setCustomer(customerData);
@@ -176,6 +198,31 @@ export default function BookingForm({
   }, []);
 
   const handleNextStep = () => {
+    if (!checkInDate) {
+      setError("Please select a check-in date.");
+      return;
+    }
+    if (!checkOutDate) {
+      setError("Please select a check-out date.");
+      return;
+    }
+
+    const ci = new Date(checkInDate);
+    ci.setHours(0, 0, 0, 0);
+    const co = new Date(checkOutDate);
+    co.setHours(0, 0, 0, 0);
+
+    if (currentStep === 1) {
+      // Kiểm tra chồng lấn với các ngày đã được đặt
+      if (isDateRangeOverlapping(ci, co, bookedDates)) {
+        setError(
+          "The selected date range overlaps with already booked dates. Please choose different dates."
+        );
+        return;
+      } else {
+        setError("");
+      }
+    }
     if (currentStep < 4) {
       setCurrentStep(currentStep + 1);
     }
@@ -217,6 +264,30 @@ export default function BookingForm({
     );
   };
 
+  // Kiểm tra xem khoảng thời gian checkin-checkout có chồng lấn với ngày đã đặt
+  const isDateRangeOverlapping = (
+    checkIn: Date,
+    checkOut: Date,
+    bookedDates: Date[]
+  ): boolean => {
+    // Set giờ của ngày về 00:00:00 để so sánh chính xác
+    const normalizeDate = (date: Date) => {
+      const normalized = new Date(date);
+      normalized.setHours(0, 0, 0, 0);
+      return normalized;
+    };
+
+    const ciNormalized = normalizeDate(checkIn);
+    const coNormalized = normalizeDate(checkOut);
+
+    return bookedDates.some((bookedDate) => {
+      const bookedNormalized = normalizeDate(bookedDate);
+      return (
+        bookedNormalized >= ciNormalized && bookedNormalized < coNormalized
+      );
+    });
+  };
+
   const handleSaveBooking = async () => {
     setError("");
 
@@ -243,6 +314,14 @@ export default function BookingForm({
     }
     if (co <= ci) {
       setError("Check-out must be after check-in.");
+      return;
+    }
+
+    // Kiểm tra chồng lấn với các ngày đã được đặt
+    if (isDateRangeOverlapping(ci, co, bookedDates)) {
+      setError(
+        "The selected date range overlaps with already booked dates. Please choose different dates."
+      );
       return;
     }
 
@@ -382,6 +461,13 @@ export default function BookingForm({
   if (currentStep === 1) {
     return (
       <div className="max-w-6xl mx-auto">
+        {/* Error Message */}
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-sm text-red-600">{error}</p>
+          </div>
+        )}
+
         <div className="grid grid-cols-3 gap-8">
           {/* Check-in Calendar */}
           <div className="col-span-1">
@@ -404,6 +490,7 @@ export default function BookingForm({
                 selectedDate={checkInDate}
                 onDateSelect={setCheckInDate}
                 minDate={new Date()}
+                excludedDates={bookedDates}
               />
             </div>
           </div>
@@ -433,6 +520,7 @@ export default function BookingForm({
                     ? new Date(checkInDate.getTime() + 86400000)
                     : new Date()
                 }
+                excludedDates={bookedDates}
               />
             </div>
           </div>

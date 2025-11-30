@@ -188,6 +188,16 @@ export const generateQRPayment = async (
   }
 };
 
+export const overlapBookingExists = async (roomNumber: string) => {
+  try {
+    const res = await api.get(`${ENDPOINT}/overlapping-bookings/${roomNumber}`);
+    return res.data;
+  } catch (error) {
+    console.error("Error checking overlap booking:", error);
+    throw error;
+  }
+};
+
 // export const deleteBooking = async (id) => {
 //   try {
 //     await axios.delete(`${API_URL}/${id}`);
