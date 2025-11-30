@@ -71,4 +71,12 @@ public interface BookingRepository extends JpaRepository<Booking, String> {
      * @return
      */
     List<Booking> findAllByCheckOutDateBetween(LocalDateTime startDate, LocalDateTime endDate);
+
+    @Query("SELECT CASE WHEN COUNT(bd) > 0 THEN true ELSE false END " +
+            "FROM BookingDetail bd " +
+            "JOIN bd.room r " +
+            "JOIN r.roomType rt " +
+            "JOIN rt.seasonalPrices sp " +
+            "WHERE sp.id = :id")
+    boolean existsBookingsBySeasonalPrice(@Param("id") Integer id);
 }

@@ -1,8 +1,8 @@
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter } from 'react-router-dom';
 
 // Layouts
-import AuthLayout from "../layouts/AuthLayout";
-import EmployeeLayout from "../layouts/EmployeeLayout";
+import AuthLayout from '../layouts/AuthLayout';
+import EmployeeLayout from '../layouts/EmployeeLayout';
 // import CustomerLayout from "../layouts/CustomerLayout";
 
 // Auth pages
@@ -39,6 +39,7 @@ import BookingPage from "../pages/customer/booking/BookingPage.tsx";
 import FAQ from "../pages/customer/FAQ.tsx";
 import AIConcierge from "../pages/customer/AIConcierge.tsx";
 import ChatSupport from "../pages/employee/ChatSupport.tsx";
+import PricingManager from '../pages/admin/pricing/PricingManager.tsx';
 
 export const router = createBrowserRouter([
   // AUTH
@@ -76,12 +77,13 @@ export const router = createBrowserRouter([
       { path: "checkin", element: <CheckInManager /> },
       { path: "checkout", element: <CheckOutManager /> },
       { path: "info", element: <NewsList /> }, // NewsList thay InfoManagement
-      // { path: 'info/manage', element: <NewsList /> }, // nếu bạn cần InfoManagement
+      //{ path: 'info/manage', element: <NewsList /> }, // nếu bạn cần InfoManagement
       { path: "info/:id", element: <NewsDetail /> },
       { path: "services", element: <ServiceManagement /> },
       { path: "room-management", element: <RoomManagement /> },
       { path: "bookingPage", element: <BookingPage /> },
       { path: "employees", element: <EmployeeList /> },
+        {path: 'pricing', element: <PricingManager />},
       // { path: 'employees/:id', element: <EmployeeDetail /> },
     ],
   },

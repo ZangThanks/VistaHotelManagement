@@ -55,4 +55,5 @@ public class RoomTypeService {
     public void delete(String id) {
         roomTypeRepo.deleteById(id);
     }
+
 }
