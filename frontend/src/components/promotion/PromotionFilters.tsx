@@ -11,6 +11,8 @@ interface PromotionFiltersProps {
   onTypeFilterChange: (value: string) => void;
   discountTypeFilter: string;
   onDiscountTypeFilterChange: (value: string) => void;
+  promotionTypeOptions?: { value: string; label: string }[];
+  discountTypeOptions?: { value: string; label: string }[];
 }
 
 const PromotionFilters: React.FC<PromotionFiltersProps> = ({
@@ -22,6 +24,8 @@ const PromotionFilters: React.FC<PromotionFiltersProps> = ({
   onTypeFilterChange,
   discountTypeFilter,
   onDiscountTypeFilterChange,
+  promotionTypeOptions = [],
+  discountTypeOptions = [],
 }) => {
   const statusOptions = [
     { value: "all", label: "All Status" },
@@ -29,17 +33,14 @@ const PromotionFilters: React.FC<PromotionFiltersProps> = ({
     { value: "inactive", label: "Inactive" },
   ];
 
-  const discountTypeOptions = [
-    { value: "all", label: "All Discount Types" },
-    { value: "percentage", label: "Percentage" },
-    { value: "fixed", label: "Fixed Amount" },
-  ];
-
   const typeOptions = [
     { value: "all", label: "All Types" },
-    { value: "seasonal", label: "Seasonal" },
-    { value: "special", label: "Special Event" },
-    { value: "member", label: "Member Only" },
+    ...promotionTypeOptions,
+  ];
+
+  const discountOptions = [
+    { value: "all", label: "All Discount Types" },
+    ...discountTypeOptions,
   ];
 
   return (
@@ -99,7 +100,7 @@ const PromotionFilters: React.FC<PromotionFiltersProps> = ({
             Discount Type
           </label>
           <Dropdown
-            options={discountTypeOptions}
+            options={discountOptions}
             value={discountTypeFilter}
             onChange={onDiscountTypeFilterChange}
             placeholder="Select discount type"

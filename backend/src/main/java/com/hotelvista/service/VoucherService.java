@@ -110,4 +110,32 @@ public class VoucherService {
         return false;
     }
 
+
+    public List<Voucher> findVouchersBy_CustomerID(String customerID) {
+        return voucherRepo.findVouchersBy_CustomerID(customerID);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public boolean update(String id, Voucher voucher) {
+        try {
+            Voucher existingVoucher = findById(id);
+            if (existingVoucher == null) {
+                return false;
+            }
+
+            existingVoucher.setVoucherName(voucher.getVoucherName());
+            existingVoucher.setDiscountType(voucher.getDiscountType());
+            existingVoucher.setDiscountPercentage(voucher.getDiscountPercentage());
+            existingVoucher.setDiscountValue(voucher.getDiscountValue());
+            existingVoucher.setStartDate(voucher.getStartDate());
+            existingVoucher.setEndDate(voucher.getEndDate());
+            existingVoucher.setActive(voucher.isActive());
+
+            voucherRepo.save(existingVoucher);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }

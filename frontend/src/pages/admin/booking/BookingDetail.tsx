@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import Header from '../../../components/Header';
-import {
-    getBookingById,
-    getBookingDetailsById
-} from '../../../services/bookingService';
+import { getBookingById } from '../../../services/bookingService';
+import { getAllEarlyCheckins } from '../../../services/earlyCheckinService';
 import type { Booking } from '../../../types/Booking';
 import type { BookingDetail } from '../../../types/BookingDetail';
+import type { EarlyCheckinResponse } from '../../../types/EarlyCheckin';
+
+import EarlyCheckinModal from '../../../components/checkin/EarlyCheckinModal';
 
 const statusColor = {
     PENDING: 'bg-amber-50 text-amber-700 border-amber-200',
@@ -21,6 +22,10 @@ export default function BookingDetailPage() {
     const [booking, setBooking] = useState<Booking | null>(null);
     const [details, setDetails] = useState<BookingDetail[]>([]);
     const [loading, setLoading] = useState(true);
+    const [earlyCheckinRequest, setEarlyCheckinRequest] =
+        useState<EarlyCheckinResponse | null>(null);
+
+    const [showEarlyModal, setShowEarlyModal] = useState(false);
 
     // FETCH DATA
     useEffect(() => {
@@ -31,8 +36,64 @@ export default function BookingDetailPage() {
                 const bookingRes = await getBookingById(id);
                 setBooking(bookingRes);
 
-                const detailRes = await getBookingDetailsById(id);
-                setDetails(detailRes);
+                // LẤY ĐÚNG bookingDetails TỪ booking
+                setDetails(bookingRes.bookingDetails || []);
+
+                // Tìm yêu cầu early checkin cho booking này - kiểm tra cả 2 nguồn
+                let earlyRequest = null;
+
+                console.log('Checking early checkin for booking:', id);
+                
+
+                // 1. Kiểm tra trong booking object trước
+                if (bookingRes.earlyCheckin) {
+                    console.log('Found early checkin in booking object');
+                    earlyRequest = {
+                        requestID:
+                            bookingRes.earlyCheckin.requestID ||
+                            'booking-' + id,
+                        requestTime: bookingRes.earlyCheckin.requestTime,
+                        approvalStatus: bookingRes.earlyCheckin.approvalStatus,
+                        additionalFee: bookingRes.earlyCheckin.additionalFee,
+                        requestDate: bookingRes.earlyCheckin.requestTime,
+                        booking: bookingRes,
+                    };
+                }
+
+                // 2. Nếu không có trong booking, tìm trong collection riêng
+                if (!earlyRequest) {
+                    console.log('Searching in early checkins collection...');
+                    try {
+                        const earlyCheckins = await getAllEarlyCheckins();
+                       
+
+                        // Đảm bảo earlyCheckins là array
+                        if (Array.isArray(earlyCheckins)) {
+                            const matchingRequest = earlyCheckins.find(
+                                (req: EarlyCheckinResponse) =>
+                                    req.booking?.bookingID === id,
+                            );
+                            earlyRequest = matchingRequest || null;
+                            console.log(
+                                'Matching request:',
+                                matchingRequest,
+                            );
+                        } else {
+                            console.warn(
+                                'Early checkins is not an array:',
+                                earlyCheckins,
+                            );
+                        }
+                    } catch (earlyError) {
+                        console.error(
+                            'Error fetching early checkin data:',
+                            earlyError,
+                        );
+                    }
+                }
+
+                console.log('Final early request:', earlyRequest);
+                setEarlyCheckinRequest(earlyRequest);
             } catch (error) {
                 console.error('Error fetching booking detail:', error);
             } finally {
@@ -40,6 +101,169 @@ export default function BookingDetailPage() {
             }
         })();
     }, [id]);
+
+    // Helper function to render early checkin button based on status
+    const renderEarlyCheckinButton = () => {
+        if (!earlyCheckinRequest) {
+            // No request yet - show normal button
+            return (
+                <button
+                    onClick={() => setShowEarlyModal(true)}
+                    className="w-full bg-black hover:bg-black/90 text-white py-3 rounded-xl"
+                >
+                    Early Check-in
+                </button>
+            );
+        }
+
+        const { approvalStatus } = earlyCheckinRequest;
+
+        switch (approvalStatus) {
+            case 'PENDING':
+                return (
+                    <button
+                        disabled
+                        className="w-full bg-yellow-500 text-white py-3 rounded-xl cursor-not-allowed"
+                    >
+                        Đang chờ duyệt
+                    </button>
+                );
+            case 'APPROVED':
+                return (
+                    <button
+                        disabled
+                        className="w-full bg-green-600 text-white py-3 rounded-xl cursor-not-allowed"
+                    >
+                        Early Check-in đã được chấp nhận
+                    </button>
+                );
+            case 'REJECTED':
+                return (
+                    <button
+                        disabled
+                        className="w-full bg-red-600 text-white py-3 rounded-xl cursor-not-allowed"
+                    >
+                        Early Check-in đã được từ chối
+                    </button>
+                );
+            default:
+                return (
+                    <button
+                        onClick={() => setShowEarlyModal(true)}
+                        className="w-full bg-black hover:bg-black/90 text-white py-3 rounded-xl"
+                    >
+                        Early Check-in
+                    </button>
+                );
+        }
+    };
+
+    // Helper function to render notification
+    const renderNotification = () => {
+        if (!earlyCheckinRequest) return null;
+
+        const { approvalStatus, additionalFee } = earlyCheckinRequest;
+
+        if (approvalStatus === 'APPROVED') {
+            return (
+                <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl">
+                    <div className="flex items-center gap-3">
+                        <div className="w-6 h-6 bg-green-600 rounded-full flex items-center justify-center">
+                            <svg
+                                className="w-4 h-4 text-white"
+                                fill="currentColor"
+                                viewBox="0 0 20 20"
+                            >
+                                <path
+                                    fillRule="evenodd"
+                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                    clipRule="evenodd"
+                                />
+                            </svg>
+                        </div>
+                        <div className="flex-1">
+                            <h4 className="font-semibold text-green-800">
+                                Yêu cầu check-in sớm đã được chấp nhận
+                            </h4>
+                            <p className="text-green-600 text-sm">
+                                Phí bổ sung: {additionalFee.toLocaleString()}{' '}
+                                VNĐ đã được cộng vào hóa đơn
+                            </p>
+                        </div>
+                        <div className="bg-green-100 px-3 py-1 rounded-full">
+                            <span className="text-green-700 text-xs font-medium">
+                                Đã cộng phí
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        if (approvalStatus === 'REJECTED') {
+            return (
+                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl">
+                    <div className="flex items-center gap-3">
+                        <div className="w-6 h-6 bg-red-600 rounded-full flex items-center justify-center">
+                            <svg
+                                className="w-4 h-4 text-white"
+                                fill="currentColor"
+                                viewBox="0 0 20 20"
+                            >
+                                <path
+                                    fillRule="evenodd"
+                                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                                    clipRule="evenodd"
+                                />
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 className="font-semibold text-red-800">
+                                Yêu cầu check-in sớm đã bị từ chối
+                            </h4>
+                            <p className="text-red-600 text-sm">
+                                Vui lòng liên hệ khách sạn để biết thêm thông
+                                tin
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        if (approvalStatus === 'PENDING') {
+            return (
+                <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-xl">
+                    <div className="flex items-center gap-3">
+                        <div className="w-6 h-6 bg-yellow-500 rounded-full flex items-center justify-center">
+                            <svg
+                                className="w-4 h-4 text-white"
+                                fill="currentColor"
+                                viewBox="0 0 20 20"
+                            >
+                                <path
+                                    fillRule="evenodd"
+                                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                                    clipRule="evenodd"
+                                />
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 className="font-semibold text-yellow-800">
+                                Yêu cầu check-in sớm đang được xử lý
+                            </h4>
+                            <p className="text-yellow-600 text-sm">
+                                Chúng tôi sẽ thông báo kết quả trong thời gian
+                                sớm nhất
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        return null;
+    };
 
     if (loading) {
         return (
@@ -88,6 +312,9 @@ export default function BookingDetailPage() {
                     </button>
                 </div>
 
+                {/* NOTIFICATION */}
+                {renderNotification()}
+
                 {/* TITLE */}
                 <div className="flex justify-between items-center mb-8">
                     <div>
@@ -97,7 +324,7 @@ export default function BookingDetailPage() {
                         <p className="text-black/60">
                             ID:{' '}
                             <span className="font-mono font-semibold">
-                                {booking.bookingID}
+                                {booking.bookingID || 'Unknown ID'}
                             </span>
                         </p>
                     </div>
@@ -105,11 +332,12 @@ export default function BookingDetailPage() {
                     <span
                         className={`px-5 py-2 rounded-full text-sm font-semibold border-2 ${
                             statusColor[
-                                booking.status as keyof typeof statusColor
+                                (booking.status ||
+                                    'PENDING') as keyof typeof statusColor
                             ]
                         }`}
                     >
-                        {booking.status.replace('_', ' ')}
+                        {booking.status?.replace('_', ' ') || 'Unknown Status'}
                     </span>
                 </div>
 
@@ -128,19 +356,25 @@ export default function BookingDetailPage() {
                                     <strong className="min-w-[70px] text-black/70">
                                         Name
                                     </strong>
-                                    <span>{booking.customer.fullName}</span>
+                                    <span>
+                                        {booking.customer?.fullName || 'N/A'}
+                                    </span>
                                 </div>
                                 <div className="p-3 bg-[#F5F0EB] rounded-lg flex gap-3">
                                     <strong className="min-w-[70px] text-black/70">
                                         Phone
                                     </strong>
-                                    <span>{booking.customer.phone}</span>
+                                    <span>
+                                        {booking.customer?.phone || 'N/A'}
+                                    </span>
                                 </div>
                                 <div className="p-3 bg-[#F5F0EB] rounded-lg flex gap-3">
                                     <strong className="min-w-[70px] text-black/70">
                                         Email
                                     </strong>
-                                    <span>{booking.customer.email}</span>
+                                    <span>
+                                        {booking.customer?.email || 'N/A'}
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -155,10 +389,12 @@ export default function BookingDetailPage() {
                                         Check-in
                                     </p>
                                     <p className="text-lg font-bold text-black">
-                                        {booking.checkInDate.split('T')[0]}
+                                        {booking.checkInDate?.split('T')[0] ||
+                                            'N/A'}
                                     </p>
                                     <p className="text-sm font-semibold text-black">
-                                        {booking.checkInDate.split('T')[1]}
+                                        {booking.checkInDate?.split('T')[1] ||
+                                            'N/A'}
                                     </p>
                                 </div>
                                 <div className="bg-[#F5F0EB] p-4 rounded-xl">
@@ -166,17 +402,19 @@ export default function BookingDetailPage() {
                                         Check-out
                                     </p>
                                     <p className="text-lg font-bold text-black">
-                                        {booking.checkOutDate.split('T')[0]}
+                                        {booking.checkOutDate?.split('T')[0] ||
+                                            'N/A'}
                                     </p>
                                     <p className="text-sm font-semibold text-black">
-                                        {booking.checkOutDate.split('T')[1]}
+                                        {booking.checkOutDate?.split('T')[1] ||
+                                            'N/A'}
                                     </p>
                                 </div>
                             </div>
 
                             <div className="p-3 bg-[#F5F0EB] rounded-lg flex gap-2">
                                 <span className="font-semibold">
-                                    {booking.numberOfGuests} Guests
+                                    {booking.numberOfGuests || 0} Guests
                                 </span>
                             </div>
                         </div>
@@ -214,7 +452,6 @@ export default function BookingDetailPage() {
                                             </div>
                                         </div>
 
-                                        {/* IMAGES */}
                                         <div className="flex mt-3 gap-2 overflow-x-auto">
                                             {d.room.images
                                                 ?.slice(0, 3)
@@ -245,10 +482,26 @@ export default function BookingDetailPage() {
                                         Subtotal
                                     </span>
                                     <span>
-                                        {booking.totalAmount.toLocaleString()}{' '}
+                                        {booking.totalAmount?.toLocaleString() ||
+                                            '0'}{' '}
                                         VNĐ
                                     </span>
                                 </div>
+
+                                {/* Early Check-in Fee - Only show if approved */}
+                                {earlyCheckinRequest &&
+                                    earlyCheckinRequest.approvalStatus ===
+                                        'APPROVED' && (
+                                        <div className="flex justify-between">
+                                            <span className="text-white/70">
+                                                Early Check-in Fee
+                                            </span>
+                                            <span>
+                                                {earlyCheckinRequest.additionalFee.toLocaleString()}{' '}
+                                                VNĐ
+                                            </span>
+                                        </div>
+                                    )}
 
                                 <div className="flex justify-between">
                                     <span className="text-white/70">
@@ -256,7 +509,12 @@ export default function BookingDetailPage() {
                                     </span>
                                     <span>
                                         {(
-                                            booking.totalAmount * 0.1
+                                            ((booking.totalAmount || 0) +
+                                                (earlyCheckinRequest?.approvalStatus ===
+                                                'APPROVED'
+                                                    ? earlyCheckinRequest.additionalFee
+                                                    : 0)) *
+                                            0.1
                                         ).toLocaleString()}{' '}
                                         VNĐ
                                     </span>
@@ -268,9 +526,20 @@ export default function BookingDetailPage() {
                                     Total
                                 </span>
                                 <span className="text-2xl font-bold">
-                                    {(
-                                        booking.totalAmount * 1.1
-                                    ).toLocaleString()}{' '}
+                                    {(() => {
+                                        const subtotal =
+                                            booking.totalAmount || 0;
+                                        const earlyFee =
+                                            earlyCheckinRequest?.approvalStatus ===
+                                            'APPROVED'
+                                                ? earlyCheckinRequest.additionalFee
+                                                : 0;
+                                        const totalBeforeTax =
+                                            subtotal + earlyFee;
+                                        const totalWithTax =
+                                            totalBeforeTax * 1.1;
+                                        return totalWithTax.toLocaleString();
+                                    })()}{' '}
                                     VNĐ
                                 </span>
                             </div>
@@ -283,9 +552,9 @@ export default function BookingDetailPage() {
                             </h3>
 
                             <div className="space-y-3">
-                                <button className="w-full bg-black hover:bg-black/90 text-white py-3 rounded-xl">
-                                    Early Check-in
-                                </button>
+                                {/* ⭐ DYNAMIC EARLY CHECK-IN BUTTON */}
+                                {renderEarlyCheckinButton()}
+
                                 <button className="w-full bg-white border-2 border-black py-3 rounded-xl hover:bg-[#F5F0EB]">
                                     Late Check-out
                                 </button>
@@ -297,6 +566,71 @@ export default function BookingDetailPage() {
                     </div>
                 </div>
             </div>
+
+            {/* MODAL CHECK-IN SỚM */}
+            {showEarlyModal && (
+                <EarlyCheckinModal
+                    booking={booking}
+                    onClose={async () => {
+                        setShowEarlyModal(false);
+                        // Refresh early checkin status when modal closes (in case request was made)
+                        try {
+                            // Refresh booking data to get updated earlyCheckin field
+                            const updatedBooking = await getBookingById(id!);
+                            setBooking(updatedBooking);
+
+                            let earlyRequest = null;
+
+                            // 1. Kiểm tra trong booking object trước
+                            if (updatedBooking.earlyCheckin) {
+                                earlyRequest = {
+                                    requestID:
+                                        updatedBooking.earlyCheckin.requestID ||
+                                        'booking-' + id,
+                                    requestTime:
+                                        updatedBooking.earlyCheckin.requestTime,
+                                    approvalStatus:
+                                        updatedBooking.earlyCheckin
+                                            .approvalStatus,
+                                    additionalFee:
+                                        updatedBooking.earlyCheckin
+                                            .additionalFee,
+                                    requestDate:
+                                        updatedBooking.earlyCheckin.requestTime,
+                                    booking: updatedBooking,
+                                };
+                            }
+
+                            // 2. Nếu không có trong booking, tìm trong collection riêng
+                            if (!earlyRequest) {
+                                const earlyCheckins =
+                                    await getAllEarlyCheckins();
+
+                                // Đảm bảo earlyCheckins là array
+                                if (Array.isArray(earlyCheckins)) {
+                                    const matchingRequest = earlyCheckins.find(
+                                        (req: EarlyCheckinResponse) =>
+                                            req.booking?.bookingID === id,
+                                    );
+                                    earlyRequest = matchingRequest || null;
+                                } else {
+                                    console.warn(
+                                        'Early checkins is not an array:',
+                                        earlyCheckins,
+                                    );
+                                }
+                            }
+
+                            setEarlyCheckinRequest(earlyRequest);
+                        } catch (error) {
+                            console.error(
+                                'Error refreshing early checkin data:',
+                                error,
+                            );
+                        }
+                    }}
+                />
+            )}
         </div>
     );
 }

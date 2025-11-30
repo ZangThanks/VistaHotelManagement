@@ -1,5 +1,4 @@
-/* eslint-disable*/
-import { api } from "./apiClient";
+import {api} from "./apiClient";
 import type { Promotion } from "../types/Promotion";
 // import type { RoomTypePromotion } from "../types/RoomTypePromotion";
 

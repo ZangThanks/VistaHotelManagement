@@ -39,6 +39,7 @@ public class EarlyCheckin {
     @OneToOne
     @JsonIgnore
     @JoinColumn(name = "booking_id")
+    @JsonIgnore
     private Booking booking;
 
 }

@@ -420,6 +420,9 @@ const RoomManagement: React.FC = () => {
 
     const handleEditRoom = async (room: Room) => {
         try {
+            // Đóng modal chi tiết trước
+            setSelectedRoom(null);
+            
             // Lấy dữ liệu phòng đầy đủ từ API để có thông tin hoàn chỉnh
             const fullRoomData = await roomService.getRoomById(room.roomNumber);
             if (fullRoomData) {
@@ -581,12 +584,12 @@ const RoomManagement: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-[#f5f0eb] p-6">
-            <div className="max-w-[1600px] mx-auto space-y-6">
+            <div className="max-w-[1600px] mx-auto space-y-4">
                 {/* Header */}
                 <motion.div
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="flex items-center justify-between"
+                    className="flex items-center justify-between mt-[-30px]"
                 >
                     <div>
                         <h1 className="text-3xl font-bold text-gray-900">
