@@ -66,7 +66,8 @@ public class BookingController {
         return service.findAllByCustomer_Id(customerId);
     }
 
-    // http://localhost:8080/bookings/search?keyword=BKG001
+    
+    
     @GetMapping("/search")
     public List<Booking> searchBookings(@RequestParam(required = false) String keyword) {
         return service.searchBookings(keyword);

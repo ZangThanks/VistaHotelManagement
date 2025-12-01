@@ -23,6 +23,16 @@
     background-color: #9ca3af;
 }
 
+/* Hide scrollbar */
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+
 /* Google Icon Color */
 .btn-google svg {
     color: #4285f4;
@@ -98,7 +108,7 @@
     --color-text: #111111;
     --color-text-dark: #f9f9f9;
 
-    /* Font families - Modern & Elegant */
+    /* Font families */
     --font-sans: "Inter", system-ui, -apple-system, sans-serif;
     --font-playfair: "Playfair Display", Georgia, serif;
     --font-body: "Inter", system-ui, -apple-system, sans-serif;
@@ -221,16 +231,17 @@
         @apply absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-white text-xs;
     }
 }
+
 @layer utilities {
     .no-scrollbar::-webkit-scrollbar {
         display: none;
     }
-
     .no-scrollbar {
-        -ms-overflow-style: none; /* IE và Edge */
-        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none;
+        scrollbar-width: none;
     }
 }
+
 .custom-scrollbar::-webkit-scrollbar {
     width: 4px;
 }
@@ -248,4 +259,3 @@
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
     background: #b9aa92;
 }
-
