@@ -8,7 +8,7 @@ const HeaderHome: React.FC = () => {
         { label: 'About Us', path: '/contact' },
         { label: 'Accommodation', path: '/room' },
         { label: 'Services', path: '/services' },
-        { label: 'Events', path: '/news' },
+        { label: 'Events', path: '/newsPage' },
         { label: 'Exclusive Offers', path: '/customer/promotion/list' },
     ];
 

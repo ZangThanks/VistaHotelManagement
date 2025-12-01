@@ -20,6 +20,11 @@ public class ServiceController {
         return service.findAll();
     }
 
+    @GetMapping("/{id}")
+    public Service findById(@PathVariable String id) {
+        return service.findById(id);
+    }
+
     @GetMapping("/availability")
     public List<Service> findAllByAvailability(@RequestParam boolean availability) {
         return service.findAllByAvailability(availability);

@@ -1,6 +1,7 @@
 import { axiosInstance } from "../config/api";
 import { api } from "./apiClient";
 import type { Booking, RoomBooking } from "../types/Booking";
+import type { BookingDetail } from '../types/BookingDetail';
 
 const ENDPOINT = "/bookings";
 
@@ -25,12 +26,42 @@ export const getBookingById = async (id: string): Promise<Booking> => {
   }
 };
 
+export const getBookingDetailsById = async (
+  id: string
+): Promise<BookingDetail[]> => {
+  try {
+    const response = await api.get(`${ENDPOINT}/details/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching booking details ${id}:`, error);
+    throw error;
+  }
+};
+
 export const createBooking = async (booking: object): Promise<Booking> => {
   try {
     const response = await api.post(`${ENDPOINT}/save`, booking);
     return response.data;
   } catch (error) {
     console.error("Error creating booking:", error);
+    throw error;
+  }
+};
+
+export const saveBookingWithDetails = async (
+  booking: object,
+  bookingDetails: object[],
+  bookingServices: object[]
+): Promise<boolean> => {
+  try {
+    const response = await api.post(`${ENDPOINT}/save-booking`, {
+      booking,
+      bookingDetails,
+      bookingServices,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error saving booking with details:", error);
     throw error;
   }
 };
@@ -44,6 +75,18 @@ export const updateBooking = async (
     return response.data;
   } catch (error) {
     console.error(`Error updating booking ${id}:`, error);
+    throw error;
+  }
+};
+
+export const cancelBookingPayment = async (
+  bookingId: string
+): Promise<Booking> => {
+  try {
+    const response = await api.put(`${ENDPOINT}/cancel-payment/${bookingId}`);
+    return response.data;
+  } catch (error) {
+    console.error(`Error cancelling booking payment ${bookingId}:`, error);
     throw error;
   }
 };
@@ -154,12 +197,63 @@ export const generateQRPayment = async (
 //     throw error;
 //   }
 // };
+export const checkIn = async (bookingId: string): Promise<Booking> => {
+  try {
+    const response = await axiosInstance.put(
+      `${ENDPOINT}/${bookingId}/check-in`
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Check-in error:", error);
+    throw error;
+  }
+};
+
+//TODO: ĐỪNG XÓA, pls, OKE EM
+// export const checkOut = async (bookingId: string): Promise<Booking> => {
+//   try {
+//     const response = await axiosInstance.put(
+//       `${ENDPOINT}/${bookingId}/check-out`
+//     );
+//     return response.data;
+//   } catch (error) {
+//     console.error("Check-out error:", error);
+//     throw error;
+//   }
+// };
+// export const approveEarlyCheckin = async (
+//   bookingId: string,
+//   approve: boolean
+// ): Promise<Booking> => {
+//   try {
+//     const response = await axiosInstance.put(
+//       `${ENDPOINT}/${bookingId}/early-checkin/approve`,
+//       null,
+//       {
+//         params: { approve },
+//       }
+//     );
+//     return response.data;
+//   } catch (error) {
+//     console.error("Approve early check-in error:", error);
+//     throw error;
+//   }
+// };
+
+
+export const getByRoom = async (roomNumber: string) => {
+  const response = await api.get(`/bookings/room/${roomNumber}`);
+  return response.data;
+};
+
 
 export default {
   getAll,
   getBookingById,
+  getBookingDetailsById,
   createBooking,
   updateBooking,
   getAllRoomBookings,
   convertToRoomBooking,
+  getByRoom,
 };

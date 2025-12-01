@@ -37,6 +37,7 @@ public class EarlyCheckin {
     private LocalDateTime requestDate;
 
     @OneToOne
+    @JsonIgnore
     @JoinColumn(name = "booking_id")
     @JsonIgnore
     private Booking booking;

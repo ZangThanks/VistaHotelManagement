@@ -1,12 +1,15 @@
 package com.hotelvista.controller;
 
+import com.hotelvista.dto.BookingRequestDTO;
 import com.hotelvista.dto.PaymentWebhookDTO;
 import com.hotelvista.model.Booking;
 import com.hotelvista.model.BookingDetail;
 import com.hotelvista.model.Customer;
+import com.hotelvista.model.enums.BookingStatus;
 import com.hotelvista.model.enums.PaymentStatus;
 import com.hotelvista.service.BookingDetailService;
 import com.hotelvista.service.BookingService;
+import com.hotelvista.util.PaymentUtil;
 import com.hotelvista.util.QRGenerateUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -14,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -26,7 +30,7 @@ public class BookingController {
     private BookingService service;
 
     @Autowired
-    private BookingDetailService detailService;
+    private BookingDetailService bookingDetailService;
 
     @GetMapping("")
     public List<Booking> findAll() {
@@ -36,6 +40,11 @@ public class BookingController {
     @PostMapping("/save")
     public boolean save(@RequestBody Booking booking) {
         return service.save(booking);
+    }
+
+    @PostMapping("/save-booking")
+    public boolean saveBooking(@RequestBody BookingRequestDTO request) {
+        return service.saveBooking(request.getBooking(), request.getBookingDetails(), request.getBookingServices());
     }
 
     @PutMapping("/edit")
@@ -102,6 +111,36 @@ public class BookingController {
         return ResponseEntity.ok(qrImage);
     }
 
+    @DeleteMapping("/remove/{id}")
+    public boolean delete(@PathVariable("id") String id) {
+        return service.deleteById(id);
+    }
+
+    @PutMapping("/cancel-payment/{bookingId}")
+    public ResponseEntity<Booking> cancelBookingPayment(@PathVariable String bookingId) {
+        try {
+            Booking booking = service.findById(bookingId);
+            if (booking == null) {
+                return ResponseEntity.notFound().build();
+            }
+
+            booking.setPaymentStatus(PaymentStatus.CANCELLED);
+            booking.setStatus(BookingStatus.CANCELLED);
+            boolean saved = service.save(booking);
+
+            if (saved) {
+                System.out.println("Booking " + bookingId + " payment cancelled due to timeout");
+                return ResponseEntity.ok(booking);
+            } else {
+                return ResponseEntity.internalServerError().build();
+            }
+        } catch (Exception e) {
+            System.err.println("Error cancelling booking payment: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
     @PostMapping("/pay-callback")
     public ResponseEntity<String> handleSePayCallback(@RequestBody PaymentWebhookDTO data) {
         try {
@@ -129,10 +168,10 @@ public class BookingController {
             }
 
             // Lấy booking ID từ content or description
-            // Real format: "Qafmgq4306 SEPAY7974 1 108444155680-B2411250004-CHUYEN TIEN-OQCH00042LgQ-MOMO108444155680MOMO"
+            // Format: "Qafmgq4306 SEPAY7974 1 108444155680-B2411250004-CHUYEN TIEN-OQCH00042LgQ-MOMO108444155680MOMO"
             String content = data.getContent();
             String description = data.getDescription();
-            String bookingId = extractBookingId(content, description);
+            String bookingId = PaymentUtil.extractBookingId(content, description);
 
             if (bookingId == null || bookingId.isEmpty()) {
                 System.out.println("Rejected: Cannot extract booking ID");
@@ -143,28 +182,27 @@ public class BookingController {
 
             System.out.println("Extracted Booking ID: " + bookingId);
 
-            // Find booking by ID
             Booking booking = service.findById(bookingId);
             if (booking == null) {
                 System.out.println("Rejected: Booking not found with ID: " + bookingId);
                 return ResponseEntity.badRequest().body("Booking not found: " + bookingId);
             }
 
-            // Check if already paid
+            // Check nếu đã paid
             if (booking.getPaymentStatus() == PaymentStatus.PAID) {
                 System.out.println("Warning: Booking " + bookingId + " is already paid");
                 return ResponseEntity.ok("Booking already marked as paid");
             }
 
-            // Valid amount and determine status
+            // Xác định amount và status
             Customer customer = booking.getCustomer();
             double receivedAmount = data.getTransferAmount();
             double totalAmount = booking.getTotalAmount();
             
-            PaymentStatus newStatus = determinePaymentStatus(receivedAmount, totalAmount, customer);
+            PaymentStatus newStatus = PaymentUtil.determinePaymentStatus(receivedAmount, totalAmount, customer);
             
             // Log amount validation
-            double expectedAmount = calculateExpectedPaymentAmount(booking, customer);
+            double expectedAmount = PaymentUtil.calculateExpectedPaymentAmount(booking, customer);
             if (expectedAmount > 0 && Math.abs(receivedAmount - expectedAmount) > 0.01) {
                 System.out.println("Warning: Amount mismatch - Expected: " + expectedAmount + ", Received: " + receivedAmount);
             }
@@ -189,73 +227,13 @@ public class BookingController {
         }
     }
 
-    /**
-     * Trích booking ID từ payment content or description
-     * "Qafmgq4306  SEPAY7974 1  108449638088-B2411250005-CHUYEN TIEN..."
-     */
-    private String extractBookingId(String content, String description) {
-        // Try content first
-        String text = (content != null && !content.trim().isEmpty()) ? content : description;
-        if (text == null || text.trim().isEmpty()) {
-            return null;
-        }
-
-        System.out.println("Extracting booking ID from: " + text);
-
-        // Bank format: Look for booking ID pattern B + 10 digits
-        // Example: "Qafmgq4306  SEPAY7974 1  108449638088-B2411250005-CHUYEN TIEN..."
-        // Booking ID format: B[ddMMyy][sequence] e.g., B2411250005
-        
-        // Use regex to find booking ID pattern in the entire text
-        Pattern pattern = java.util.regex.Pattern.compile("B\\d{10}");
-        Matcher matcher = pattern.matcher(text);
-        
-        if (matcher.find()) {
-            String bookingId = matcher.group();
-            System.out.println("Extracted booking ID using regex pattern: " + bookingId);
-            return bookingId;
-        }
-        
-        System.out.println("No booking ID found in text");
-        return null;
+    @PutMapping("/{bookingId}/check-in")
+    public Booking checkIn(@PathVariable String bookingId) {
+        return service.checkIn(bookingId);
     }
 
-    /**
-     * Tính toán số tiền thanh toán dự kiến dự trên điểm uy tín (reputationScore) của khách hàng
-     */
-    private double calculateExpectedPaymentAmount(Booking booking, Customer customer) {
-        double totalAmount = booking.getTotalAmount();
-        int reputation = customer.getReputationPoint();
-        
-        if (reputation >= 0 && reputation <= 40) {
-            return totalAmount; // 100% prepayment
-        } else if (reputation > 40 && reputation <= 80) {
-            return totalAmount * 0.3; // 30% prepayment
-        } else {
-            // For high reputation (81-100), they can choose 0%, 50%, or 100%
-            // We can't know their choice here, so return 0 to skip validation
-            return 0;
-        }
-    }
-
-    /**
-     * Xác định payment status dựa trên số tiền đã thanh toán và tổng số tiền
-     */
-    private PaymentStatus determinePaymentStatus(double paidAmount, double totalAmount, Customer customer) {
-        if (paidAmount <= 0) {
-            return PaymentStatus.PENDING;
-        }
-        
-        double percentage = (paidAmount / totalAmount) * 100;
-        
-        if (percentage >= 99) { // Allow small tolerance
-            return PaymentStatus.PAID;
-        } else if (percentage >= 45 && percentage < 55) {
-            return PaymentStatus.PERCENTAGE_50;
-        } else if (percentage >= 25 && percentage < 35) {
-            return PaymentStatus.PERCENTAGE_30;
-        } else {
-            return PaymentStatus.PAID; // Any payment received marks as paid
-        }
+    @GetMapping("/overlapping-bookings/{roomNumber}")
+    public List<LocalDate> findOverlappingBookings(String roomNumber) {
+        return bookingDetailService.findOverlappingBookings(roomNumber);
     }
 }

@@ -7,6 +7,7 @@ import logoImage from "../../assets/images/logoWhite.png";
 import Button from "../../components/common/Button";
 import FloatingInput from "../../components/common/FloatingInput";
 import { validatePassword } from "../../utils/validators";
+import { changePassword, resetPassword } from "../../services/authService";
 
 const ResetPassword: React.FC = () => {
   const [newPassword, setNewPassword] = useState("");
@@ -21,20 +22,24 @@ const ResetPassword: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Check if user came from OTP verification
+  // Lấy thông tin từ Forgot Password
+  const state = (location.state as {
+    verified?: boolean;
+    identifier?: string; // email dùng để gửi email
+    otpCode?: string;
+  }) || { verified: false };
+
+  const emailFromForgot = state.identifier;
+
+  // Kiểm tra xem người dùng có đến từ xác minh OTP không
   useEffect(() => {
-    const state = location.state as {
-      verified?: boolean;
-      identifier?: string;
-      otpCode?: string;
-    } | null;
     if (!state?.verified) {
-      // Redirect back to forgot password if not verified
+      // Chuyển hướng trở lại quên mật khẩu nếu chưa được xác minh
       navigate("/auth/forgot-password", { replace: true });
     }
   }, [location, navigate]);
 
-  // Real-time validation cho new password
+  // Real-time validation cho mật khẩu mới
   const handleNewPasswordChange = (value: string) => {
     setNewPassword(value);
     if (value) {
@@ -42,7 +47,7 @@ const ResetPassword: React.FC = () => {
       setNewPasswordError(error);
       setNewPasswordSuccess(!error);
 
-      // Re-validate confirm password if it has value
+      // Xác thực lại mật khẩu nếu nó có giá trị
       if (confirmPassword) {
         if (value !== confirmPassword) {
           setConfirmPasswordError("Mật khẩu xác nhận không khớp");
@@ -93,18 +98,37 @@ const ResetPassword: React.FC = () => {
       return;
     }
 
+    // Không có email từ flow quên mật khẩu → cho quay về
+    if (!emailFromForgot) {
+      alert(
+        "Không tìm thấy thông tin email để đặt lại mật khẩu. Vui lòng thử lại."
+      );
+      navigate("/auth/forgot-password", { replace: true });
+      return;
+    }
+
     setLoading(true);
 
-    // TODO: Call API to reset password
-    setTimeout(() => {
+    try {
+      // Gọi API reset-password (flow quên mật khẩu)
+      const result = await resetPassword(emailFromForgot, newPassword);
+
+      if (!result.success) {
+        throw new Error(result.message);
+      }
+
       setLoading(false);
       setShowSuccess(true);
 
-      // Redirect to login after 3 seconds
+      // Redirect về login
       setTimeout(() => {
         navigate("/auth/login");
-      }, 3000);
-    }, 1500);
+      }, 2500);
+    } catch (error: any) {
+      console.error("Reset password failed:", error);
+      setLoading(false);
+      alert(error?.message || "Không thể đặt lại mật khẩu. Vui lòng thử lại.");
+    }
   };
 
   // Password strength indicator

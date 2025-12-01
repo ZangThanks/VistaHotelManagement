@@ -1,8 +1,11 @@
 package com.hotelvista.repository;
 
 import com.hotelvista.model.Customer;
+import com.hotelvista.model.enums.Gender;
+import com.hotelvista.model.enums.MemberShipLevel;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -51,5 +54,24 @@ public interface CustomerRepository extends JpaRepository<Customer, String> {
      */
     @Query("SELECT c FROM Customer c WHERE c.id LIKE ?1% ORDER BY c.id DESC LIMIT 1")
     Customer findLastCustomerIdOfDay(String prefix);
+
+    /**
+     * Tìm kiếm khách hàng theo tiêu chí phân phối
+     * Tất cả các tham số đều tùy chọn (có thể để giá trị null)
+     */
+    @Query("""
+    SELECT c FROM Customer c 
+    WHERE (:memberShipLevels IS NULL OR c.memberShipLevel IN :memberShipLevels)
+      AND (:genders IS NULL OR c.gender IN :genders)
+      AND (:birthMonths IS NULL OR MONTH(c.birthDate) IN :birthMonths)
+      AND (:minLoyaltyPoints IS NULL OR c.loyaltyPoints >= :minLoyaltyPoints)
+    """)
+    List<Customer> findCustomersByCriteria(
+            @Param("memberShipLevels") List<MemberShipLevel> memberShipLevels,
+            @Param("genders") List<Gender> genders,
+            @Param("birthMonths") List<Integer> birthMonths,
+            @Param("minLoyaltyPoints") Integer minLoyaltyPoints
+    );
+
 
 }

@@ -2,6 +2,7 @@ package com.hotelvista.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hotelvista.model.enums.BookingStatus;
+import com.hotelvista.model.enums.BookingType;
 import com.hotelvista.model.enums.InvoiceType;
 import com.hotelvista.model.enums.PaymentStatus;
 import jakarta.persistence.*;
@@ -28,6 +29,12 @@ public class Booking {
 
     @Column(name = "check_out_date")
     private LocalDateTime checkOutDate;
+
+    @Column(name = "actual_check_in_time")
+    private LocalDateTime actualCheckInTime;
+
+    @Column(name = "actual_check_out_time")
+    private LocalDateTime actualCheckoutTime;
 
     @Column(name = "number_of_guests")
     private Integer numberOfGuests;
@@ -74,20 +81,24 @@ public class Booking {
     private Employee employee;
 
     @ToString.Exclude
-    @OneToMany(mappedBy = "booking")
+    @JsonIgnore
+    @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BookingDetail> bookingDetails;
 
     @ToString.Exclude
     @JsonIgnore
-    @OneToMany(mappedBy = "booking")
+    @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BookingService> bookingServices;
 
     @ToString.Exclude
     @JsonIgnore
-    @OneToMany(mappedBy = "booking")
+    @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MaintenanceRequest> maintenanceRequests;
 
     @OneToOne(mappedBy = "booking")
     @ToString.Exclude
     private EarlyCheckin earlyCheckin;
+
+    @Enumerated(EnumType.STRING)
+    private BookingType type;
 }

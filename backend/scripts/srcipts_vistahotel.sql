@@ -279,11 +279,11 @@ VALUES ('BOOK001', '2024-06-01 09:00:00', NULL, '2024-06-10 14:00:00', '2024-06-
         2, 'Deluxe', 'REFUNDED', 'Hủy phòng do việc đột xuất', 'CANCELLED', 0, 0, 'CUST004', 'EMP005');
 
 -- BOOKING DETAILS
-INSERT INTO booking_details (room_price, booking_id, room_id, review_id)
-VALUES (900000, 'BOOK001', 'STD101', 'REVIEW001'),
-       (1500000, 'BOOK002', 'DLX201', 'REVIEW002'),
-       (3000000, 'BOOK003', 'STE301', NULL),
-       (1500000, 'BOOK004', 'DLX202', NULL);
+INSERT INTO booking_details (room_price, booking_id, room_number, review_id) VALUES
+(900000, 'BOOK001', 'STD101', 'REVIEW001'),
+(1500000, 'BOOK002', 'DLX201', 'REVIEW002'),
+(3000000, 'BOOK003', 'STE301', NULL),
+(1500000, 'BOOK004', 'DLX202', NULL);
 -- BOOKING SERVICES
 INSERT INTO booking_services (quantity, service_price, total_amount, booking_id, service_id)
 VALUES (2, 80000, 160000, 'BOOK001', 'SV001'),
