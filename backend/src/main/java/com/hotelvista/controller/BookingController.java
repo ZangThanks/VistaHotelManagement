@@ -20,8 +20,6 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @RestController
 @RequestMapping("/bookings")
@@ -233,7 +231,7 @@ public class BookingController {
     }
 
     @GetMapping("/overlapping-bookings/{roomNumber}")
-    public List<LocalDate> findOverlappingBookings(String roomNumber) {
+    public List<LocalDateTime> findOverlappingBookings(@PathVariable("roomNumber") String roomNumber) {
         return bookingDetailService.findOverlappingBookings(roomNumber);
     }
 }

@@ -34,18 +34,18 @@ public class BookingDetailService {
     }
 
     @Transactional(readOnly = true)
-    public List<LocalDate> findOverlappingBookings(String roomNumber) {
+    public List<LocalDateTime> findOverlappingBookings(String roomNumber) {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime end = now.plusMonths(6); //check trong 6 tháng tới
 
         List<BookingDetail> list = repo.findOverlappingBookings(roomNumber, now, end);
 
-        List<LocalDate> disabledDates = list.stream().flatMap(bd -> {
-            LocalDate checkIn = bd.getBooking().getCheckInDate().toLocalDate();
-            LocalDate checkOut = bd.getBooking().getCheckOutDate().toLocalDate();
+        return list.stream().flatMap(bd -> {
+            LocalDateTime checkIn = bd.getBooking().getCheckInDate();
+            LocalDateTime checkOut = bd.getBooking().getCheckOutDate();
 
-            return checkIn.datesUntil(checkOut.plusDays(1));
+            //return checkIn.datesUntil(checkOut.plusDays(1)); LocalDate
+            return Stream.iterate(checkIn, d -> d.isBefore(checkOut), d -> d.plusDays(1)); //LocalDateTime
         }).toList();
-        return disabledDates;
     }
 }
