@@ -2,11 +2,13 @@ package com.hotelvista.controller;
 
 import com.hotelvista.dto.LoginRequest;
 import com.hotelvista.dto.RegisterRequest;
+import com.hotelvista.model.CartBean;
 import com.hotelvista.model.Customer;
 import com.hotelvista.model.enums.Gender;
 import com.hotelvista.model.enums.MemberShipLevel;
 import com.hotelvista.model.enums.UserRole;
 import com.hotelvista.security.JwtTokenProvider;
+import com.hotelvista.service.CartBeanService;
 import com.hotelvista.service.CustomerService;
 import com.hotelvista.util.GenerateIDUtil;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +29,7 @@ import java.util.Map;
 public class AuthController {
 
     private final CustomerService service;
+    private final CartBeanService cartBeanService;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
 
@@ -84,6 +87,13 @@ public class AuthController {
         c.setPassword(encodedPassword);
 
         // Lưu vào Database
+        service.save(c);
+
+        CartBean cartBean = new CartBean();
+        cartBean.setCustomer(c);
+        cartBeanService.save(cartBean);
+
+        c.setCartBean(cartBean);
         service.save(c);
 
         // Trả về Response
