@@ -34,6 +34,9 @@ public class UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private UserRepository userRepository;
+
     /**
      * Tìm user bằng email hoặc phone, áp dụng cho Customer + Admin + Employee
      */
@@ -63,16 +66,6 @@ public class UserService {
         }
 
         return null;
-    }
-
-    public User findById(String id) {
-        User u = customerRepo.findById(id).orElse(null);
-        if (u != null) return u;
-
-        u = adminRepo.findById(id).orElse(null);
-        if (u != null) return u;
-
-        return employeeRepo.findById(id).orElse(null);
     }
 
     public boolean resetPasswordByEmail(String email, String newPassword) {
@@ -122,5 +115,9 @@ public class UserService {
 
         customerRepo.save(c);
         return c;
+    }
+
+    public Optional<User> findById(String userId) {
+        return userRepository.findById(userId);
     }
 }
