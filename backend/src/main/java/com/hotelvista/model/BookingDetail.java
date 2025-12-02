@@ -27,10 +27,8 @@ public class BookingDetail {
     @Column(name = "room_price")
     private Double roomPrice;
 
-    @ToString.Exclude
     @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "review_id")
-    @JsonIgnore
     private Review review;
 
     @EqualsAndHashCode

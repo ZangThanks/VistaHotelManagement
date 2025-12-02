@@ -25,6 +25,12 @@ public class BookingDetailService {
         return repo.findAll();
     }
 
+    public BookingDetail findById(BookingDetail.BookingDetailId id) {
+
+
+        return repo.findById(id).orElse(null);
+    }
+
     public boolean save(BookingDetail bookingDetail) {
         return repo.save(bookingDetail) != null;
     }

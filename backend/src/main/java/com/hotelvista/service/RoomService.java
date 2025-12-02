@@ -20,6 +20,10 @@ public class RoomService {
         this.roomRepo = repo;
     }
 
+    public Room findById(String id) {
+        return roomRepo.findById(id).orElse(null);
+    }
+
     /**
      * get danh sách tất cả các phòng
      *

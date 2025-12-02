@@ -21,4 +21,11 @@ public interface ReviewRepository extends JpaRepository<Review, String> {
             """, nativeQuery = true)
     List<Review> getReviewByRoomID(String roomID);
 
+    /**
+     * Tìm số thứ tự lớn nhất của booking trong ngày hôm nay
+     * @param todayPrefix
+     * @return
+     */
+    @Query("SELECT MAX(CAST(SUBSTRING(r.reviewID, 8) AS int)) FROM Review r WHERE r.reviewID LIKE CONCAT(:todayPrefix, '%')")
+    Integer findMaxSequenceForToday(@Param("todayPrefix") String todayPrefix);
 }
