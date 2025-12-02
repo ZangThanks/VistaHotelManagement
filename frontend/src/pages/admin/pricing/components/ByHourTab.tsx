@@ -340,7 +340,7 @@ export default function ByHourTab() {
 
             {/* Main Content Card */}
             <Card className="shadow-sm border-0 ">
-                <CardHeader className="border-b bg-gray-50/50 px-6 py-4 rounded-t-2xl">
+                <CardHeader className=" bg-gray-50/50 px-6 py-4 rounded-t-2xl">
                     <CardTitle className="text-lg font-medium text-gray-900">
                         Policy List
                     </CardTitle>
@@ -370,7 +370,7 @@ export default function ByHourTab() {
                         <div className="overflow-x-auto">
                             <Table>
                                 <TableHeader>
-                                    <TableRow className="bg-gray-50/50">
+                                    <TableRow className="bg-[color:var(--color-secondary)]/25 ">
                                         <TableHead className="py-4 px-6 text-sm font-semibold text-gray-700">
                                             Policy Name
                                         </TableHead>
@@ -390,7 +390,7 @@ export default function ByHourTab() {
                                     {policies.map((policy) => (
                                         <TableRow
                                             key={policy.id}
-                                            className="border-b hover:bg-gray-50/50 transition-colors"
+                                            className=" border-b hover:bg-gray-50/50 transition-colors"
                                         >
                                             <TableCell className="py-4 px-6">
                                                 <span className="font-semibold text-gray-900 text-[15px]">
@@ -480,7 +480,7 @@ export default function ByHourTab() {
                     <div className="overflow-x-auto w-full">
                         <table className="w-full text-left">
                             <thead>
-                                <tr className=" border-b border-gray-200 justify-around w-full">
+                                <tr className="bg-[color:var(--color-secondary)]/25 border-b">
                                     <th className="py-3 px-4 text-sm font-medium text-gray-700">
                                         Hours
                                     </th>

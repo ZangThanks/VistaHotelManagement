@@ -56,6 +56,22 @@ public interface BookingRepository extends JpaRepository<Booking, String> {
             "WHERE bd.room.roomNumber = :roomNumber")
     List<Booking> findAllByRoom_RoomNumber(@Param("roomNumber") String roomNumber);
 
+    /**
+     * Tìm bookings theo khoảng ngày check-in
+     * @param startDate
+     * @param endDate
+     * @return
+     */
+    List<Booking> findAllByCheckInDateBetween(LocalDateTime startDate, LocalDateTime endDate);
+
+    /**
+     * Tìm booking theo ngày check-out
+     * @param startDate
+     * @param endDate
+     * @return
+     */
+    List<Booking> findAllByCheckOutDateBetween(LocalDateTime startDate, LocalDateTime endDate);
+
     @Query("SELECT CASE WHEN COUNT(bd) > 0 THEN true ELSE false END " +
             "FROM BookingDetail bd " +
             "JOIN bd.room r " +

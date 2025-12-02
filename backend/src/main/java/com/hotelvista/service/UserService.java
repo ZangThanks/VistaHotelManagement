@@ -11,12 +11,14 @@ import com.hotelvista.repository.AdminRepository;
 import com.hotelvista.repository.CustomerRepository;
 import com.hotelvista.repository.EmployeeRepository;
 import com.hotelvista.util.GenerateIDUtil;
+import com.hotelvista.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.UUID;
+import java.util.Optional;
 
 @Service
 public class UserService {

@@ -187,4 +187,11 @@ public class BookingService {
         return repo.save(booking);
     }
 
+    public List<Booking> findAllByCheckInDateBetween(LocalDateTime startDate, LocalDateTime endDate) {
+        return repo.findAllByCheckInDateBetween(startDate, endDate);
+    }
+
+    public List<Booking> findAllByCheckOutDateBetween(LocalDateTime startDate, LocalDateTime endDate) {
+        return repo.findAllByCheckOutDateBetween(startDate, endDate);
+    }
 }

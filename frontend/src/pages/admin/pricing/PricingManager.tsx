@@ -422,7 +422,7 @@ export default function PricingManager() {
         }
     }
 
-    function roomSelectionLabel() {
+    function roomSelectionLabel(): string {
         const cur = newSeason.roomTypes ?? [];
         if (cur.length === 0) return 'Select room types';
         if (cur.includes('ALL')) return 'All room types';
@@ -431,15 +431,15 @@ export default function PricingManager() {
             (r) => String(r.roomTypeID ?? r.id ?? r.typeId) === cur[0],
         );
         const firstLabel = first
-            ? first.typeName ?? first.name ?? cur[0]
-            : cur[0];
+            ? String(first.typeName ?? first.name ?? cur[0])
+            : String(cur[0]);
         return cur.length === 1
             ? firstLabel
             : `${firstLabel} +${cur.length - 1} more`;
     }
 
     // helper: map season.roomTypes (ids) -> readable labels
-    function getSeasonRoomLabels(s: SeasonPrice) {
+    function getSeasonRoomLabels(s: SeasonPrice): string[] {
         const ids = s.roomTypes ?? [];
 
         if (ids.length === 0) {
@@ -447,12 +447,12 @@ export default function PricingManager() {
         }
 
         // Map room type IDs to readable labels
-        const labels = ids.map((rid) => {
+        const labels: string[] = ids.map((rid) => {
             const rt = roomTypes.find(
                 (r) => String(r.roomTypeID ?? r.id ?? r.typeId) === String(rid),
             );
             const label = rt
-                ? rt.typeName ?? rt.name ?? String(rid)
+                ? String(rt.typeName ?? rt.name ?? rid)
                 : String(rid);
             return label;
         });

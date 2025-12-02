@@ -4,27 +4,27 @@ import { FaCheck, FaEye } from "react-icons/fa";
 import type { Booking } from "../../types/Booking";
 import { checkIn } from "../../services/bookingService";
 
-const formatCheckInTime = (dateString) => {
+const formatCheckInTime = (dateString: string | undefined): string => {
   if (!dateString) return "N/A";
   const date = new Date(dateString);
   return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 };
 
 // Khung uy tín
-const getTrustScore = (loyaltyPoints) => {
+const getTrustScore = (loyaltyPoints: number | undefined) => {
   if (!loyaltyPoints) return { value: 50, level: "medium" };
   if (loyaltyPoints >= 10000) return { value: 85, level: "high" };
   if (loyaltyPoints >= 5000) return { value: 65, level: "medium" };
   return { value: 40, level: "low" };
 };
 
-const getStatus = (status) => {
+const getStatus = (status: string): string => {
   if (status === "CHECKED_IN") return "completed";
   if (status === "CHECKED_OUT") return "completed";
   return "pending";
 };
 
-const getPaymentStatus = (status) => {
+const getPaymentStatus = (status: string) => {
   switch (status) {
     case "COMPLETED":
       return { type: "complete", label: "Paid in Full" };
@@ -37,7 +37,7 @@ const getPaymentStatus = (status) => {
   }
 };
 
-const handleCheckIn = async (bookingId: string, originalBooking) => {
+const handleCheckIn = async (bookingId: string, originalBooking: any) => {
   if (
     !window.confirm(
       `Are you sure you want to check in guest: ${originalBooking.guest.name}?`
@@ -66,7 +66,7 @@ const handleCheckIn = async (bookingId: string, originalBooking) => {
 };
 
 // Check ngày check-in
-const isToday = (dateString) => {
+const isToday = (dateString: string | undefined): boolean => {
   if (!dateString) return false;
   const checkInDate = new Date(dateString);
   const today = new Date();
@@ -78,7 +78,12 @@ const isToday = (dateString) => {
   );
 };
 
-function TodayTab({ onViewDetails, bookings = [] }) {
+interface TodayTabProps {
+  onViewDetails: (booking: any) => void;
+  bookings?: Booking[];
+}
+
+function TodayTab({ onViewDetails, bookings = [] }: TodayTabProps) {
   const filteredBookings = bookings.filter((booking) =>
     isToday(booking.checkInDate)
   );
@@ -105,8 +110,8 @@ function TodayTab({ onViewDetails, bookings = [] }) {
         : ["checkin", "view"],
   }));
 
-  const renderStatusBadge = (status) => {
-    const statusClasses = {
+  const renderStatusBadge = (status: string) => {
+    const statusClasses: { [key: string]: string } = {
       pending: "bg-amber-50 text-amber-700",
       completed: "bg-green-50 text-green-700",
       upcoming: "bg-blue-50 text-blue-700",
@@ -121,8 +126,8 @@ function TodayTab({ onViewDetails, bookings = [] }) {
     );
   };
 
-  const renderTrustScore = (score) => {
-    const scoreClasses = {
+  const renderTrustScore = (score: { value: number; level: string }) => {
+    const scoreClasses: { [key: string]: string } = {
       high: "bg-green-50 text-green-700 border-green-200",
       medium: "bg-amber-50 text-amber-700 border-amber-200",
       low: "bg-red-50 text-red-700 border-red-200",
@@ -142,8 +147,8 @@ function TodayTab({ onViewDetails, bookings = [] }) {
     );
   };
 
-  const renderPaymentBadge = (payment) => {
-    const paymentClasses = {
+  const renderPaymentBadge = (payment: { type: string; label: string }) => {
+    const paymentClasses: { [key: string]: string } = {
       complete: "bg-green-50 text-green-700",
       partial: "bg-amber-50 text-amber-700",
       checkout: "bg-purple-50 text-purple-700",
@@ -216,22 +221,25 @@ function TodayTab({ onViewDetails, bookings = [] }) {
               </td>
               <td className="py-4 px-4">
                 <div className="flex gap-1">
-                  {booking.status !== "CHECKED_IN" && (
+                  {booking.status === "PENDING" && (
+                    // handleCheckIn(booking.id, booking)
                     <button
                       title="Check In"
-                      onClick={() => handleCheckIn(booking.id, booking)}
+                      onClick={() => onViewDetails(booking)}
                       className="w-8 h-8 rounded-full bg-green-100 hover:bg-green-200 text-green-700 transition flex items-center justify-center"
                     >
                       <FaCheck size={14} />
                     </button>
                   )}
-                  <button
-                    title="View Details"
-                    className="w-8 h-8 rounded-full bg-[#F5F0EB] hover:bg-[#EBE3D7] transition flex items-center justify-center"
-                    onClick={() => onViewDetails(booking)}
-                  >
-                    <FaEye size={14} />
-                  </button>
+                  {booking.status !== "PENDING" && (
+                    <button
+                      title="View Details"
+                      className="w-8 h-8 rounded-full bg-[#F5F0EB] hover:bg-[#EBE3D7] transition flex items-center justify-center"
+                      onClick={() => onViewDetails(booking)}
+                    >
+                      <FaEye size={14} />
+                    </button>
+                  )}
                 </div>
               </td>
             </tr>

@@ -20,6 +20,7 @@ import {
 } from '../../../../../../frontend/src/components/Table';
 import type { JSX } from 'react/jsx-runtime';
 import { CiEdit } from 'react-icons/ci';
+import Dropdown from '../../../../components/Dropdown';
 
 type Props = {
     seasonLoading: boolean;
@@ -288,33 +289,28 @@ const SeasonalTab: FC<Props> = (props) => {
                                 <label className="block text-xs font-medium text-gray-700 mb-1.5">
                                     Filter by room type
                                 </label>
-                                <select
-                                    value={filterRoomType}
-                                    onChange={(e) =>
-                                        setFilterRoomType(e.target.value)
-                                    }
-                                    className="w-full h-10 px-3 border border-gray-300 rounded-md text-sm"
-                                >
-                                    <option value="">All room types</option>
-                                    <option value="ALL">Applied to all</option>
-                                    {roomTypes.map((rt) => (
-                                        <option
-                                            key={String(
+                                <Dropdown
+                                    options={[
+                                        { value: '', label: 'All room types' },
+                                        {
+                                            value: 'ALL',
+                                            label: 'Applied to all',
+                                        },
+                                        ...roomTypes.map((rt) => ({
+                                            value: String(
                                                 rt.roomTypeID ??
                                                     rt.id ??
                                                     rt.typeId ??
                                                     '',
-                                            )}
-                                            value={String(
-                                                rt.roomTypeID ??
-                                                    rt.id ??
-                                                    rt.typeId,
-                                            )}
-                                        >
-                                            {rt.typeName}
-                                        </option>
-                                    ))}
-                                </select>
+                                            ),
+                                            label: rt.typeName ?? '',
+                                        })),
+                                    ]}
+                                    value={filterRoomType}
+                                    onChange={(val) => setFilterRoomType(val)}
+                                    placeholder="All room types"
+                                    className="w-full"
+                                />
                             </div>
                         </div>
 
@@ -467,7 +463,6 @@ const SeasonalTab: FC<Props> = (props) => {
                                                 <TableCell className="py-4 px-6">
                                                     <div className="flex items-center justify-center gap-2">
                                                         <Button
-                                                            
                                                             size="sm"
                                                             onClick={() =>
                                                                 openEditModal(s)

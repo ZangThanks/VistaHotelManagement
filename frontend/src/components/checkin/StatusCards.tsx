@@ -18,9 +18,8 @@ const StatusCards: React.FC<StatusCardsProps> = ({ bookings = [] }) => {
     };
 
     // totalToday: checkInDate là hôm nay và status là CHECKED_IN
-    const totalToday = bookings.filter(
-      (booking) =>
-        isToday(booking.checkInDate) && booking.status === "CHECKED_IN"
+    const totalToday = bookings.filter((booking) =>
+      isToday(booking.checkInDate)
     ).length;
 
     // completedCheckins: status = CHECKED_OUT và checkInDate là hôm nay
