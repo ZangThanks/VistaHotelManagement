@@ -1,19 +1,16 @@
-import { api } from "./apiClient";
-import type { RoomType } from "../types/RoomType";
+import type { RoomType } from '../types/RoomType';
+import { api } from './apiClient';
 
-const ENDPOINT = "/room-types";
+const ENDPOINT = '/room-types';
 
-/**
- * Get all room types
- */
-export const getAllRoomTypes = async (): Promise<RoomType[]> => {
-  try {
-    const response = await api.get(ENDPOINT);
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching room types:", error);
-    throw error;
-  }
+export const getAllRoomTypes = async () => {
+    try {
+        const response = await api.get(ENDPOINT);
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching room types:', error);
+        throw error;
+    }
 };
 
 /**

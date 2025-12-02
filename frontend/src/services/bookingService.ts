@@ -24,6 +24,7 @@ export const getBookingById = async (id: string): Promise<Booking> => {
     throw error;
   }
 };
+
 export const getBookingDetailsById = async (
   id: string
 ): Promise<BookingDetail[]> => {
