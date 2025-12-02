@@ -142,21 +142,16 @@ const IncidentManagement: React.FC = () => {
     return (
         <div className="min-h-screen bg-gray-50">
             {/* Header */}
-            <div className="bg-white border-b border-gray-200 shadow-sm">
+            <div className="bg-white border-b border-gray-200">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
                     <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="p-3 bg-[#CCBDA3] bg-opacity-10 rounded-xl">
-                                <AlertTriangle className="w-7 h-7 text-[#CCBDA3]" />
-                            </div>
-                            <div>
-                                <h1 className="text-2xl font-bold text-gray-900">
-                                    Quản lý sự cố
-                                </h1>
-                                <p className="text-sm text-gray-500 mt-1">
-                                    Xem và xử lý báo cáo sự cố từ khách hàng
-                                </p>
-                            </div>
+                        <div>
+                            <h1 className="text-3xl font-bold text-gray-800">
+                                Incidents
+                            </h1>
+                            <p className="text-gray-600 mt-1">
+                                View and handle incident reports from customers
+                            </p>
                         </div>
                         <button
                             onClick={loadIncidents}
@@ -168,7 +163,7 @@ const IncidentManagement: React.FC = () => {
                                     isLoading ? 'animate-spin' : ''
                                 }`}
                             />
-                            Làm mới
+                            Refresh
                         </button>
                     </div>
                 </div>
@@ -181,7 +176,7 @@ const IncidentManagement: React.FC = () => {
                         <div className="flex items-center justify-between">
                             <div>
                                 <p className="text-sm text-gray-500 mb-1">
-                                    Tổng số sự cố
+                                    Total Incidents
                                 </p>
                                 <p className="text-2xl font-bold text-gray-900">
                                     {stats.total}
@@ -197,7 +192,7 @@ const IncidentManagement: React.FC = () => {
                         <div className="flex items-center justify-between">
                             <div>
                                 <p className="text-sm text-gray-500 mb-1">
-                                    Chờ xử lý
+                                    Pending
                                 </p>
                                 <p className="text-2xl font-bold text-yellow-600">
                                     {stats.pending}
@@ -213,7 +208,7 @@ const IncidentManagement: React.FC = () => {
                         <div className="flex items-center justify-between">
                             <div>
                                 <p className="text-sm text-gray-500 mb-1">
-                                    Đã hoàn thành
+                                    Completed
                                 </p>
                                 <p className="text-2xl font-bold text-green-600">
                                     {stats.completed}
@@ -229,7 +224,7 @@ const IncidentManagement: React.FC = () => {
                         <div className="flex items-center justify-between">
                             <div>
                                 <p className="text-sm text-gray-500 mb-1">
-                                    Thất bại
+                                    Failed
                                 </p>
                                 <p className="text-2xl font-bold text-red-600">
                                     {stats.failed}
@@ -250,7 +245,7 @@ const IncidentManagement: React.FC = () => {
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                             <input
                                 type="text"
-                                placeholder="Tìm kiếm theo mã, tiêu đề, khách hàng..."
+                                placeholder="Search by code, title, customer..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#CCBDA3] focus:border-transparent"
@@ -271,10 +266,10 @@ const IncidentManagement: React.FC = () => {
                                 }
                                 className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#CCBDA3] focus:border-transparent"
                             >
-                                <option value="ALL">Tất cả trạng thái</option>
-                                <option value="PENDING">Chờ xử lý</option>
-                                <option value="COMPLETED">Đã hoàn thành</option>
-                                <option value="FAILED">Thất bại</option>
+                                <option value="ALL">All Status</option>
+                                <option value="PENDING">Pending</option>
+                                <option value="COMPLETED">Completed</option>
+                                <option value="FAILED">Failed</option>
                             </select>
                         </div>
 
@@ -284,12 +279,12 @@ const IncidentManagement: React.FC = () => {
                             onChange={(e) => setPriorityFilter(e.target.value)}
                             className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#CCBDA3] focus:border-transparent"
                         >
-                            <option value="ALL">Tất cả độ ưu tiên</option>
-                            <option value="CRITICAL">Khẩn cấp</option>
-                            <option value="URGENT">Gấp</option>
-                            <option value="HIGH">Cao</option>
-                            <option value="MEDIUM">Trung bình</option>
-                            <option value="LOW">Thấp</option>
+                            <option value="ALL">All Priority</option>
+                            <option value="CRITICAL">Critical</option>
+                            <option value="URGENT">Urgent</option>
+                            <option value="HIGH">High</option>
+                            <option value="MEDIUM">Medium</option>
+                            <option value="LOW">Low</option>
                         </select>
                     </div>
                 </div>
@@ -299,7 +294,7 @@ const IncidentManagement: React.FC = () => {
                     <div className="flex items-center justify-center py-12 bg-white rounded-lg shadow-sm">
                         <div className="text-center">
                             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#CCBDA3] mx-auto"></div>
-                            <p className="mt-4 text-gray-500">Đang tải...</p>
+                            <p className="mt-4 text-gray-500">Loading...</p>
                         </div>
                     </div>
                 ) : filteredIncidents.length === 0 ? (
@@ -309,8 +304,8 @@ const IncidentManagement: React.FC = () => {
                             {searchTerm ||
                             statusFilter !== 'ALL' ||
                             priorityFilter !== 'ALL'
-                                ? 'Không tìm thấy sự cố nào phù hợp'
-                                : 'Chưa có báo cáo sự cố nào'}
+                                ? 'No matching incidents found'
+                                : 'No incident reports yet'}
                         </p>
                     </div>
                 ) : (
@@ -320,28 +315,28 @@ const IncidentManagement: React.FC = () => {
                                 <thead className="bg-gray-50 border-b border-gray-200">
                                     <tr>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[180px]">
-                                            Mã sự cố
+                                            Incident Code
                                         </th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Khách hàng
+                                            Customer
                                         </th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[350px]">
-                                            Tiêu đề
+                                            Title
                                         </th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Hình ảnh
+                                            Image
                                         </th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Độ ưu tiên
+                                            Priority
                                         </th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Trạng thái
+                                            Status
                                         </th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Ngày báo cáo
+                                            Report Date
                                         </th>
                                         <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Thao tác
+                                            Action
                                         </th>
                                     </tr>
                                 </thead>
@@ -377,7 +372,7 @@ const IncidentManagement: React.FC = () => {
                                                 {incident.assignedTo && (
                                                     <div className="flex items-center gap-1 mt-1">
                                                         <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">
-                                                            💬 Đã phản hồi
+                                                            💬 Responded
                                                         </span>
                                                     </div>
                                                 )}
@@ -400,7 +395,7 @@ const IncidentManagement: React.FC = () => {
                                                     </a>
                                                 ) : (
                                                     <span className="text-xs text-gray-400 italic">
-                                                        Không có ảnh
+                                                        No image
                                                     </span>
                                                 )}
                                             </td>
@@ -432,7 +427,7 @@ const IncidentManagement: React.FC = () => {
                                                     className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-[#CCBDA3] hover:bg-[#CCBDA3] hover:text-white rounded-lg transition-colors border border-[#CCBDA3]"
                                                 >
                                                     <Edit className="w-4 h-4" />
-                                                    Cập nhật
+                                                    Update
                                                 </button>
                                             </td>
                                         </tr>
@@ -444,8 +439,8 @@ const IncidentManagement: React.FC = () => {
                         {/* Pagination info */}
                         <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
                             <p className="text-sm text-gray-500">
-                                Hiển thị {filteredIncidents.length} trong tổng
-                                số {incidents.length} sự cố
+                                Showing {filteredIncidents.length} of{' '}
+                                {incidents.length} incidents
                             </p>
                         </div>
                     </div>

@@ -74,7 +74,7 @@ const FloatingInput: React.FC<FloatingInputProps> = ({
                 onBlur={() => setFocused(false)}
                 className={`peer w-full bg-transparent border-0 border-b ${borderColor} ${focusBorderColor}
                     outline-none transition-colors duration-200 ${sizePad} ${leftPadding} ${rightPadding}
-                    text-white placeholder-white/50
+                    text-gray-900 placeholder-gray-400
                     ${disabled ? 'opacity-60 cursor-not-allowed' : ''}`}
                 aria-labelledby={`${inputId}-label`}
                 autoComplete="off"
@@ -84,7 +84,7 @@ const FloatingInput: React.FC<FloatingInputProps> = ({
             {iconLeft && (
                 <FontAwesomeIcon
                     icon={iconLeft}
-                    className="absolute left-0 top-1/2 -translate-y-1/2 text-white/70"
+                    className="absolute left-0 top-1/2 -translate-y-1/2 text-gray-600"
                 />
             )}
 
@@ -92,7 +92,7 @@ const FloatingInput: React.FC<FloatingInputProps> = ({
                 <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-0 top-1/2 -translate-y-1/2 text-white/70 hover:text-white transition-colors cursor-pointer p-1"
+                    className="absolute right-0 top-1/2 -translate-y-1/2 text-gray-600 hover:text-gray-900 transition-colors cursor-pointer p-1"
                     aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
                     tabIndex={-1}
                 >

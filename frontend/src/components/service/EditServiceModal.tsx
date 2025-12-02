@@ -23,7 +23,8 @@ const EditServiceModal: React.FC<EditServiceModalProps> = ({
 
     const validateServiceHours = (hours: string): boolean => {
         if (!hours || hours.trim() === '') return false;
-        const pattern = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]\s*-\s*([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
+        const pattern =
+            /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]\s*-\s*([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
         return pattern.test(hours.trim());
     };
 
@@ -34,26 +35,28 @@ const EditServiceModal: React.FC<EditServiceModalProps> = ({
 
         // Validate các trường bắt buộc
         if (!formData.serviceName || formData.serviceName.trim() === '') {
-            setError('Tên dịch vụ không được để trống');
+            setError('Service name cannot be empty');
             setLoading(false);
             return;
         }
 
         if (!formData.description || formData.description.trim() === '') {
-            setError('Mô tả không được để trống');
+            setError('Description cannot be empty');
             setLoading(false);
             return;
         }
 
         if (!formData.price || formData.price <= 0) {
-            setError('Giá phải lớn hơn 0');
+            setError('Price must be greater than 0');
             setLoading(false);
             return;
         }
 
         // Validate giờ hoạt động
         if (!validateServiceHours(formData.serviceHours)) {
-            setError('Giờ hoạt động không được để trống và phải đúng định dạng. Vui lòng nhập theo mẫu: 08:00-22:00');
+            setError(
+                'Service hours cannot be empty and must be in correct format. Please enter in format: 08:00-22:00',
+            );
             setLoading(false);
             return;
         }
@@ -63,7 +66,7 @@ const EditServiceModal: React.FC<EditServiceModalProps> = ({
             onSuccess(result);
             onClose();
         } catch (err) {
-            setError('Có lỗi xảy ra khi cập nhật dịch vụ');
+            setError('An error occurred while updating the service');
             console.error(err);
         } finally {
             setLoading(false);
@@ -91,7 +94,7 @@ const EditServiceModal: React.FC<EditServiceModalProps> = ({
                 <div className="p-6">
                     <div className="flex justify-between items-center mb-6">
                         <h2 className="text-2xl font-bold text-gray-900">
-                            Cập Nhật Dịch Vụ
+                            Update Service
                         </h2>
                         <button
                             onClick={onClose}
@@ -110,7 +113,7 @@ const EditServiceModal: React.FC<EditServiceModalProps> = ({
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Mã Dịch Vụ
+                                Service ID
                             </label>
                             <input
                                 type="text"
@@ -123,7 +126,8 @@ const EditServiceModal: React.FC<EditServiceModalProps> = ({
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Tên Dịch Vụ <span className="text-red-500">*</span>
+                                Service Name{' '}
+                                <span className="text-red-500">*</span>
                             </label>
                             <input
                                 type="text"
@@ -137,7 +141,8 @@ const EditServiceModal: React.FC<EditServiceModalProps> = ({
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Mô Tả <span className="text-red-500">*</span>
+                                Description{' '}
+                                <span className="text-red-500">*</span>
                             </label>
                             <textarea
                                 name="description"
@@ -151,7 +156,8 @@ const EditServiceModal: React.FC<EditServiceModalProps> = ({
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Giá (VNĐ) <span className="text-red-500">*</span>
+                                Price (VND){' '}
+                                <span className="text-red-500">*</span>
                             </label>
                             <input
                                 type="number"
@@ -167,14 +173,15 @@ const EditServiceModal: React.FC<EditServiceModalProps> = ({
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Giờ Hoạt Động <span className="text-red-500">*</span>
+                                Service Hours{' '}
+                                <span className="text-red-500">*</span>
                             </label>
                             <input
                                 type="text"
                                 name="serviceHours"
                                 value={formData.serviceHours}
                                 onChange={handleChange}
-                                placeholder="Ví dụ: 08:00-22:00 hoặc 08:00 - 22:00"
+                                placeholder="Example: 08:00-22:00 or 08:00 - 22:00"
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]\s*-\s*([0-1]?[0-9]|2[0-3]):[0-5][0-9]$"
                                 required
@@ -183,7 +190,7 @@ const EditServiceModal: React.FC<EditServiceModalProps> = ({
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Danh Mục
+                                Category
                             </label>
                             <select
                                 name="serviceCategory"
@@ -191,14 +198,14 @@ const EditServiceModal: React.FC<EditServiceModalProps> = ({
                                 onChange={handleChange}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                             >
-                                <option value="LAUNDRY">Giặt là</option>
+                                <option value="LAUNDRY">Laundry</option>
                                 <option value="FOOD_BEVERAGE">
-                                    Đồ ăn & Thức uống
+                                    Food & Beverage
                                 </option>
                                 <option value="SPA">Spa</option>
-                                <option value="TRANSPORT">Vận chuyển</option>
-                                <option value="TOUR">Tour du lịch</option>
-                                <option value="OTHER">Khác</option>
+                                <option value="TRANSPORT">Transport</option>
+                                <option value="TOUR">Tour</option>
+                                <option value="OTHER">Other</option>
                             </select>
                         </div>
 
@@ -211,7 +218,7 @@ const EditServiceModal: React.FC<EditServiceModalProps> = ({
                                 className="mr-2"
                             />
                             <label className="text-sm text-gray-700">
-                                Khả dụng
+                                Available
                             </label>
                         </div>
 
@@ -221,14 +228,14 @@ const EditServiceModal: React.FC<EditServiceModalProps> = ({
                                 onClick={onClose}
                                 className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
                             >
-                                Hủy
+                                Cancel
                             </button>
                             <button
                                 type="submit"
                                 disabled={loading}
                                 className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400"
                             >
-                                {loading ? 'Đang cập nhật...' : 'Cập Nhật'}
+                                {loading ? 'Updating...' : 'Update'}
                             </button>
                         </div>
                     </form>
