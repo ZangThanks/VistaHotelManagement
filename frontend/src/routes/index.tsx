@@ -19,6 +19,7 @@ import MainLayout from '../layouts/MainLayout';
 import CheckInManager from '../pages/employee/CheckInManager';
 import CheckOutManager from '../pages/employee/CheckOutManager';
 import IncidentManagement from '../pages/employee/IncidentManagement';
+import ServiceOrderManagement from '../pages/employee/ServiceOrderManagement';
 
 import Home from '../pages/customer/Home';
 import RoomList from '../pages/customer/RoomList';
@@ -58,6 +59,8 @@ export const router = createBrowserRouter([
             { path: 'bookingPage', element: <BookingPage /> },
             { path: 'newsPage', element: <NewsPage /> },
             { path: 'daily', element: <DailyWorkStatistics /> },
+            { path: 'services', element: <ServiceManagement /> },
+            { path: 'service-orders', element: <ServiceOrderManagement /> },
         ],
     },
 
