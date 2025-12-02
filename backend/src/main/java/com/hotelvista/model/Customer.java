@@ -50,6 +50,7 @@ public class Customer extends User{
     private List<Booking> bookings;
 
     @OneToOne(fetch = FetchType.EAGER)
+    @JsonIgnore
     @JoinColumn(name = "cart_bean_id")
     private CartBean cartBean;
 }
