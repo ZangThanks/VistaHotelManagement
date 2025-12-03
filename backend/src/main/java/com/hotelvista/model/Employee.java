@@ -2,6 +2,7 @@ package com.hotelvista.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.hotelvista.model.enums.EmployeeStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -28,6 +29,10 @@ public class Employee extends User {
 
     @Column(name = "hire_date")
     private LocalDate hireDate;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status")
+    private EmployeeStatus status;
 
     @ToString.Exclude
     @JsonIgnore

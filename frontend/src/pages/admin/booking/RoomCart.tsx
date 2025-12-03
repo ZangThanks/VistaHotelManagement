@@ -204,7 +204,7 @@ export default function RoomCart() {
                 <div
                   key={room.roomNumber}
                   className={`bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300 ${
-                    selectedRooms.includes(room.roomNumber)
+                    selectedRooms.includes(room.roomNumber?.toString() || "")
                       ? "ring-2 ring-[#d4c5b9] scale-105"
                       : room.status === "BOOKED"
                       ? "opacity-60 cursor-not-allowed"
@@ -301,7 +301,7 @@ export default function RoomCart() {
                       <p className="text-xs font-semibold text-gray-700 mb-2">
                         Amenities:
                       </p>
-                      <div className="flex flex-wrap gap-2">
+                      {/* <div className="flex flex-wrap gap-2">
                         {room.roomType?.amenities
                           ?.slice(0, 3)
                           .map((amenity, idx) => (
@@ -317,7 +317,7 @@ export default function RoomCart() {
                             +{room.roomType?.amenities.length - 3} more
                           </span>
                         )}
-                      </div>
+                      </div> */}
                     </div>
 
                     {/* Selection Button */}

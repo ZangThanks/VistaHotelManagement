@@ -34,17 +34,28 @@ export const SelectContent = React.forwardRef<
             ref={ref}
             position="popper"
             sideOffset={6}
-            className="z-[9999] min-w-[var(--radix-select-trigger-width)] 
-                 bg-white border border-gray-200 
-                 rounded-xl shadow-lg overflow-hidden"
+            className="
+                z-[9999] 
+                min-w-[var(--radix-select-trigger-width)]
+                bg-white border border-gray-200 
+                rounded-xl shadow-lg 
+                overflow-hidden
+            "
             {...props}
         >
-            <SelectPrimitive.Viewport className="py-2">
+            <SelectPrimitive.Viewport
+                className="
+                    py-2 
+                    max-h-50       /* 🎯 GIỚI HẠN CHIỀU CAO 240px */
+                    overflow-auto  /* 🎯 TỰ ĐỘNG SCROLL */
+                "
+            >
                 {children}
             </SelectPrimitive.Viewport>
         </SelectPrimitive.Content>
     </SelectPrimitive.Portal>
 ));
+
 
 SelectContent.displayName = SelectPrimitive.Content.displayName;
 

@@ -31,8 +31,7 @@ public class CustomerController {
     public List<Customer> searchCustomers(@RequestParam String name) {
         return service.findAllByFullNameContainingIgnoreCase(name);
     }
-
-
+    
     /**
      * Lấy thông tin khách hàng theo ID.
      *
@@ -54,12 +53,6 @@ public class CustomerController {
     public Customer createOrUpdateCustomer(@RequestBody Customer customer) {
         if (customer.getReputationPoint() == null) {
             customer.setReputationPoint(100);
-        }
-        if (customer.getCartBean() == null) {
-            CartBean cartBean = new CartBean();
-            cartBean.setCustomer(customer);
-            customer.setCartBean(cartBean);
-            cartBeanService.save(cartBean);
         }
         service.save(customer);
         return customer;

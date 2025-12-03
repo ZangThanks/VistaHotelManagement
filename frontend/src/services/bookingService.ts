@@ -1,7 +1,8 @@
+/* eslint-disable */
 import { axiosInstance } from "../config/api";
 import { api } from "./apiClient";
 import type { Booking, RoomBooking } from "../types/Booking";
-import type { BookingDetail } from '../types/BookingDetail';
+import type { BookingDetail } from "../types/BookingDetail";
 
 const ENDPOINT = "/bookings";
 
@@ -74,6 +75,19 @@ export const updateBooking = async (
     return response.data;
   } catch (error) {
     console.error(`Error updating booking ${id}:`, error);
+    throw error;
+  }
+};
+
+export const getBookingsByCustomerId = async (
+  customerId: string
+): Promise<Booking[]> => {
+  try {
+    const response = await api.get(`${ENDPOINT}/customer/${customerId}`);
+    console.log(`📋 Bookings for customer ${customerId}:`, response.data);
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching bookings for customer ${customerId}:`, error);
     throw error;
   }
 };
@@ -206,6 +220,7 @@ export const overlapBookingExists = async (roomNumber: string) => {
 //     throw error;
 //   }
 // };
+
 export const checkIn = async (bookingId: string): Promise<Booking> => {
   try {
     const response = await axiosInstance.put(
@@ -378,17 +393,14 @@ export const getCompletedCheckouts = async (): Promise<Booking[]> => {
 //   }
 // };
 
-
 export const getByRoom = async (roomNumber: string) => {
   const response = await api.get(`/bookings/room/${roomNumber}`);
   return response.data;
 };
 
-
 export default {
   getAll,
   getBookingById,
-  getBookingDetailsById,
   createBooking,
   updateBooking,
   getAllRoomBookings,

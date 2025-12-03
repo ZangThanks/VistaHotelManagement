@@ -1,9 +1,10 @@
+/* eslint-disable */
 export interface Booking {
   bookingID: string;
   checkInDate: string;
   checkOutDate: string;
   numberOfGuests: number;
-  status: "PENDING" | "CONFIRMED" | "CHECKED_IN" | "CHECKED_OUT" | "CANCELLED";
+  status: "PENDING" | "CHECKED_IN" | "CHECKED_OUT" | "CANCELLED";
   specialRequests?: string;
   bookingDate: string;
   cancellationDate?: string;
@@ -18,6 +19,7 @@ export interface Booking {
     | "PERCENTAGE_50"
     | "PAID"
     | "REFUNDED"
+    | "FAILED"
     | "CANCELLED";
   invoiceType?: string | null;
   totalCost: number;
@@ -26,34 +28,34 @@ export interface Booking {
   employee?: Employee;
   bookingDetails: BookingDetail[];
   earlyCheckin?: EarlyCheckin | null;
-}
-
-export interface EarlyCheckin {
-  id?: string;
-  requestTime: string;
-  earlyCheckInTime: string;
-  approvalStatus: "PENDING" | "APPROVED" | "REJECTED";
-  additionalFee: number;
-  notes?: string;
+  lateCheckout?: LateCheckout | null;
 }
 
 export interface RoomBooking {
-  id: string;
-  roomId: string;
-  roomNumber: string;
-  guestName: string;
-  checkIn: Date;
-  checkOut: Date;
-  status: "pending" | "confirmed" | "checked-in" | "checked-out" | "cancelled";
-  numberOfGuests: number;
-  totalAmount: number;
-  specialRequests?: string;
-  paymentStatus?: string;
-  customer?: any;
-  bookingDetails?: any[];
-  earlyCheckin?: EarlyCheckin | null;
+    id: string;
+    roomId: string;
+    roomNumber: string;
+    guestName: string;
+    checkIn: Date;
+    checkOut: Date;
+    status:
+        | 'pending'
+        | 'confirmed'
+        | 'checked-in'
+        | 'checked-out'
+        | 'cancelled';
+    numberOfGuests: number;
+    totalAmount: number;
+    specialRequests?: string;
+    paymentStatus?: string;
+    customer?: any;
+    bookingDetails?: any[];
+    earlyCheckin?: EarlyCheckin | null;
+    lateCheckout?: LateCheckout | null;
 }
 
 import type { Customer } from "./Customer";
 import type { Employee } from "./Employee";
 import type { BookingDetail } from "./BookingDetail";
+import type { EarlyCheckin } from './EarlyCheckin';
+import type { LateCheckout } from './LateCheckout';
