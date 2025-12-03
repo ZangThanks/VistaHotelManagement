@@ -9,6 +9,9 @@ import com.hotelvista.service.BookingDetailService;
 import com.hotelvista.service.BookingService;
 import com.hotelvista.service.ReviewService;
 import com.hotelvista.service.RoomService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController

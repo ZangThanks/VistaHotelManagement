@@ -312,10 +312,3 @@ VALUES ('REP001', '2024-06-01 18:00:00', '2024-06', 'OCCUPANCY', 'EMP003'),
        ('REP002', '2024-06-01 18:00:00', '2024-06', 'REVENUE', 'EMP003'),
        ('REP003', '2024-06-02 09:00:00', '2024-06', 'MAINTENANCE', 'EMP002'),
        ('REP004', '2024-06-03 10:00:00', '2024-06', 'SERVICE', 'EMP005');
-
-INSERT INTO cart_beans (cart_bean_id, customer_id)
-                              VALUES ('CA5073', 'CUST004');
-
-INSERT INTO cart_items (room_number, cart_bean_id)
-VALUES ('STD101', 'CA5073'),
-       ('DLX201', 'CA5073');

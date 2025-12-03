@@ -3,7 +3,7 @@ export interface Booking {
   checkInDate: string;
   checkOutDate: string;
   numberOfGuests: number;
-  status: "PENDING" | "CONFIRMED" | "CHECKED_IN" | "CHECKED_OUT" | "CANCELLED";
+  status: "PENDING" | "CHECKED_IN" | "CHECKED_OUT" | "CANCELLED";
   specialRequests?: string;
   bookingDate: string;
   cancellationDate?: string;
@@ -11,7 +11,15 @@ export interface Booking {
   duration: number;
   packageType: string;
   totalAmount: number;
-  paymentStatus: "PENDING" | "PAID" | "REFUNDED" | "PARTIAL";
+  paymentStatus:
+    | "PENDING"
+    | "COMPLETED"
+    | "PERCENTAGE_30"
+    | "PERCENTAGE_50"
+    | "PAID"
+    | "REFUNDED"
+    | "FAILED"
+    | "CANCELLED";
   invoiceType?: string | null;
   totalCost: number;
   type: "HOURLY" | "DAILY";
