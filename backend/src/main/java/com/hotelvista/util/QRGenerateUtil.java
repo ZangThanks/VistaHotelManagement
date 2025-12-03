@@ -13,9 +13,9 @@ public class QRGenerateUtil {
 
     //VQRQAFMGQ4306 là tài khoản ảo trên SePay muốn test trên local thì tải ngrok - chạy ngrok http 8080
     //Cop link generated xong cấu hình lại webhook trên sepay
-    //https://qr.sepay.vn/img?acc=VQRQAFMGQ4306&bank=MBBank&amount=100000&des=B2411250001
+    //https://qr.sepay.vn/img?acc=VQRQAFREV1664&bank=MBBank&amount=100000&des=B2411250001
     public static String buildVietQRUrl(String bookingId, Double amount) {
-        return "https://qr.sepay.vn/img?acc=VQRQAFMGQ4306&bank=" +
+        return "https://qr.sepay.vn/img?acc=VQRQAFREV1664&bank=" +
                 BANK_CORE + "&amount=" + amount + "&des=" + bookingId;
     }
 
