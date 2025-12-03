@@ -23,15 +23,7 @@ export interface Booking {
     employee?: Employee;
     bookingDetails: BookingDetail[];
     earlyCheckin?: EarlyCheckin | null;
-}
-
-export interface EarlyCheckin {
-    requestID?: string;
-    requestTime: string;
-    requestDate: string;
-    approvalStatus: 'PENDING' | 'APPROVED' | 'REJECTED';
-    additionalFee: number;
-    notes?: string;
+    lateCheckout?: LateCheckout | null;
 }
 
 export interface RoomBooking {
@@ -54,8 +46,11 @@ export interface RoomBooking {
     customer?: unknown;
     bookingDetails?: unknown[];
     earlyCheckin?: EarlyCheckin | null;
+    lateCheckout?: LateCheckout | null;
 }
 
 import type { Customer } from './Customer';
 import type { Employee } from './Employee';
 import type { BookingDetail } from './BookingDetail';
+import type { EarlyCheckin } from './EarlyCheckin';
+import type { LateCheckout } from './LateCheckout';

@@ -90,4 +90,9 @@ public class Booking {
     @OneToOne(mappedBy = "booking")
     @ToString.Exclude
     private EarlyCheckin earlyCheckin;
+
+    @OneToOne(mappedBy = "booking")
+    @ToString.Exclude
+    private LateCheckout lateCheckout;
+
 }

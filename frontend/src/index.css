@@ -1,7 +1,7 @@
 /* Import Google Fonts - Must be first */
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700;800&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700;800&display=swap');
 
-@import "tailwindcss";
+@import 'tailwindcss';
 
 /* Custom scrollbar */
 .scrollbar-thin::-webkit-scrollbar {
@@ -43,6 +43,35 @@
         transform: translateX(0) scale(1);
         opacity: 1;
     }
+}
+
+/* Calendar animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.animate-fadeIn {
+    animation: fadeIn 0.2s ease-out;
+}
+
+.animate-scaleIn {
+    animation: scaleIn 0.3s ease-out;
 }
 
 @keyframes toast-slide-out {
@@ -90,7 +119,7 @@
     --color-info: #2196f3;
     --color-primary: #c3923c;
     --color-secondary: #b4893e;
-    --gradient-cream: linear-gradient(180deg, #FBF3E7 5%, #ffffff 95%);
+    --gradient-cream: linear-gradient(180deg, #fbf3e7 5%, #ffffff 95%);
 
     /* Dark mode support */
     --color-bg: #f9f9f9;
@@ -99,10 +128,10 @@
     --color-text-dark: #f9f9f9;
 
     /* Font families - Modern & Elegant */
-    --font-sans: "Inter", system-ui, -apple-system, sans-serif;
-    --font-playfair: "Playfair Display", Georgia, serif;
-    --font-body: "Inter", system-ui, -apple-system, sans-serif;
-    --font-heading: "Inter", system-ui, -apple-system, sans-serif;
+    --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+    --font-playfair: 'Playfair Display', Georgia, serif;
+    --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+    --font-heading: 'Inter', system-ui, -apple-system, sans-serif;
 
     /* Shadow + border radius */
     --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
@@ -208,16 +237,16 @@
         }
     }
 
-    input[type="checkbox"] {
+    input[type='checkbox'] {
         @apply appearance-none w-5 h-5 border-2 border-cream rounded-sm relative cursor-pointer transition-colors;
     }
 
-    input[type="checkbox"]:checked {
+    input[type='checkbox']:checked {
         @apply bg-gold border-gold;
     }
 
-    input[type="checkbox"]:checked::before {
-        content: "✓";
+    input[type='checkbox']:checked::before {
+        content: '✓';
         @apply absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-white text-xs;
     }
 }
@@ -248,4 +277,3 @@
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
     background: #b9aa92;
 }
-

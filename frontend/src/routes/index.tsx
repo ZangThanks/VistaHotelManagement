@@ -31,13 +31,14 @@ import NewsList from '../pages/admin/news/NewsList.tsx';
 import ServiceList from '../pages/customer/ServiceList.tsx';
 import IncidentReport from '../pages/customer/IncidentReport.tsx';
 import ServiceManagement from '../pages/admin/ServiceManagement.tsx';
-import BookingDetail from '../pages/admin/booking/BookingDetail.tsx';
+import BookingDetail from '../pages/customer/BookingDetail.tsx';
 import Contact from '../pages/customer/Contact.tsx';
 import EmployeeList from '../pages/admin/EmployeeList.tsx';
 import BookingPage from '../pages/customer/booking/BookingPage.tsx';
 import RoomManagement from '../pages/employee/room/RoomManagement.tsx';
 
 import PricingManager from '../pages/admin/pricing/PricingManager.tsx';
+import MyBookings from '../pages/customer/MyBooking.tsx';
 
 export const router = createBrowserRouter([
     // AUTH
@@ -73,7 +74,6 @@ export const router = createBrowserRouter([
             { path: 'checkin', element: <CheckInManager /> },
             { path: 'checkout', element: <CheckOutManager /> },
             { path: 'info', element: <NewsList /> }, // NewsList thay InfoManagement
-            // { path: 'info/manage', element: <NewsList /> }, // nếu bạn cần InfoManagement
             { path: 'info/:id', element: <NewsDetail /> },
             { path: 'services', element: <ServiceManagement /> },
             { path: 'room-management', element: <RoomManagement /> },
@@ -112,7 +112,8 @@ export const router = createBrowserRouter([
             { path: 'room/:id', element: <RoomDetail /> },
             { path: 'service', element: <ServiceList /> },
             { path: 'bookingPage', element: <BookingPage /> },
-            { path: 'booking/:id', element: <BookingDetail /> },
+            { path: 'mybooking', element: <MyBookings /> },
+            { path: 'mybooking/:id', element: <BookingDetail /> },
         ],
     },
 ]);

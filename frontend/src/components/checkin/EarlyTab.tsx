@@ -220,8 +220,8 @@ const EarlyTab = ({ onViewDetails }: EarlyTabProps) => {
                                     {renderStatusBadge(req.approvalStatus)}
                                 </td>
 
-                                <td className="py-4 px-4">
-                                    <div className="flex gap-2">
+                                <td className="py-4 px-4 flex items-center justify-center">
+                                    <div className="flex gap-2 items-center">
                                         {req.approvalStatus === 'PENDING' && (
                                             <>
                                                 <button
@@ -235,7 +235,7 @@ const EarlyTab = ({ onViewDetails }: EarlyTabProps) => {
                                                             'APPROVED',
                                                         )
                                                     }
-                                                    className="w-8 h-8 rounded-full bg-[#F5F0EB] hover:bg-green-100 text-green-600"
+                                                    className="p-2.5 rounded-full bg-[#F5F0EB] hover:bg-green-100 text-green-600"
                                                 >
                                                     <FaCheck size={14} />
                                                 </button>
@@ -251,7 +251,7 @@ const EarlyTab = ({ onViewDetails }: EarlyTabProps) => {
                                                             'REJECTED',
                                                         )
                                                     }
-                                                    className="w-8 h-8 rounded-full bg-[#F5F0EB] hover:bg-red-100 text-red-600"
+                                                    className="p-2.5 rounded-full bg-[#F5F0EB] hover:bg-red-100 text-red-600"
                                                 >
                                                     <FaTimes size={14} />
                                                 </button>
@@ -260,7 +260,7 @@ const EarlyTab = ({ onViewDetails }: EarlyTabProps) => {
 
                                         <button
                                             onClick={() => onViewDetails(req)}
-                                            className="w-8 h-8 rounded-full bg-[#F5F0EB] hover:bg-[#EBE3D7]"
+                                            className="p-2.5 rounded-full bg-[#F5F0EB] hover:bg-[#EBE3D7]"
                                         >
                                             <FaEye size={14} />
                                         </button>

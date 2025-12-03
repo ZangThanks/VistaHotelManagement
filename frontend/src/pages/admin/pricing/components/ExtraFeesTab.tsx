@@ -20,7 +20,7 @@ import { Input } from '../../../../components/my-input/components/ui/input';
 import {
     getAllRules,
     saveRule,
-} from '../../../../services/CheckInCheckOutPolicyRuleService';
+} from '../../../../services/checkInCheckOutPolicyRuleService';
 import type {
     CheckInCheckOutPolicyRule,
     RuleType,

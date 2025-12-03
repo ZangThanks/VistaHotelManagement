@@ -33,43 +33,45 @@ const StatCard: React.FC<StatCardProps> = ({ icon, label, value, color }) => (
 );
 
 type FilterSectionProps = {
-  onFilterChange: (filterId: string) => void;
+    onFilterChange: (filterId: string) => void;
 };
 
 const FilterSection: React.FC<FilterSectionProps> = ({ onFilterChange }) => {
-  const [active, setActive] = useState("all");
-  const filters = [
-    { id: "all", label: "Tất cả", icon: "fa-list" },
-    { id: "bronze", label: "Bronze", icon: "fa-medal" },
-    { id: "silver", label: "Silver", icon: "fa-certificate" },
-    { id: "gold", label: "Gold", icon: "fa-star" },
-    { id: "platinum", label: "Platinum", icon: "fa-gem" },
-  ];
+    const [active, setActive] = useState('all');
+    const filters = [
+        { id: 'all', label: 'Tất cả', icon: 'fa-list' },
+        { id: 'bronze', label: 'Bronze', icon: 'fa-medal' },
+        { id: 'silver', label: 'Silver', icon: 'fa-certificate' },
+        { id: 'gold', label: 'Gold', icon: 'fa-star' },
+        { id: 'platinum', label: 'Platinum', icon: 'fa-gem' },
+    ];
 
-  return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
-      <h3 className="text-sm font-bold text-gray-900 mb-3">Lọc khách hàng</h3>
-      <div className="flex flex-wrap gap-2">
-        {filters.map((f) => (
-          <button
-            key={f.id}
-            onClick={() => {
-              setActive(f.id);
-              onFilterChange(f.id);
-            }}
-            className={`flex items-center gap-1 px-4 py-2 rounded-lg font-semibold transition duration-200 text-xs ${
-              active === f.id
-                ? "bg-gray-900 text-white shadow-md hover:bg-gray-800"
-                : "bg-[#F5F0EB] text-gray-700 hover:bg-gray-200 border border-gray-300"
-            }`}
-          >
-            <i className={`fa-solid ${f.icon}`}></i>
-            {f.label}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
+    return (
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+            <h3 className="text-sm font-bold text-gray-900 mb-3">
+                Lọc khách hàng
+            </h3>
+            <div className="flex flex-wrap gap-2">
+                {filters.map((f) => (
+                    <button
+                        key={f.id}
+                        onClick={() => {
+                            setActive(f.id);
+                            onFilterChange(f.id);
+                        }}
+                        className={`flex items-center gap-1 px-4 py-2 rounded-lg font-semibold transition duration-200 text-xs ${
+                            active === f.id
+                                ? 'bg-gray-900 text-white shadow-md hover:bg-gray-800'
+                                : 'bg-[#F5F0EB] text-gray-700 hover:bg-gray-200 border border-gray-300'
+                        }`}
+                    >
+                        <i className={`fa-solid ${f.icon}`}></i>
+                        {f.label}
+                    </button>
+                ))}
+            </div>
+        </div>
+    );
 };
 
 export default function CustomerList() {
@@ -115,7 +117,6 @@ export default function CustomerList() {
             loyaltyPoints: data.loyaltyPoints ?? 0,
             memberShipLevel: data.memberShipLevel ?? 'SILVER',
             reputationPoint: data.reputationPoint ?? 0,
-
         };
         setCustomers((prev) => [...prev, newCustomer]);
         setShowModal(false);
@@ -329,12 +330,12 @@ export default function CustomerList() {
                                                 >
                                                     {c.memberShipLevel}
                                                 </span>
-                                        </td>
+                                            </td>
                                             <td className="px-4 py-3 text-sm text-gray-600 font-medium">
                                                 {c.reputationPoint}
                                             </td>
                                             <td className="px-4 py-3 text-center">
-                                                <div className="flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition duration-200">
+                                                <div className="flex items-center justify-center gap-2 transition duration-200">
                                                     <button
                                                         type="button"
                                                         aria-label="Xem chi tiết"
@@ -342,6 +343,7 @@ export default function CustomerList() {
                                                     >
                                                         <i className="fa-solid fa-eye text-sm"></i>
                                                     </button>
+
                                                     <button
                                                         type="button"
                                                         aria-label="Chỉnh sửa"
@@ -353,14 +355,6 @@ export default function CustomerList() {
                                                         className="p-2 text-gray-900 hover:bg-gray-100 rounded-lg transition hover:scale-110"
                                                     >
                                                         <i className="fa-solid fa-pen text-sm"></i>
-                                                    </button>
-
-                                                    <button
-                                                        type="button"
-                                                        aria-label="Xóa"
-                                                        className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition hover:scale-110"
-                                                    >
-                                                        <i className="fa-solid fa-trash text-sm"></i>
                                                     </button>
                                                 </div>
                                             </td>
