@@ -414,4 +414,34 @@ public class BookingController {
     public List<LocalDateTime> findOverlappingBookings(@PathVariable("roomNumber") String roomNumber) {
         return bookingDetailService.findOverlappingBookings(roomNumber);
     }
+
+    /**
+     * Kiểm tra phòng có available trong khoảng thời gian không
+     * Trả về danh sách các booking bị trùng lịch
+     */
+    @GetMapping("check-availability")
+    public ResponseEntity<?> checkRoomAvailability(
+            @RequestParam String roomNumber,
+            @RequestParam String checkinDate,
+            @RequestParam String checkoutDate
+    ) {
+        try {
+            LocalDateTime checkIn = LocalDateTime.parse(checkinDate);
+            LocalDateTime checkOut = LocalDateTime.parse(checkoutDate);
+
+            // Validate input
+            if (checkOut.isBefore(checkIn) || checkOut.isEqual(checkIn)) {
+                return ResponseEntity.badRequest().body("Check-out must be after check-in");
+            }
+
+            // Tìm các booking bị conflict
+            List<Booking> conflicts = service.findConflictingBookings(roomNumber, checkIn, checkOut);
+
+            return ResponseEntity.ok(conflicts);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError()
+                    .body("Error checking room availability: " + e.getMessage());
+        }
+    }
 }

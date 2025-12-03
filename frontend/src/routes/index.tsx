@@ -10,6 +10,7 @@ import Login from '../pages/auth/Login';
 import Register from '../pages/auth/Register';
 import ForgotPassword from '../pages/auth/ForgotPassword';
 import ResetPassword from '../pages/auth/ResetPassword';
+import OAuthSuccess from '../pages/auth/OAuthSuccess';
 
 import CustomerList from '../pages/employee/CustomerList';
 import NewsPage from '../pages/employee/NewsPage';
@@ -44,83 +45,89 @@ import UserProfilePage from '../pages/customer/UserProfile.tsx';
 import PaymentPage from '../pages/customer/booking/PaymentPage.tsx';
 
 export const router = createBrowserRouter([
-    // AUTH
-    {
-        path: 'auth',
-        element: <AuthLayout />,
-        children: [
-            { path: 'login', element: <Login /> },
-            { path: 'register', element: <Register /> },
-            { path: 'forgot-password', element: <ForgotPassword /> },
-            { path: 'reset-password', element: <ResetPassword /> },
-        ],
-    },
+  // OAuth
+  {
+    path: "/oauth-success",
+    element: <OAuthSuccess />,
+  },
+  // AUTH
+  {
+    path: "auth",
+    element: <AuthLayout />,
+    children: [
+      { path: "login", element: <Login /> },
+      { path: "register", element: <Register /> },
+      { path: "forgot-password", element: <ForgotPassword /> },
+      { path: "reset-password", element: <ResetPassword /> },
+    ],
+  },
 
-    // EMPLOYEE
-    {
-        path: 'employee',
-        element: <EmployeeLayout />,
-        children: [
-            { path: 'customer/list', element: <CustomerList /> },
-            { path: 'incidents', element: <IncidentManagement /> },
-            { path: 'bookingPage', element: <BookingPage /> },
-            { path: 'daily', element: <DailyWorkStatistics /> },
-        ],
-    },
 
-    // ADMIN
-    {
-        path: 'admin',
-        element: <AdminLayout />,
-        children: [
-            { path: '', element: <Dashboard /> },
-            { path: 'checkin', element: <CheckInManager /> },
-            { path: 'checkout', element: <CheckOutManager /> },
-            { path: 'info', element: <NewsList /> }, // NewsList thay InfoManagement
-            { path: 'info/:id', element: <NewsDetail /> },
-            { path: 'services', element: <ServiceManagement /> },
-            { path: 'room-management', element: <RoomManagement /> },
-            { path: 'bookingPage', element: <BookingPage /> },
-            { path: 'employees', element: <EmployeeList /> },
-            // { path: 'employees/:id', element: <EmployeeDetail /> },
-            { path: 'pricing', element: <PricingManager /> },
-        ],
-    },
+  // EMPLOYEE
+  {
+    path: "employee",
+    element: <EmployeeLayout />,
+    children: [
+      { path: "customer/list", element: <CustomerList /> },
+      { path: "incidents", element: <IncidentManagement /> },
+      { path: "bookingPage", element: <BookingPage /> },
+      { path: "daily", element: <DailyWorkStatistics /> },
+    ],
+  },
 
-    // MAIN USER AREA
-    {
-        path: '',
-        element: <MainLayout />,
-        children: [
-            { path: '/', element: <Home /> },
-            { path: 'home', element: <Home /> },
-            { path: 'news', element: <NewsPage /> },
-            { path: 'news/:id', element: <NewsDetail /> },
-            { path: 'incident-report', element: <IncidentReport /> },
-            { path: '/contact', element: <Contact /> },
-            { path: '/bookingPage', element: <BookingPage /> },
-            { path: 'room', element: <RoomList /> },
-            { path: 'room/:id', element: <RoomDetail /> },
-            { path: 'service', element: <ServiceList /> },
-        ],
-    },
+  // ADMIN
+  {
+    path: "admin",
+    element: <AdminLayout />,
+    children: [
+      { path: "", element: <Dashboard /> },
+      { path: "checkin", element: <CheckInManager /> },
+      { path: "checkout", element: <CheckOutManager /> },
+      { path: "info", element: <NewsList /> }, // NewsList thay InfoManagement
+      { path: "info/:id", element: <NewsDetail /> },
+      { path: "services", element: <ServiceManagement /> },
+      { path: "room-management", element: <RoomManagement /> },
+      { path: "bookingPage", element: <BookingPage /> },
+      { path: "employees", element: <EmployeeList /> },
+      // { path: 'employees/:id', element: <EmployeeDetail /> },
+      { path: "pricing", element: <PricingManager /> },
+    ],
+  },
 
-    // CUSTOMER
-    {
-        path: 'customer',
-        element: <CustomerLayout />,
-        children: [
-            { path: 'room', element: <RoomList /> },
-            { path: 'room/incident', element: <IncidentReport /> },
-            { path: 'room/:id', element: <RoomDetail /> },
-            { path: 'service', element: <ServiceList /> },
-            { path: 'bookingPage', element: <BookingPage /> },
-            { path: 'mybooking', element: <MyBookings /> },
-            { path: 'mybooking/:id', element: <BookingDetail /> },
-            { path: 'mybooking', element: <MyBookings /> },
-            { path: 'payment', element: <PaymentPage /> },
-            { path: 'profile', element: <UserProfilePage /> },
-            { path: 'cart', element: <RoomCart /> },
-        ],
-    },
+  // MAIN USER AREA
+  {
+    path: "",
+    element: <MainLayout />,
+    children: [
+      { path: "/", element: <Home /> },
+      { path: "home", element: <Home /> },
+      { path: "news", element: <NewsPage /> },
+      { path: "news/:id", element: <NewsDetail /> },
+      { path: "incident-report", element: <IncidentReport /> },
+      { path: "/contact", element: <Contact /> },
+      { path: "/bookingPage", element: <BookingPage /> },
+      { path: "room", element: <RoomList /> },
+      { path: "room/:id", element: <RoomDetail /> },
+      { path: "service", element: <ServiceList /> },
+    ],
+  },
+
+  // CUSTOMER
+  {
+    path: "customer",
+    element: <CustomerLayout />,
+    children: [
+      { path: "room", element: <RoomList /> },
+      { path: "room/incident", element: <IncidentReport /> },
+      { path: "room/:id", element: <RoomDetail /> },
+      { path: "service", element: <ServiceList /> },
+      { path: "bookingPage", element: <BookingPage /> },
+      { path: "mybooking", element: <MyBookings /> },
+      { path: "mybooking/:id", element: <BookingDetail /> },
+      { path: "mybooking", element: <MyBookings /> },
+      { path: "payment", element: <PaymentPage /> },
+      { path: "profile", element: <UserProfilePage /> },
+      { path: "cart", element: <RoomCart /> },
+    ],
+  },
 ]);

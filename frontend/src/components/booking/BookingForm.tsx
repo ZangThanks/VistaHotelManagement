@@ -14,6 +14,7 @@ import {
   saveBookingWithDetails,
   getBookingById,
   overlapBookingExists,
+  checkRoomAvailability,
 } from "../../services/bookingService";
 import { getById } from "../../services/customerService";
 
@@ -35,6 +36,7 @@ import type {
   HourlyRatePolicy,
   BaseRateItem,
 } from "../../types/HourlyRatePolicy";
+import { useToastContext } from "../../hooks/useToastContext";
 
 interface BookingFormProps {
   currentStep: number;
@@ -69,6 +71,7 @@ export default function BookingForm({
 }: BookingFormProps) {
   const navigate = useNavigate();
   const location = useLocation();
+  const { error: showErrorToast } = useToastContext();
 
   // Get booking type from route state
   const bookingType: BookingType =
@@ -176,7 +179,7 @@ export default function BookingForm({
       const roomsData = await Promise.all(roomPromises);
       setRooms(roomsData);
 
-      // Fetch booked dates for all selected rooms
+      // Fetch booked dates for all selected rooms (for daily booking calendar)
       if (roomsToUse.length > 0) {
         try {
           const bookedDatesPromises = roomsToUse.map((roomId) =>
@@ -187,7 +190,7 @@ export default function BookingForm({
           // Flatten and convert to Date objects
           const allBookedDates = bookedDatesArrays
             .flat()
-            .map((dateStr) => new Date(dateStr));
+            .map((dateStr: any) => new Date(dateStr));
 
           setBookedDates(allBookedDates);
           console.log("Booked dates:", allBookedDates);
@@ -241,31 +244,49 @@ export default function BookingForm({
   }, []);
 
   const handleNextStep = () => {
-    if (!checkInDate) {
-      setError("Please select a check-in date.");
-      return;
-    }
-    if (!checkOutDate) {
-      setError("Please select a check-out date.");
-      return;
-    }
-
-    const ci = new Date(checkInDate);
-    ci.setHours(0, 0, 0, 0);
-    const co = new Date(checkOutDate);
-    co.setHours(0, 0, 0, 0);
-
-    if (currentStep === 1) {
-      // Kiểm tra chồng lấn với các ngày đã được đặt
-      if (isDateRangeOverlapping(ci, co, bookedDates)) {
-        setError(
-          "The selected date range overlaps with already booked dates. Please choose different dates."
-        );
+    if (bookingType === "HOURLY") {
+      // Validation for hourly booking
+      if (!hourlyCheckInDate) {
+        showErrorToast("Please select a check-in date.");
         return;
-      } else {
-        setError("");
+      }
+      if (!checkInTime) {
+        showErrorToast("Please select a check-in time.");
+        return;
+      }
+      if (duration < 1) {
+        showErrorToast("Minimum duration is 1 hour.");
+        return;
+      }
+    } else {
+      // Validation for daily booking
+      if (!checkInDate) {
+        showErrorToast("Please select a check-in date.");
+        return;
+      }
+      if (!checkOutDate) {
+        showErrorToast("Please select a check-out date.");
+        return;
+      }
+
+      const ci = new Date(checkInDate);
+      ci.setHours(0, 0, 0, 0);
+      const co = new Date(checkOutDate);
+      co.setHours(0, 0, 0, 0);
+
+      if (currentStep === 1) {
+        // Kiểm tra chồng lấn với các ngày đã được đặt
+        if (isDateRangeOverlapping(ci, co, bookedDates)) {
+          showErrorToast(
+            "The selected date range overlaps with already booked dates. Please choose different dates."
+          );
+          return;
+        } else {
+          setError("");
+        }
       }
     }
+
     if (currentStep < 4) {
       setCurrentStep(currentStep + 1);
     }
@@ -542,6 +563,58 @@ export default function BookingForm({
       ci = new Date(hourlyCheckInDate);
       ci.setHours(hours, minutes, 0, 0);
       co = new Date(ci.getTime() + duration * 60 * 60 * 1000);
+
+      // Check if booking time is in the past
+      const now = new Date();
+      if (ci <= now) {
+        showErrorToast("Check-in time must be in the future.");
+        return;
+      }
+
+      // Check room availability for hourly bookings
+      try {
+        setLoading(true);
+        for (const room of rooms) {
+          const conflicts = await checkRoomAvailability(
+            room.roomNumber || "",
+            ci.toISOString(),
+            co.toISOString()
+          );
+
+          if (conflicts && conflicts.length > 0) {
+            const conflictDetails = conflicts
+              .map((b) => {
+                const checkIn = new Date(b.checkInDate);
+                const checkOut = new Date(b.checkOutDate);
+                return `${checkIn.toLocaleString("vi-VN", {
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })} - ${checkOut.toLocaleString("vi-VN", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}`;
+              })
+              .join("; ");
+
+            showErrorToast(
+              `Room ${room.roomNumber} is already booked during this time. Conflicting bookings: ${conflictDetails}`
+            );
+            setLoading(false);
+            return;
+          }
+        }
+        setLoading(false);
+      } catch (err) {
+        console.error("Error checking room availability:", err);
+        showErrorToast(
+          "Cannot check room availability. Please try again."
+        );
+        setLoading(false);
+        return;
+      }
     }
 
     let checkInWithTime = new Date(checkInDate);

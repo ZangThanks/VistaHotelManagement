@@ -398,6 +398,33 @@ export const getByRoom = async (roomNumber: string) => {
   return response.data;
 };
 
+/**
+* Kiểm tra xem một phòng có các đặt phòng trùng lặp trong một khoảng thời gian cụ thể hay không
+* @param roomNumber Số phòng cần kiểm tra
+* @param checkInDate Ngày/giờ nhận phòng (chuỗi ISO)
+* @param checkOutDate Ngày/giờ trả phòng (chuỗi ISO)
+* @returns Mảng các đặt phòng trùng lặp
+*/
+export const checkRoomAvailability = async (
+  roomNumber: string,
+  checkInDate: string,
+  checkOutDate: string
+): Promise<Booking[]> => {
+  try {
+    const response = await api.get(`${ENDPOINT}/check-availability`, {
+      params: {
+        roomNumber,
+        checkInDate,
+        checkOutDate,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error checking room availability:", error);
+    throw error;
+  }
+};
+
 export default {
   getAll,
   getBookingById,
@@ -406,4 +433,5 @@ export default {
   getAllRoomBookings,
   convertToRoomBooking,
   getByRoom,
+  checkRoomAvailability,
 };
