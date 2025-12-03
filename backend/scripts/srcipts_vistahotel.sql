@@ -54,9 +54,9 @@ VALUES (1, 'LATE_CHECKOUT', '18:00:00', '23:59:59', 100.0, TRUE, NULL);
 -- ROOM TYPES
 INSERT INTO room_types (room_type_id, area, base_price, description, max_occupancy, type_name, hourly_rate_policy_id,
                         check_in_out_policy_id)
-VALUES ('STD', 22, 900000, 'Phòng tiêu chuẩn, phù hợp cho 2 người, view thành phố', 2, 'Standard', 1, 1),
-       ('DLX', 32, 1500000, 'Phòng Deluxe, rộng rãi, ban công, view biển', 3, 'Deluxe', 1, 1),
-       ('STE', 50, 3000000, 'Phòng Suite, cao cấp, phòng khách riêng, view toàn cảnh', 4, 'Suite', 1, 1);
+VALUES ('STD', 22, 1000, 'Phòng tiêu chuẩn, phù hợp cho 2 người, view thành phố', 2, 'Standard', 1, 1),
+       ('DLX', 32, 15000, 'Phòng Deluxe, rộng rãi, ban công, view biển', 3, 'Deluxe', 1, 1),
+       ('STE', 50, 30000, 'Phòng Suite, cao cấp, phòng khách riêng, view toàn cảnh', 4, 'Suite', 1, 1);
 
 
 INSERT INTO policy_base_rates (policy_id, hours_duration, percentage)
@@ -327,3 +327,8 @@ INSERT INTO cart_beans (cart_bean_id, customer_id)
 INSERT INTO cart_items (room_number, cart_bean_id)
 VALUES ('STD101', 'CA5073'),
        ('DLX201', 'CA5073');
+
+select * from booking_services
+select * from bookings
+
+
