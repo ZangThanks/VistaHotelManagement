@@ -4,7 +4,7 @@ export interface Booking {
   checkInDate: string;
   checkOutDate: string;
   numberOfGuests: number;
-  status: "PENDING" | "CONFIRMED" | "CHECKED_IN" | "CHECKED_OUT" | "CANCELLED";
+  status: "PENDING" | "CHECKED_IN" | "CHECKED_OUT" | "CANCELLED";
   specialRequests?: string;
   bookingDate: string;
   cancellationDate?: string;
