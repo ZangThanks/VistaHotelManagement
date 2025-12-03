@@ -138,13 +138,15 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
 
                             {/* Footer */}
                             <div className="flex items-center justify-end gap-3 p-6 bg-gray-50">
-                                <button
-                                    onClick={onClose}
-                                    disabled={isLoading}
-                                    className="px-6 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    {cancelText}
-                                </button>
+                                {cancelText && (
+                                    <button
+                                        onClick={onClose}
+                                        disabled={isLoading}
+                                        className="px-6 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        {cancelText}
+                                    </button>
+                                )}
                                 <button
                                     onClick={onConfirm}
                                     disabled={isLoading}

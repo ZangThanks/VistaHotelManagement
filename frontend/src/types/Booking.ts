@@ -11,15 +11,7 @@ export interface Booking {
   duration: number;
   packageType: string;
   totalAmount: number;
-  paymentStatus:
-    | "PENDING"
-    | "PAID"
-    | "REFUNDED"
-    | "PARTIAL"
-    | "PERCENTAGE_30"
-    | "PERCENTAGE_50"
-    | "COMPLETED"
-    | "CANCELLED";
+  paymentStatus: "PENDING" | "PAID" | "REFUNDED" | "PARTIAL";
   invoiceType?: string | null;
   totalCost: number;
   type: "HOURLY" | "DAILY";
@@ -50,8 +42,8 @@ export interface RoomBooking {
   totalAmount: number;
   specialRequests?: string;
   paymentStatus?: string;
-  customer?: unknown;
-  bookingDetails?: unknown[];
+  customer?: any;
+  bookingDetails?: any[];
   earlyCheckin?: EarlyCheckin | null;
 }
 

@@ -1,6 +1,12 @@
 import { useEffect, useState } from "react";
-
-import { Check, X, ChevronRight, ArrowLeft } from "lucide-react";
+import {
+  Check,
+  X,
+  ChevronRight,
+  ArrowLeft,
+  Calendar,
+  Clock,
+} from "lucide-react";
 import { CiShoppingCart } from "react-icons/ci";
 import type { Room } from "../../../types/Room";
 import {
@@ -11,6 +17,8 @@ import { getById } from "../../../services/customerService";
 import type { Customer } from "../../../types/Customer";
 import { useNavigate } from "react-router-dom";
 
+type BookingType = "DAILY" | "HOURLY";
+
 export default function RoomCart() {
   const navigate = useNavigate();
   const [rooms, setRooms] = useState<Room[]>([]);
@@ -18,6 +26,7 @@ export default function RoomCart() {
   const [customer, setCustomer] = useState<Customer[]>();
   const [error, setError] = useState("");
   const [removing, setRemoving] = useState<string | null>(null);
+  const [bookingType, setBookingType] = useState<BookingType>("DAILY");
 
   const fetchData = async () => {
     const userDataStr = localStorage.getItem("user");
@@ -32,7 +41,7 @@ export default function RoomCart() {
     }
 
     const cartBeans = await getCartBeanByCustomerId(customerId);
-    setRooms(cartBeans.items);
+    setRooms(cartBeans?.items || []);
   };
 
   useEffect(() => {
@@ -47,7 +56,7 @@ export default function RoomCart() {
     );
   };
 
-  const selectedRoomDetails = rooms.filter((room) =>
+  const selectedRoomDetails = (rooms || []).filter((room) =>
     selectedRooms.includes(room.roomNumber?.toString() || "")
   );
 
@@ -75,15 +84,17 @@ export default function RoomCart() {
   };
 
   const handleContinueBooking = () => {
-    console.log("Selected rooms:", selectedRooms);
-
     if (selectedRooms.length === 0) {
       alert("Please select at least one room to continue");
       return;
     }
-    // Navigate to booking page with selected rooms via route state
+
+    // Navigate với bookingType
     navigate("/customer/bookingPage", {
-      state: { selectedRooms },
+      state: {
+        selectedRooms,
+        bookingType,
+      },
     });
   };
 
@@ -127,15 +138,69 @@ export default function RoomCart() {
             </div>
           </div>
           <p className="text-gray-600">
-            Choose your preferred rooms and add them to booking
+            Choose your preferred rooms and booking type
           </p>
+        </div>
+
+        {/* Booking Type Selection */}
+        <div className="mb-6 bg-white rounded-lg shadow-md p-6">
+          <h3 className="text-lg font-semibold text-[#2a2a2a] mb-4">
+            Select Booking Type
+          </h3>
+          <div className="flex gap-4">
+            <button
+              onClick={() => setBookingType("DAILY")}
+              className={`flex-1 flex items-center justify-center gap-3 px-6 py-4 rounded-lg border-2 transition-all ${
+                bookingType === "DAILY"
+                  ? "border-[#d4c5b9] bg-[#d4c5b9] text-white"
+                  : "border-gray-300 bg-white text-gray-700 hover:border-[#d4c5b9]"
+              }`}
+            >
+              <Calendar className="w-5 h-5" />
+              <div className="text-left">
+                <p className="font-semibold">Daily Booking</p>
+                <p className="text-sm opacity-90">
+                  Book by check-in and check-out dates
+                </p>
+              </div>
+            </button>
+
+            <button
+              onClick={() => setBookingType("HOURLY")}
+              className={`flex-1 flex items-center justify-center gap-3 px-6 py-4 rounded-lg border-2 transition-all ${
+                bookingType === "HOURLY"
+                  ? "border-[#d4c5b9] bg-[#d4c5b9] text-white"
+                  : "border-gray-300 bg-white text-gray-700 hover:border-[#d4c5b9]"
+              }`}
+            >
+              <Clock className="w-5 h-5" />
+              <div className="text-left">
+                <p className="font-semibold">Hourly Booking</p>
+                <p className="text-sm opacity-90">
+                  Book by hours with flexible time slots
+                </p>
+              </div>
+            </button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Rooms Grid */}
           <div className="lg:col-span-2">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {rooms.map((room) => (
+            {rooms && rooms.length === 0 ? (
+              <div className="text-center py-12 bg-white rounded-lg shadow-md">
+                <p className="text-gray-500 text-lg mb-2">Your cart is empty</p>
+                <p className="text-gray-400 text-sm mb-4">Add rooms to your cart to start booking</p>
+                <button
+                  onClick={() => navigate("/customer/room")}
+                  className="px-6 py-2 bg-[#d4c5b9] text-white rounded-lg hover:bg-opacity-90 transition"
+                >
+                  Browse Rooms
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {(rooms || []).map((room) => (
                 <div
                   key={room.roomNumber}
                   className={`bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300 ${
@@ -211,9 +276,15 @@ export default function RoomCart() {
                           {room.roomType?.typeName}
                         </p>
                       </div>
-                      <p className="text-xl font-bold text-[#d4c5b9]">
-                        {room.roomType?.basePrice?.toLocaleString("vi-VN")} VND
-                      </p>
+                      <div className="text-right">
+                        <p className="text-xl font-bold text-[#d4c5b9]">
+                          {room.roomType?.basePrice?.toLocaleString("vi-VN")}{" "}
+                          VND
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {bookingType === "HOURLY" ? "per hour" : "per night"}
+                        </p>
+                      </div>
                     </div>
 
                     {/* Capacity */}
@@ -282,6 +353,7 @@ export default function RoomCart() {
                 </div>
               ))}
             </div>
+            )}
           </div>
 
           {/* Booking Summary */}
@@ -293,6 +365,22 @@ export default function RoomCart() {
                 </span>
                 Booking Summary
               </h2>
+
+              {/* Booking Type Display */}
+              <div className="mb-4 p-3 bg-[#f5f1ed] rounded-lg">
+                <div className="flex items-center gap-2">
+                  {bookingType === "DAILY" ? (
+                    <Calendar className="w-4 h-4 text-[#d4c5b9]" />
+                  ) : (
+                    <Clock className="w-4 h-4 text-[#d4c5b9]" />
+                  )}
+                  <span className="text-sm font-semibold text-[#2a2a2a]">
+                    {bookingType === "DAILY"
+                      ? "Daily Booking"
+                      : "Hourly Booking"}
+                  </span>
+                </div>
+              </div>
 
               {selectedRoomDetails.length === 0 ? (
                 <div className="text-center py-8">

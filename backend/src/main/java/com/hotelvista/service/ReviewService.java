@@ -2,6 +2,7 @@ package com.hotelvista.service;
 
 import com.hotelvista.model.Booking;
 import com.hotelvista.model.BookingDetail;
+import com.hotelvista.dto.CustomerReviewDTO;
 import com.hotelvista.model.Review;
 import com.hotelvista.model.Room;
 import com.hotelvista.repository.BookingDetailRepository;
@@ -44,7 +45,7 @@ public class ReviewService {
     }
 
     @Transactional(readOnly = true)
-    public List<Review> getReviewByRoomNumber(String roomNumber) {
+    public List<CustomerReviewDTO> getReviewByRoomNumber(String roomNumber) {
         return repo.getReviewByRoomID(roomNumber);
     }
 

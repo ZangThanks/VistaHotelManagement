@@ -65,5 +65,19 @@ public class CustomerController {
         return customer;
     }
 
+    @PutMapping("/{customerId}")
+    public Customer updateCustomerProfile(@PathVariable String customerId, @RequestBody Customer customer) {
+        Customer cust = service.findById(customerId);
+        if (cust != null) {
+            cust.setFullName(customer.getFullName());
+            cust.setPhone(customer.getPhone());
+            cust.setEmail(customer.getEmail());
+            cust.setAddress(customer.getAddress());
+            cust.setBirthDate(customer.getBirthDate());
+            cust.setGender(customer.getGender());
 
+            service.save(cust);
+        }
+        return cust;
+    }
 }

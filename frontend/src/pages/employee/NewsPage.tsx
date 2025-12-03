@@ -4,7 +4,7 @@ import HeaderHome from '../../components/HeaderHome';
 import Header from '../../components/Header';
 import bannerImg from '../../assets/images/bg_newPage.png';
 
-import { getAll, getHighlighted } from '../../services/newsService';
+import { getAll } from '../../services/newsService';
 
 const NewsPage: React.FC = () => {
     const [showSolidHeader, setShowSolidHeader] = useState(false);
@@ -12,9 +12,9 @@ const NewsPage: React.FC = () => {
 
     const [highlightNews, setHighlightNews] = useState<any | null>(null);
     const [otherNews, setOtherNews] = useState<any[]>([]);
-    const [visibleCount, setVisibleCount] = useState(3); // Hiện 3 bài
+    const [visibleCount, setVisibleCount] = useState(3);
 
-    // Header Effect (Đổi header khi scroll quá banner)
+    // EFFECT: Header chuyển dạng
     useEffect(() => {
         const handleScroll = () => {
             if (!bannerRef.current) return;
@@ -26,19 +26,59 @@ const NewsPage: React.FC = () => {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
-        // Fetch Data (Nổi bật + Khác)
+    // 🔥 Hàm xử lý ngày đúng theo type
+    const getValidDate = (item: any) => {
+        // NEWS → dùng createdAt
+        if (item.type === 'NEWS') {
+            return item.createdAt
+                ? new Date(item.createdAt).getTime()
+                : Infinity;
+        }
+        // EVENT/PROMOTION → dùng startDate
+        if (item.startDate) {
+            return new Date(item.startDate).getTime();
+        }
+        return Infinity;
+    };
+
+    // FETCH NEWS + tính toán highlight đúng theo yêu cầu mới
     useEffect(() => {
         const fetchNews = async () => {
             try {
-                const highlight = await getHighlighted();
-                const all = await getAll();
+                const allNews = await getAll();
+                if (!allNews || allNews.length === 0) return;
 
-                const topHighlight = highlight?.[0] ?? null;
-                const others = all.filter(
-                    (item: any) => item.newsId !== topHighlight?.newsId,
+                const today = new Date().getTime();
+
+                // Lấy tin highlight
+                const highlightList = allNews.filter(
+                    (n: any) => n.highlight === true,
                 );
 
-                setHighlightNews(topHighlight);
+                let selectedHighlight = null;
+
+                if (highlightList.length > 0) {
+                    // Chọn highlight → có ngày gần nhất
+                    selectedHighlight = highlightList.sort((a: any, b: any) => {
+                        const d1 = Math.abs(getValidDate(a) - today);
+                        const d2 = Math.abs(getValidDate(b) - today);
+                        return d1 - d2;
+                    })[0];
+                } else {
+                    // Nếu không có highlight → chọn bài gần nhất
+                    selectedHighlight = allNews.sort((a: any, b: any) => {
+                        const d1 = Math.abs(getValidDate(a) - today);
+                        const d2 = Math.abs(getValidDate(b) - today);
+                        return d1 - d2;
+                    })[0];
+                }
+
+                // Các tin còn lại
+                const others = allNews.filter(
+                    (n: any) => n.newsId !== selectedHighlight.newsId,
+                );
+
+                setHighlightNews(selectedHighlight);
                 setOtherNews(others);
             } catch (error) {
                 console.error('Lỗi khi tải tin tức:', error);
@@ -52,10 +92,8 @@ const NewsPage: React.FC = () => {
 
     return (
         <div className="bg-white text-slate-800 font-sans">
-            {/* Sticky Header Transition */}
-
+            {/* HEADER */}
             <div className="fixed top-0 left-0 w-full z-[9999] transition-all duration-700">
-                {/* Transparent Header */}
                 <div
                     className={`transition-opacity duration-700 ${
                         showSolidHeader
@@ -66,7 +104,6 @@ const NewsPage: React.FC = () => {
                     <HeaderHome />
                 </div>
 
-                {/* Solid Header */}
                 <div
                     className={`absolute top-0 left-0 w-full transition-opacity duration-700 ${
                         showSolidHeader
@@ -78,7 +115,7 @@ const NewsPage: React.FC = () => {
                 </div>
             </div>
 
-            {/* Banner */}
+            {/* BANNER */}
             <img
                 ref={bannerRef}
                 src={bannerImg}
@@ -107,7 +144,7 @@ const NewsPage: React.FC = () => {
 
                             <div className="p-5 md:p-6">
                                 <p className="text-[11px] uppercase tracking-widest text-slate-400">
-                                    {highlightNews.category}
+                                    {highlightNews.type}
                                 </p>
 
                                 <h2 className="mt-1 font-serif text-xl md:text-2xl text-slate-800">
@@ -143,9 +180,8 @@ const NewsPage: React.FC = () => {
                     {visibleOthers.map((news, index) => (
                         <article
                             key={news.newsId}
-                            className={`mt-10 grid md:grid-cols-2 gap-10 items-center`}
+                            className="mt-10 grid md:grid-cols-2 gap-10 items-center"
                         >
-                            {/* HÌNH */}
                             <div
                                 className={`aspect-[4/3] rounded-lg overflow-hidden shadow-lg ${
                                     index % 2 === 1 ? 'md:order-2' : ''
@@ -158,7 +194,6 @@ const NewsPage: React.FC = () => {
                                 />
                             </div>
 
-                            {/* NỘI DUNG */}
                             <div
                                 className={`${
                                     index % 2 === 1 ? 'md:order-1' : ''
@@ -182,7 +217,7 @@ const NewsPage: React.FC = () => {
                         </article>
                     ))}
 
-                    {/* NÚT XEM THÊM */}
+                    {/* BUTTON XEM THÊM */}
                     <div className="py-10 flex justify-center">
                         {visibleCount < otherNews.length ? (
                             <button

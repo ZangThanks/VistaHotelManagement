@@ -121,14 +121,14 @@ const RoomStatusBoard: React.FC<RoomStatusBoardProps> = ({
                                         <button
                                             key={room.id}
                                             onClick={() => onRoomClick(room)}
-                                            className={`${colors.bg} ${colors.border} border-2 rounded-lg p-4 hover:shadow-lg transition-all hover:scale-105 cursor-pointer group`}
+                                            className={`${colors.bg} ${colors.border} border-2 rounded-lg p-2 hover:shadow-lg transition-all hover:scale-105 cursor-pointer group`}
                                         >
                                             <div className="flex flex-col items-center gap-2">
                                                 <Icon
-                                                    className={`text-2xl ${colors.icon}`}
+                                                    className={`text-xl ${colors.icon}`}
                                                 />
                                                 <span
-                                                    className={`text-lg font-bold ${colors.text}`}
+                                                    className={`text-md font-bold ${colors.text}`}
                                                 >
                                                     {room.roomNumber}
                                                 </span>

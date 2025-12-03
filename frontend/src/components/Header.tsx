@@ -1,22 +1,22 @@
-import React, { useState } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBars, faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
-import { faUser } from "@fortawesome/free-solid-svg-icons";
-import MenuSidebar from "./MenuSidebar";
-import SearchSidebar from "./SearchSidebar";
-import { Link } from "react-router-dom";
+import React, { useState } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faBars, faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons';
+import { faUser } from '@fortawesome/free-solid-svg-icons';
+import MenuSidebar from './MenuSidebar';
+import SearchSidebar from './SearchSidebar';
+import { Link } from 'react-router-dom';
 import { CiShoppingCart } from "react-icons/ci";
 
-import type { NavItem } from "../types/Header";
+import type { NavItem } from '../types/Header';
 
 const navItems: NavItem[] = [
-  { label: "Overview", path: "/home" },
-  { label: "About Us", path: "/contact" },
-  { label: "Accommodation", path: "/customer/room" },
-  { label: "Services", path: "/customer/service" },
-  { label: "Events", path: "/news" },
-  { label: "Exclusive Offers", path: "/customer/promotion/list" },
-  { label: "My bookings", path: "/customer/booking/mybookings" },
+    { label: 'Overview', path: '/home' },
+    { label: 'About Us', path: '/contact' },
+    { label: 'Accommodation', path: '/customer/room/list' },
+    { label: 'Services', path: '/services' },
+    { label: 'Events', path: '/newsPage' },
+    { label: 'Exclusive Offers', path: '/customer/promotion/list' },
+    { label: 'My bookings', path: '/customer/booking/mybookings' },
 ];
 
 const Header: React.FC = () => {
@@ -47,9 +47,14 @@ const Header: React.FC = () => {
         />
       </Link>
 
-      <button className="ml-auto flex items-center text-black hover:opacity-80 transition">
-        <FontAwesomeIcon icon={faUser} className=" text-black text-2xl" />
-      </button>
+            <div className="ml-auto">
+                <button className="flex items-center text-black hover:opacity-80 transition">
+                    <FontAwesomeIcon
+                        icon={faUser}
+                        className=" text-black text-2xl"
+                    />
+                </button>
+            </div>
 
       <Link to="/customer/cart">
         <CiShoppingCart className="ml-4 text-black text-3xl hover:opacity-80 transition" />

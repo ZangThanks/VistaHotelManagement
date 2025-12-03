@@ -81,8 +81,7 @@ public class Booking {
     private Employee employee;
 
     @ToString.Exclude
-    @JsonIgnore
-    @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "booking")
     private List<BookingDetail> bookingDetails;
 
     @ToString.Exclude
@@ -95,7 +94,8 @@ public class Booking {
     @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MaintenanceRequest> maintenanceRequests;
 
-    @OneToOne
+    @OneToOne(mappedBy = "booking")
+    @ToString.Exclude
     private EarlyCheckin earlyCheckin;
 
     @Enumerated(EnumType.STRING)

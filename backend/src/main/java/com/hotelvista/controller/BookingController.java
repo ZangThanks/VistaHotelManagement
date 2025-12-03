@@ -7,6 +7,7 @@ import com.hotelvista.model.BookingDetail;
 import com.hotelvista.model.Customer;
 import com.hotelvista.model.enums.BookingStatus;
 import com.hotelvista.model.enums.PaymentStatus;
+import com.hotelvista.model.enums.RoomStatus;
 import com.hotelvista.service.BookingDetailService;
 import com.hotelvista.service.BookingService;
 import com.hotelvista.util.PaymentUtil;
@@ -19,7 +20,11 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @RestController
 @RequestMapping("/bookings")
@@ -66,7 +71,8 @@ public class BookingController {
         return service.findAllByCustomer_Id(customerId);
     }
 
-    // http://localhost:8080/bookings/search?keyword=BKG001
+    
+    
     @GetMapping("/search")
     public List<Booking> searchBookings(@RequestParam(required = false) String keyword) {
         return service.searchBookings(keyword);
@@ -80,6 +86,11 @@ public class BookingController {
     @GetMapping("/room/{roomNumber}")
     public List<Booking> findAllByRoom_RoomNumber(@PathVariable("roomNumber") String roomNumber) {
         return service.findAllByRoom_RoomNumber(roomNumber);
+    }
+
+    @PutMapping("/{bookingId}/check-in")
+    public Booking checkIn(@PathVariable String bookingId) {
+        return service.checkIn(bookingId);
     }
 
     @GetMapping(value = "/payment-qr/{bookingId}", produces = MediaType.IMAGE_PNG_VALUE)
@@ -208,7 +219,7 @@ public class BookingController {
             // Update booking payment status
             booking.setPaymentStatus(newStatus);
             boolean saved = service.save(booking);
-            
+
             if (saved) {
                 System.out.println("SUCCESS: Booking " + bookingId + " payment status updated to " + newStatus);
                 System.out.println("Amount received: " + receivedAmount + " / Total: " + totalAmount);
@@ -225,11 +236,252 @@ public class BookingController {
         }
     }
 
-    @PutMapping("/{bookingId}/check-in")
-    public Booking checkIn(@PathVariable String bookingId) {
-        return service.checkIn(bookingId);
+    /**
+     * Trích booking ID từ payment content or description
+     * "Qafmgq4306  SEPAY7974 1  108449638088-B2411250005-CHUYEN TIEN..."
+     */
+    private String extractBookingId(String content, String description) {
+        // Try content first
+        String text = (content != null && !content.trim().isEmpty()) ? content : description;
+        if (text == null || text.trim().isEmpty()) {
+            return null;
+        }
+
+        System.out.println("Extracting booking ID from: " + text);
+
+        // Bank format: Look for booking ID pattern B + 10 digits
+        // Example: "Qafmgq4306  SEPAY7974 1  108449638088-B2411250005-CHUYEN TIEN..."
+        // Booking ID format: B[ddMMyy][sequence] e.g., B2411250005
+
+        // Use regex to find booking ID pattern in the entire text
+        Pattern pattern = java.util.regex.Pattern.compile("B\\d{10}");
+        Matcher matcher = pattern.matcher(text);
+
+        if (matcher.find()) {
+            String bookingId = matcher.group();
+            System.out.println("Extracted booking ID using regex pattern: " + bookingId);
+            return bookingId;
+        }
+
+        System.out.println("No booking ID found in text");
+        return null;
     }
 
+    /**
+     * Tính toán số tiền thanh toán dự kiến dự trên điểm uy tín (reputationScore) của khách hàng
+     */
+    private double calculateExpectedPaymentAmount(Booking booking, Customer customer) {
+        double totalAmount = booking.getTotalAmount();
+        int reputation = customer.getReputationPoint();
+
+        if (reputation >= 0 && reputation <= 40) {
+            return totalAmount; // 100% prepayment
+        } else if (reputation > 40 && reputation <= 80) {
+            return totalAmount * 0.3; // 30% prepayment
+        } else {
+            // For high reputation (81-100), they can choose 0%, 50%, or 100%
+            // We can't know their choice here, so return 0 to skip validation
+            return 0;
+        }
+    }
+
+    /**
+     * Xác định payment status dựa trên số tiền đã thanh toán và tổng số tiền
+     */
+    private PaymentStatus determinePaymentStatus(double paidAmount, double totalAmount, Customer customer) {
+        if (paidAmount <= 0) {
+            return PaymentStatus.PENDING;
+        }
+
+        double percentage = (paidAmount / totalAmount) * 100;
+
+        if (percentage >= 99) { // Allow small tolerance
+            return PaymentStatus.PAID;
+        } else if (percentage >= 45 && percentage < 55) {
+            return PaymentStatus.PERCENTAGE_50;
+        } else if (percentage >= 25 && percentage < 35) {
+            return PaymentStatus.PERCENTAGE_30;
+        } else {
+            return PaymentStatus.PAID; // Any payment received marks as paid
+        }
+    }
+
+    /**
+     * Lây bookings theo check-in date
+     */
+    @GetMapping("/check-in-date")
+    public List<Booking> findAllByCheckInDate(@RequestParam String date) {
+        LocalDate checkInDate = LocalDate.parse(date);
+        LocalDateTime startOfDay = checkInDate.atStartOfDay();
+        LocalDateTime endOfDay = checkInDate.atTime(23, 59, 59);
+        return service.findAllByCheckInDateBetween(startOfDay, endOfDay);
+    }
+
+    /**
+     * Lấy bookings khoảng thời gian
+     */
+    @GetMapping("/check-in-range")
+    public List<Booking> findAllByCheckInDateRange(
+            @RequestParam String startDate,
+            @RequestParam String endDate
+    ) {
+        LocalDate start = LocalDate.parse(startDate);
+        LocalDate end = LocalDate.parse(endDate);
+        LocalDateTime startDateTime = start.atStartOfDay();
+        LocalDateTime endDateTime = end.atTime(23, 59, 59);
+        return service.findAllByCheckInDateBetween(startDateTime, endDateTime);
+    }
+    /**
+     * Lấy bookings theo check-out date
+     */
+    @GetMapping("/check-out-date")
+    public List<Booking> findAllByCheckOutDate(@RequestParam String date) {
+        LocalDate checkOutDate = LocalDate.parse(date);
+        LocalDateTime startOfDay = checkOutDate.atStartOfDay();
+        LocalDateTime endOfDay = checkOutDate.atTime(23, 59, 59);
+        return service.findAllByCheckOutDateBetween(startOfDay, endOfDay);
+    }
+
+    /**
+     * Lấy bookings theo check-out date range
+     */
+    @GetMapping("/check-out-range")
+    public List<Booking> findAllByCheckOutDateRange(
+            @RequestParam String startDate,
+            @RequestParam String endDate
+    ) {
+        LocalDate start = LocalDate.parse(startDate);
+        LocalDate end = LocalDate.parse(endDate);
+        LocalDateTime startDateTime = start.atStartOfDay();
+        LocalDateTime endDateTime = end.atTime(23, 59, 59);
+        return service.findAllByCheckOutDateBetween(startDateTime, endDateTime);
+    }
+
+    /**
+     * Process checkout và thanh toán
+     */
+    @PostMapping("/{bookingId}/checkout")
+    public ResponseEntity<?> processCheckout(
+            @PathVariable String bookingId,
+            @RequestBody Map<String, String> request
+    ) {
+        try {
+            String paymentMethod = request.get("paymentMethod");
+            Booking booking = service.findById(bookingId);
+
+            if (booking == null) {
+                return ResponseEntity.badRequest().body("Booking not found");
+            }
+
+            if (booking.getStatus() != BookingStatus.CHECKED_IN) {
+                return ResponseEntity.badRequest().body("Booking must be checked in to checkout");
+            }
+
+            if (booking.getPaymentStatus() != PaymentStatus.PAID) {
+                double remainingAmount = calculateRemainingAmount(booking);
+
+                if (remainingAmount > 0) {
+
+                    booking.setPaymentStatus(PaymentStatus.PAID);
+                }
+            }
+
+            // Cập nhật trạng thái booking sang CHECKED_OUT
+            booking.setStatus(BookingStatus.CHECKED_OUT);
+            booking.setCheckOutDate(LocalDateTime.now());
+
+            booking.getBookingDetails().forEach(r -> {
+                r.getRoom().setStatus(RoomStatus.CLEANING);
+                //TODO: Cập nhật trạng thái phòng
+            });
+
+            boolean saved = service.save(booking);
+
+            if (saved) {
+                return ResponseEntity.ok(booking);
+            } else {
+                return ResponseEntity.internalServerError().body("Failed to process checkout");
+            }
+
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                    .body("Error processing checkout: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Tính số tiền còn lại cần thanh toán
+     */
+    private double calculateRemainingAmount(Booking booking) {
+        double totalAmount = booking.getTotalAmount();
+        PaymentStatus status = booking.getPaymentStatus();
+
+        switch (status) {
+            case PAID:
+                return 0;
+            case PERCENTAGE_50:
+                return totalAmount * 0.5;
+            case PERCENTAGE_30:
+                return totalAmount * 0.7;
+            case PENDING:
+                return totalAmount;
+            default:
+                return totalAmount;
+        }
+    }
+
+    /**
+     * Lấy thông tin checkout chi tiết
+     */
+    @GetMapping("/{bookingId}/checkout-details")
+    public ResponseEntity<?> getCheckoutDetails(@PathVariable String bookingId) {
+        try {
+            Booking booking = service.findById(bookingId);
+
+            if (booking == null) {
+                return ResponseEntity.badRequest().body("Booking not found");
+            }
+
+            // Tính toán chi tiết thanh toán
+            double totalAmount = booking.getTotalAmount();
+            double paidAmount = calculatePaidAmount(booking);
+            double remainingAmount = totalAmount - paidAmount;
+
+            Map<String, Object> details = new HashMap<>();
+            details.put("booking", booking);
+            details.put("totalAmount", totalAmount);
+            details.put("paidAmount", paidAmount);
+            details.put("remainingAmount", remainingAmount);
+            details.put("paymentStatus", booking.getPaymentStatus());
+
+            return ResponseEntity.ok(details);
+
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                    .body("Error getting checkout details: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Tính số tiền đã thanh toán
+     */
+    private double calculatePaidAmount(Booking booking) {
+        double totalAmount = booking.getTotalAmount();
+        PaymentStatus status = booking.getPaymentStatus();
+
+        switch (status) {
+            case PAID:
+                return totalAmount;
+            case PERCENTAGE_50:
+                return totalAmount * 0.5;
+            case PERCENTAGE_30:
+                return totalAmount * 0.3;
+            case PENDING:
+                return 0;
+            default:
+                return 0;
+        }
+    }
     @GetMapping("/overlapping-bookings/{roomNumber}")
     public List<LocalDateTime> findOverlappingBookings(@PathVariable("roomNumber") String roomNumber) {
         return bookingDetailService.findOverlappingBookings(roomNumber);

@@ -1,5 +1,8 @@
 package com.hotelvista.model;
 
+import com.hotelvista.model.enums.NewsType;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -23,4 +26,6 @@ public class News {
     private LocalDateTime startDate;  // Ngày bắt đầu sự kiện
     private LocalDateTime endDate;    // Ngày kết thúc sự kiện
     private boolean highlight;   // Đánh dấu tin nổi bật (ví dụ: true/false)
+    @Enumerated(EnumType.STRING)
+    private NewsType type;
 }

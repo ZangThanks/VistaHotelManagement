@@ -6,3 +6,10 @@ export interface CustomerVoucher {
   voucher: Voucher;
   state: boolean;
 }
+
+export interface DistributionCriteria {
+  membershipLevel?: string[];
+  gender?: string[];
+  birthMonth?: number[];
+  minLoyaltyPoints?: number;
+}

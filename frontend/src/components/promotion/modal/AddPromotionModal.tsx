@@ -3,12 +3,20 @@ import { FaTimes, FaPlus, FaTrash, FaInfoCircle } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import Dropdown from "../../Dropdown";
 import type { Promotion } from "../../../types/Promotion";
+import type { PromotionType } from "../../../types/PromotionType";
+import type { RoomType } from "../../../types/RoomType";
+import { getAllPromotionTypes } from "../../../services/promotionTypeService";
+import { getAllRoomTypes } from "../../../services/roomService";
+import { getRoomTypePromotionsByPromotionId } from "../../../services/roomTypePromotionService";
+import { useToastContext } from "../../../hooks/useToastContext";
+import { FaSpinner } from "react-icons/fa";
 
 interface AddPromotionModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (promotion: Partial<Promotion>) => void;
   editPromotion?: Promotion | null;
+  submitting?: boolean;
 }
 
 interface RoomTypePromotionForm {
@@ -24,7 +32,10 @@ const AddPromotionModal: React.FC<AddPromotionModalProps> = ({
   onClose,
   onSubmit,
   editPromotion,
+  submitting = false,
 }) => {
+  const toast = useToastContext();
+
   const [formData, setFormData] = useState<Partial<Promotion>>({
     promotionName: "",
     description: "",
@@ -33,88 +44,257 @@ const AddPromotionModal: React.FC<AddPromotionModalProps> = ({
     promotionType: undefined,
   });
 
+  const [errors, setErrors] = useState<{
+    promotionID?: string;
+    promotionName?: string;
+    promotionType?: string;
+    discountType?: string;
+    roomTypePromotions?: string;
+  }>({});
+
   const [roomTypePromotions, setRoomTypePromotions] = useState<
     RoomTypePromotionForm[]
   >([]);
 
-  // Mock data for dropdowns
-  const promotionTypes = [
-    { value: "seasonal", label: "Seasonal" },
-    { value: "special", label: "Special Event" },
-    { value: "member", label: "Member Only" },
-    { value: "flash", label: "Flash Sale" },
-  ];
+  const [promotionTypes, setPromotionTypes] = useState<
+    { value: string; label: string }[]
+  >([]);
+  const [roomTypes, setRoomTypes] = useState<
+    { value: string; label: string }[]
+  >([]);
 
-  const roomTypes = [
-    { value: "deluxe", label: "Deluxe Room" },
-    { value: "suite", label: "Suite" },
-    { value: "standard", label: "Standard Room" },
-    { value: "presidential", label: "Presidential Suite" },
-  ];
-
+  // Fetch promotion types and room types
   useEffect(() => {
-    if (editPromotion) {
-      setFormData({
-        promotionID: editPromotion.promotionID,
-        promotionName: editPromotion.promotionName,
-        description: editPromotion.description,
-        discountType: editPromotion.discountType,
-        active: editPromotion.active,
-        promotionType: editPromotion.promotionType,
-      });
+    const fetchData = async () => {
+      try {
+        const [promotionTypesData, roomTypesData] = await Promise.all([
+          getAllPromotionTypes(),
+          getAllRoomTypes(),
+        ]);
 
-      if (
-        editPromotion.roomTypePromotion &&
-        editPromotion.roomTypePromotion.length > 0
-      ) {
-        setRoomTypePromotions(
-          editPromotion.roomTypePromotion.map((rtp) => ({
-            roomTypeId:
-              typeof rtp.roomType === "string"
-                ? rtp.roomType
-                : rtp.roomType.roomTypeID || "",
-            roomTypeName:
-              typeof rtp.roomType === "string"
-                ? rtp.roomType
-                : rtp.roomType.typeName || "",
-            discountValue: rtp.discountValue,
-            startDate: rtp.startDate,
-            endDate: rtp.endDate,
+        setPromotionTypes(
+          promotionTypesData.map((pt: PromotionType) => ({
+            value: pt.promotionTypeID || "",
+            label: pt.promotionTYPEName || pt.promotionTypeID || "",
           }))
         );
+
+        setRoomTypes(
+          roomTypesData.map((rt: RoomType) => ({
+            value: rt.roomTypeID || "",
+            label: rt.typeName || rt.roomTypeID || "",
+          }))
+        );
+      } catch (error) {
+        console.error("Error fetching dropdown data:", error);
       }
-    } else {
-      setFormData({
-        promotionName: "",
-        description: "",
-        discountType: undefined,
-        active: true,
-        promotionType: undefined,
-      });
-      setRoomTypePromotions([]);
+    };
+
+    if (isOpen) {
+      fetchData();
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    const loadPromotionData = async () => {
+      if (editPromotion) {
+        setFormData({
+          promotionID: editPromotion.promotionID,
+          promotionName: editPromotion.promotionName,
+          description: editPromotion.description,
+          discountType: editPromotion.discountType,
+          active: editPromotion.active,
+          promotionType: editPromotion.promotionType,
+        });
+
+        // Load room type promotions from backend
+        try {
+          const rtpData = await getRoomTypePromotionsByPromotionId(
+            editPromotion.promotionID || ""
+          );
+
+          if (rtpData && rtpData.length > 0) {
+            setRoomTypePromotions(
+              rtpData.map(
+                (rtp: {
+                  roomType?: { roomTypeID?: string; typeName?: string };
+                  discountValue?: number;
+                  startDate?: string;
+                  endDate?: string;
+                }) => ({
+                  roomTypeId: rtp.roomType?.roomTypeID || "",
+                  roomTypeName: rtp.roomType?.typeName || "",
+                  discountValue: rtp.discountValue || 0,
+                  startDate: rtp.startDate || "",
+                  endDate: rtp.endDate || "",
+                })
+              )
+            );
+          }
+        } catch (error) {
+          console.error("Error loading room type promotions:", error);
+        }
+      } else {
+        setFormData({
+          promotionName: "",
+          description: "",
+          discountType: undefined,
+          active: true,
+          promotionType: undefined,
+        });
+        setRoomTypePromotions([]);
+      }
+    };
+
+    if (isOpen) {
+      loadPromotionData();
     }
   }, [editPromotion, isOpen]);
+
+  const validateForm = (): boolean => {
+    const newErrors: typeof errors = {};
+
+    // Validate Promotion Code
+    if (!editPromotion) {
+      if (!formData.promotionID) {
+        newErrors.promotionID = "Promotion Code is required";
+      } else if (formData.promotionID.length < 3) {
+        newErrors.promotionID = "Promotion Code must be at least 3 characters";
+      } else if (!/^[A-Z0-9]+$/.test(formData.promotionID)) {
+        newErrors.promotionID =
+          "Promotion Code must contain only uppercase letters and numbers";
+      }
+    }
+
+    // Validate Promotion Name
+    if (!formData.promotionName || formData.promotionName.trim() === "") {
+      newErrors.promotionName = "Promotion Name is required";
+    } else if (formData.promotionName.length < 3) {
+      newErrors.promotionName = "Promotion Name must be at least 3 characters";
+    }
+
+    // Validate Promotion Type
+    if (!formData.promotionType) {
+      newErrors.promotionType = "Please select a Promotion Type";
+    }
+
+    // Validate Discount Type
+    if (!formData.discountType) {
+      newErrors.discountType = "Please select a Discount Type";
+    }
+
+    // Validate Room Type Promotions
+    if (roomTypePromotions.length === 0) {
+      newErrors.roomTypePromotions =
+        "Please add at least one room type promotion";
+    } else {
+      // Check for duplicate room types
+      const roomTypeIds = roomTypePromotions
+        .map((rtp) => rtp.roomTypeId)
+        .filter((id) => id);
+      const duplicates = roomTypeIds.filter(
+        (id, index) => roomTypeIds.indexOf(id) !== index
+      );
+      if (duplicates.length > 0) {
+        newErrors.roomTypePromotions = "Duplicate room types are not allowed";
+      }
+
+      // Validate each room type promotion
+      for (let i = 0; i < roomTypePromotions.length; i++) {
+        const rtp = roomTypePromotions[i];
+
+        if (!rtp.roomTypeId) {
+          newErrors.roomTypePromotions = `Room Type #${
+            i + 1
+          }: Please select a room type`;
+          break;
+        }
+
+        if (!rtp.discountValue || rtp.discountValue <= 0) {
+          newErrors.roomTypePromotions = `Room Type #${
+            i + 1
+          }: Discount value must be greater than 0`;
+          break;
+        }
+
+        if (formData.discountType === "PERCENT" && rtp.discountValue > 100) {
+          newErrors.roomTypePromotions = `Room Type #${
+            i + 1
+          }: Percentage discount cannot exceed 100%`;
+          break;
+        }
+
+        if (!rtp.startDate) {
+          newErrors.roomTypePromotions = `Room Type #${
+            i + 1
+          }: Start date is required`;
+          break;
+        }
+
+        if (!rtp.endDate) {
+          newErrors.roomTypePromotions = `Room Type #${
+            i + 1
+          }: End date is required`;
+          break;
+        }
+
+        if (new Date(rtp.startDate) >= new Date(rtp.endDate)) {
+          newErrors.roomTypePromotions = `Room Type #${
+            i + 1
+          }: End date must be after start date`;
+          break;
+        }
+      }
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (roomTypePromotions.length === 0) {
-      alert("Please add at least one room type promotion");
+    // Clear previous errors
+    setErrors({});
+
+    // Validate form
+    if (!validateForm()) {
+      toast.error("Please fix all validation errors before submitting");
       return;
     }
 
-    for (const rtp of roomTypePromotions) {
-      if (new Date(rtp.startDate) >= new Date(rtp.endDate)) {
-        alert("End date must be after start date");
-        return;
-      }
-    }
+    // Format data to match backend expectations
+    const submitData: Partial<Promotion> & {
+      roomTypePromotions?: Array<{
+        roomType: { roomTypeID: string };
+        discountValue: number;
+        startDate: string;
+        endDate: string;
+      }>;
+    } = {
+      promotionID: formData.promotionID,
+      promotionName: formData.promotionName,
+      description: formData.description,
+      discountType: formData.discountType,
+      active: formData.active,
+      promotionType: formData.promotionType
+        ? {
+            promotionTypeID: formData.promotionType.promotionTypeID,
+            promotionTYPEName: formData.promotionType.promotionTYPEName || "",
+          }
+        : undefined,
+      roomTypePromotions: roomTypePromotions.map((rtp) => ({
+        roomType: {
+          roomTypeID: rtp.roomTypeId,
+        },
+        discountValue: Number(rtp.discountValue),
+        startDate: rtp.startDate,
+        endDate: rtp.endDate,
+      })),
+    };
 
-    onSubmit({
-      ...formData,
-      roomTypePromotion:
-        roomTypePromotions as unknown as Promotion["roomTypePromotion"],
-    });
+    console.log("Submit data:", JSON.stringify(submitData, null, 2));
+    onSubmit(submitData);
   };
 
   const addRoomTypePromotion = () => {
@@ -159,8 +339,8 @@ const AddPromotionModal: React.FC<AddPromotionModalProps> = ({
   };
 
   const discountTypeOptions = [
-    { value: "percentage", label: "Percentage (%)" },
-    { value: "fixed", label: "Fixed Amount (VND)" },
+    { value: "PERCENT", label: "Percentage (%)" },
+    { value: "FIXED", label: "Fixed Amount (VND)" },
   ];
 
   return (
@@ -188,7 +368,7 @@ const AddPromotionModal: React.FC<AddPromotionModalProps> = ({
               </h2>
               <button
                 onClick={onClose}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
               >
                 <FaTimes className="text-gray-600 text-xl" />
               </button>
@@ -200,30 +380,83 @@ const AddPromotionModal: React.FC<AddPromotionModalProps> = ({
                 {/* Basic Info Section */}
                 <div className="space-y-4">
                   <div className="flex items-center gap-2 pb-2 border-b border-gray-200">
-                    <FaInfoCircle className="text-[#b27c1f]" />
+                    <FaInfoCircle className="text-[#5a4d3e]" />
                     <h3 className="text-lg font-semibold text-gray-900">
                       Basic Information
                     </h3>
                   </div>
 
+                  {/* Promotion Code */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Promotion Code <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.promotionID || ""}
+                      onChange={(e) => {
+                        setFormData({
+                          ...formData,
+                          promotionID: e.target.value.toUpperCase(),
+                        });
+                        if (errors.promotionID) {
+                          setErrors({ ...errors, promotionID: undefined });
+                        }
+                      }}
+                      className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 transition-colors text-gray-700 font-mono ${
+                        errors.promotionID
+                          ? "border-red-300 focus:ring-red-500 focus:border-red-500"
+                          : "border-gray-300 focus:ring-[#6b5e4c] focus:border-[#6b5e4c]"
+                      }`}
+                      placeholder="e.g., SUMMER2025"
+                      disabled={!!editPromotion}
+                      required
+                    />
+                    {errors.promotionID && (
+                      <p className="mt-1 text-xs text-red-600 flex items-center gap-1">
+                        <FaInfoCircle className="text-xs" />
+                        {errors.promotionID}
+                      </p>
+                    )}
+                    {!editPromotion && !errors.promotionID && (
+                      <p className="mt-1 text-xs text-gray-500">
+                        Enter a unique code for this promotion (e.g.,
+                        SUMMER2025, PROMO001)
+                      </p>
+                    )}
+                  </div>
+
                   {/* Promotion Name */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Promotion Name
+                      Promotion Name <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
                       value={formData.promotionName || ""}
-                      onChange={(e) =>
+                      onChange={(e) => {
                         setFormData({
                           ...formData,
                           promotionName: e.target.value,
-                        })
-                      }
-                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6b5e4c] focus:border-[#6b5e4c] transition-colors text-gray-700"
+                        });
+                        if (errors.promotionName) {
+                          setErrors({ ...errors, promotionName: undefined });
+                        }
+                      }}
+                      className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 transition-colors text-gray-700 ${
+                        errors.promotionName
+                          ? "border-red-300 focus:ring-red-500 focus:border-red-500"
+                          : "border-gray-300 focus:ring-[#6b5e4c] focus:border-[#6b5e4c]"
+                      }`}
                       placeholder="Enter promotion name..."
                       required
                     />
+                    {errors.promotionName && (
+                      <p className="mt-1 text-xs text-red-600 flex items-center gap-1">
+                        <FaInfoCircle className="text-xs" />
+                        {errors.promotionName}
+                      </p>
+                    )}
                   </div>
 
                   {/* Description */}
@@ -249,7 +482,7 @@ const AddPromotionModal: React.FC<AddPromotionModalProps> = ({
                     {/* Promotion Type */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Promotion Type
+                        Promotion Type <span className="text-red-500">*</span>
                       </label>
                       <Dropdown
                         options={promotionTypes}
@@ -258,38 +491,58 @@ const AddPromotionModal: React.FC<AddPromotionModalProps> = ({
                             ? formData.promotionType?.promotionTypeID || ""
                             : ""
                         }
-                        onChange={(value) =>
+                        onChange={(value) => {
                           setFormData({
                             ...formData,
-                            promotionType: promotionTypes.find(
-                              (t) => t.value === value
-                            )
+                            promotionType: value
                               ? {
                                   promotionTypeID: value,
-                                  promotionTypeName: promotionTypes.find(
-                                    (t) => t.value === value
-                                  )!.label,
+                                  promotionTYPEName:
+                                    promotionTypes.find(
+                                      (t) => t.value === value
+                                    )?.label || "",
                                 }
                               : undefined,
-                          })
-                        }
+                          });
+                          if (errors.promotionType) {
+                            setErrors({ ...errors, promotionType: undefined });
+                          }
+                        }}
                         placeholder="Select promotion type"
                       />
+                      {errors.promotionType && (
+                        <p className="mt-1 text-xs text-red-600 flex items-center gap-1">
+                          <FaInfoCircle className="text-xs" />
+                          {errors.promotionType}
+                        </p>
+                      )}
                     </div>
 
                     {/* Discount Type */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Discount Type
+                        Discount Type <span className="text-red-500">*</span>
                       </label>
                       <Dropdown
                         options={discountTypeOptions}
                         value={formData.discountType || ""}
-                        onChange={(value) =>
-                          setFormData({ ...formData, discountType: value })
-                        }
+                        onChange={(value) => {
+                          setFormData({
+                            ...formData,
+                            discountType: value as "PERCENT" | "FIXED",
+                          });
+                          if (errors.discountType) {
+                            setErrors({ ...errors, discountType: undefined });
+                          }
+                        }}
                         placeholder="Select discount type"
                       />
+                      {errors.discountType && (
+                        <p className="mt-1 text-xs text-red-600 flex items-center gap-1">
+                          <FaInfoCircle className="text-xs" />
+                          {errors.discountType}
+                        </p>
+                      )}
                     </div>
                   </div>
 
@@ -302,7 +555,7 @@ const AddPromotionModal: React.FC<AddPromotionModalProps> = ({
                       onChange={(e) =>
                         setFormData({ ...formData, active: e.target.checked })
                       }
-                      className="w-5 h-5 text-[#6b5e4c] border-gray-300 rounded focus:ring-[#6b5e4c] accent-[#b27c1f]"
+                      className="w-5 h-5 text-[#5a4d3e] border-gray-300 rounded focus:ring-[#5a4d3e] "
                     />
                     <label
                       htmlFor="isActive"
@@ -317,20 +570,38 @@ const AddPromotionModal: React.FC<AddPromotionModalProps> = ({
                 <div className="space-y-4">
                   <div className="flex items-center justify-between pb-2 border-b border-gray-200">
                     <div className="flex items-center gap-2">
-                      <FaInfoCircle className="text-[#b27c1f]" />
+                      <FaInfoCircle className="text-[#5a4d3e]" />
                       <h3 className="text-lg font-semibold text-gray-900">
-                        Room Type Promotions
+                        Room Type Promotions{" "}
+                        <span className="text-red-500">*</span>
                       </h3>
                     </div>
                     <button
                       type="button"
-                      onClick={addRoomTypePromotion}
-                      className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#b27c1f] to-[#eab354] text-white rounded-lg hover:shadow-lg transition-all text-sm font-semibold"
+                      onClick={() => {
+                        addRoomTypePromotion();
+                        if (errors.roomTypePromotions) {
+                          setErrors({
+                            ...errors,
+                            roomTypePromotions: undefined,
+                          });
+                        }
+                      }}
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-[#6b5e4c] text-white text-[18px] rounded-lg hover:bg-[#5a4d3e] transition-colors cursor-pointer font-medium disabled:opacity-50 disabled:cursor-not-allowed text-center justify-center"
                     >
                       <FaPlus className="text-xs" />
                       Add Room Type
                     </button>
                   </div>
+
+                  {errors.roomTypePromotions && (
+                    <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                      <p className="text-sm text-red-600 flex items-center gap-2">
+                        <FaInfoCircle />
+                        {errors.roomTypePromotions}
+                      </p>
+                    </div>
+                  )}
 
                   {roomTypePromotions.length === 0 && (
                     <div className="text-center py-12 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300">
@@ -363,7 +634,7 @@ const AddPromotionModal: React.FC<AddPromotionModalProps> = ({
                           <button
                             type="button"
                             onClick={() => removeRoomTypePromotion(index)}
-                            className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                            className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
                           >
                             <FaTrash />
                           </button>
@@ -393,7 +664,7 @@ const AddPromotionModal: React.FC<AddPromotionModalProps> = ({
                           <div>
                             <label className="block text-xs font-semibold text-gray-700 mb-2">
                               Discount Value{" "}
-                              {formData.discountType
+                              {formData.discountType === "PERCENT"
                                 ? "(%)"
                                 : "(VND)"}
                             </label>
@@ -409,14 +680,12 @@ const AddPromotionModal: React.FC<AddPromotionModalProps> = ({
                               }
                               min="0"
                               max={
-                                formData.discountType 
+                                formData.discountType === "PERCENT"
                                   ? 100
                                   : undefined
                               }
                               step={
-                                formData.discountType
-                                  ? 1
-                                  : 1000
+                                formData.discountType === "PERCENT" ? 1 : 1000
                               }
                               className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6b5e4c] focus:border-[#6b5e4c] text-sm font-medium"
                               required
@@ -468,24 +737,38 @@ const AddPromotionModal: React.FC<AddPromotionModalProps> = ({
                     ))}
                   </div>
                 </div>
-
-                {/* Actions */}
-                <div className="flex gap-3 pt-6 border-t border-gray-200">
-                  <button
-                    type="button"
-                    onClick={onClose}
-                    className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-all"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="flex-1 px-6 py-3 bg-gradient-to-r from-[#b27c1f] to-[#eab354] text-white rounded-lg font-semibold hover:shadow-lg transition-all"
-                  >
-                    {editPromotion ? "Update Promotion" : "Create Promotion"}
-                  </button>
-                </div>
               </form>
+            </div>
+
+            {/* Sticky Footer with Actions */}
+            <div className="sticky bottom-0 z-10 bg-white border-t border-gray-200 p-6 rounded-b-xl shadow-lg">
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  disabled={submitting}
+                  className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  onClick={handleSubmit}
+                  disabled={submitting}
+                  className="flex-1 inline-flex items-center gap-2 px-6 py-2 bg-[#6b5e4c] text-white rounded-lg hover:bg-[#5a4d3e] transition-colors cursor-pointer font-medium disabled:opacity-50 disabled:cursor-not-allowed text-center justify-center"
+                >
+                  {submitting ? (
+                    <>
+                      <FaSpinner className="ml-2 animate-spin" />
+                      {editPromotion ? "Updating..." : "Creating..."}
+                    </>
+                  ) : editPromotion ? (
+                    "Update Promotion"
+                  ) : (
+                    "Create Promotion"
+                  )}
+                </button>
+              </div>
             </div>
           </motion.div>
         </motion.div>
