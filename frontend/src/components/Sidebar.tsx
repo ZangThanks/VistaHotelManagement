@@ -15,7 +15,8 @@ import { RiInfoCardFill, RiDiscountPercentFill } from "react-icons/ri";
 import { IoBagCheckOutline } from "react-icons/io5";
 import { LuMapPinCheckInside } from "react-icons/lu";
 import { cn } from "../utils/cn";
-import { MdRoomService } from "react-icons/md";
+import { MdRoomService, MdDiscount } from "react-icons/md";
+import { BiSolidCategory, BiSolidDiscount } from "react-icons/bi";
 import { motion } from "framer-motion";
 
 interface SidebarProps {
@@ -37,13 +38,18 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
     },
     {
       icon: <MdMeetingRoom />,
-      label: "Room",
+      label: "Rooms",
       path: "/admin/room-management",
+    },
+    {
+      icon: <BiSolidCategory />,
+      label: "Room Types",
+      path: "/admin/room-type-management",
     },
     {
       icon: <RiInfoCardFill />,
       label: "Information",
-      path: "/info-management",
+      path: "/admin/info",
     },
     {
       icon: <LuMapPinCheckInside />,
@@ -55,13 +61,28 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
       label: "Check-out",
       path: "/admin/checkout",
     },
+    {
+      icon: <FaCalendarAlt />,
+      label: "Reservations",
+      path: "/reservations",
+    },
 
     { icon: <FaUsers />, label: "Guests", path: "/guests" },
     { icon: <MdRoomService />, label: "Services", path: "/services" },
     {
       icon: <RiDiscountPercentFill />,
       label: "Promotions",
-      path: "/admin/promotions",
+      path: "/admin/promotion-management",
+    },
+    {
+      icon: <MdDiscount />,
+      label: "Promotion Types",
+      path: "/admin/promotion-type-management",
+    },
+    {
+      icon: <BiSolidDiscount />,
+      label: "Vouchers",
+      path: "/admin/voucher-management",
     },
     { icon: <FaChartLine />, label: "Reports", path: "/reports" },
     { icon: <FaCog />, label: "Settings", path: "/settings" },
@@ -99,14 +120,14 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
   return (
     <motion.aside
       ref={sidebarRef}
-      animate={{ width: isExpanded ? 200 : 68 }}
+      animate={{ width: isExpanded ? 230 : 68 }}
       transition={{
         type: "spring",
         stiffness: 400,
         damping: 30,
       }}
       className={cn(
-        "h-screen bg-gradient-to-br from-[#f5eee3] via-[#ede0c5] to-white flex flex-col fixed z-30 shadow-lg pt-6",
+        "h-screen bg-gradient-to-br from-[#F8EBD6] via-[#F0E0C0] to-white flex flex-col fixed z-30 shadow-lg pt-6",
         "border-r border-[#D9C9A8]/30",
         className
       )}
@@ -234,7 +255,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
       </motion.div>
 
       <motion.button
-        animate={{ rotate: isExpanded ? 150 : 0 }}
+        animate={{ rotate: isExpanded ? 180 : 0 }}
         transition={{ duration: 0.3 }}
         className="absolute -right-3 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-1.5 shadow-md border border-[#D9C9A8]/30 text-[#6B4B28]"
         onClick={() => setIsExpanded(!isExpanded)}

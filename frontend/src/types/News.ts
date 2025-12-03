@@ -5,9 +5,10 @@ export interface NewsItem {
     content: string;
     imageUrl: string;
     createdAt: string;
-    startDate: string;
-    endDate: string;
+    startDate?: string | null;
+    endDate?: string | null;
     highlight: boolean;
+    type: 'NEWS' | 'EVENT' | 'PROMOTION';
 }
 export interface News {
     id?: string;
@@ -17,8 +18,8 @@ export interface News {
     content: string;
     imageUrl: string;
     createdAt?: string;
-    startDate?: string;
-    endDate?: string;
+    startDate?: string | null;
+    endDate?: string | null;
     highlight: boolean;
+    type: 'NEWS' | 'EVENT' | 'PROMOTION';
 }
-

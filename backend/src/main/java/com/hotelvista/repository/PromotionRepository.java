@@ -2,7 +2,9 @@ package com.hotelvista.repository;
 
 import com.hotelvista.dto.PromotionRoomTypeDTO;
 import com.hotelvista.model.Promotion;
+import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -83,4 +85,13 @@ public interface PromotionRepository extends JpaRepository<Promotion, String> {
        """)
     List<PromotionRoomTypeDTO> findAllByPromotionTypeForRoomType(@Param("roomTypeID") String roomTypeID);
 
+    @Modifying
+    @Transactional
+    @Query("""
+        UPDATE Promotion p 
+        SET p.isActive = :active 
+        WHERE p.promotionID = :promotionID
+    """)
+    void updatePromotionStatus(@Param("promotionID") String promotionID,
+                               @Param("active") boolean active);
 }

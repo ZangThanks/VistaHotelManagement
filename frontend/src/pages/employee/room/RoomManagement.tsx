@@ -33,6 +33,7 @@ import { uploadMultipleImagesToCloudinary } from '../../../services/cloudinarySe
 import type { RoomFormData } from '../../../components/room/modal/AddRoomModal';
 import type { EditRoomFormData } from '../../../components/room/modal/EditRoomModal';
 import { ToastContext } from '../../../context/ToastContext';
+import RoomBookingsModal from '../../../components/room/modal/RoomBookingsModal';
 
 /**
  * Component quản lý phòng
@@ -66,6 +67,11 @@ const RoomManagement: React.FC = () => {
 
     // Change status modal
     const [changeStatusRoom, setChangeStatusRoom] = useState<Room | null>(null);
+
+    // Show bookings modal
+    const [bookingRoomNumber, setBookingRoomNumber] = useState<string | null>(
+      null
+    );
 
     // Toast context
     const toast = useContext(ToastContext);
@@ -348,7 +354,7 @@ const RoomManagement: React.FC = () => {
         try {
             setLoading(true);
 
-            // 1. Upload ảnh lên Cloudinary và lấy URL về
+            // Upload ảnh lên Cloudinary và lấy URL về
             // Images belong to Room entity, not RoomType
             let cloudinaryUrls: string[] = [];
             if (roomData.imageFiles.length > 0) {
@@ -358,7 +364,7 @@ const RoomManagement: React.FC = () => {
                 cloudinaryUrls = uploadImages.map((img) => img.secure_url);
             }
 
-            // 2. Chuẩn bị dữ liệu phòng
+            // Chuẩn bị dữ liệu phòng
             const roomApiData: Partial<ApiRoom> = {
                 floor: parseInt(roomData.floor),
                 status: roomData.roomStatus as RoomStatus,
@@ -379,10 +385,10 @@ const RoomManagement: React.FC = () => {
                 JSON.stringify(roomApiData, null, 2),
             );
 
-            // 3. Lưu phòng
+            // Lưu phòng
             await roomService.saveRoom(roomApiData);
 
-            // 4. Reload danh sách phòng
+            // Reload danh sách phòng
             const apiRooms = await roomService.getAllRooms();
             const uiRooms = apiRooms
                 .map((apiRoom: ApiRoom) => {
@@ -398,10 +404,10 @@ const RoomManagement: React.FC = () => {
 
             setRooms(uiRooms);
 
-            // 5. Đóng modal
+            // Đóng modal
             setIsAddRoomModalOpen(false);
 
-            // 6. Show success toast
+            // Show success toast
             toast?.success('Room created successfully!', {
                 duration: 3000,
                 position: 'top-right',
@@ -420,6 +426,9 @@ const RoomManagement: React.FC = () => {
 
     const handleEditRoom = async (room: Room) => {
         try {
+            // Đóng modal chi tiết trước
+            setSelectedRoom(null);
+            
             // Lấy dữ liệu phòng đầy đủ từ API để có thông tin hoàn chỉnh
             const fullRoomData = await roomService.getRoomById(room.roomNumber);
             if (fullRoomData) {
@@ -580,291 +589,290 @@ const RoomManagement: React.FC = () => {
     }
 
     return (
-        <div className="min-h-screen bg-[#f5f0eb] p-6">
-            <div className="max-w-[1600px] mx-auto space-y-6">
-                {/* Header */}
-                <motion.div
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="flex items-center justify-between"
-                >
-                    <div>
-                        <h1 className="text-3xl font-bold text-gray-900">
-                            Rooms
-                        </h1>
-                        <p className="text-gray-600 mt-1">
-                            View and manage rooms
-                        </p>
-                    </div>
-                    <button
-                        onClick={handleAddRoom}
-                        className="inline-flex items-center gap-2 px-6 py-3 bg-[#6b5e4c] text-white font-semibold rounded-lg shadow-lg hover:bg-[#5a4d3e] transition-colors cursor-pointer"
-                    >
-                        <FaPlus />
-                        Add Room
-                    </button>
-                </motion.div>
-
-                {/* Statistics Overview */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 }}
-                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
-                >
-                    <RoomStatCard
-                        icon={FaDoorOpen}
-                        iconBgColor="bg-[#e8f5e9]"
-                        iconColor="text-[#2e7d32]"
-                        value={
-                            stats.available + stats.occupied + stats.maintenance
-                        }
-                        label="Total Rooms"
-                        trend={{ value: '+2 this month', isPositive: true }}
-                    />
-                    <RoomStatCard
-                        icon={FaBed}
-                        iconBgColor="bg-[#e3f2fd]"
-                        iconColor="text-[#1976d2]"
-                        value={`${stats.occupancyRate}%`}
-                        label="Occupancy Rate"
-                        trend={{ value: '+5% vs last week', isPositive: true }}
-                    />
-                    <RoomStatCard
-                        icon={FaChartLine}
-                        iconBgColor="bg-[#fff8e1]"
-                        iconColor="text-[#f57c00]"
-                        value={`${stats.dailyRevenue.toLocaleString('vi-VN')}đ`}
-                        label="Daily Revenue"
-                        trend={{
-                            value: `${stats.todayBookings} bookings today`,
-                            isPositive: true,
-                        }}
-                    />
-                    <RoomStatCard
-                        icon={FaTools}
-                        iconBgColor="bg-[#ffebee]"
-                        iconColor="text-[#c62828]"
-                        value={stats.maintenance}
-                        label="Maintenance"
-                        trend={{
-                            value: `${stats.activeBookings} active bookings`,
-                            isPositive: false,
-                        }}
-                    />
-                </motion.div>
-
-                {/* Filters - Chỉ hiển thị khi ở chế độ xem lưới hoặc bảng */}
-                {(viewMode === 'card' || viewMode === 'table') && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.2 }}
-                    >
-                        <RoomFilters
-                            filters={filters}
-                            onFilterChange={setFilters}
-                            roomTypes={roomTypes}
-                            floors={floors}
-                        />
-                    </motion.div>
-                )}
-
-                {/* View Mode Toggle */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 }}
-                    className="flex items-center justify-between"
-                >
-                    <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                            <span className="text-[#6b5e4c] font-medium">
-                                Total rooms:
-                            </span>
-                            <span className="font-semibold text-gray-900">
-                                {filteredRooms.length} rooms
-                            </span>
-                        </div>
-                        <div className="flex items-center gap-3 text-xs">
-                            <div className="flex items-center gap-1">
-                                <span className="w-3 h-3 rounded-full bg-[#4caf50]"></span>
-                                <span className="text-gray-600">Available</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                                <span className="w-3 h-3 rounded-full bg-[#2196f3]"></span>
-                                <span className="text-gray-600">Occupied</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                                <span className="w-3 h-3 rounded-full bg-[#ff9800]"></span>
-                                <span className="text-gray-600">Cleaning</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                                <span className="w-3 h-3 rounded-full bg-[#f44336]"></span>
-                                <span className="text-gray-600">
-                                    Maintenance
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="flex gap-2">
-                        <button
-                            onClick={() => setViewMode('status')}
-                            className={`p-3 rounded-lg transition-colors cursor-pointer ${
-                                viewMode === 'status'
-                                    ? 'bg-[#6b5e4c] text-white'
-                                    : 'bg-white text-gray-600 border border-gray-300 hover:bg-gray-50'
-                            }`}
-                            title="Status Board View"
-                        >
-                            <FaTh />
-                        </button>
-                        <button
-                            onClick={() => setViewMode('calendar')}
-                            className={`p-3 rounded-lg transition-colors cursor-pointer ${
-                                viewMode === 'calendar'
-                                    ? 'bg-[#6b5e4c] text-white'
-                                    : 'bg-white text-gray-600 border border-gray-300 hover:bg-gray-50'
-                            }`}
-                            title="Calendar View"
-                        >
-                            <FaCalendarAlt />
-                        </button>
-                        <button
-                            onClick={() => setViewMode('card')}
-                            className={`p-3 rounded-lg transition-colors cursor-pointer ${
-                                viewMode === 'card'
-                                    ? 'bg-[#6b5e4c] text-white'
-                                    : 'bg-white text-gray-600 border border-gray-300 hover:bg-gray-50'
-                            }`}
-                            title="Card View"
-                        >
-                            <FaThLarge />
-                        </button>
-                        <button
-                            onClick={() => setViewMode('table')}
-                            className={`p-3 rounded-lg transition-colors cursor-pointer ${
-                                viewMode === 'table'
-                                    ? 'bg-[#6b5e4c] text-white'
-                                    : 'bg-white text-gray-600 border border-gray-300 hover:bg-gray-50'
-                            }`}
-                            title="Table View"
-                        >
-                            <FaList />
-                        </button>
-                    </div>
-                </motion.div>
-
-                {/* Room List */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.4 }}
-                >
-                    {viewMode === 'status' ? (
-                        <RoomStatusBoard
-                            rooms={filteredRooms}
-                            onRoomClick={handleRoomClick}
-                        />
-                    ) : viewMode === 'calendar' ? (
-                        <RoomCalendarView
-                            rooms={rooms}
-                            bookings={bookings}
-                            onRoomClick={handleRoomClick}
-                        />
-                    ) : viewMode === 'card' ? (
-                        <RoomCardView
-                            rooms={paginatedRooms}
-                            onEdit={handleEdit}
-                            onView={handleView}
-                            onDelete={handleDelete}
-                        />
-                    ) : (
-                        <RoomTableView
-                            rooms={paginatedRooms}
-                            onEdit={handleEdit}
-                            onView={handleView}
-                            onDelete={handleDelete}
-                        />
-                    )}
-                </motion.div>
-
-                {/* Pagination - Only show for card and table views */}
-                {(viewMode === 'card' || viewMode === 'table') &&
-                    filteredRooms.length > 0 && (
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.5 }}
-                        >
-                            <Pagination
-                                currentPage={currentPage}
-                                totalPages={totalPages}
-                                onPageChange={setCurrentPage}
-                                itemsPerPage={itemsPerPage}
-                                totalItems={filteredRooms.length}
-                            />
-                        </motion.div>
-                    )}
+      <div className="min-h-screen bg-[#f5f0eb] p-6">
+        <div className="max-w-[1600px] mx-auto space-y-4">
+          {/* Header */}
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-center justify-between mt-[-30px]"
+          >
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Rooms</h1>
+              <p className="text-gray-600 mt-1">View and manage rooms</p>
             </div>
+            <button
+              onClick={handleAddRoom}
+              className="inline-flex items-center gap-2 px-6 py-3 bg-[#6b5e4c] text-white font-semibold rounded-lg shadow-lg hover:bg-[#5a4d3e] transition-colors cursor-pointer"
+            >
+              <FaPlus />
+              Add Room
+            </button>
+          </motion.div>
 
-            {/* Room Detail Modal */}
-            <RoomDetailModal
-                room={selectedRoom}
-                onClose={() => setSelectedRoom(null)}
-                onEdit={handleEditRoom}
-                onChangeStatus={() => {
-                    if (selectedRoom) {
-                        setChangeStatusRoom(selectedRoom);
-                    }
-                }}
+          {/* Statistics Overview */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+          >
+            <RoomStatCard
+              icon={FaDoorOpen}
+              iconBgColor="bg-[#e8f5e9]"
+              iconColor="text-[#2e7d32]"
+              value={stats.available + stats.occupied + stats.maintenance}
+              label="Total Rooms"
+              trend={{ value: "+2 this month", isPositive: true }}
             />
-
-            {/* Add Room Modal */}
-            <AddRoomModal
-                isOpen={isAddRoomModalOpen}
-                onClose={() => setIsAddRoomModalOpen(false)}
-                onSubmit={handleAddRoomSubmit}
+            <RoomStatCard
+              icon={FaBed}
+              iconBgColor="bg-[#e3f2fd]"
+              iconColor="text-[#1976d2]"
+              value={`${stats.occupancyRate}%`}
+              label="Occupancy Rate"
+              trend={{ value: "+5% vs last week", isPositive: true }}
             />
+            <RoomStatCard
+              icon={FaChartLine}
+              iconBgColor="bg-[#fff8e1]"
+              iconColor="text-[#f57c00]"
+              value={`${stats.dailyRevenue.toLocaleString("vi-VN")}đ`}
+              label="Daily Revenue"
+              trend={{
+                value: `${stats.todayBookings} bookings today`,
+                isPositive: true,
+              }}
+            />
+            <RoomStatCard
+              icon={FaTools}
+              iconBgColor="bg-[#ffebee]"
+              iconColor="text-[#c62828]"
+              value={stats.maintenance}
+              label="Maintenance"
+              trend={{
+                value: `${stats.activeBookings} active bookings`,
+                isPositive: false,
+              }}
+            />
+          </motion.div>
 
-            {/* Edit Room Modal */}
-            {roomToEdit && (
-                <EditRoomModal
-                    isOpen={isEditRoomModalOpen}
-                    onClose={() => {
-                        setIsEditRoomModalOpen(false);
-                        setRoomToEdit(null);
-                    }}
-                    onSubmit={handleEditRoomSubmit}
-                    room={roomToEdit}
-                />
+          {/* Filters - Chỉ hiển thị khi ở chế độ xem lưới hoặc bảng */}
+          {(viewMode === "card" || viewMode === "table") && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              <RoomFilters
+                filters={filters}
+                onFilterChange={setFilters}
+                roomTypes={roomTypes}
+                floors={floors}
+              />
+            </motion.div>
+          )}
+
+          {/* View Mode Toggle */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="flex items-center justify-between"
+          >
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <span className="text-[#6b5e4c] font-medium">Total rooms:</span>
+                <span className="font-semibold text-gray-900">
+                  {filteredRooms.length} rooms
+                </span>
+              </div>
+              <div className="flex items-center gap-3 text-xs">
+                <div className="flex items-center gap-1">
+                  <span className="w-3 h-3 rounded-full bg-[#4caf50]"></span>
+                  <span className="text-gray-600">Available</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="w-3 h-3 rounded-full bg-[#2196f3]"></span>
+                  <span className="text-gray-600">Occupied</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="w-3 h-3 rounded-full bg-[#ff9800]"></span>
+                  <span className="text-gray-600">Cleaning</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="w-3 h-3 rounded-full bg-[#f44336]"></span>
+                  <span className="text-gray-600">Maintenance</span>
+                </div>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setViewMode("status")}
+                className={`p-3 rounded-lg transition-colors cursor-pointer ${
+                  viewMode === "status"
+                    ? "bg-[#6b5e4c] text-white"
+                    : "bg-white text-gray-600 border border-gray-300 hover:bg-gray-50"
+                }`}
+                title="Status Board View"
+              >
+                <FaTh />
+              </button>
+              <button
+                onClick={() => setViewMode("calendar")}
+                className={`p-3 rounded-lg transition-colors cursor-pointer ${
+                  viewMode === "calendar"
+                    ? "bg-[#6b5e4c] text-white"
+                    : "bg-white text-gray-600 border border-gray-300 hover:bg-gray-50"
+                }`}
+                title="Calendar View"
+              >
+                <FaCalendarAlt />
+              </button>
+              <button
+                onClick={() => setViewMode("card")}
+                className={`p-3 rounded-lg transition-colors cursor-pointer ${
+                  viewMode === "card"
+                    ? "bg-[#6b5e4c] text-white"
+                    : "bg-white text-gray-600 border border-gray-300 hover:bg-gray-50"
+                }`}
+                title="Card View"
+              >
+                <FaThLarge />
+              </button>
+              <button
+                onClick={() => setViewMode("table")}
+                className={`p-3 rounded-lg transition-colors cursor-pointer ${
+                  viewMode === "table"
+                    ? "bg-[#6b5e4c] text-white"
+                    : "bg-white text-gray-600 border border-gray-300 hover:bg-gray-50"
+                }`}
+                title="Table View"
+              >
+                <FaList />
+              </button>
+            </div>
+          </motion.div>
+
+          {/* Room List */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+          >
+            {viewMode === "status" ? (
+              <RoomStatusBoard
+                rooms={filteredRooms}
+                onRoomClick={handleRoomClick}
+              />
+            ) : viewMode === "calendar" ? (
+              <RoomCalendarView
+                rooms={rooms}
+                bookings={bookings}
+                onRoomClick={handleRoomClick}
+              />
+            ) : viewMode === "card" ? (
+              <RoomCardView
+                rooms={paginatedRooms}
+                onEdit={handleEdit}
+                onView={handleView}
+                onDelete={handleDelete}
+              />
+            ) : (
+              <RoomTableView
+                rooms={paginatedRooms}
+                onEdit={handleEdit}
+                onView={handleView}
+                onDelete={handleDelete}
+              />
             )}
+          </motion.div>
 
-            {/* Delete Confirmation Dialog */}
-            <ConfirmDialog
-                isOpen={isDeleteConfirmOpen}
-                onClose={() => {
-                    setIsDeleteConfirmOpen(false);
-                    setRoomToDelete(null);
-                }}
-                onConfirm={confirmDeleteRoom}
-                title="Delete Room"
-                message={`Are you sure you want to delete Room ${roomToDelete?.roomNumber}? This action cannot be undone.`}
-                type="danger"
-                confirmText="Delete"
-                cancelText="Cancel"
-                isLoading={isDeleting}
-            />
-
-            {/* Change Status Modal */}
-            {changeStatusRoom && (
-                <ChangeStatusModal
-                    room={changeStatusRoom}
-                    onClose={() => setChangeStatusRoom(null)}
-                    onConfirm={handleChangeStatus}
+          {/* Pagination - Only show for card and table views */}
+          {(viewMode === "card" || viewMode === "table") &&
+            filteredRooms.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+              >
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={setCurrentPage}
+                  itemsPerPage={itemsPerPage}
+                  totalItems={filteredRooms.length}
                 />
+              </motion.div>
             )}
         </div>
+
+        {/* Room Detail Modal */}
+        <RoomDetailModal
+          room={selectedRoom}
+          onClose={() => setSelectedRoom(null)}
+          onEdit={handleEditRoom}
+          onChangeStatus={() => {
+            if (selectedRoom) {
+              setChangeStatusRoom(selectedRoom);
+            }
+          }}
+          onViewBookings={(roomNumber) => setBookingRoomNumber(roomNumber)}
+        />
+
+        {/* Add Room Modal */}
+        <AddRoomModal
+          isOpen={isAddRoomModalOpen}
+          onClose={() => setIsAddRoomModalOpen(false)}
+          onSubmit={handleAddRoomSubmit}
+        />
+
+        {/* Edit Room Modal */}
+        {roomToEdit && (
+          <EditRoomModal
+            isOpen={isEditRoomModalOpen}
+            onClose={() => {
+              setIsEditRoomModalOpen(false);
+              setRoomToEdit(null);
+            }}
+            onSubmit={handleEditRoomSubmit}
+            room={roomToEdit}
+          />
+        )}
+
+        {/* Delete Confirmation Dialog */}
+        <ConfirmDialog
+          isOpen={isDeleteConfirmOpen}
+          onClose={() => {
+            setIsDeleteConfirmOpen(false);
+            setRoomToDelete(null);
+          }}
+          onConfirm={confirmDeleteRoom}
+          title="Delete Room"
+          message={`Are you sure you want to delete Room ${roomToDelete?.roomNumber}? This action cannot be undone.`}
+          type="danger"
+          confirmText="Delete"
+          cancelText="Cancel"
+          isLoading={isDeleting}
+        />
+
+        {/* Change Status Modal */}
+        {changeStatusRoom && (
+          <ChangeStatusModal
+            room={changeStatusRoom}
+            onClose={() => setChangeStatusRoom(null)}
+            onConfirm={handleChangeStatus}
+          />
+        )}
+        {/* Bookings Modal */}
+        {bookingRoomNumber && (
+          <RoomBookingsModal
+            roomNumber={bookingRoomNumber}
+            isOpen={!!bookingRoomNumber}
+            onClose={() => setBookingRoomNumber(null)}
+          />
+        )}
+      </div>
     );
 };
 

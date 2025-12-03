@@ -2,7 +2,9 @@ package com.hotelvista.controller;
 
 import com.hotelvista.model.Room;
 import com.hotelvista.service.RoomService;
+import com.hotelvista.util.ValidatorsUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -30,8 +32,27 @@ public class RoomController {
     }
 
     @PostMapping("/save")
-    public Room insertOrUpdate(@RequestBody Room room) {
-        return service.insertOrUpdate(room);
+    public ResponseEntity<?> insertOrUpdate(@RequestBody Room room) {
+        // Validate room number
+        String numberError = ValidatorsUtil.validateRoomNumber(room.getRoomNumber());
+        if (numberError != null) {
+            return ResponseEntity.badRequest().body(numberError);
+        }
+
+        // Validate floor
+        String floorError = ValidatorsUtil.validateFloor(room.getFloor());
+        if (floorError != null) {
+            return ResponseEntity.badRequest().body(floorError);
+        }
+
+        // Validate room type exists
+        String typeError = ValidatorsUtil.validateRequired(room.getRoomType().getRoomTypeID(), "Room type");
+        if (typeError != null) {
+            return ResponseEntity.badRequest().body(typeError);
+        }
+
+        Room saved = service.insertOrUpdate(room);
+        return ResponseEntity.ok(saved);
     }
 
     @DeleteMapping("/delete/{id}")

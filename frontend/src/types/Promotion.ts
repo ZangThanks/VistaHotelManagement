@@ -10,6 +10,16 @@ export interface Promotion {
   discountType: DiscountType;
   active: boolean;
   promotionType: PromotionType;
-  adminId?: string;
+  admin?: {
+    id: string;
+    userName: string;
+    fullName: string;
+    email: string;
+    phone: string;
+    address: string;
+    userRole: string;
+    adminLevel: number;
+    permissions: string[];
+  };
   roomTypePromotion?: RoomTypePromotion[];
 }

@@ -13,12 +13,11 @@ export interface Booking {
   totalAmount: number;
   paymentStatus:
     | "PENDING"
-    | "PAID"
-    | "REFUNDED"
-    | "PARTIAL"
+    | "COMPLETED"
     | "PERCENTAGE_30"
     | "PERCENTAGE_50"
-    | "COMPLETED"
+    | "PAID"
+    | "REFUNDED"
     | "CANCELLED";
   invoiceType?: string | null;
   totalCost: number;
@@ -50,8 +49,8 @@ export interface RoomBooking {
   totalAmount: number;
   specialRequests?: string;
   paymentStatus?: string;
-  customer?: unknown;
-  bookingDetails?: unknown[];
+  customer?: any;
+  bookingDetails?: any[];
   earlyCheckin?: EarlyCheckin | null;
 }
 

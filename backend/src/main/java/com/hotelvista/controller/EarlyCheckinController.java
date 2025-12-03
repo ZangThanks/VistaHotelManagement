@@ -1,10 +1,9 @@
 package com.hotelvista.controller;
 
-import com.hotelvista.model.Customer;
 import com.hotelvista.model.EarlyCheckin;
 import com.hotelvista.model.enums.ApprovalStatus;
-import com.hotelvista.service.CustomerService;
 import com.hotelvista.service.EarlyCheckinService;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -20,50 +19,46 @@ public class EarlyCheckinController {
     @Autowired
     private EarlyCheckinService earlyCheckinService;
 
-    @Autowired
-    private CustomerService customerService;
-
     /**
-     * Khách hàng gửi yêu cầu nhận phòng sớm
-     * @param payload
-     * @return
+     * Gửi yêu cầu check-in sớm
      */
     @PostMapping("/request")
     public Map<String, Object> requestEarlyCheckin(@RequestBody Map<String, Object> payload) {
-        String customerId = (String) payload.get("customerId");
+
+        String bookingId = (String) payload.get("bookingId");
         String requestTimeStr = (String) payload.get("requestTime");
         double roomPrice = Double.parseDouble(payload.get("roomPrice").toString());
 
-        Customer customer = customerService.findById(customerId);
-        if (customer == null) {
-            return Map.of("success", false, "message", "Không tìm thấy khách hàng");
-        }
-
         LocalDateTime requestTime = LocalDateTime.parse(requestTimeStr);
-        EarlyCheckin ec = earlyCheckinService.createPendingRequest(customer, requestTime, roomPrice);
+
+        EarlyCheckin ec = earlyCheckinService.createPendingRequest(
+                bookingId,
+                requestTime,
+                roomPrice
+        );
+
+        if (ec == null) {
+            return Map.of("success", false, "message", "Không tìm thấy booking");
+        }
 
         return Map.of(
                 "success", true,
-                "message", "Yêu cầu check-in sớm đã được gửi. Vui lòng chờ nhân viên xác nhận.",
+                "message", "Yêu cầu check-in sớm đã được gửi",
                 "data", ec
         );
     }
 
     /**
-     * Nhân viên duyệt hoặc từ chối yêu cầu nhận phòng sớm
-     * @param requestId
-     * @param status
-     * @param staffName
-     * @return
+     * Duyệt hoặc từ chối yêu cầu check-in sớm
      */
     @PutMapping("/approve/{id}")
     public Map<String, Object> approveRequest(
             @PathVariable("id") String requestId,
-            @RequestParam("status") String status,
-            @RequestParam("staff") String staffName) {
-
+            @RequestParam("status") String status
+    ) {
         ApprovalStatus approvalStatus = ApprovalStatus.valueOf(status.toUpperCase());
-        EarlyCheckin ec = earlyCheckinService.updateApprovalStatus(requestId, approvalStatus, staffName);
+
+        EarlyCheckin ec = earlyCheckinService.updateApprovalStatus(requestId, approvalStatus);
 
         if (ec == null) {
             return Map.of("success", false, "message", "Không tìm thấy yêu cầu");
@@ -77,10 +72,9 @@ public class EarlyCheckinController {
     }
 
     /**
-     * Lấy tất cả yêu cầu nhận phòng sớm
-     * @return
+     * Danh sách tất cả yêu cầu check-in sớm
      */
-    @GetMapping()
+    @GetMapping
     public List<EarlyCheckin> getAll() {
         return earlyCheckinService.findAll();
     }

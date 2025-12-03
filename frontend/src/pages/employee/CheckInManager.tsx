@@ -1,5 +1,11 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { FaPlus } from "react-icons/fa";
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  useRef,
+} from "react";
+import { FaPlus, FaCalendarAlt } from "react-icons/fa";
 import useModal from "../../hooks/useModal";
 import StatusCards from "../../components/checkin/StatusCards";
 import SearchFilter from "../../components/checkin/SearchFilter";
@@ -10,8 +16,9 @@ import ManualCheckinModal from "../../components/checkin/ManualCheckinModal";
 import TomorrowTab from "../../components/checkin/TomorrowTab";
 import EarlyTab from "../../components/checkin/EarlyTab";
 import HourlyTab from "../../components/checkin/HourlyTab";
-import { getAll } from "../../services/bookingService";
+import { getBookingsByCheckInDateRange } from "../../services/bookingService";
 import type { Booking } from "../../types/Booking";
+import CustomCalendar from "../../components/checkin/CustomCalendar";
 
 interface FilterOptions {
   status?: string;
@@ -28,6 +35,9 @@ const CheckInManager: React.FC = () => {
   const [filters, setFilters] = useState<FilterOptions>({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showDatePicker, setShowDatePicker] = useState(false);
+
+  const datePickerRef = useRef<HTMLDivElement>(null);
 
   const {
     isOpen: isDetailsModalOpen,
@@ -43,18 +53,55 @@ const CheckInManager: React.FC = () => {
 
   const [selectedGuest, setSelectedGuest] = useState<Booking | null>(null);
 
-  const fetchedBookings = useCallback(async () => {
+  // Close date picker when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        datePickerRef.current &&
+        !datePickerRef.current.contains(event.target as Node)
+      ) {
+        setShowDatePicker(false);
+      }
+    };
+
+    if (showDatePicker) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showDatePicker]);
+
+  const formatDateForAPI = (date: Date): string => {
+    return date.toISOString().split("T")[0];
+  };
+
+  const fetchBookings = useCallback(async () => {
     try {
       setLoading(true);
-      const data = await getAll();
-      setBookings(data);
-      setLoading(false);
       setError("");
+
+      const today = new Date(currentDate);
+      today.setHours(0, 0, 0, 0);
+
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+
+      const startDate = formatDateForAPI(today);
+      const endDate = formatDateForAPI(tomorrow);
+
+      const data = await getBookingsByCheckInDateRange(startDate, endDate);
+      const activeBookings = data.filter(
+        (booking) => booking.status !== "CANCELLED"
+      );
+      setBookings(activeBookings);
     } catch (err) {
       setError("Failed to fetch bookings: " + err);
+    } finally {
       setLoading(false);
     }
-  }, []);
+  }, [currentDate]);
 
   const applyFilters = useCallback(() => {
     let filtered = [...bookings];
@@ -64,7 +111,7 @@ const CheckInManager: React.FC = () => {
       filtered = filtered.filter(
         (booking) =>
           booking.bookingID.toLowerCase().includes(searchLower) ||
-          booking.customer.fullName.toLowerCase().includes(searchLower) ||
+          booking.customer.fullName?.toLowerCase().includes(searchLower) ||
           booking.customer.email.toLowerCase().includes(searchLower) ||
           booking.customer.phone.includes(searchKeyword)
       );
@@ -86,8 +133,8 @@ const CheckInManager: React.FC = () => {
   }, [bookings, searchKeyword, filters]);
 
   useEffect(() => {
-    fetchedBookings();
-  }, [fetchedBookings]);
+    fetchBookings();
+  }, [fetchBookings]);
 
   useEffect(() => {
     applyFilters();
@@ -101,6 +148,11 @@ const CheckInManager: React.FC = () => {
     const newDate = new Date(currentDate);
     newDate.setDate(newDate.getDate() + direction);
     setCurrentDate(newDate);
+  };
+
+  const handleDateSelect = (date: Date) => {
+    setCurrentDate(date);
+    setShowDatePicker(false);
   };
 
   const handleOpenDetailsModal = (guest: Booking) => {
@@ -117,7 +169,7 @@ const CheckInManager: React.FC = () => {
   };
 
   const tabCounts = useMemo(() => {
-    const today = new Date();
+    const today = new Date(currentDate);
     today.setHours(0, 0, 0, 0);
 
     const tomorrow = new Date(today);
@@ -143,7 +195,8 @@ const CheckInManager: React.FC = () => {
         (booking) => booking.hourlyRate !== null && booking.hourlyRate > 0
       ).length,
     };
-  }, [filteredBookings]);
+  }, [filteredBookings, currentDate]);
+
   const formatDate = (date: Date) => {
     return date.toLocaleDateString("en-US", {
       month: "long",
@@ -152,9 +205,8 @@ const CheckInManager: React.FC = () => {
     });
   };
 
-  // Filter bookings by tab type
   const getBookingsForTab = useCallback((): Booking[] => {
-    const today = new Date();
+    const today = new Date(currentDate);
     today.setHours(0, 0, 0, 0);
 
     const tomorrow = new Date(today);
@@ -188,7 +240,7 @@ const CheckInManager: React.FC = () => {
       default:
         return filteredBookings;
     }
-  }, [activeTab, filteredBookings]);
+  }, [activeTab, filteredBookings, currentDate]);
 
   if (loading) {
     return (
@@ -205,11 +257,10 @@ const CheckInManager: React.FC = () => {
     return (
       <div className="bg-[#F5F0EB] min-h-screen flex justify-center items-center">
         <div className="bg-white p-6 rounded-lg shadow-md max-w-md w-full text-center">
-          <div className="text-red-500 text-5xl mb-4">⚠️</div>
           <h2 className="text-2xl font-semibold mb-2">Error</h2>
           <p className="text-gray-600 mb-4">{error}</p>
           <button
-            onClick={() => fetchedBookings()}
+            onClick={() => fetchBookings()}
             className="px-4 py-2 bg-[#CCBDA3] text-white rounded-md hover:bg-[#b8ac94]"
           >
             Try Again
@@ -230,7 +281,7 @@ const CheckInManager: React.FC = () => {
               Check-in Management
             </h1>
             <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
-              <div className="flex items-center">
+              <div className="flex items-center relative" ref={datePickerRef}>
                 <button
                   onClick={() => changeDate(-1)}
                   className="p-2 border border-[#EBE3D7] rounded-l-md hover:bg-[#EBE3D7] transition"
@@ -248,9 +299,26 @@ const CheckInManager: React.FC = () => {
                     />
                   </svg>
                 </button>
-                <button className="px-4 py-2 border-t border-b border-[#EBE3D7] bg-white min-w-[200px]">
+
+                <button
+                  onClick={() => setShowDatePicker(!showDatePicker)}
+                  className="px-4 py-2 border-t border-b border-[#EBE3D7] bg-white min-w-[200px] hover:bg-gray-50 transition flex items-center justify-center gap-2"
+                >
+                  <FaCalendarAlt className="text-gray-500" size={14} />
                   {formatDate(currentDate)}
                 </button>
+
+                {/* Custom Calendar Dropdown */}
+                {showDatePicker && (
+                  <div className="absolute top-full left-0 mt-2 z-50">
+                    <CustomCalendar
+                      selectedDate={currentDate}
+                      onDateSelect={handleDateSelect}
+                      onClose={() => setShowDatePicker(false)}
+                    />
+                  </div>
+                )}
+
                 <button
                   onClick={() => changeDate(1)}
                   className="p-2 border border-[#EBE3D7] rounded-r-md hover:bg-[#EBE3D7] transition"
@@ -287,7 +355,6 @@ const CheckInManager: React.FC = () => {
             <SearchFilter onSearch={handleSearch} onFilter={handleFilter} />
           </div>
 
-          {/* Show filter results info */}
           {(searchKeyword ||
             filters.status ||
             filters.paymentStatus ||
@@ -343,7 +410,7 @@ const CheckInManager: React.FC = () => {
               <TodayTab
                 onViewDetails={handleOpenDetailsModal}
                 bookings={tabBookings}
-                onRefresh={fetchedBookings}
+                onRefresh={fetchBookings}
               />
             )}
             {activeTab === "tomorrow" && (
@@ -356,7 +423,7 @@ const CheckInManager: React.FC = () => {
               <EarlyTab
                 onViewDetails={handleOpenDetailsModal}
                 bookings={tabBookings}
-                onRefresh={fetchedBookings}
+                onRefresh={fetchBookings}
               />
             )}
             {activeTab === "hourly" && (
@@ -369,13 +436,12 @@ const CheckInManager: React.FC = () => {
         </div>
       </main>
 
-      {/* Modals */}
       {isDetailsModalOpen && (
         <CheckinDetailsModal
           isOpen={isDetailsModalOpen}
           onClose={closeDetailsModal}
           guest={selectedGuest}
-          onRefresh={fetchedBookings}
+          onRefresh={fetchBookings}
         />
       )}
 
@@ -383,7 +449,7 @@ const CheckInManager: React.FC = () => {
         <ManualCheckinModal
           isOpen={isCheckinModalOpen}
           onClose={closeCheckinModal}
-          onSuccess={fetchedBookings}
+          onSuccess={fetchBookings}
         />
       )}
     </div>

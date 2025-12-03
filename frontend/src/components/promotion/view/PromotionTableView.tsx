@@ -2,7 +2,6 @@ import React from "react";
 import { motion } from "framer-motion";
 import {
   FaEdit,
-  FaTrash,
   FaToggleOn,
   FaToggleOff,
   FaCalendarAlt,
@@ -14,7 +13,6 @@ import type { Promotion } from "../../../types/Promotion";
 interface PromotionTableViewProps {
   promotions: Promotion[];
   onEdit: (promotion: Promotion) => void;
-  onDelete: (id: string) => void;
   onToggleStatus: (id: string, isActive: boolean) => void;
   onViewDetails: (promotion: Promotion) => void;
 }
@@ -22,7 +20,6 @@ interface PromotionTableViewProps {
 const PromotionTableView: React.FC<PromotionTableViewProps> = ({
   promotions,
   onEdit,
-  onDelete,
   onToggleStatus,
   onViewDetails,
 }) => {
@@ -143,16 +140,6 @@ const PromotionTableView: React.FC<PromotionTableViewProps> = ({
                       title="Edit"
                     >
                       <FaEdit className="text-lg" />
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onDelete(promotion.promotionID);
-                      }}
-                      className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
-                      title="Delete"
-                    >
-                      <FaTrash className="text-lg" />
                     </button>
                   </div>
                 </td>

@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 public interface CustomerVoucherRepository extends JpaRepository<CustomerVoucher, CustomerVoucher.CustomerVoucherId> {
 
@@ -65,4 +66,5 @@ public interface CustomerVoucherRepository extends JpaRepository<CustomerVoucher
      */
     @Query("SELECT cv FROM CustomerVoucher cv WHERE cv.customer.id = :customerId AND cv.state = true")
     List<CustomerVoucher> findAllByCustomer_IdAndStateIsTrue(String customerId);
+
 }

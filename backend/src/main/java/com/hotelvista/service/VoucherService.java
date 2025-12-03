@@ -1,17 +1,23 @@
 package com.hotelvista.service;
 
+import com.hotelvista.dto.DistributionCriteriaDTO;
+import com.hotelvista.dto.DistributionResultDTO;
 import com.hotelvista.model.Customer;
 import com.hotelvista.model.CustomerVoucher;
 import com.hotelvista.model.Voucher;
+import com.hotelvista.model.enums.Gender;
+import com.hotelvista.model.enums.MemberShipLevel;
 import com.hotelvista.repository.CustomerRepository;
 import com.hotelvista.repository.CustomerVoucherRepository;
 import com.hotelvista.repository.VoucherRepository;
+import com.hotelvista.util.CriteriaUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class VoucherService {
@@ -110,4 +116,134 @@ public class VoucherService {
         return false;
     }
 
+
+    public List<Voucher> findVouchersBy_CustomerID(String customerID) {
+        return voucherRepo.findVouchersBy_CustomerID(customerID);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public boolean update(String id, Voucher voucher) {
+        try {
+            Voucher existingVoucher = findById(id);
+            if (existingVoucher == null) {
+                return false;
+            }
+
+            existingVoucher.setVoucherName(voucher.getVoucherName());
+            existingVoucher.setDiscountType(voucher.getDiscountType());
+            existingVoucher.setDiscountPercentage(voucher.getDiscountPercentage());
+            existingVoucher.setDiscountValue(voucher.getDiscountValue());
+            existingVoucher.setStartDate(voucher.getStartDate());
+            existingVoucher.setEndDate(voucher.getEndDate());
+            existingVoucher.setActive(voucher.isActive());
+
+            voucherRepo.save(existingVoucher);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * Xem trước phân phối - đếm số lượng khách hàng phù hợp với tiêu chí
+     * @param criteria - Tiêu chí phân phối
+     * @return DistributionResult với số lượng
+     */
+    public DistributionResultDTO previewDistribution(DistributionCriteriaDTO criteria) {
+        try {
+            List<MemberShipLevel> memberShipLevels = CriteriaUtil.normalizeMembership(criteria.getMembershipLevel());
+            List<Gender> genders = CriteriaUtil.normalizeGender(criteria.getGender());
+            List<Integer> birthMonths = CriteriaUtil.normalizeBirthMonths(criteria.getBirthMonth());
+            Integer minLoyaltyPoints = CriteriaUtil.normalizeLoyalty(criteria.getMinLoyaltyPoints());
+
+            List<Customer> customers = customerRepo.findCustomersByCriteria(
+                    memberShipLevels,
+                    genders,
+                    birthMonths,
+                    minLoyaltyPoints
+            );
+
+            return new DistributionResultDTO(true, "Preview successful", customers.size());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new DistributionResultDTO(false, "Error preview: "+ e.getMessage(), 0);
+        }
+    }
+
+    /**
+     * Phân phối voucher cho khách hàng phù hợp với tiêu chí
+     * @param voucherId - Mã voucher cần phân phối
+     * @param criteria - Tiêu chí phân phối
+     * @return DistributionResult với trạng thái thành công và số lượng
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public DistributionResultDTO distributeVoucher(String voucherId, DistributionCriteriaDTO criteria) {
+        try {
+            Voucher voucher = findById(voucherId);
+            if (voucher == null) {
+                return new DistributionResultDTO(false, "Voucher not found", 0);
+            }
+
+            if (!voucher.isActive()) {
+                return new DistributionResultDTO(false, "Voucher not active", 0);
+            }
+
+            List<MemberShipLevel> memberShipLevels = CriteriaUtil.normalizeMembership(criteria.getMembershipLevel());
+            List<Gender> genders = CriteriaUtil.normalizeGender(criteria.getGender());
+            List<Integer> birthMonths = CriteriaUtil.normalizeBirthMonths(criteria.getBirthMonth());
+            Integer minLoyaltyPoints = CriteriaUtil.normalizeLoyalty(criteria.getMinLoyaltyPoints());
+
+            List<Customer> customers = customerRepo.findCustomersByCriteria(
+                    memberShipLevels,
+                    genders,
+                    birthMonths,
+                    minLoyaltyPoints
+            );
+
+            if (customers.isEmpty()) {
+                return new DistributionResultDTO(false, "No suitable customers found", 0);
+            }
+
+            int count = 0;
+            for (Customer customer : customers) {
+                CustomerVoucher.CustomerVoucherId id =
+                        new CustomerVoucher.CustomerVoucherId(customer, voucher);
+
+                if (!customerVoucherRepo.findById(id).isPresent()) {
+                    CustomerVoucher cv = new CustomerVoucher();
+                    cv.setCustomer(customer);
+                    cv.setVoucher(voucher);
+                    cv.setState(false);
+                    customerVoucherRepo.save(cv);
+                    count++;
+                }
+            }
+
+            String message = String.format("Vouchers distributed to %d customers", count);
+            return new DistributionResultDTO(true, message, count);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new DistributionResultDTO(false, "Error distribute: "+ e.getMessage(), 0);
+        }
+    }
+
+    /**
+     * Tìm kiếm khách hàng phù hợp với tiêu chí phân phối
+     * @param criteria - Tiêu chí phân phối
+     * @return Danh sách khách hàng phù hợp
+     */
+    public List<Customer> findCustomerByCriteria(DistributionCriteriaDTO criteria) {
+        List<MemberShipLevel> memberShipLevels = CriteriaUtil.normalizeMembership(criteria.getMembershipLevel());
+        List<Gender> genders = CriteriaUtil.normalizeGender(criteria.getGender());
+        List<Integer> birthMonths = CriteriaUtil.normalizeBirthMonths(criteria.getBirthMonth());
+        Integer minLoyaltyPoints = CriteriaUtil.normalizeLoyalty(criteria.getMinLoyaltyPoints());
+
+        return customerRepo.findCustomersByCriteria(
+                memberShipLevels,
+                genders,
+                birthMonths,
+                minLoyaltyPoints
+        );
+    }
 }

@@ -14,6 +14,7 @@ import type {
 } from '../../types/Incident';
 import incidentService from '../../services/incidentService';
 import bookingService from '../../services/bookingService';
+import roomChangeRequestService from '../../services/roomChangeRequestService';
 import type { Booking } from '../../types/Booking';
 import { useToast } from '../../hooks/useToast';
 
@@ -46,11 +47,12 @@ const IncidentReport: React.FC = () => {
             const userData = JSON.parse(userStr);
             console.log('👤 Logged in user:', userData);
             setUser(userData);
-            
+
             // Get customer ID from user object (check multiple possible field names)
-            const customerId = userData.customerId || userData.customerID || userData.id;
+            const customerId =
+                userData.customerId || userData.customerID || userData.id;
             console.log('🔑 Customer ID to search:', customerId);
-            
+
             if (customerId) {
                 // Load user's bookings
                 loadUserBookings(customerId);
@@ -61,51 +63,127 @@ const IncidentReport: React.FC = () => {
         }
     }, []);
 
+    // Auto-refresh bookings every 5 seconds to detect check-in status changes
+    useEffect(() => {
+        if (!user) return;
+
+        const customerId = user.customerId || user.customerID || user.id;
+        if (!customerId) return;
+
+        const intervalId = setInterval(() => {
+            console.log('🔄 Auto-refreshing bookings...');
+            loadUserBookings(customerId);
+        }, 5000); // Refresh every 5 seconds
+
+        return () => clearInterval(intervalId);
+    }, [user]);
+
     const loadUserBookings = async (customerId: string) => {
         try {
             console.log('🔄 Loading bookings for customer:', customerId);
             const allBookings = await bookingService.getAll();
-            
-            console.log('📊 All bookings:', allBookings);
+
+            console.log(
+                '📊 All bookings from API:',
+                allBookings.length,
+                'total',
+            );
             console.log('👤 Looking for customer ID:', customerId);
-            
-            // Get user email for fallback matching
-            const userEmail = user?.email;
-            
-            // Filter bookings for this customer that are active (CHECKED_IN or CONFIRMED)
+
+            // Get user info for matching
+            const userStr = localStorage.getItem('user');
+            const userData = userStr ? JSON.parse(userStr) : null;
+            const userEmail = userData?.email || user?.email;
+            const userFullName = userData?.fullName || user?.fullName;
+
+            console.log('📧 User email:', userEmail);
+            console.log('👤 User name:', userFullName);
+
+            // Filter bookings for this customer that are active (CHECKED_IN, CONFIRMED, or PENDING)
             const userActiveBookings = allBookings.filter(
                 (booking: Booking) => {
-                    const bookingCustomerId = booking.customer?.customerID || booking.customer?.customerId;
+                    const bookingCustomerId =
+                        booking.customer?.customerID ||
+                        booking.customer?.customerId;
                     const bookingEmail = booking.customer?.email;
-                    
-                    const matchById = bookingCustomerId === customerId;
-                    const matchByEmail = userEmail && bookingEmail && bookingEmail.toLowerCase() === userEmail.toLowerCase();
-                    
-                    console.log(`Checking booking ${booking.bookingID}:`, {
+                    const bookingFullName = booking.customer?.fullName;
+
+                    // Match by Customer ID
+                    const matchById =
+                        bookingCustomerId &&
+                        String(bookingCustomerId) === String(customerId);
+
+                    // Match by Email (nếu có)
+                    const matchByEmail =
+                        userEmail &&
+                        bookingEmail &&
+                        bookingEmail.toLowerCase() === userEmail.toLowerCase();
+
+                    // Match by Full Name (tên khách hàng)
+                    const matchByName =
+                        userFullName &&
+                        bookingFullName &&
+                        bookingFullName.toLowerCase().trim() ===
+                            userFullName.toLowerCase().trim();
+
+                    // Allow CHECKED_IN, CONFIRMED, and PENDING bookings
+                    const allowedStatuses = [
+                        'CHECKED_IN',
+                        'CONFIRMED',
+                        'PENDING',
+                    ];
+                    const statusAllowed = allowedStatuses.includes(
+                        booking.status,
+                    );
+
+                    const isMatch = matchById || matchByEmail || matchByName;
+
+                    console.log(`📋 Booking ${booking.bookingID}:`, {
                         bookingCustomerId,
                         bookingEmail,
+                        bookingFullName,
                         customerId,
                         userEmail,
+                        userFullName,
                         matchById,
                         matchByEmail,
-                        status: booking.status
+                        matchByName,
+                        status: booking.status,
+                        statusAllowed,
+                        willShow: isMatch && statusAllowed,
                     });
-                    
-                    // Only allow incident reports for checked-in bookings
-                    return (matchById || matchByEmail) && booking.status === 'CHECKED_IN';
-                }
+
+                    // Show bookings that match user (by ID, email, or name) AND have allowed status
+                    return isMatch && statusAllowed;
+                },
             );
-            
-            console.log('✅ User active bookings:', userActiveBookings);
+
+            console.log(
+                '✅ Found',
+                userActiveBookings.length,
+                'active bookings for user',
+            );
+            console.log(
+                '📝 User bookings:',
+                userActiveBookings.map((b) => ({
+                    id: b.bookingID,
+                    status: b.status,
+                    customer: b.customer?.fullName,
+                    room: b.bookingDetails?.[0]?.room?.roomNumber,
+                })),
+            );
+
             setUserBookings(userActiveBookings);
-            
+
             // Auto-select first booking if available
             if (userActiveBookings.length > 0) {
                 setSelectedBookingId(userActiveBookings[0].bookingID);
             } else {
-                // Stop loading even if no bookings found
-                setIsLoading(false);
+                console.warn('⚠️ No active bookings found for this user.');
             }
+
+            // Stop loading
+            setIsLoading(false);
         } catch (err) {
             console.error('❌ Error loading bookings:', err);
             error('Không thể tải thông tin đặt phòng');
@@ -118,7 +196,7 @@ const IncidentReport: React.FC = () => {
             setIsLoading(false);
             return;
         }
-        
+
         setIsLoading(true);
         try {
             console.log('🔄 Loading customer incidents...');
@@ -144,10 +222,12 @@ const IncidentReport: React.FC = () => {
             error('Vui lòng chọn booking trước');
             return null;
         }
-        
+
         try {
             console.log('🔄 Loading current booking...');
-            const booking = await bookingService.getBookingById(selectedBookingId);
+            const booking = await bookingService.getBookingById(
+                selectedBookingId,
+            );
             console.log('✅ Loaded booking:', booking);
             setCurrentBooking(booking);
             return booking;
@@ -157,6 +237,27 @@ const IncidentReport: React.FC = () => {
             return null;
         }
     }, [selectedBookingId, error]);
+
+    // Load room change requests for current user from API
+    const loadMyRoomChangeRequests = useCallback(async () => {
+        if (!selectedBookingId) return;
+
+        try {
+            console.log(
+                '🔄 Loading room change requests from API for booking:',
+                selectedBookingId,
+            );
+            const requests =
+                await roomChangeRequestService.getRequestsByBookingId(
+                    selectedBookingId,
+                );
+
+            console.log('📋 My room change requests:', requests);
+            setMyRoomChangeRequests(requests);
+        } catch (err) {
+            console.error('❌ Error loading room change requests:', err);
+        }
+    }, [selectedBookingId]);
 
     const filterIncidents = useCallback(() => {
         let filtered = incidents;
@@ -183,25 +284,17 @@ const IncidentReport: React.FC = () => {
         setFilteredIncidents(filtered);
     }, [incidents, searchTerm, statusFilter]);
 
-    // Load room change requests for current user
-    const loadMyRoomChangeRequests = useCallback(() => {
+    // Auto-refresh room change requests every 3 seconds
+    useEffect(() => {
         if (!selectedBookingId) return;
-        
-        try {
-            const storedRequests = localStorage.getItem('roomChangeRequests');
-            const allRequests = storedRequests ? JSON.parse(storedRequests) : [];
-            
-            // Filter by current user's booking
-            const myRequests = allRequests.filter(
-                (req: any) => req.bookingId === selectedBookingId
-            );
-            
-            console.log('📋 My room change requests:', myRequests);
-            setMyRoomChangeRequests(myRequests);
-        } catch (err) {
-            console.error('Error loading room change requests:', err);
-        }
-    }, [selectedBookingId]);
+
+        const intervalId = setInterval(() => {
+            console.log('🔄 Auto-refreshing room change requests...');
+            loadMyRoomChangeRequests();
+        }, 3000); // Refresh every 3 seconds
+
+        return () => clearInterval(intervalId);
+    }, [selectedBookingId, loadMyRoomChangeRequests]);
 
     useEffect(() => {
         if (selectedBookingId) {
@@ -240,32 +333,30 @@ const IncidentReport: React.FC = () => {
 
     const handleSubmitRoomChange = async (data: RoomChangeRequest) => {
         try {
-            console.log('📝 Submitting room change request:', data);
-            
-            // Get existing requests from localStorage
-            const existingRequests = JSON.parse(
-                localStorage.getItem('roomChangeRequests') || '[]'
-            );
-            
-            // Create new request with ID
-            const newRequest = {
-                id: `RC${String(existingRequests.length + 1).padStart(3, '0')}`,
-                ...data,
-                customerName: user?.fullName || 'Guest',
-                status: 'PENDING' as const,
+            console.log('📝 Submitting room change request to API:', data);
+
+            // Create request DTO for API
+            const requestDTO = {
+                bookingId: data.bookingId,
+                currentRoomNumber: data.currentRoomNumber,
+                newRoomNumber: data.newRoomNumber,
+                reason: data.reason,
             };
-            
-            // Save to localStorage
-            existingRequests.push(newRequest);
-            localStorage.setItem('roomChangeRequests', JSON.stringify(existingRequests));
-            
-            await new Promise((resolve) => setTimeout(resolve, 500));
-            console.log('✅ Room change request submitted successfully:', newRequest);
+
+            // Call API to create request
+            const newRequest = await roomChangeRequestService.createRequest(
+                requestDTO,
+            );
+
+            console.log(
+                '✅ Room change request submitted successfully:',
+                newRequest,
+            );
             success('Yêu cầu đổi phòng đã được gửi thành công');
             setShowRoomChangeForm(false);
-            
+
             // Reload room change requests
-            loadMyRoomChangeRequests();
+            await loadMyRoomChangeRequests();
         } catch (err) {
             console.error('❌ Error submitting room change request:', err);
             error('Có lỗi xảy ra khi gửi yêu cầu');
@@ -328,7 +419,7 @@ const IncidentReport: React.FC = () => {
                         <p className="text-gray-600 text-lg">
                             Report and track issues during your stay
                         </p>
-                        
+
                         {/* Booking Selector */}
                         {userBookings.length > 0 && (
                             <div className="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-4">
@@ -337,32 +428,57 @@ const IncidentReport: React.FC = () => {
                                 </label>
                                 <select
                                     value={selectedBookingId}
-                                    onChange={(e) => setSelectedBookingId(e.target.value)}
+                                    onChange={(e) =>
+                                        setSelectedBookingId(e.target.value)
+                                    }
                                     className="w-full md:w-auto px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
                                 >
-                                    {userBookings.map((booking) => (
-                                        <option key={booking.bookingID} value={booking.bookingID}>
-                                            {booking.bookingID} - Phòng {booking.bookingDetails?.[0]?.room?.roomNumber || 'N/A'} 
-                                            {' '}({booking.status === 'CHECKED_IN' ? 'Đang ở' : 'Đã xác nhận'})
-                                        </option>
-                                    ))}
+                                    {userBookings.map((booking) => {
+                                        let statusText = 'Đã xác nhận';
+                                        if (booking.status === 'CHECKED_IN')
+                                            statusText = '✅ Đang ở';
+                                        else if (booking.status === 'CONFIRMED')
+                                            statusText = '📋 Đã xác nhận';
+                                        else if (booking.status === 'PENDING')
+                                            statusText = '⏳ Chờ xác nhận';
+
+                                        return (
+                                            <option
+                                                key={booking.bookingID}
+                                                value={booking.bookingID}
+                                            >
+                                                {booking.bookingID} - Phòng{' '}
+                                                {booking.bookingDetails?.[0]
+                                                    ?.room?.roomNumber ||
+                                                    'N/A'}{' '}
+                                                ({statusText})
+                                            </option>
+                                        );
+                                    })}
                                 </select>
                             </div>
                         )}
-                        
+
                         {userBookings.length === 0 && !isLoading && (
                             <div className="mt-4 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                                 <p className="text-yellow-800 font-semibold mb-2">
-                                    ⚠️ Bạn chưa có đơn đặt phòng nào đang check-in
+                                    ⚠️ Không tìm thấy đơn đặt phòng
                                 </p>
-                                <p className="text-yellow-700 text-sm">
-                                    Để báo cáo sự cố, bạn cần:
+                                <p className="text-yellow-700 text-sm mb-3">
+                                    Có thể do:
                                 </p>
-                                <ol className="list-decimal list-inside text-yellow-700 text-sm mt-2 space-y-1">
-                                    <li>Đặt phòng</li>
-                                    <li>Check-in tại quầy lễ tân</li>
-                                    <li>Sau đó mới có thể báo cáo sự cố trong phòng</li>
-                                </ol>
+                                <ul className="list-disc list-inside text-yellow-700 text-sm space-y-1">
+                                    <li>Bạn chưa đặt phòng nào</li>
+                                    <li>Đơn đặt phòng đã bị hủy (CANCELLED)</li>
+                                    <li>Đã check-out rồi (CHECKED_OUT)</li>
+                                </ul>
+                                <p className="text-yellow-700 text-sm mt-3">
+                                    💡 Bạn cần có đơn đặt phòng với trạng thái:{' '}
+                                    <strong>PENDING</strong>,{' '}
+                                    <strong>CONFIRMED</strong>, hoặc{' '}
+                                    <strong>CHECKED_IN</strong> để báo cáo sự
+                                    cố.
+                                </p>
                             </div>
                         )}
                     </div>
@@ -410,7 +526,8 @@ const IncidentReport: React.FC = () => {
                                 <button
                                     onClick={async () => {
                                         // Load booking before showing form
-                                        const booking = await loadCurrentBooking();
+                                        const booking =
+                                            await loadCurrentBooking();
                                         if (booking) {
                                             setShowRoomChangeForm(true);
                                         }
@@ -441,18 +558,20 @@ const IncidentReport: React.FC = () => {
                                 Yêu cầu đổi phòng của bạn
                             </h2>
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                                {myRoomChangeRequests.map((request) => (
+                                {myRoomChangeRequests.map((request: any) => (
                                     <div
-                                        key={request.id}
+                                        key={request.requestID}
                                         className="bg-white rounded-lg shadow-md border border-gray-200 p-5 hover:shadow-lg transition-shadow"
                                     >
                                         <div className="flex items-start justify-between mb-3">
                                             <div>
                                                 <span className="text-xs font-semibold text-gray-500">
-                                                    {request.id}
+                                                    {request.requestID}
                                                 </span>
                                                 <div className="text-sm text-gray-500 mt-1">
-                                                    {new Date(request.requestDate).toLocaleString('vi-VN')}
+                                                    {new Date(
+                                                        request.requestDate,
+                                                    ).toLocaleString('vi-VN')}
                                                 </div>
                                             </div>
                                             {request.status === 'PENDING' && (
@@ -460,12 +579,12 @@ const IncidentReport: React.FC = () => {
                                                     Đang chờ
                                                 </span>
                                             )}
-                                            {request.status === 'APPROVED' && (
+                                            {request.status === 'COMPLETED' && (
                                                 <span className="px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
                                                     Đã duyệt
                                                 </span>
                                             )}
-                                            {request.status === 'REJECTED' && (
+                                            {request.status === 'FAILED' && (
                                                 <span className="px-3 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
                                                     Từ chối
                                                 </span>
@@ -473,18 +592,32 @@ const IncidentReport: React.FC = () => {
                                         </div>
                                         <div className="space-y-2">
                                             <div className="flex items-center gap-2">
-                                                <span className="text-sm text-gray-600">Từ phòng:</span>
-                                                <span className="text-sm font-semibold text-gray-900">
-                                                    {request.currentRoomNumber}
+                                                <span className="text-sm text-gray-600">
+                                                    Từ phòng:
                                                 </span>
-                                                <span className="text-gray-400">→</span>
+                                                <span className="text-sm font-semibold text-gray-900">
+                                                    {
+                                                        request.currentRoom
+                                                            ?.roomNumber
+                                                    }
+                                                </span>
+                                                <span className="text-gray-400">
+                                                    →
+                                                </span>
                                                 <span className="text-sm font-semibold text-blue-600">
-                                                    {request.newRoomNumber}
+                                                    {
+                                                        request.newRoom
+                                                            ?.roomNumber
+                                                    }
                                                 </span>
                                             </div>
                                             <div>
-                                                <span className="text-sm text-gray-600">Lý do: </span>
-                                                <span className="text-sm text-gray-700">{request.reason}</span>
+                                                <span className="text-sm text-gray-600">
+                                                    Lý do:{' '}
+                                                </span>
+                                                <span className="text-sm text-gray-700">
+                                                    {request.reason}
+                                                </span>
                                             </div>
                                             {request.responseNote && (
                                                 <div className="mt-3 p-3 bg-gray-50 rounded-md border border-gray-200">
@@ -494,6 +627,14 @@ const IncidentReport: React.FC = () => {
                                                     <p className="text-sm text-gray-600 mt-1">
                                                         {request.responseNote}
                                                     </p>
+                                                    {request.processedBy && (
+                                                        <p className="text-xs text-gray-500 mt-1">
+                                                            Xử lý bởi:{' '}
+                                                            {
+                                                                request.processedBy
+                                                            }
+                                                        </p>
+                                                    )}
                                                 </div>
                                             )}
                                         </div>
@@ -605,7 +746,9 @@ const IncidentReport: React.FC = () => {
                                 <RoomChangeForm
                                     currentBooking={currentBooking || undefined}
                                     onSubmit={handleSubmitRoomChange}
-                                    onCancel={() => setShowRoomChangeForm(false)}
+                                    onCancel={() =>
+                                        setShowRoomChangeForm(false)
+                                    }
                                 />
                             </div>
                         </div>

@@ -1,9 +1,9 @@
 package com.hotelvista.repository;
 
+import com.hotelvista.dto.CustomerReviewDTO;
 import com.hotelvista.model.Review;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
@@ -13,12 +13,15 @@ public interface ReviewRepository extends JpaRepository<Review, String> {
      * @param roomID
      * @return
      */
-    @Query(value = """
-            SELECT r.* 
-            FROM booking_details bdl
-            JOIN reviews r ON bdl.review_id = r.review_id
-            WHERE bdl.room_id = :roomID
-            """, nativeQuery = true)
-    List<Review> getReviewByRoomID(String roomID);
+    @Query("""
+    SELECT new com.hotelvista.dto.CustomerReviewDTO(c, r)
+    FROM BookingDetail bdl
+    JOIN bdl.booking b
+    JOIN b.customer c
+    JOIN bdl.review r
+    WHERE bdl.room.roomNumber = :roomID
+""")
+    List<CustomerReviewDTO> getReviewByRoomID(String roomID);
+
 
 }
