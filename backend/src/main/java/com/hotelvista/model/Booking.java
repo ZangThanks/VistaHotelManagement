@@ -85,7 +85,6 @@ public class Booking {
     private List<BookingDetail> bookingDetails;
 
     @ToString.Exclude
-    @JsonIgnore
     @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BookingService> bookingServices;
 

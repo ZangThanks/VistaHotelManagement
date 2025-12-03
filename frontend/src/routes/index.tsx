@@ -42,6 +42,7 @@ import MyBookings from '../pages/customer/MyBooking.tsx';
 import RoomCart from '../pages/admin/booking/RoomCart.tsx';
 import UserProfilePage from '../pages/customer/UserProfile.tsx';
 import PaymentPage from '../pages/customer/booking/PaymentPage.tsx';
+import PromotionManagement from '../pages/admin/promotion/PromotionManagement.tsx';
 
 export const router = createBrowserRouter([
     // AUTH
@@ -84,6 +85,7 @@ export const router = createBrowserRouter([
             { path: 'employees', element: <EmployeeList /> },
             // { path: 'employees/:id', element: <EmployeeDetail /> },
             { path: 'pricing', element: <PricingManager /> },
+            { path: 'promotion-management', element: <PromotionManagement /> },
         ],
     },
 
@@ -117,7 +119,6 @@ export const router = createBrowserRouter([
             { path: 'bookingPage', element: <BookingPage /> },
             { path: 'mybooking', element: <MyBookings /> },
             { path: 'mybooking/:id', element: <BookingDetail /> },
-            { path: 'mybooking', element: <MyBookings /> },
             { path: 'payment', element: <PaymentPage /> },
             { path: 'profile', element: <UserProfilePage /> },
             { path: 'cart', element: <RoomCart /> },

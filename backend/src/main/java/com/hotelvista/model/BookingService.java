@@ -1,6 +1,7 @@
 package com.hotelvista.model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hotelvista.model.enums.OrderStatus;
 import com.hotelvista.model.enums.PaymentMethod;
 import jakarta.persistence.*;
@@ -25,6 +26,7 @@ public class BookingService {
 
     @Id
     @ManyToOne(fetch = FetchType.EAGER)
+    @JsonIgnore
     @JoinColumn(name = "booking_id")
     private Booking booking;
 

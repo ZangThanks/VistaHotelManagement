@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { getAllRooms } from '../../services/roomService';
+import { overlapBookingExists } from '../../services/bookingService';
 import type { Room } from '../../types/Room';
 import RoomCard from '../../components/RoomCard';
 import Dropdown from '../../components/Dropdown';
@@ -8,15 +9,16 @@ import RoomCompareModal from '../../components/customer/RoomCompareModal';
 import Header from '../../components/Header';
 
 export default function RoomList() {
-  const [rooms, setRooms] = useState<Room[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+    const [rooms, setRooms] = useState<Room[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [checkingAvailability, setCheckingAvailability] = useState(false);
 
-  // Compare functionality
-  const [compareRooms, setCompareRooms] = useState<Room[]>([]);
-  const [showCompareModal, setShowCompareModal] = useState(false);
-  const [isModalMinimized, setIsModalMinimized] = useState(false);
-  const MAX_COMPARE = 3;
+    // Compare functionality
+    const [compareRooms, setCompareRooms] = useState<Room[]>([]);
+    const [showCompareModal, setShowCompareModal] = useState(false);
+    const [isModalMinimized, setIsModalMinimized] = useState(false);
+    const MAX_COMPARE = 3;
 
     // Filters
     const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
@@ -26,6 +28,9 @@ export default function RoomList() {
     const [maxPrice, setMaxPrice] = useState<number | ''>('');
     const [checkIn, setCheckIn] = useState<string>('');
     const [checkOut, setCheckOut] = useState<string>('');
+    const [roomAvailability, setRoomAvailability] = useState<
+        Record<string, boolean>
+    >({});
 
     // Sort state
     const [sortOrder, setSortOrder] = useState<'price_asc' | 'price_desc' | ''>(
@@ -57,6 +62,68 @@ export default function RoomList() {
             })
             .finally(() => setLoading(false));
     }, []);
+
+    // Check room availability when dates change
+    useEffect(() => {
+        const checkAvailability = async () => {
+            if (!checkIn || !checkOut) {
+                setRoomAvailability({});
+                return;
+            }
+
+            // Validate dates
+            const checkInDate = new Date(checkIn);
+            const checkOutDate = new Date(checkOut);
+
+            if (checkOutDate <= checkInDate) {
+                setError('Check-out date must be after check-in date');
+                setRoomAvailability({});
+                return;
+            }
+
+            setCheckingAvailability(true);
+            setError(null);
+
+            try {
+                const availabilityChecks = await Promise.all(
+                    rooms.map(async (room) => {
+                        try {
+                            const hasOverlap = await overlapBookingExists(
+                                room.roomNumber,
+                            );
+                            return {
+                                roomNumber: room.roomNumber,
+                                isAvailable: !hasOverlap,
+                            };
+                        } catch (err) {
+                            console.error(
+                                `Error checking availability for room ${room.roomNumber}:`,
+                                err,
+                            );
+                            return {
+                                roomNumber: room.roomNumber,
+                                isAvailable: true, // assume available on error
+                            };
+                        }
+                    }),
+                );
+
+                const availabilityMap: Record<string, boolean> = {};
+                availabilityChecks.forEach((check) => {
+                    availabilityMap[check.roomNumber] = check.isAvailable;
+                });
+
+                setRoomAvailability(availabilityMap);
+            } catch (err) {
+                console.error('Error checking room availability:', err);
+                setError('Failed to check room availability');
+            } finally {
+                setCheckingAvailability(false);
+            }
+        };
+
+        checkAvailability();
+    }, [checkIn, checkOut, rooms]);
 
     const roomTypes = useMemo(() => {
         const setType = new Set<string>();
@@ -93,21 +160,27 @@ export default function RoomList() {
         )
             return false;
 
+        // Filter by availability if dates are selected
+        if (checkIn && checkOut) {
+            const isAvailable = roomAvailability[r.roomNumber];
+            if (isAvailable === false) return false;
+        }
+
         return true;
     });
 
-  // Computed displayedRooms = filtered + sorted
-  const displayedRooms = useMemo(() => {
-    if (!sortOrder) return filteredRooms;
-    const copy = [...filteredRooms];
-    copy.sort((a, b) => {
-      const pa = a.roomType?.basePrice ?? 0;
-      const pb = b.roomType?.basePrice ?? 0;
-      if (sortOrder === "price_asc") return pa - pb;
-      return pb - pa;
-    });
-    return copy;
-  }, [filteredRooms, sortOrder]);
+    // Computed displayedRooms = filtered + sorted
+    const displayedRooms = useMemo(() => {
+        if (!sortOrder) return filteredRooms;
+        const copy = [...filteredRooms];
+        copy.sort((a, b) => {
+            const pa = a.roomType?.basePrice ?? 0;
+            const pb = b.roomType?.basePrice ?? 0;
+            if (sortOrder === 'price_asc') return pa - pb;
+            return pb - pa;
+        });
+        return copy;
+    }, [filteredRooms, sortOrder]);
 
     const clearFilters = () => {
         setSelectedTypes([]);
@@ -117,6 +190,8 @@ export default function RoomList() {
         setSortOrder('');
         setCheckIn('');
         setCheckOut('');
+        setRoomAvailability({});
+        setError(null);
     };
 
     // Compare handlers
@@ -208,6 +283,27 @@ export default function RoomList() {
                                             CLEAR ALL
                                         </button>
                                     </div>
+
+                                    {/* Availability Status */}
+                                    {checkingAvailability && (
+                                        <div className="flex items-center gap-2 text-sm text-blue-600 bg-blue-50 px-3 py-2 rounded-lg">
+                                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                                            <span>
+                                                Checking availability...
+                                            </span>
+                                        </div>
+                                    )}
+
+                                    {checkIn &&
+                                        checkOut &&
+                                        !checkingAvailability &&
+                                        Object.keys(roomAvailability).length >
+                                            0 && (
+                                            <div className="text-xs text-gray-600 bg-green-50 px-3 py-2 rounded-lg">
+                                                ✓ Showing available rooms for
+                                                selected dates
+                                            </div>
+                                        )}
 
                                     <div className="h-px bg-gray-100" />
 
@@ -389,6 +485,11 @@ export default function RoomList() {
                                                     <input
                                                         type="date"
                                                         value={checkIn}
+                                                        min={
+                                                            new Date()
+                                                                .toISOString()
+                                                                .split('T')[0]
+                                                        }
                                                         onChange={(e) =>
                                                             setCheckIn(
                                                                 e.target.value,
@@ -451,6 +552,24 @@ export default function RoomList() {
                                                     <input
                                                         type="date"
                                                         value={checkOut}
+                                                        min={
+                                                            checkIn
+                                                                ? new Date(
+                                                                      new Date(
+                                                                          checkIn,
+                                                                      ).getTime() +
+                                                                          86400000,
+                                                                  )
+                                                                      .toISOString()
+                                                                      .split(
+                                                                          'T',
+                                                                      )[0]
+                                                                : new Date()
+                                                                      .toISOString()
+                                                                      .split(
+                                                                          'T',
+                                                                      )[0]
+                                                        }
                                                         onChange={(e) =>
                                                             setCheckOut(
                                                                 e.target.value,
@@ -662,8 +781,9 @@ export default function RoomList() {
                                     Rooms
                                 </h2>
                                 <p className="text-sm text-gray-500 mt-1">
-                                    {displayedRooms.length} options · curated
-                                    for comfort
+                                    {displayedRooms.length}{' '}
+                                    {checkIn && checkOut ? 'available' : ''}{' '}
+                                    options · curated for comfort
                                 </p>
                             </div>
 
@@ -680,9 +800,16 @@ export default function RoomList() {
                         </div>
 
                         {/* Loading State */}
-                        {loading && (
+                        {(loading || checkingAvailability) && (
                             <div className="flex items-center justify-center py-20">
-                                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#CCBDA3]"></div>
+                                <div className="text-center">
+                                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#CCBDA3] mx-auto mb-4"></div>
+                                    <p className="text-sm text-gray-600">
+                                        {checkingAvailability
+                                            ? 'Checking availability...'
+                                            : 'Loading rooms...'}
+                                    </p>
+                                </div>
                             </div>
                         )}
 
@@ -719,28 +846,31 @@ export default function RoomList() {
                         )}
 
                         {/* Room Cards Grid */}
-                        {!loading && !error && displayedRooms.length > 0 && (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-                                {displayedRooms.map((r) => (
-                                    <div
-                                        key={r.roomNumber}
-                                        className="transform transition-all duration-300 hover:scale-[1.02]"
-                                    >
-                                        <RoomCard
-                                            room={r}
-                                            onCompareToggle={
-                                                handleCompareToggle
-                                            }
-                                            isInCompare={compareRooms.some(
-                                                (cr) =>
-                                                    cr.roomNumber ===
-                                                    r.roomNumber,
-                                            )}
-                                        />
-                                    </div>
-                                ))}
-                            </div>
-                        )}
+                        {!loading &&
+                            !checkingAvailability &&
+                            !error &&
+                            displayedRooms.length > 0 && (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                                    {displayedRooms.map((r) => (
+                                        <div
+                                            key={r.roomNumber}
+                                            className="transform transition-all duration-300 hover:scale-[1.02]"
+                                        >
+                                            <RoomCard
+                                                room={r}
+                                                onCompareToggle={
+                                                    handleCompareToggle
+                                                }
+                                                isInCompare={compareRooms.some(
+                                                    (cr) =>
+                                                        cr.roomNumber ===
+                                                        r.roomNumber,
+                                                )}
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                     </main>
                 </div>
 
