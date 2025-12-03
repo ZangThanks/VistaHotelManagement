@@ -51,5 +51,6 @@ public class Customer extends User{
 
     @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "cart_bean_id")
+    @JsonIgnore
     private CartBean cartBean;
 }
