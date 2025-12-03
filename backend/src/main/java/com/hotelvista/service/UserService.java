@@ -11,12 +11,14 @@ import com.hotelvista.repository.AdminRepository;
 import com.hotelvista.repository.CustomerRepository;
 import com.hotelvista.repository.EmployeeRepository;
 import com.hotelvista.util.GenerateIDUtil;
+import com.hotelvista.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.UUID;
+import java.util.Optional;
 
 @Service
 public class UserService {
@@ -31,6 +33,9 @@ public class UserService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private UserRepository userRepository;
 
     /**
      * Tìm user bằng email hoặc phone, áp dụng cho Customer + Admin + Employee
@@ -61,16 +66,6 @@ public class UserService {
         }
 
         return null;
-    }
-
-    public User findById(String id) {
-        User u = customerRepo.findById(id).orElse(null);
-        if (u != null) return u;
-
-        u = adminRepo.findById(id).orElse(null);
-        if (u != null) return u;
-
-        return employeeRepo.findById(id).orElse(null);
     }
 
     public boolean resetPasswordByEmail(String email, String newPassword) {
@@ -120,5 +115,9 @@ public class UserService {
 
         customerRepo.save(c);
         return c;
+    }
+
+    public Optional<User> findById(String userId) {
+        return userRepository.findById(userId);
     }
 }
