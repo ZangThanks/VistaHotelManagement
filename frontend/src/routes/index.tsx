@@ -48,9 +48,10 @@ import RoomTypeManagement from "../pages/employee/room/RoomTypeManagement.tsx";
 import PromotionManagement from "../pages/admin/promotion/PromotionManagement.tsx";
 import PromotionTypeManagement from "../pages/admin/promotion/PromotionTypeManagement.tsx";
 import VoucherManagement from "../pages/admin/voucher/VoucherManagement.tsx";
+import ReportPage from "../pages/admin/report/Report.tsx";
 
 export const router = createBrowserRouter([
-  // OAuth 
+  // OAuth
   {
     path: "/oauth-success",
     element: <OAuthSuccess />,
@@ -109,6 +110,7 @@ export const router = createBrowserRouter([
       { path: "pricing", element: <PricingManager /> },
       // { path: 'employees/:id', element: <EmployeeDetail /> },
       { path: "profile", element: <UserProfilePage /> },
+      { path: "reports", element: <ReportPage /> },
     ],
   },
 
