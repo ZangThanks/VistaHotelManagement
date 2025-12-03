@@ -30,7 +30,10 @@ import CustomerVoucherModal from "./CustomerVoucherModal";
 import { RiHotelLine } from "react-icons/ri";
 import { TbHotelService } from "react-icons/tb";
 import { getAllPolicyBaseRates } from "../../services/HourlyRatePolicyService";
-import type { HourlyRatePolicy, BaseRateItem } from "../../types/HourlyRatePolicy";
+import type {
+  HourlyRatePolicy,
+  BaseRateItem,
+} from "../../types/HourlyRatePolicy";
 
 interface BookingFormProps {
   currentStep: number;
@@ -246,15 +249,13 @@ export default function BookingForm({
    *
    * CÔNG THỨC:
    * 1. Lấy phần trăm cơ bản từ baseRates theo duration
-   * 2. Áp dụng phụ phí giờ cao điểm (18:00-20:00): +20%
-   * 3. Áp dụng phụ phí cuối tuần: +X% (từ weekendSurcharge)
-   * 4. Tính giá cuối: (basePrice × totalPercentage) / duration
+   * 2. Áp dụng phụ phí cuối tuần: +X% (từ weekendSurcharge)
+   * 3. Tính giá cuối: (basePrice × totalPercentage / 100) / duration
    *
-   * Tính giá theo giờ dựa trên HourlyRatePolicy
-   * @param basePrice Giá gốc của phòng
+   * @param basePrice Giá gốc của phòng (giá/đêm)
    * @param duration Số giờ đặt
-   * @param checkInDate Ngày check-in
-   * @returns Giá mỗi giờ đã tính phụ phí (nếu có)
+   * @param checkInDate Ngày và giờ check-in
+   * @returns Giá mỗi giờ đã tính phụ phí (VND/giờ)
    */
   const calculateHourlyRate = (
     basePrice: number,
@@ -270,7 +271,7 @@ export default function BookingForm({
 
     // Lấy phần trăm cơ bản từ baseRates
     let ratePercentage = 100; // default 100% nếu không tìm thấy
-  
+
     if (policy.baseRates && Array.isArray(policy.baseRates)) {
       const rates = policy.baseRates as BaseRateItem[];
 
@@ -284,11 +285,35 @@ export default function BookingForm({
 
       if (matchedRate) {
         ratePercentage = matchedRate.baseRate; // % : ví dụ 25
-        console.log(`Matched base rate for ${duration} hours: ${ratePercentage}%`);
+        console.log(`Base rate for ${duration}h: ${ratePercentage}%`);
       }
     }
 
-    // Áp dụng phụ phí giờ cao điểm (VD: 18:00 - 20:00)
+    // Áp dụng phụ cuối tuần
+    const dayOfWeek = checkInDate.getDay(); // 0 = Sunday, 6 = Saturday
+    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+
+    if (isWeekend && policy.weekendSurcharge) {
+      const beforeSurcharge = ratePercentage;
+      ratePercentage += policy.weekendSurcharge; // Cộng thêm weekend surcharge %
+      console.log(
+        `Weekend surcharge: ${beforeSurcharge}% → ${ratePercentage}% (+${policy.weekendSurcharge}%)`
+      );
+    }
+
+    // Tính giá cuối
+    // Công thức: Gía theo giờ = (Gía phòng/đêm x Tổng %) / 100 / duration
+    const totalPrice = (basePrice * ratePercentage) / 100;
+    const hourlyRate = totalPrice / duration;
+
+    console.log(
+      `Final calculation: (${basePrice} × ${ratePercentage}%) / ${duration}h = ${hourlyRate.toFixed(
+        0
+      )} VND/hour`
+    );
+    console.log(`Total amount: ${totalPrice.toFixed(0)} VND`);
+
+    return hourlyRate;
   };
 
   // Tính tổng chi phí phòng
@@ -404,6 +429,7 @@ export default function BookingForm({
       );
     }
 
+    // Tạo payload booking
     const payload: any = {
       bookingID: bookingID,
       checkInDate: formatLocalDateTime(checkInWithTime),
@@ -958,8 +984,9 @@ export default function BookingForm({
                       {room.roomNumber}
                     </span>
                     <span className="text-[#c9b8a8] font-semibold">
-                      {room.roomType?.basePrice?.toLocaleString() || "0"} VND
-                      {bookingType === "HOURLY" && " /hour"}
+                      {room.roomType?.basePrice?.toLocaleString() || "0"} VND 
+                      {/* {bookingType === "HOURLY" && " /hour"} */}
+                      /night
                     </span>
                   </div>
                 ))}
@@ -1051,6 +1078,58 @@ export default function BookingForm({
                 {totalRoomCosts.toLocaleString()} VND
               </span>
             </div>
+
+            {bookingType === "HOURLY" && hourlyRatePolicies.length > 0 && (
+              <div className="bg-gray-50 rounded-lg p-4 mt-4">
+                <p className="text-sm font-semibold text-gray-600 mb-2">
+                  Pricing Details:
+                </p>
+                <div className="space-y-1 text-sm text-gray-700">
+                  <div className="flex justify-between">
+                    <span>Duration:</span>
+                    <span className="font-medium">{duration} hours</span>
+                  </div>
+
+                  {(() => {
+                    if (!hourlyCheckInDate) return null;
+
+                    // Kiểm tra các điều kiện phụ phí
+                    const hour = checkInTime
+                      ? parseInt(checkInTime.split(":")[0])
+                      : 0;
+                    const isEvening = hour >= 18 || hour < 6;
+                    const dayOfWeek = hourlyCheckInDate.getDay();
+                    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+                    const policy = hourlyRatePolicies[0];
+
+                    return (
+                      <>
+                        {isEvening && (
+                          <div className="flex justify-between text-orange-600">
+                            <span>• Evening peak (18:00-06:00):</span>
+                            <span className="font-medium">+20%</span>
+                          </div>
+                        )}{" "}
+                        {isWeekend && policy?.weekendSurcharge && (
+                          <div className="flex justify-between text-blue-600">
+                            <span>• Weekend surcharge:</span>
+                            <span className="font-medium">
+                              +{policy.weekendSurcharge}%
+                            </span>
+                          </div>
+                        )}
+                        {!isWeekend && (
+                          <div className="flex justify-between text-green-600">
+                            <span>• Standard rate (weekday)</span>
+                            <span className="font-medium">✓</span>
+                          </div>
+                        )}
+                      </>
+                    );
+                  })()}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
