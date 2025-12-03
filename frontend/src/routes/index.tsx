@@ -31,7 +31,7 @@ import Dashboard from '../pages/admin/dashboard/Dashboard.tsx';
 import NewsDetail from '../pages/admin/news/NewsDetail.tsx';
 import NewsList from '../pages/admin/news/NewsList.tsx';
 import EmployeeList from '../pages/admin/EmployeeList.tsx';
-import BookingDetail from '../pages/admin/booking/BookingDetail.tsx';
+import BookingDetail from '../pages/customer/BookingDetail.tsx';
 import PricingManager from '../pages/admin/pricing/PricingManager.tsx';
 import PromotionManagement from '../pages/admin/promotion/PromotionManagement.tsx';
 import PromotionTypeManagement from '../pages/admin/promotion/PromotionTypeManagement.tsx';

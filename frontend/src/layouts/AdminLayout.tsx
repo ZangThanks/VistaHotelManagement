@@ -26,6 +26,7 @@ const AdminLayout = () => {
     return (
         <div className="flex h-screen bg-light">
             <Sidebar
+                userRole="admin"
                 className={
                     isMobile
                         ? `z-30 transform ${

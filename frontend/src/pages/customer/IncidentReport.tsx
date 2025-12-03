@@ -367,9 +367,17 @@ const IncidentReport: React.FC = () => {
     // Check if user is logged in and is a customer
     if (!user) {
         return (
-            <div className="min-h-screen bg-white">
-                <Header />
-                <div className="bg-gradient-to-b from-gray-50 to-white min-h-screen">
+            <div className="min-h-screen">
+                <div className="fixed top-0 left-0 w-full z-50 bg-white shadow">
+                    <Header />
+                </div>
+                <div
+                    className="min-h-screen pt-16"
+                    style={{
+                        background: 'var(--gradient-cream)',
+                        fontFamily: 'var(--font-sans)',
+                    }}
+                >
                     <div className="max-w-4xl mx-auto px-4 py-20">
                         <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-12 text-center">
                             <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -404,12 +412,20 @@ const IncidentReport: React.FC = () => {
     }
 
     return (
-        <div className="min-h-screen bg-white">
+        <div className="min-h-screen">
             {/* Header */}
-            <Header />
+            <div className="fixed top-0 left-0 w-full z-50 bg-white shadow">
+                <Header />
+            </div>
 
             {/* Main Content */}
-            <div className="bg-gradient-to-b from-gray-50 to-white min-h-screen">
+            <div
+                className="min-h-screen pt-16"
+                style={{
+                    background: 'var(--gradient-cream)',
+                    fontFamily: 'var(--font-sans)',
+                }}
+            >
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
                     {/* Page Header */}
                     <div className="mb-10">
