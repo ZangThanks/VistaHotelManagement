@@ -11,7 +11,14 @@ export interface Booking {
   duration: number;
   packageType: string;
   totalAmount: number;
-  paymentStatus: "PENDING" | "PAID" | "REFUNDED" | "PARTIAL";
+  paymentStatus:
+    | "PENDING"
+    | "COMPLETED"
+    | "PERCENTAGE_30"
+    | "PERCENTAGE_50"
+    | "PAID"
+    | "REFUNDED"
+    | "CANCELLED";
   invoiceType?: string | null;
   totalCost: number;
   type: "HOURLY" | "DAILY";
