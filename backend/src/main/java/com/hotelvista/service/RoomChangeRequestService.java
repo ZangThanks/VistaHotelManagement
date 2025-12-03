@@ -3,9 +3,11 @@ package com.hotelvista.service;
 import com.hotelvista.dto.RoomChangeRequestDTO;
 import com.hotelvista.dto.RoomChangeResponseDTO;
 import com.hotelvista.model.Booking;
+import com.hotelvista.model.BookingDetail;
 import com.hotelvista.model.Room;
 import com.hotelvista.model.RoomChangeRequest;
 import com.hotelvista.model.enums.RequestStatus;
+import com.hotelvista.repository.BookingDetailRepository;
 import com.hotelvista.repository.BookingRepository;
 import com.hotelvista.repository.RoomChangeRequestRepository;
 import com.hotelvista.repository.RoomRepository;
@@ -22,15 +24,18 @@ public class RoomChangeRequestService {
     private final RoomChangeRequestRepository repository;
     private final BookingRepository bookingRepository;
     private final RoomRepository roomRepository;
+    private final BookingDetailRepository bookingDetailRepository;
 
     @Autowired
     public RoomChangeRequestService(
             RoomChangeRequestRepository repository,
             BookingRepository bookingRepository,
-            RoomRepository roomRepository) {
+            RoomRepository roomRepository,
+            BookingDetailRepository bookingDetailRepository) {
         this.repository = repository;
         this.bookingRepository = bookingRepository;
         this.roomRepository = roomRepository;
+        this.bookingDetailRepository = bookingDetailRepository;
     }
 
     public List<RoomChangeRequest> findAll() {
@@ -86,6 +91,37 @@ public class RoomChangeRequestService {
 
         if (response.isApprove()) {
             request.setStatus(RequestStatus.COMPLETED);
+            
+            // Update booking to change room
+            try {
+                Booking booking = request.getBooking();
+                Room currentRoom = request.getCurrentRoom();
+                Room newRoom = request.getNewRoom();
+                
+                // Get booking details for this booking
+                List<BookingDetail> bookingDetails = 
+                    bookingDetailRepository.findAllByBooking_BookingID(booking.getBookingID());
+                
+                // Find and update the booking detail for the current room
+                for (BookingDetail detail : bookingDetails) {
+                    if (detail.getRoom().getRoomNumber().equals(currentRoom.getRoomNumber())) {
+                        // Delete old booking detail
+                        bookingDetailRepository.delete(detail);
+                        
+                        // Create new booking detail with new room
+                        BookingDetail newDetail = new BookingDetail();
+                        newDetail.setBooking(booking);
+                        newDetail.setRoom(newRoom);
+                        newDetail.setRoomPrice(detail.getRoomPrice()); // Keep the same price
+                        newDetail.setReview(detail.getReview()); // Keep the review if any
+                        
+                        bookingDetailRepository.save(newDetail);
+                        break;
+                    }
+                }
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to update booking room: " + e.getMessage());
+            }
         } else {
             request.setStatus(RequestStatus.FAILED);
         }
