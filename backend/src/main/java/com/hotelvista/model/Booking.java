@@ -98,6 +98,11 @@ public class Booking {
     @ToString.Exclude
     private EarlyCheckin earlyCheckin;
 
+    @OneToOne(mappedBy = "booking")
+    @ToString.Exclude
+    private LateCheckout lateCheckout;
+
     @Enumerated(EnumType.STRING)
     private BookingType type;
+
 }

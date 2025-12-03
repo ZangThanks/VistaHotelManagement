@@ -1,7 +1,7 @@
 export type UserRole = "ADMIN" | "EMPLOYEE" | "CUSTOMER" | "GUEST" | string;
 
 export interface Employee {
-  employeeID: string;
+  id: string;
   userName: string;
   password: string;
   email?: string | null;
@@ -13,4 +13,19 @@ export interface Employee {
   position: string;
   salary: number;
   hireDate?: string | null;
+  status: "ACTIVE" | "INACTIVE" | string;
+}
+
+export interface EmployeeFormData {
+    userName: string;
+    fullName: string;
+    email: string;
+    phone: string;
+    position: string;
+    department: string;
+    salary: string;
+    hireDate: string;
+    address: string;
+    status: 'ACTIVE' | 'INACTIVE';
+    userRole: 'EMPLOYEE';
 }

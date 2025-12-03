@@ -195,3 +195,4 @@ public class BookingService {
         return repo.findAllByCheckOutDateBetween(startDate, endDate);
     }
 }
+
