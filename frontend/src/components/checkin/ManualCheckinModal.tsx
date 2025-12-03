@@ -366,17 +366,25 @@ function ManualCheckinModal({ isOpen, onClose }: ManualCheckinModalProps) {
                               <td className="py-3 px-4">
                                 <button
                                   onClick={() => handleSelectBooking(booking)}
+                                  disabled={
+                                    booking.status.toUpperCase() !== "PENDING"
+                                  }
                                   className={`px-3 py-1 text-sm rounded-md transition ${
                                     selectedBooking?.bookingID ===
                                     booking.bookingID
                                       ? "bg-green-600 text-white"
-                                      : "bg-[#CCBDA3] text-white hover:bg-[#b8ac94]"
+                                      : booking.status.toUpperCase() ===
+                                        "PENDING"
+                                      ? "bg-[#CCBDA3] text-white hover:bg-[#b8ac94]"
+                                      : "bg-gray-300 text-gray-500 cursor-not-allowed"
                                   }`}
                                 >
                                   {selectedBooking?.bookingID ===
                                   booking.bookingID
                                     ? "Selected"
-                                    : "Select"}
+                                    : booking.status.toUpperCase() === "PENDING"
+                                    ? "Select"
+                                    : "Not Available"}
                                 </button>
                               </td>
                             </tr>

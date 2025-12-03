@@ -22,4 +22,5 @@ export interface Customer {
   loyaltyPoints: number;
   memberShipLevel: MemberShipLevel;
   reputationPoint: number;
+  avatarUrl: string;
 }

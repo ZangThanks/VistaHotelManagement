@@ -7,8 +7,17 @@ import {
   Heart,
   Settings,
   ChevronRight,
+  PartyPopper,
 } from "lucide-react";
 import type { Voucher } from "../../types/Voucher";
+import HolidayVoucherModal from "./HolidayVoucherModal";
+import type { Holiday } from "../../services/googleCalendarService";
+import {
+  saveHolidayVouchers,
+  getAllHolidayVouchers,
+  type HolidayVoucherDTO,
+} from "../../services/holidayVoucherService";
+import { useToastContext } from "../../hooks/useToastContext";
 
 interface AutoEvent {
   id: string;
@@ -30,7 +39,18 @@ interface AutoEventsTabProps {
 }
 
 export default function AutoEventsTab({ vouchers }: AutoEventsTabProps) {
+  const toast = useToastContext();
   const [events, setEvents] = useState<AutoEvent[]>([
+    {
+      id: "holiday",
+      name: "Holiday Voucher",
+      description: "Phân phối voucher tự động theo ngày lễ, ngày đặc biệt",
+      icon: <PartyPopper className="w-6 h-6" />,
+      color: "text-purple-600",
+      bgColor: "bg-purple-50",
+      enabled: false,
+      voucherId: "",
+    },
     {
       id: "birthday",
       name: "Birthday Voucher",
@@ -84,6 +104,51 @@ export default function AutoEventsTab({ vouchers }: AutoEventsTabProps) {
 
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [configModalOpen, setConfigModalOpen] = useState(false);
+  const [holidayModalOpen, setHolidayModalOpen] = useState(false);
+  const [selectedHolidays, setSelectedHolidays] = useState<
+    Array<{ holiday: Holiday; voucherId: string }>
+  >([]);
+
+  // Load cấu hình khi component mount
+  useEffect(() => {
+    const loadHolidayConfig = async () => {
+      try {
+        const holidayVouchers = await getAllHolidayVouchers();
+
+        // Nếu có dữ liệu trong DB → Bật holiday event
+        if (holidayVouchers && holidayVouchers.length > 0) {
+          setEvents((prev) =>
+            prev.map((event) =>
+              event.id === "holiday" ? { ...event, enabled: true } : event
+            )
+          );
+
+          // Convert backend data sang selectedHolidays format
+          const mockHolidays = holidayVouchers.map((hv: any) => ({
+            holiday: {
+              id: hv.holidayId,
+              summary: hv.holidayName,
+              start: hv.holidayDate,
+              end: hv.holidayDate,
+              date: new Date(hv.holidayDate),
+            },
+            voucherId: hv.voucher?.voucherID || "",
+          }));
+          setSelectedHolidays(mockHolidays);
+
+          console.log(
+            "Loaded holiday vouchers config:",
+            holidayVouchers.length,
+            "holidays"
+          );
+        }
+      } catch (error) {
+        console.error("Error loading holiday vouchers:", error);
+      }
+    };
+
+    loadHolidayConfig();
+  }, []);
 
   const handleToggleEvent = async (eventId: string) => {
     setEvents((prev) =>
@@ -95,8 +160,50 @@ export default function AutoEventsTab({ vouchers }: AutoEventsTabProps) {
   };
 
   const handleConfigureEvent = (eventId: string) => {
-    setSelectedEventId(eventId);
-    setConfigModalOpen(true);
+    if (eventId === "holiday") {
+      setHolidayModalOpen(true);
+    } else {
+      setSelectedEventId(eventId);
+      setConfigModalOpen(true);
+    }
+  };
+
+  const handleSaveHolidays = async (
+    holidays: Array<{ holiday: Holiday; voucherId: string }>
+  ) => {
+    try {
+      // Convert sang DTO format
+      const holidayDTOs: HolidayVoucherDTO[] = holidays.map((item) => ({
+        holidayId: item.holiday.id,
+        holidayName: item.holiday.summary,
+        holidayDate: item.holiday.start, // ISO string format
+        voucherId: item.voucherId,
+        isActive: true,
+      }));
+
+      // Gọi API lưu vào backend
+      await saveHolidayVouchers(holidayDTOs);
+
+      // Cập nhật state local
+      setSelectedHolidays(holidays);
+
+      // Bật toggle Holiday Voucher sau khi lưu thành công
+      setEvents((prev) =>
+        prev.map((event) =>
+          event.id === "holiday" ? { ...event, enabled: true } : event
+        )
+      );
+
+      toast.success("Holiday Voucher configuration saved successfully!", {
+        duration: 2000,
+      });
+      console.log("Holiday vouchers saved:", holidayDTOs);
+    } catch (error) {
+      console.error("Error saving holiday vouchers:", error);
+      toast.error("Error saving Holiday Voucher configuration!", {
+        duration: 3000,
+      });
+    }
   };
 
   const handleSaveConfig = (
@@ -177,7 +284,18 @@ export default function AutoEventsTab({ vouchers }: AutoEventsTabProps) {
 
                   {event.enabled && (
                     <div className="space-y-2">
-                      {event.voucherId ? (
+                      {event.id === "holiday" ? (
+                        // Hiển thị đặc biệt cho Holiday Voucher
+                        selectedHolidays.length > 0 ? (
+                          <div className="text-xs bg-green-50 border border-green-200 text-green-800 rounded px-2 py-1.5">
+                            {selectedHolidays.length} ngày lễ đã cấu hình
+                          </div>
+                        ) : (
+                          <div className="text-xs bg-yellow-50 border border-yellow-200 text-yellow-800 rounded px-2 py-1.5">
+                            No voucher selected
+                          </div>
+                        )
+                      ) : event.voucherId ? (
                         <div className="text-xs bg-white border border-[#ebe3d7] rounded px-2 py-1.5">
                           <span className="text-gray-500">Voucher: </span>
                           <span className="font-medium text-[#6b5e4c]">
@@ -188,7 +306,7 @@ export default function AutoEventsTab({ vouchers }: AutoEventsTabProps) {
                         </div>
                       ) : (
                         <div className="text-xs bg-yellow-50 border border-yellow-200 text-yellow-800 rounded px-2 py-1.5">
-                          ⚠️ No voucher selected
+                          No voucher selected
                         </div>
                       )}
 
@@ -360,6 +478,14 @@ export default function AutoEventsTab({ vouchers }: AutoEventsTabProps) {
           </motion.div>
         </div>
       )}
+
+      {/* Holiday Voucher Modal */}
+      <HolidayVoucherModal
+        isOpen={holidayModalOpen}
+        onClose={() => setHolidayModalOpen(false)}
+        vouchers={vouchers}
+        onSave={handleSaveHolidays}
+      />
     </div>
   );
 }

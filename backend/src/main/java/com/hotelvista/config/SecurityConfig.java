@@ -1,14 +1,21 @@
 package com.hotelvista.config;
 
 import com.hotelvista.security.JwtAuthenticationFilter;
+import com.hotelvista.security.oauth.CustomAuthorizationRequestResolver;
+import com.hotelvista.security.oauth.CustomOAuth2UserService;
+import com.hotelvista.security.oauth.OAuth2SuccessHandler;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestResolver;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -23,21 +30,12 @@ import java.util.Arrays;
  */
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
 
-    @Autowired
-    private JwtAuthenticationFilter jwtAuthenticationFilter;
-
-    /**
-     * Tạo bean PasswordEncoder để mã hóa mật khẩu.
-     * Sử dụng thuật toán BCrypt để mã hóa an toàn.
-     * 
-     * @return BCryptPasswordEncoder để mã hóa và xác thực mật khẩu
-     */
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final CustomOAuth2UserService customOAuth2UserService;
+    private final OAuth2SuccessHandler oAuth2SuccessHandler;
 
     /**
      * Cấu hình chuỗi filter bảo mật cho HTTP requests.
@@ -55,33 +53,55 @@ public class SecurityConfig {
      * @throws Exception nếu có lỗi trong quá trình cấu hình
      */
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, ClientRegistrationRepository clientRegistrationRepository) throws Exception {
+        OAuth2AuthorizationRequestResolver resolver = new CustomAuthorizationRequestResolver(
+                clientRegistrationRepository,
+                "/oauth2/authorization"
+        );
+
         http
+                // CORS & CSRF
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
+
+                // JWT Stateless session
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
+                .formLogin(AbstractHttpConfigurer::disable)
+                .httpBasic(AbstractHttpConfigurer::disable)
+
+                // Authorization rules
                 .authorizeHttpRequests(auth -> auth
-                        // Public endpoints
-//                        .requestMatchers("/auth/**").permitAll()
-//                        .requestMatchers("/public/**").permitAll()
-//
-//                        // Admin only
+                        .requestMatchers(
+                                "/auth/**",
+                                "/oauth2/**",
+                                "/login/oauth2/**",
+                                "/error",
+                                "/public/**"
+                        ).permitAll()
 //                        .requestMatchers("/admin/**").hasAuthority("ADMIN")
-//
-//                        // Employee and Admin
 //                        .requestMatchers("/employee/**").hasAnyAuthority("ADMIN", "EMPLOYEE")
-//
-//                        // Customer, Employee and Admin
 //                        .requestMatchers("/customer/**").hasAnyAuthority("ADMIN", "EMPLOYEE", "CUSTOMER")
-//
-//                        // All other requests need authentication
-//                        .anyRequest().authenticated()
-                                .anyRequest().permitAll()
+                        .anyRequest().permitAll()
+                )
+                // OAuth2 Login
+                .oauth2Login(oauth -> oauth
+                        .authorizationEndpoint(ep -> ep
+                                .baseUri("/oauth2/authorization")
+                                .authorizationRequestResolver(resolver)
+                        )
+                        .redirectionEndpoint(ep -> ep
+                                .baseUri("/login/oauth2/code/*")
+                        )
+                        .userInfoEndpoint(ep ->
+                                ep.userService(customOAuth2UserService)
+                        )
+                        .successHandler(oAuth2SuccessHandler)
                 );
 
         // Add JWT filter
-//        http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

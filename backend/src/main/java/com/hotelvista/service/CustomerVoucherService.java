@@ -1,6 +1,8 @@
 package com.hotelvista.service;
 
+import com.hotelvista.model.Customer;
 import com.hotelvista.model.CustomerVoucher;
+import com.hotelvista.model.Voucher;
 import com.hotelvista.repository.CustomerVoucherRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -80,4 +82,26 @@ public class CustomerVoucherService {
         return repo.findAllByCustomer_IdAndStateIsTrue(customerId);
     }
 
+    /**
+     * Gán voucher cho khách hàng
+     * @param customer - Khách hàng nhận voucher
+     * @param voucher - Voucher được gán
+     * @return CustomerVoucher đã tạo
+     */
+    public CustomerVoucher assignVoucher(Customer customer, Voucher voucher) {
+        // Tạo composite key
+        CustomerVoucher.CustomerVoucherId id = new CustomerVoucher.CustomerVoucherId(customer, voucher);
+
+        Optional<CustomerVoucher> existing = repo.findById(id);
+        if (existing.isPresent()) {
+            return existing.get();
+        }
+
+        CustomerVoucher customerVoucher = new CustomerVoucher();
+        customerVoucher.setCustomer(customer);
+        customerVoucher.setVoucher(voucher);
+        customerVoucher.setState(false);
+
+        return repo.save(customerVoucher);
+    }
 }

@@ -13,6 +13,7 @@ import Button from "../../components/common/Button";
 import FloatingInput from "../../components/common/FloatingInput";
 import { validateEmailOrPhone, detectInputType } from "../../utils/validators";
 import logoCaptcha from "../../assets/images/captcha.png";
+import { sendOtpEmail,  } from "../../services/authService";
 
 type Step = "input" | "captcha" | "otp";
 
@@ -56,29 +57,36 @@ const ForgotPassword: React.FC = () => {
   };
 
   // Handle captcha verification
-  const handleCaptchaVerify = () => {
+  const handleCaptchaVerify = async () => {
     if (!captchaChecked) {
       return;
     }
 
-    // TODO: Gửi OTP về email/phone
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      setStep("otp");
-      setResendTimer(60); // 60 giây countdown
 
-      // Countdown timer
-      const interval = setInterval(() => {
-        setResendTimer((prev) => {
-          if (prev <= 1) {
-            clearInterval(interval);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    }, 1500);
+    const result = await sendOtpEmail(identifier);
+
+    setLoading(false);
+
+    if (!result.success) {
+      alert(result.message);
+      return;
+    }
+
+    // 60 giây countdown
+    setStep("otp");
+    setResendTimer(60);
+
+    // Countdown timer
+    const interval = setInterval(() => {
+      setResendTimer((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
   };
 
   // Handle OTP input
@@ -127,7 +135,6 @@ const ForgotPassword: React.FC = () => {
       return;
     }
 
-    // TODO: Verify OTP with backend
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
@@ -143,12 +150,14 @@ const ForgotPassword: React.FC = () => {
   };
 
   // Resend OTP
-  const handleResendOtp = () => {
+  const handleResendOtp = async () => {
     if (resendTimer > 0) return;
 
     // TODO: Resend OTP
     setOtp(["", "", "", "", "", ""]);
     setResendTimer(60);
+
+    await sendOtpEmail(identifier);
 
     const interval = setInterval(() => {
       setResendTimer((prev) => {

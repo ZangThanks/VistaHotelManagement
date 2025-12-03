@@ -45,4 +45,9 @@ public class Voucher {
     @JsonIgnore
     @OneToMany(mappedBy = "voucher")
     private List<CustomerVoucher> customerVouchers;
+
+    @ToString.Exclude
+    @JsonIgnore
+    @OneToMany(mappedBy = "voucher")
+    private List<HolidayVoucher> holidayVouchers;
 }

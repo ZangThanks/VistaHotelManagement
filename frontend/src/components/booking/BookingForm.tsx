@@ -1,16 +1,18 @@
 /* eslint-disable */
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Calendar } from "lucide-react";
 import BookingCalendar from "../common/Calendar";
+import HourlyBookingSelector from "./HourlyBookingSelector";
 import { TfiUser, TfiMore } from "react-icons/tfi";
 import { MdOutlineRoomService, MdRoomService } from "react-icons/md";
 import { getAll } from "../../services/serviceService";
 import { CiSquareQuestion } from "react-icons/ci";
 import {
-
   createBooking,
   generateBookingID,
+  saveBookingWithDetails,
+  getBookingById,
 } from "../../services/bookingService";
 import { getById } from "../../services/customerService";
 
@@ -23,9 +25,12 @@ import type { Service } from "../../types/Service";
 import type { CustomerVoucher } from "../../types/CustomerVoucher";
 import type { Room } from "../../types/Room";
 import { getRoomById } from "../../services/roomService";
+import { getCartBeanByCustomerId } from "../../services/cartBeanService";
 import CustomerVoucherModal from "./CustomerVoucherModal";
 import { RiHotelLine } from "react-icons/ri";
 import { TbHotelService } from "react-icons/tb";
+import { getAllPolicyBaseRates } from "../../services/HourlyRatePolicyService";
+import type { HourlyRatePolicy, BaseRateItem } from "../../types/HourlyRatePolicy";
 
 interface BookingFormProps {
   currentStep: number;
@@ -45,6 +50,8 @@ export type OrderStatus =
   | "DELIVERED"
   | "CANCELLED";
 
+type BookingType = "DAILY" | "HOURLY";
+
 const PAYMENT_METHODS: PaymentMethod[] = [
   "VNPAY_QR",
   "CREDIT_CARD",
@@ -57,12 +64,25 @@ export default function BookingForm({
   setCurrentStep,
 }: BookingFormProps) {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Get booking type from route state
+  const bookingType: BookingType =
+    (location.state as any)?.bookingType || "DAILY";
+
+  // Daily booking states
   const [checkInDate, setCheckInDate] = useState<Date | null>(
     new Date(2025, 8, 18)
   );
   const [checkOutDate, setCheckOutDate] = useState<Date | null>(
     new Date(2025, 8, 19)
   );
+
+  // Hourly booking states
+  const [hourlyCheckInDate, setHourlyCheckInDate] = useState<Date | null>(null);
+  const [checkInTime, setCheckInTime] = useState<string>("14:00");
+  const [duration, setDuration] = useState<number>(3);
+
   const [promotionCode, setPromotionCode] = useState("");
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [specialRequests, setSpecialRequests] = useState("");
@@ -76,11 +96,15 @@ export default function BookingForm({
   const [loading, setLoading] = useState(true);
   const [selectedPaymentMethod, setSelectedPaymentMethod] =
     useState<PaymentMethod>(PAYMENT_METHODS[0]);
-  const [selectedRoom] = useState<string[]>(["STD102"]);
+  const [selectedRoom, setSelectedRoom] = useState<string[]>([]);
   const [rooms, setRooms] = useState<Room[]>([]);
   const [bookingID, setBookingID] = useState<string>("");
   const [isVoucherModalOpen, setIsVoucherModalOpen] = useState(false);
   const [selectedVoucher, setSelectedVoucher] = useState<CustomerVoucher[]>([]);
+  // Lưu danh sách policies từ DB, dùng lấy baseRates, weekendSurcharge, weekkendDays
+  const [hourlyRatePolicies, setHourlyRatePolicies] = useState<
+    HourlyRatePolicy[]
+  >([]);
 
   const fetchedData = async () => {
     try {
@@ -92,13 +116,52 @@ export default function BookingForm({
       const service = await getAll();
       setServices(service);
 
-      const roomPromises = selectedRoom.map((roomId) => getRoomById(roomId));
-      const roomsData = await Promise.all(roomPromises);
-      setRooms(roomsData);
+      // Fetch hourly rate policies if booking type is hourly
+      if (bookingType === "HOURLY") {
+        try {
+          const policies = await getAllPolicyBaseRates();
+          setHourlyRatePolicies(policies);
+          console.log("Hourly rate policies loaded:", policies);
+        } catch (error) {
+          console.error("Failed to fetch hourly rate policies:", error);
+        }
+      }
 
       const userDataStr = localStorage.getItem("user");
       const userData = userDataStr ? JSON.parse(userDataStr) : null;
       const customerId = userData?.data?.id || userData?.id;
+
+      const selectedFromCart = (location.state as any)?.selectedRooms;
+      let roomsToUse: string[] = [];
+
+      if (
+        selectedFromCart &&
+        Array.isArray(selectedFromCart) &&
+        selectedFromCart.length > 0
+      ) {
+        roomsToUse = selectedFromCart;
+        console.log("Using selected rooms from cart:", roomsToUse);
+      } else if (customerId) {
+        // Fetch all cart items from CartBean API
+        try {
+          const cart = await getCartBeanByCustomerId(customerId);
+          if (cart?.items && cart.items.length > 0) {
+            roomsToUse = cart.items
+              .map((room) => room.roomNumber)
+              .filter((num): num is string => num !== undefined);
+          }
+          console.log("Using all cart items:", roomsToUse);
+        } catch (error) {
+          console.error("Failed to fetch cart:", error);
+        }
+      }
+
+      // Update selected room state
+      setSelectedRoom(roomsToUse);
+
+      const roomPromises = roomsToUse.map((roomId) => getRoomById(roomId));
+      const roomsData = await Promise.all(roomPromises);
+      setRooms(roomsData);
 
       if (customerId) {
         const customerData = await getById(customerId);
@@ -138,8 +201,6 @@ export default function BookingForm({
     totalCost: 0,
     customer: customer || null,
     employee: null,
-    bookingDetails: [{}],
-    bookingServices: [{}],
   });
 
   useEffect(() => {
@@ -172,6 +233,7 @@ export default function BookingForm({
     );
   };
 
+  // Tính tổng chi phí dịch vụ
   const calculateServiceCosts = () => {
     return getSelectedServiceObjects().reduce(
       (sum, service) => sum + service.price,
@@ -179,47 +241,123 @@ export default function BookingForm({
     );
   };
 
+  /**
+   *  * Tính giá theo giờ dựa trên HourlyRatePolicy
+   *
+   * CÔNG THỨC:
+   * 1. Lấy phần trăm cơ bản từ baseRates theo duration
+   * 2. Áp dụng phụ phí giờ cao điểm (18:00-20:00): +20%
+   * 3. Áp dụng phụ phí cuối tuần: +X% (từ weekendSurcharge)
+   * 4. Tính giá cuối: (basePrice × totalPercentage) / duration
+   *
+   * Tính giá theo giờ dựa trên HourlyRatePolicy
+   * @param basePrice Giá gốc của phòng
+   * @param duration Số giờ đặt
+   * @param checkInDate Ngày check-in
+   * @returns Giá mỗi giờ đã tính phụ phí (nếu có)
+   */
+  const calculateHourlyRate = (
+    basePrice: number,
+    duration: number,
+    checkInDate: Date | null
+  ): number => {
+    // Fallback nếu chưa có policy
+    if (!checkInDate || hourlyRatePolicies.length === 0) {
+      return basePrice;
+    }
+
+    const policy = hourlyRatePolicies[0]; // Lấy policy đầu tiên
+
+    // Lấy phần trăm cơ bản từ baseRates
+    let ratePercentage = 100; // default 100% nếu không tìm thấy
+  
+    if (policy.baseRates && Array.isArray(policy.baseRates)) {
+      const rates = policy.baseRates as BaseRateItem[];
+
+      // Sort giảm danaf theo baseHours để tìm rate phù hợp
+      // VD: [9h+100%, 8h+85%...]
+      const sortedRates = [...rates].sort((a, b) => b.baseHours - a.baseHours);
+
+      // Tìm rate có baseHours <= duration
+      // VD: duration = 2 => lấy rate của 2h = 25%
+      const matchedRate = sortedRates.find((r) => duration >= r.baseHours);
+
+      if (matchedRate) {
+        ratePercentage = matchedRate.baseRate; // % : ví dụ 25
+        console.log(`Matched base rate for ${duration} hours: ${ratePercentage}%`);
+      }
+    }
+
+    // Áp dụng phụ phí giờ cao điểm (VD: 18:00 - 20:00)
+  };
+
+  // Tính tổng chi phí phòng
   const calculateRoomCosts = () => {
-    return rooms.reduce(
-      (sum, room) => sum + (room.roomType?.basePrice || 0),
-      0
-    );
+    if (bookingType === "HOURLY") {
+      // For hourly booking, calculate rate based on policy
+      return rooms.reduce((sum, room) => {
+        const basePrice = room.roomType?.basePrice || 0;
+        const hourlyRate = calculateHourlyRate(
+          basePrice,
+          duration,
+          hourlyCheckInDate
+        );
+        return sum + hourlyRate * duration;
+      }, 0);
+    } else {
+      // For daily booking
+      return rooms.reduce(
+        (sum, room) => sum + (room.roomType?.basePrice || 0),
+        0
+      );
+    }
   };
 
   const handleSaveBooking = async () => {
     setError("");
 
-    if (!checkInDate) {
-      setError("Please select a check-in date.");
-      return;
+    // Validation based on booking type
+    if (bookingType === "DAILY") {
+      if (!checkInDate) {
+        setError("Please select a check-in date.");
+        return;
+      }
+      if (!checkOutDate) {
+        setError("Please select a check-out date.");
+        return;
+      }
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const ci = new Date(checkInDate);
+      ci.setHours(0, 0, 0, 0);
+      const co = new Date(checkOutDate);
+      co.setHours(0, 0, 0, 0);
+
+      if (ci < today) {
+        setError("Check-in cannot be before today.");
+        return;
+      }
+      if (co <= ci) {
+        setError("Check-out must be after check-in.");
+        return;
+      }
+    } else {
+      // Hourly booking validation
+      if (!hourlyCheckInDate) {
+        setError("Please select a check-in date.");
+        return;
+      }
+      if (!checkInTime) {
+        setError("Please select a check-in time.");
+        return;
+      }
+      if (duration < 2) {
+        setError("Minimum duration is 2 hours.");
+        return;
+      }
     }
-    if (!checkOutDate) {
-      setError("Please select a check-out date.");
-      return;
-    }
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    const ci = new Date(checkInDate);
-    ci.setHours(0, 0, 0, 0);
-    const co = new Date(checkOutDate);
-    co.setHours(0, 0, 0, 0);
-
-    if (ci < today) {
-      setError("Check-in cannot be before today.");
-      return;
-    }
-    if (co <= ci) {
-      setError("Check-out must be after check-in.");
-      return;
-    }
-
-    const checkInWithTime = new Date(checkInDate);
-    checkInWithTime.setHours(14, 0, 0, 0);
-
-    const checkOutWithTime = new Date(checkOutDate);
-    checkOutWithTime.setHours(12, 0, 0, 0);
 
     const formatLocalDateTime = (date: Date) => {
       const year = date.getFullYear();
@@ -231,6 +369,41 @@ export default function BookingForm({
       return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
     };
 
+    let checkInWithTime: Date;
+    let checkOutWithTime: Date;
+
+    // Daily booking
+    if (bookingType === "DAILY") {
+      checkInWithTime = new Date(checkInDate!);
+      checkInWithTime.setHours(14, 0, 0, 0);
+
+      checkOutWithTime = new Date(checkOutDate!);
+      checkOutWithTime.setHours(12, 0, 0, 0);
+    } else {
+      // Hourly booking
+      const [hours, minutes] = checkInTime.split(":").map(Number);
+      checkInWithTime = new Date(hourlyCheckInDate!);
+      checkInWithTime.setHours(hours, minutes, 0, 0);
+
+      checkOutWithTime = new Date(
+        checkInWithTime.getTime() + duration * 60 * 60 * 1000
+      );
+    }
+
+    // Tính hourlyRate cho booking
+    let calculatedHourlyRate = 0;
+    if (bookingType === "HOURLY" && rooms.length > 0) {
+      const basePrice = rooms[0]?.roomType?.basePrice || 0;
+      calculatedHourlyRate = calculateHourlyRate(
+        basePrice,
+        duration,
+        hourlyCheckInDate
+      );
+      console.log(
+        `Calculated hourly rate: ${calculatedHourlyRate} VND/hour for ${duration} hours`
+      );
+    }
+
     const payload: any = {
       bookingID: bookingID,
       checkInDate: formatLocalDateTime(checkInWithTime),
@@ -241,31 +414,51 @@ export default function BookingForm({
       bookingDate: new Date().toISOString(),
       packageType: booking.packageType || "Standard",
       totalAmount,
-      customer: customer || null,
-      bookingDetails: rooms.map((r: Room) => ({
-        room: r,
-        booking: booking,
-        roomPrice: r.roomType?.basePrice || 0,
-        review: null,
-      })),
-      bookingServices: getSelectedServiceObjects().map((s: Service) => ({
-        service: s,
-        booking: booking,
-        servicePrice: s.price,
-        quantity: 1,
-        totalAmount: s.price,
-        orderStatus: "PLACE",
-        payemntStatus: "PENDING",
-      })),
-      paymentMethod: selectedPaymentMethod,
+      paymentStatus: "PENDING",
+      type: bookingType,
+      duration: bookingType === "HOURLY" ? duration : 0,
+      hourlyRate: bookingType === "HOURLY" ? calculatedHourlyRate : null,
+      customer: {
+        id: customer?.id || null,
+      },
     };
 
+    const bookingDetails = rooms.map((r: Room) => ({
+      room: {
+        roomNumber: r.roomNumber,
+      },
+      roomPrice: r.roomType?.basePrice || 0,
+      review: null,
+    }));
+
+    const bookingServices = getSelectedServiceObjects().map((s: Service) => ({
+      service: {
+        serviceID: s.serviceID,
+      },
+      servicePrice: s.price,
+      quantity: 1,
+      totalAmount: s.price,
+      orderStatus: "PLACE",
+      paymentMethod: selectedPaymentMethod,
+    }));
+
     console.log("Booking payload:", payload);
-    console.log("Booking ID before save:", bookingID);
+    console.log("Booking details: ", bookingDetails);
+    console.log("Booking services: ", bookingServices);
 
     try {
       setLoading(true);
-      const savedBooking = await createBooking(payload as any);
+      const success = await saveBookingWithDetails(
+        payload,
+        bookingDetails,
+        bookingServices
+      );
+
+      if (!success) {
+        throw new Error("Failed to save booking");
+      }
+
+      const savedBooking = await getBookingById(bookingID);
 
       console.log("Saved booking response:", savedBooking);
 
@@ -274,7 +467,6 @@ export default function BookingForm({
         await saveCustomerVoucher(cv);
       }
 
-      // Ensure we pass the booking with proper bookingID
       const bookingToPass = {
         ...payload,
         ...(savedBooking || {}),
@@ -284,7 +476,7 @@ export default function BookingForm({
 
       console.log("Navigating to payment with:", bookingToPass);
 
-      navigate("/payment", {
+      navigate("/customer/payment", {
         state: {
           booking: bookingToPass,
         },
@@ -297,10 +489,24 @@ export default function BookingForm({
     }
   };
 
-  const totalRoomCosts = calculateRoomCosts();
+  // Tính toán số ngày đặt phòng dựa trên checkin - checkout
+  const calculateNights = () => {
+    if (bookingType === "HOURLY") return 1;
+    if (!checkInDate || !checkOutDate) return 1;
+    const diffTime = Math.abs(checkOutDate.getTime() - checkInDate.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays > 0 ? diffDays : 1;
+  };
+
+  const numberOfNights = calculateNights();
+  const totalRoomCosts =
+    bookingType === "HOURLY"
+      ? calculateRoomCosts() // Hourly booking
+      : calculateRoomCosts() * numberOfNights; // Daily booking
   const totalServiceCosts = calculateServiceCosts();
   const subtotal = totalRoomCosts + totalServiceCosts;
 
+  // Tính tổng tiền giảm giá từ vouchers
   const calculateDiscount = () => {
     if (!selectedVoucher || selectedVoucher.length === 0) return 0;
     let discount = 0;
@@ -325,134 +531,202 @@ export default function BookingForm({
   if (currentStep === 1) {
     return (
       <div className="max-w-6xl mx-auto">
-        <div className="grid grid-cols-3 gap-8">
-          {/* Check-in Calendar */}
-          <div className="col-span-1">
-            <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
-              <label className="block text-sm font-semibold text-gray-900 mb-4">
-                Check in time
-              </label>
-              <div className="flex items-center gap-2 mb-6 p-3 bg-gray-50 rounded-lg border border-gray-200">
-                <Calendar size={20} className="text-gray-600" />
-                <input
-                  type="text"
-                  value={
-                    checkInDate ? checkInDate.toLocaleDateString("en-GB") : ""
-                  }
-                  readOnly
-                  className="flex-1 bg-transparent text-gray-900 font-medium focus:outline-none"
-                />
-              </div>
-              <BookingCalendar
-                selectedDate={checkInDate}
-                onDateSelect={setCheckInDate}
-                minDate={new Date()}
-              />
-            </div>
-          </div>
-
-          {/* Check-out Calendar */}
-          <div className="col-span-1">
-            <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
-              <label className="block text-sm font-semibold text-gray-900 mb-4">
-                Check out time
-              </label>
-              <div className="flex items-center gap-2 mb-6 p-3 bg-gray-50 rounded-lg border border-gray-200">
-                <Calendar size={20} className="text-gray-600" />
-                <input
-                  type="text"
-                  value={
-                    checkOutDate ? checkOutDate.toLocaleDateString("en-GB") : ""
-                  }
-                  readOnly
-                  className="flex-1 bg-transparent text-gray-900 font-medium focus:outline-none"
-                />
-              </div>
-              <BookingCalendar
-                selectedDate={checkOutDate}
-                onDateSelect={setCheckOutDate}
-                minDate={
-                  checkInDate
-                    ? new Date(checkInDate.getTime() + 86400000)
-                    : new Date()
-                }
-              />
-            </div>
-          </div>
-
-          {/* Customer Information */}
-          <div className="col-span-1">
-            <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
-              <div className="bg-[#c9b8a8] text-white px-4 py-3 rounded-lg mb-6 flex items-center gap-2">
-                <span className="text-lg">
-                  <TfiUser className="text-white" />
-                </span>
-                <h3 className="font-semibold">Customer information</h3>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-900 mb-2">
-                    Customer Name
-                  </label>
+        {bookingType === "DAILY" ? (
+          <div className="grid grid-cols-3 gap-8">
+            {/* Check-in Calendar */}
+            <div className="col-span-1">
+              <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
+                <label className="block text-sm font-semibold text-gray-900 mb-4">
+                  Check in time
+                </label>
+                <div className="flex items-center gap-2 mb-6 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                  <Calendar size={20} className="text-gray-600" />
                   <input
                     type="text"
-                    placeholder="Enter your name"
-                    value={customer?.fullName || ""}
+                    value={
+                      checkInDate ? checkInDate.toLocaleDateString("en-GB") : ""
+                    }
                     readOnly
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#c9b8a8] bg-gray-50"
+                    className="flex-1 bg-transparent text-gray-900 font-medium focus:outline-none"
                   />
                 </div>
+                <BookingCalendar
+                  selectedDate={checkInDate}
+                  onDateSelect={setCheckInDate}
+                  minDate={new Date()}
+                />
+              </div>
+            </div>
 
-                <div>
-                  <label className="block text-sm font-semibold text-gray-900 mb-2">
-                    Phone Number
-                  </label>
+            {/* Check-out Calendar */}
+            <div className="col-span-1">
+              <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
+                <label className="block text-sm font-semibold text-gray-900 mb-4">
+                  Check out time
+                </label>
+                <div className="flex items-center gap-2 mb-6 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                  <Calendar size={20} className="text-gray-600" />
                   <input
-                    type="tel"
-                    placeholder="Enter your phone number"
-                    value={customer?.phone || ""}
+                    type="text"
+                    value={
+                      checkOutDate
+                        ? checkOutDate.toLocaleDateString("en-GB")
+                        : ""
+                    }
                     readOnly
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#c9b8a8] bg-gray-50"
+                    className="flex-1 bg-transparent text-gray-900 font-medium focus:outline-none"
                   />
                 </div>
+                <BookingCalendar
+                  selectedDate={checkOutDate}
+                  onDateSelect={setCheckOutDate}
+                  minDate={
+                    checkInDate
+                      ? new Date(checkInDate.getTime() + 86400000)
+                      : new Date()
+                  }
+                />
+              </div>
+            </div>
 
-                <div>
-                  <label className="block text-sm font-semibold text-gray-900 mb-2">
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    placeholder="Enter your email"
-                    value={customer?.email || ""}
-                    readOnly
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#c9b8a8] bg-gray-50"
-                  />
+            {/* Customer Information */}
+            <div className="col-span-1">
+              <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
+                <div className="bg-[#c9b8a8] text-white px-4 py-3 rounded-lg mb-6 flex items-center gap-2">
+                  <span className="text-lg">
+                    <TfiUser className="text-white" />
+                  </span>
+                  <h3 className="font-semibold">Customer information</h3>
                 </div>
 
-                <div className="bg-[#c9b8a8] text-white px-4 py-3 rounded-lg mt-6 flex items-center gap-2">
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-900 mb-2">
+                      Customer Name
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Enter your name"
+                      value={customer?.fullName || ""}
+                      readOnly
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#c9b8a8] bg-gray-50"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-900 mb-2">
+                      Phone Number
+                    </label>
+                    <input
+                      type="tel"
+                      placeholder="Enter your phone number"
+                      value={customer?.phone || ""}
+                      readOnly
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#c9b8a8] bg-gray-50"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-900 mb-2">
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      placeholder="Enter your email"
+                      value={customer?.email || ""}
+                      readOnly
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#c9b8a8] bg-gray-50"
+                    />
+                  </div>
+
+                  <div className="bg-[#c9b8a8] text-white px-4 py-3 rounded-lg mt-6 flex items-center gap-2">
+                    <span className="text-lg">
+                      <TfiMore className="text-white" />
+                    </span>
+                    <h3 className="font-semibold">Other</h3>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-900 mb-2">
+                      Promotion code
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Enter your promotion code (optional)"
+                      value={promotionCode}
+                      onChange={(e) => setPromotionCode(e.target.value)}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#c9b8a8]"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          /* Hourly Booking Layout */
+          <div className="grid grid-cols-3 gap-8">
+            <div className="col-span-2">
+              <HourlyBookingSelector
+                checkInDate={hourlyCheckInDate}
+                onCheckInDateSelect={setHourlyCheckInDate}
+                checkInTime={checkInTime}
+                onCheckInTimeChange={setCheckInTime}
+                duration={duration}
+                onDurationChange={setDuration}
+              />
+            </div>
+
+            {/* Customer Information */}
+            <div className="col-span-1">
+              <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
+                <div className="bg-[#c9b8a8] text-white px-4 py-3 rounded-lg mb-6 flex items-center gap-2">
                   <span className="text-lg">
                     <TfiMore className="text-white" />
                   </span>
                   <h3 className="font-semibold">Other</h3>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-semibold text-gray-900 mb-2">
-                    Promotion code
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Enter your promotion code (optional)"
-                    value={promotionCode}
-                    onChange={(e) => setPromotionCode(e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#c9b8a8]"
-                  />
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-900 mb-2">
+                      Customer Name
+                    </label>
+                    <input
+                      type="text"
+                      value={customer?.fullName || ""}
+                      readOnly
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 bg-gray-50"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-900 mb-2">
+                      Phone Number
+                    </label>
+                    <input
+                      type="tel"
+                      value={customer?.phone || ""}
+                      readOnly
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 bg-gray-50"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-900 mb-2">
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      value={customer?.email || ""}
+                      readOnly
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 bg-gray-50"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Next Step Button */}
         <div className="flex justify-end mt-8">
@@ -685,29 +959,89 @@ export default function BookingForm({
                     </span>
                     <span className="text-[#c9b8a8] font-semibold">
                       {room.roomType?.basePrice?.toLocaleString() || "0"} VND
+                      {bookingType === "HOURLY" && " /hour"}
                     </span>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="flex justify-between items-center py-2 border-t border-gray-200 mt-4">
-              <label className="text-sm font-semibold text-gray-600">
-                Checkin Date:
-              </label>
-              <span className="text-gray-900 font-medium">
-                {checkInDate?.toLocaleDateString("en-GB")}
-              </span>
-            </div>
+            {bookingType === "DAILY" ? (
+              <>
+                <div className="flex justify-between items-center py-2 border-t border-gray-200 mt-4">
+                  <label className="text-sm font-semibold text-gray-600">
+                    Checkin Date:
+                  </label>
+                  <span className="text-gray-900 font-medium">
+                    {checkInDate?.toLocaleDateString("en-GB")} at 14:00
+                  </span>
+                </div>
 
-            <div className="flex justify-between items-center py-2">
-              <label className="text-sm font-semibold text-gray-600">
-                Checkout Date:
-              </label>
-              <span className="text-gray-900 font-medium">
-                {checkOutDate?.toLocaleDateString("en-GB")}
-              </span>
-            </div>
+                <div className="flex justify-between items-center py-2">
+                  <label className="text-sm font-semibold text-gray-600">
+                    Checkout Date:
+                  </label>
+                  <span className="text-gray-900 font-medium">
+                    {checkOutDate?.toLocaleDateString("en-GB")} at 12:00
+                  </span>
+                </div>
+
+                <div className="flex justify-between items-center py-2">
+                  <label className="text-sm font-semibold text-gray-600">
+                    Number of Nights:
+                  </label>
+                  <span className="text-gray-900 font-medium">
+                    {numberOfNights} {numberOfNights === 1 ? "night" : "nights"}
+                  </span>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="flex justify-between items-center py-2 border-t border-gray-200 mt-4">
+                  <label className="text-sm font-semibold text-gray-600">
+                    Checkin Date & Time:
+                  </label>
+                  <span className="text-gray-900 font-medium">
+                    {hourlyCheckInDate?.toLocaleDateString("en-GB")} at{" "}
+                    {checkInTime}
+                  </span>
+                </div>
+
+                <div className="flex justify-between items-center py-2">
+                  <label className="text-sm font-semibold text-gray-600">
+                    Duration:
+                  </label>
+                  <span className="text-gray-900 font-medium">
+                    {duration} {duration === 1 ? "hour" : "hours"}
+                  </span>
+                </div>
+
+                <div className="flex justify-between items-center py-2">
+                  <label className="text-sm font-semibold text-gray-600">
+                    Checkout Time:
+                  </label>
+                  <span className="text-gray-900 font-medium">
+                    {(() => {
+                      if (!hourlyCheckInDate || !checkInTime) return "N/A";
+                      const [hours, minutes] = checkInTime
+                        .split(":")
+                        .map(Number);
+                      const checkOut = new Date(hourlyCheckInDate);
+                      checkOut.setHours(hours + duration, minutes, 0, 0);
+                      return `${checkOut.toLocaleDateString(
+                        "en-GB"
+                      )} at ${checkOut
+                        .getHours()
+                        .toString()
+                        .padStart(2, "0")}:${checkOut
+                        .getMinutes()
+                        .toString()
+                        .padStart(2, "0")}`;
+                    })()}
+                  </span>
+                </div>
+              </>
+            )}
 
             <div className="flex justify-between items-center py-2 border-t border-gray-200 mt-4">
               <label className="text-sm font-semibold text-gray-600">
@@ -730,19 +1064,25 @@ export default function BookingForm({
           </div>
 
           <div className="space-y-3">
-            {getSelectedServiceObjects().map((service) => (
-              <div
-                key={service.serviceID}
-                className="flex justify-between items-center py-2 border-b border-gray-200"
-              >
-                <span className="text-gray-900 font-medium">
-                  • {service.serviceName} x1
-                </span>
-                <span className="text-gray-900 font-medium">
-                  {service.price.toLocaleString()} VND
-                </span>
-              </div>
-            ))}
+            {getSelectedServiceObjects().length > 0 ? (
+              getSelectedServiceObjects().map((service) => (
+                <div
+                  key={service.serviceID}
+                  className="flex justify-between items-center py-2 border-b border-gray-200"
+                >
+                  <span className="text-gray-900 font-medium">
+                    • {service.serviceName} x1
+                  </span>
+                  <span className="text-gray-900 font-medium">
+                    {service.price.toLocaleString()} VND
+                  </span>
+                </div>
+              ))
+            ) : (
+              <p className="text-gray-500 text-center py-4">
+                No services selected
+              </p>
+            )}
           </div>
 
           <div className="flex justify-between items-center py-3 border-t border-gray-200 mt-4">
@@ -761,10 +1101,19 @@ export default function BookingForm({
             <span className="text-lg">
               <TbHotelService className="text-white" />
             </span>
-            <h3 className="font-semibold">Booking</h3>
+            <h3 className="font-semibold">Booking Summary</h3>
           </div>
 
           <div className="space-y-4">
+            <div>
+              <label className="text-sm font-semibold text-gray-900">
+                Booking Type
+              </label>
+              <p className="text-gray-900 font-medium mt-0.5">
+                {bookingType === "DAILY" ? "Daily Booking" : "Hourly Booking"}
+              </p>
+            </div>
+
             <div>
               <label className="text-sm font-semibold text-gray-900">
                 Special Requests

@@ -1,5 +1,15 @@
 /* eslint-disable */
 import { api } from "./apiClient";
+import { sendEmail } from "./emailService";
+import {
+  loginWelcomeBackEmail,
+  registerSuccessEmail,
+  otpEmailTemplate,
+  passwordChangedTemplate,
+} from "../utils/emailTemplates/authEmails";
+import type {
+  PasswordChangeRequest
+} from "../types/UserProfile";
 
 export interface LoginData {
   email?: string;
@@ -36,7 +46,7 @@ export const handleLogin = async (
     if (data.success === false) {
       return {
         success: false,
-        message: data.message || "Đăng nhập thất bại",
+        message: data.message || "Login failed",
       };
     }
 
@@ -51,9 +61,20 @@ export const handleLogin = async (
       localStorage.setItem("user", JSON.stringify(data.data));
     }
 
+    // Gửi email chào mừng khi đăng nhập thành công
+    const user = data.data;
+    if (user?.email) {
+      const html = loginWelcomeBackEmail(user.fullName || user.userName || "Khách hàng");
+      sendEmail({
+        to: user.email,
+        subject: "Chào mừng bạn trở lại Vista Hotel",
+        htmlContent: html,
+      })
+    }
+
     return {
       success: true,
-      message: data.message || "Đăng nhập thành công!",
+      message: data.message || "Login successful!",
       data: data.data,
       token: data.token,
       refreshToken: data.refreshToken,
@@ -64,7 +85,7 @@ export const handleLogin = async (
       success: false,
       message:
         error.response?.data?.message ||
-        "Đăng nhập thất bại. Vui lòng thử lại.",
+        "Login failed. Please try again.",
     };
   }
 };
@@ -79,13 +100,24 @@ export const handleRegister = async (
     if (data.success === false) {
       return {
         success: false,
-        message: data.message || "Đăng ký thất bại",
+        message: data.message || "Registration failed!",
       };
+    }
+
+    // Gửi email chào mừng sau khi đăng ký thành công
+    const user = data.data;
+    if (user?.email) {
+      const html = registerSuccessEmail(user.fullName || user.userName || "Khách hàng");
+      sendEmail({
+        to: user.email,
+        subject: "Đăng ký Vista Hotel thành công",
+        htmlContent: html,
+      });
     }
 
     return {
       success: true,
-      message: data.message || "Đăng ký thành công!",
+      message: data.message || "Registration successful!",
       data: data.data ?? data,
     };
   } catch (err: unknown) {
@@ -93,7 +125,7 @@ export const handleRegister = async (
     return {
       success: false,
       message:
-        error.response?.data?.message || "Đăng ký thất bại. Vui lòng thử lại.",
+        error.response?.data?.message || "Registration failed. Please try again.",
     };
   }
 };
@@ -104,7 +136,7 @@ export const handleLogout = (): AuthResponse => {
   localStorage.removeItem("user");
   return {
     success: true,
-    message: "Đăng xuất thành công!",
+    message: "Logout successful!",
   };
 };
 
@@ -115,7 +147,7 @@ export const validateToken = async (): Promise<AuthResponse> => {
   } catch (err: unknown) {
     return {
       success: false,
-      message: "Token không hợp lệ hoặc đã hết hạn",
+      message: "Token is invalid or has expired",
     };
   }
 };
@@ -126,7 +158,7 @@ export const refreshToken = async (): Promise<AuthResponse> => {
     if (!refreshToken) {
       return {
         success: false,
-        message: "Không tìm thấy refresh token",
+        message: "Refresh token not found",
       };
     }
 
@@ -146,7 +178,141 @@ export const refreshToken = async (): Promise<AuthResponse> => {
   } catch (err: unknown) {
     return {
       success: false,
-      message: "Không thể làm mới token",
+      message: "Unable to refresh token",
     };
+  }
+};
+
+/**
+ * Đổi mật khẩu người dùng
+ * Backend endpoint: POST /auth/change-password
+ * Request body: { userId, currentPassword, newPassword }
+ */
+export const changePassword = async (
+  userId: string,
+  data: PasswordChangeRequest
+): Promise<{ success: boolean; message: string }> => {
+  try {
+    const response = await api.post(`/auth/change-password`, {
+      userId,
+      currentPassword: data.currentPassword,
+      newPassword: data.newPassword,
+    });
+
+    // Nếu đổi mật khẩu thành công và user đang login → gửi email
+    const userRaw = localStorage.getItem("user");
+    if (response.data.success && userRaw) {
+      const user = JSON.parse(userRaw);
+      if (user.email) {
+        const html = passwordChangedTemplate(user.fullName ?? "Khách hàng");
+
+        await sendEmail({
+          to: user.email,
+          subject: "Vista Hotel - Mật khẩu đã thay đổi",
+          htmlContent: html,
+        });
+      }
+    }
+
+    return {
+      success: response.data.success,
+      message: response.data.message || "Password changed successfully!",
+    };
+  } catch (error: any) {
+    throw new Error(
+      error?.response?.data?.message || "Failed to change password"
+    );
+  }
+};
+
+export const resetPassword = async (
+  email: string,
+  newPassword: string
+): Promise<{ success: boolean; message: string }> => {
+  try {
+    const { data } = await api.post("/auth/reset-password", {
+      email,
+      newPassword,
+    });
+
+    // Nếu reset thành công thì gửi email thông báo
+    if (data.success) {
+      const html = passwordChangedTemplate("Khách hàng");
+
+      await sendEmail({
+        to: email,
+        subject: "Vista Hotel - Mật khẩu đã được đặt lại",
+        htmlContent: html,
+      });
+    }
+
+    return {
+      success: data.success,
+      message:
+        data.message ||
+        (data.success
+          ? "Password reset successfully!"
+          : "Password reset failed"),
+    };
+  } catch (error: any) {
+    console.error("Error reset password:", error);
+    return {
+      success: false,
+      message:
+        error?.response?.data?.message ||
+        "Reset password failed. Please try again.",
+    };
+  }
+};
+
+
+export const sendOtpEmail = async (identifier: string):
+  Promise<{success: boolean; message: string}> => {
+  try {
+    const { data } = await api.post("/auth/send-otp", { email: identifier });
+
+    if (!data.success) {
+      return {
+        success: false,
+        message: data.message || "Failed to send OTP email.",
+      }
+    }
+
+    const otp = data.otp;
+
+    await sendEmail({
+      to: identifier,
+      subject: "Vista Hotel - Mã xác thực OTP của bạn",
+      htmlContent: otpEmailTemplate(otp),
+    });
+
+    return {
+      success: true,
+      message: "OTP email sent successfully.",
+    }
+  } catch (error) {
+    console.error("Error sending OTP email:", error);
+    return {
+      success: false,
+      message: "Failed to send OTP email. Please try again.",
+    }
+  }
+}
+
+export const handleOAuthSuccess = (
+  token: string,
+  userJson: string,
+  refreshToken?: string
+) => {
+  localStorage.setItem("token", token);
+
+  // decode & parse JSON
+  const decodedUserJson = decodeURIComponent(userJson);
+  const userObj = JSON.parse(decodedUserJson);
+
+  localStorage.setItem("user", JSON.stringify(userObj));
+
+  if (refreshToken) {
+    localStorage.setItem("refreshToken", refreshToken);
   }
 };

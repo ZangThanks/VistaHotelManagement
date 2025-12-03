@@ -126,7 +126,8 @@ const VoucherManagement: React.FC = () => {
   const handleSubmit = async (data: Partial<Voucher>) => {
     try {
       setSubmitting(true);
-      if (selectedVoucher) {
+      // Kiểm tra xem hộp thoại nào đang mở để xác định đây là chỉnh sửa hay tạo
+      if (isEditModalOpen && selectedVoucher) {
         // Update existing voucher
         await voucherService.updateVoucher(selectedVoucher.voucherID, data);
         toast?.success("Voucher updated successfully!");
@@ -199,7 +200,10 @@ const VoucherManagement: React.FC = () => {
         </div>
         {activeTab === "management" && (
           <button
-            onClick={() => setIsAddModalOpen(true)}
+            onClick={() => {
+              setSelectedVoucher(null);
+              setIsAddModalOpen(true);
+            }}
             className="bg-[#6b5e4c] text-white px-6 py-3 rounded-lg hover:bg-[#5a4d3d] transition-colors flex items-center gap-2 font-semibold cursor-pointer"
           >
             <FaPlus />
@@ -216,8 +220,8 @@ const VoucherManagement: React.FC = () => {
       >
         <motion.div
           className="bg-white p-2 px-4 rounded-xl shadow-sm border border-[#ebe3d7] flex items-center gap-4"
-          whileHover={{ y: -5, boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}
-          transition={{ type: 'spring', stiffness: 300 }}
+          whileHover={{ y: -5, boxShadow: "0 10px 30px rgba(0,0,0,0.1)" }}
+          transition={{ type: "spring", stiffness: 300 }}
         >
           <div className="w-14 h-14 rounded-lg bg-[#fff8e1] flex items-center justify-center">
             <FaTicketAlt className="text-2xl text-[#f57c00]" />
@@ -230,8 +234,8 @@ const VoucherManagement: React.FC = () => {
 
         <motion.div
           className="bg-white p-2 px-4 rounded-xl shadow-sm border border-[#ebe3d7] flex items-center gap-4"
-          whileHover={{ y: -5, boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}
-          transition={{ type: 'spring', stiffness: 300 }}
+          whileHover={{ y: -5, boxShadow: "0 10px 30px rgba(0,0,0,0.1)" }}
+          transition={{ type: "spring", stiffness: 300 }}
         >
           <div className="w-14 h-14 rounded-lg bg-[#e8f5e9] flex items-center justify-center">
             <FaCheckCircle className="text-2xl text-[#2e7d32]" />
@@ -244,14 +248,16 @@ const VoucherManagement: React.FC = () => {
 
         <motion.div
           className="bg-white p-2 px-4 rounded-xl shadow-sm border border-[#ebe3d7] flex items-center gap-4"
-          whileHover={{ y: -5, boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}
-          transition={{ type: 'spring', stiffness: 300 }}
+          whileHover={{ y: -5, boxShadow: "0 10px 30px rgba(0,0,0,0.1)" }}
+          transition={{ type: "spring", stiffness: 300 }}
         >
           <div className="w-14 h-14 rounded-lg bg-[#ffebee] flex items-center justify-center">
             <FaClock className="text-2xl text-[#c62828]" />
           </div>
           <div className="flex-1">
-            <h3 className="text-xl font-bold text-gray-800">{stats.inactive}</h3>
+            <h3 className="text-xl font-bold text-gray-800">
+              {stats.inactive}
+            </h3>
             <p className="text-sm text-gray-600">Inactive</p>
           </div>
         </motion.div>

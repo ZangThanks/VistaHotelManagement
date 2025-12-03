@@ -48,4 +48,9 @@ public class Customer extends User{
     @JsonIgnore
     @OneToMany(mappedBy = "customer")
     private List<Booking> bookings;
+
+    @OneToOne(fetch = FetchType.EAGER)
+    @JsonIgnore
+    @JoinColumn(name = "cart_bean_id")
+    private CartBean cartBean;
 }

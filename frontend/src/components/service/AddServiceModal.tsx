@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import type { Service } from '../../services/serviceService';
 import { saveService } from '../../services/serviceService';
 
@@ -7,12 +7,19 @@ interface AddServiceModalProps {
     onSuccess: (service: Service) => void;
 }
 
+// Hàm tự động sinh mã dịch vụ
+const generateServiceID = (): string => {
+    const timestamp = Date.now().toString().slice(-6);
+    const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+    return `SV${timestamp}${random}`;
+};
+
 const AddServiceModal: React.FC<AddServiceModalProps> = ({
     onClose,
     onSuccess,
 }) => {
     const [formData, setFormData] = useState<Service>({
-        serviceID: '',
+        serviceID: generateServiceID(),
         serviceName: '',
         description: '',
         price: 0,
@@ -23,10 +30,22 @@ const AddServiceModal: React.FC<AddServiceModalProps> = ({
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
+    const validateServiceHours = (hours: string): boolean => {
+        const pattern = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]\s*-\s*([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
+        return pattern.test(hours.trim());
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
         setError('');
+
+        // Validate giờ hoạt động
+        if (!validateServiceHours(formData.serviceHours)) {
+            setError('Giờ hoạt động không đúng định dạng. Vui lòng nhập theo mẫu: 08:00-22:00');
+            setLoading(false);
+            return;
+        }
 
         try {
             const result = await saveService(formData);
@@ -86,15 +105,16 @@ const AddServiceModal: React.FC<AddServiceModalProps> = ({
                                 type="text"
                                 name="serviceID"
                                 value={formData.serviceID}
-                                onChange={handleChange}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                required
+                                readOnly
+                                disabled
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-600 cursor-not-allowed"
                             />
+                            <p className="text-xs text-gray-500 mt-1">Mã tự động sinh</p>
                         </div>
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Tên Dịch Vụ
+                                Tên Dịch Vụ <span className="text-red-500">*</span>
                             </label>
                             <input
                                 type="text"
@@ -103,12 +123,14 @@ const AddServiceModal: React.FC<AddServiceModalProps> = ({
                                 onChange={handleChange}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 required
+                                minLength={3}
+                                placeholder="Nhập tên dịch vụ"
                             />
                         </div>
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Mô Tả
+                                Mô Tả <span className="text-red-500">*</span>
                             </label>
                             <textarea
                                 name="description"
@@ -117,12 +139,14 @@ const AddServiceModal: React.FC<AddServiceModalProps> = ({
                                 rows={3}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 required
+                                minLength={10}
+                                placeholder="Nhập mô tả chi tiết về dịch vụ"
                             />
                         </div>
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Giá (VNĐ)
+                                Giá (VNĐ) <span className="text-red-500">*</span>
                             </label>
                             <input
                                 type="number"
@@ -131,23 +155,28 @@ const AddServiceModal: React.FC<AddServiceModalProps> = ({
                                 onChange={handleChange}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 required
-                                min="0"
+                                min="1000"
                                 step="1000"
+                                placeholder="Nhập giá dịch vụ"
                             />
                         </div>
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Giờ Hoạt Động
+                                Giờ Hoạt Động <span className="text-red-500">*</span>
                             </label>
                             <input
                                 type="text"
                                 name="serviceHours"
                                 value={formData.serviceHours}
                                 onChange={handleChange}
-                                placeholder="Ví dụ: 08:00 - 22:00"
+                                placeholder="Ví dụ: 08:00-22:00 hoặc 08:00 - 22:00"
+                                pattern="^([0-1]?[0-9]|2[0-3]):[0-5][0-9]\s*-\s*([0-1]?[0-9]|2[0-3]):[0-5][0-9]$"
+                                title="Định dạng: HH:MM-HH:MM hoặc HH:MM - HH:MM (VD: 08:00-22:00)"
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                required
                             />
+                            <p className="text-xs text-gray-500 mt-1">Định dạng: HH:MM-HH:MM (VD: 08:00-22:00)</p>
                         </div>
 
                         <div>

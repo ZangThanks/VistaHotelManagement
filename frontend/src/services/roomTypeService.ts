@@ -13,23 +13,51 @@ export const getAllRoomTypes = async () => {
     }
 };
 
-// Get single room type by id
-export const getRoomTypeById = async (id: string) => {
-    try {
-        const response = await api.get(`${ENDPOINT}/${id}`);
-        return response.data;
-    } catch (error) {
-        console.error(`Error fetching room type ${id}:`, error);
-        throw error;
-    }
+/**
+ * Get room type by ID
+ */
+export const getRoomTypeById = async (id: string): Promise<RoomType> => {
+  try {
+    const response = await api.get(`${ENDPOINT}/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching room type by ID:", error);
+    throw error;
+  }
 };
 
-export async function saveRoomType(roomType: RoomType) {
-    try {
-        const res = await api.post(`${ENDPOINT}/save`, roomType);
-        return res.data;
-    } catch (err) {
-        console.error('Error saving room type:', err);
-        throw err;
-    }
-}
+/**
+ * Create or update room type
+ */
+export const saveRoomType = async (
+  roomTypeData: Partial<RoomType>
+): Promise<RoomType> => {
+  try {
+    const response = await api.post(`${ENDPOINT}/save`, roomTypeData);
+    return response.data;
+  } catch (error) {
+    console.error("Error saving room type:", error);
+    throw error;
+  }
+};
+
+/**
+ * Delete room type
+ */
+export const deleteRoomType = async (id: string): Promise<void> => {
+  try {
+    await api.delete(`${ENDPOINT}/delete/${id}`);
+  } catch (error) {
+    console.error("Error deleting room type:", error);
+    throw error;
+  }
+};
+
+export const roomTypeService = {
+  getAllRoomTypes,
+  getRoomTypeById,
+  saveRoomType,
+  deleteRoomType,
+};
+
+export default roomTypeService;
