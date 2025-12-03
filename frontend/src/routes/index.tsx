@@ -41,6 +41,7 @@ import Contact from "../pages/customer/Contact.tsx";
 import BookingPage from "../pages/customer/booking/BookingPage.tsx";
 import PaymentPage from "../pages/customer/booking/PaymentPage.tsx";
 import RoomCart from "../pages/admin/booking/RoomCart.tsx";
+import RoomChange from "../pages/customer/RoomChange.tsx";
 
 export const router = createBrowserRouter([
   // AUTH
@@ -112,6 +113,7 @@ export const router = createBrowserRouter([
       { path: "room", element: <RoomList /> },
       { path: "room/incident", element: <IncidentReport /> },
       { path: "room/:id", element: <RoomDetail /> },
+      { path: "room-change", element: <RoomChange /> },
       { path: "service", element: <ServiceList /> },
       { path: "bookingPage", element: <BookingPage /> },
       { path: "booking/:id", element: <BookingDetail /> },

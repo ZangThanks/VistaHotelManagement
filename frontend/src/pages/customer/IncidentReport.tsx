@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Plus, Filter, Search, AlertCircle } from 'lucide-react';
+import { Plus, Filter, Search, AlertCircle, RefreshCw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import IncidentReportForm from '../../components/customer/IncidentReportForm';
 import IncidentCard from '../../components/customer/IncidentCard';
 import IncidentDetailModal from '../../components/customer/IncidentDetailModal';
+import RoomChangeForm from '../../components/room/RoomChangeForm';
+import type { RoomChangeRequest } from '../../components/room/RoomChangeForm';
 import Header from '../../components/Header';
 import type {
     IncidentFormData,
@@ -11,22 +13,24 @@ import type {
     IncidentStatus,
 } from '../../types/Incident';
 import incidentService from '../../services/incidentService';
+import bookingService from '../../services/bookingService';
+import type { Booking } from '../../types/Booking';
 import { useToast } from '../../hooks/useToast';
-
-// Mock data - Replace with real auth context
-// Use real IDs from database for testing
-const MOCK_CUSTOMER_ID = 'CUST002'; // Trần Thị B - has booking BOOK002
-const MOCK_BOOKING_ID = 'BOOK002'; // Existing booking in database
 
 const IncidentReport: React.FC = () => {
     const navigate = useNavigate();
     const [user, setUser] = useState<any>(null);
+    const [userBookings, setUserBookings] = useState<Booking[]>([]);
+    const [selectedBookingId, setSelectedBookingId] = useState<string>('');
     const [incidents, setIncidents] = useState<IncidentReportType[]>([]);
     const [filteredIncidents, setFilteredIncidents] = useState<
         IncidentReportType[]
     >([]);
+    const [myRoomChangeRequests, setMyRoomChangeRequests] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
+    const [showRoomChangeForm, setShowRoomChangeForm] = useState(false);
+    const [currentBooking, setCurrentBooking] = useState<Booking | null>(null);
     const [selectedIncident, setSelectedIncident] =
         useState<IncidentReportType | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
@@ -35,23 +39,94 @@ const IncidentReport: React.FC = () => {
     );
     const { success, error } = useToast();
 
-    // Check authentication
+    // Check authentication and load user's bookings
     useEffect(() => {
         const userStr = localStorage.getItem('user');
         if (userStr) {
             const userData = JSON.parse(userStr);
+            console.log('👤 Logged in user:', userData);
             setUser(userData);
+            
+            // Get customer ID from user object (check multiple possible field names)
+            const customerId = userData.customerId || userData.customerID || userData.id;
+            console.log('🔑 Customer ID to search:', customerId);
+            
+            if (customerId) {
+                // Load user's bookings
+                loadUserBookings(customerId);
+            } else {
+                console.error('❌ No customer ID found in user object');
+                error('Không tìm thấy thông tin khách hàng');
+            }
         }
     }, []);
 
+    const loadUserBookings = async (customerId: string) => {
+        try {
+            console.log('🔄 Loading bookings for customer:', customerId);
+            const allBookings = await bookingService.getAll();
+            
+            console.log('📊 All bookings:', allBookings);
+            console.log('👤 Looking for customer ID:', customerId);
+            
+            // Get user email for fallback matching
+            const userEmail = user?.email;
+            
+            // Filter bookings for this customer that are active (CHECKED_IN or CONFIRMED)
+            const userActiveBookings = allBookings.filter(
+                (booking: Booking) => {
+                    const bookingCustomerId = booking.customer?.customerID || booking.customer?.customerId;
+                    const bookingEmail = booking.customer?.email;
+                    
+                    const matchById = bookingCustomerId === customerId;
+                    const matchByEmail = userEmail && bookingEmail && bookingEmail.toLowerCase() === userEmail.toLowerCase();
+                    
+                    console.log(`Checking booking ${booking.bookingID}:`, {
+                        bookingCustomerId,
+                        bookingEmail,
+                        customerId,
+                        userEmail,
+                        matchById,
+                        matchByEmail,
+                        status: booking.status
+                    });
+                    
+                    // Only allow incident reports for checked-in bookings
+                    return (matchById || matchByEmail) && booking.status === 'CHECKED_IN';
+                }
+            );
+            
+            console.log('✅ User active bookings:', userActiveBookings);
+            setUserBookings(userActiveBookings);
+            
+            // Auto-select first booking if available
+            if (userActiveBookings.length > 0) {
+                setSelectedBookingId(userActiveBookings[0].bookingID);
+            } else {
+                // Stop loading even if no bookings found
+                setIsLoading(false);
+            }
+        } catch (err) {
+            console.error('❌ Error loading bookings:', err);
+            error('Không thể tải thông tin đặt phòng');
+            setIsLoading(false);
+        }
+    };
+
     const loadIncidents = useCallback(async () => {
+        if (!user || !selectedBookingId) {
+            setIsLoading(false);
+            return;
+        }
+        
         setIsLoading(true);
         try {
             console.log('🔄 Loading customer incidents...');
-            // Load incidents by customer ID AND booking ID (fallback)
+            const customerId = user.customerId || user.customerID;
+            // Load incidents by customer ID AND booking ID
             const data = await incidentService.getCustomerIncidents(
-                MOCK_CUSTOMER_ID,
-                MOCK_BOOKING_ID, // Add booking ID as fallback filter
+                customerId,
+                selectedBookingId,
             );
             console.log('✅ Loaded incidents:', data.length, 'records');
             console.log('📊 Data:', data);
@@ -62,7 +137,26 @@ const IncidentReport: React.FC = () => {
         } finally {
             setIsLoading(false);
         }
-    }, [error]);
+    }, [user, selectedBookingId, error]);
+
+    const loadCurrentBooking = useCallback(async () => {
+        if (!selectedBookingId) {
+            error('Vui lòng chọn booking trước');
+            return null;
+        }
+        
+        try {
+            console.log('🔄 Loading current booking...');
+            const booking = await bookingService.getBookingById(selectedBookingId);
+            console.log('✅ Loaded booking:', booking);
+            setCurrentBooking(booking);
+            return booking;
+        } catch (err) {
+            console.error('❌ Error loading booking:', err);
+            error('Không thể tải thông tin đặt phòng');
+            return null;
+        }
+    }, [selectedBookingId, error]);
 
     const filterIncidents = useCallback(() => {
         let filtered = incidents;
@@ -89,9 +183,32 @@ const IncidentReport: React.FC = () => {
         setFilteredIncidents(filtered);
     }, [incidents, searchTerm, statusFilter]);
 
+    // Load room change requests for current user
+    const loadMyRoomChangeRequests = useCallback(() => {
+        if (!selectedBookingId) return;
+        
+        try {
+            const storedRequests = localStorage.getItem('roomChangeRequests');
+            const allRequests = storedRequests ? JSON.parse(storedRequests) : [];
+            
+            // Filter by current user's booking
+            const myRequests = allRequests.filter(
+                (req: any) => req.bookingId === selectedBookingId
+            );
+            
+            console.log('📋 My room change requests:', myRequests);
+            setMyRoomChangeRequests(myRequests);
+        } catch (err) {
+            console.error('Error loading room change requests:', err);
+        }
+    }, [selectedBookingId]);
+
     useEffect(() => {
-        loadIncidents();
-    }, [loadIncidents]);
+        if (selectedBookingId) {
+            loadIncidents();
+            loadMyRoomChangeRequests();
+        }
+    }, [loadIncidents, loadMyRoomChangeRequests, selectedBookingId]);
 
     useEffect(() => {
         filterIncidents();
@@ -117,6 +234,41 @@ const IncidentReport: React.FC = () => {
         } catch (err) {
             console.error('❌ Error creating incident:', err);
             error('Có lỗi xảy ra khi gửi báo cáo');
+            throw err;
+        }
+    };
+
+    const handleSubmitRoomChange = async (data: RoomChangeRequest) => {
+        try {
+            console.log('📝 Submitting room change request:', data);
+            
+            // Get existing requests from localStorage
+            const existingRequests = JSON.parse(
+                localStorage.getItem('roomChangeRequests') || '[]'
+            );
+            
+            // Create new request with ID
+            const newRequest = {
+                id: `RC${String(existingRequests.length + 1).padStart(3, '0')}`,
+                ...data,
+                customerName: user?.fullName || 'Guest',
+                status: 'PENDING' as const,
+            };
+            
+            // Save to localStorage
+            existingRequests.push(newRequest);
+            localStorage.setItem('roomChangeRequests', JSON.stringify(existingRequests));
+            
+            await new Promise((resolve) => setTimeout(resolve, 500));
+            console.log('✅ Room change request submitted successfully:', newRequest);
+            success('Yêu cầu đổi phòng đã được gửi thành công');
+            setShowRoomChangeForm(false);
+            
+            // Reload room change requests
+            loadMyRoomChangeRequests();
+        } catch (err) {
+            console.error('❌ Error submitting room change request:', err);
+            error('Có lỗi xảy ra khi gửi yêu cầu');
             throw err;
         }
     };
@@ -176,6 +328,43 @@ const IncidentReport: React.FC = () => {
                         <p className="text-gray-600 text-lg">
                             Report and track issues during your stay
                         </p>
+                        
+                        {/* Booking Selector */}
+                        {userBookings.length > 0 && (
+                            <div className="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                    Chọn đơn đặt phòng:
+                                </label>
+                                <select
+                                    value={selectedBookingId}
+                                    onChange={(e) => setSelectedBookingId(e.target.value)}
+                                    className="w-full md:w-auto px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+                                >
+                                    {userBookings.map((booking) => (
+                                        <option key={booking.bookingID} value={booking.bookingID}>
+                                            {booking.bookingID} - Phòng {booking.bookingDetails?.[0]?.room?.roomNumber || 'N/A'} 
+                                            {' '}({booking.status === 'CHECKED_IN' ? 'Đang ở' : 'Đã xác nhận'})
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        )}
+                        
+                        {userBookings.length === 0 && !isLoading && (
+                            <div className="mt-4 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                                <p className="text-yellow-800 font-semibold mb-2">
+                                    ⚠️ Bạn chưa có đơn đặt phòng nào đang check-in
+                                </p>
+                                <p className="text-yellow-700 text-sm">
+                                    Để báo cáo sự cố, bạn cần:
+                                </p>
+                                <ol className="list-decimal list-inside text-yellow-700 text-sm mt-2 space-y-1">
+                                    <li>Đặt phòng</li>
+                                    <li>Check-in tại quầy lễ tân</li>
+                                    <li>Sau đó mới có thể báo cáo sự cố trong phòng</li>
+                                </ol>
+                            </div>
+                        )}
                     </div>
 
                     {/* Filters */}
@@ -216,18 +405,109 @@ const IncidentReport: React.FC = () => {
                                 </select>
                             </div>
 
-                            {/* Add Button */}
-                            <button
-                                onClick={() => setShowForm(true)}
-                                className="bg-[#CCBDA3] text-white hover:bg-[#b8a88a] px-6 py-2.5 rounded-lg font-semibold flex items-center gap-2 transition-all shadow-md hover:shadow-lg whitespace-nowrap"
-                            >
-                                <Plus className="w-5 h-5" />
-                                Report Incident
-                            </button>
+                            {/* Action Buttons */}
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={async () => {
+                                        // Load booking before showing form
+                                        const booking = await loadCurrentBooking();
+                                        if (booking) {
+                                            setShowRoomChangeForm(true);
+                                        }
+                                    }}
+                                    disabled={!selectedBookingId}
+                                    className="bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 px-6 py-2.5 rounded-lg font-semibold flex items-center gap-2 transition-all shadow-md hover:shadow-lg whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    <RefreshCw className="w-5 h-5" />
+                                    Yêu cầu đổi phòng
+                                </button>
+                                <button
+                                    onClick={() => setShowForm(true)}
+                                    disabled={!selectedBookingId}
+                                    className="bg-[#CCBDA3] text-white hover:bg-[#b8a88a] px-6 py-2.5 rounded-lg font-semibold flex items-center gap-2 transition-all shadow-md hover:shadow-lg whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    <Plus className="w-5 h-5" />
+                                    Report Incident
+                                </button>
+                            </div>
                         </div>
                     </div>
 
+                    {/* Room Change Requests Section */}
+                    {myRoomChangeRequests.length > 0 && (
+                        <div className="mb-8">
+                            <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                <RefreshCw className="w-6 h-6 text-blue-600" />
+                                Yêu cầu đổi phòng của bạn
+                            </h2>
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                {myRoomChangeRequests.map((request) => (
+                                    <div
+                                        key={request.id}
+                                        className="bg-white rounded-lg shadow-md border border-gray-200 p-5 hover:shadow-lg transition-shadow"
+                                    >
+                                        <div className="flex items-start justify-between mb-3">
+                                            <div>
+                                                <span className="text-xs font-semibold text-gray-500">
+                                                    {request.id}
+                                                </span>
+                                                <div className="text-sm text-gray-500 mt-1">
+                                                    {new Date(request.requestDate).toLocaleString('vi-VN')}
+                                                </div>
+                                            </div>
+                                            {request.status === 'PENDING' && (
+                                                <span className="px-3 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                                    Đang chờ
+                                                </span>
+                                            )}
+                                            {request.status === 'APPROVED' && (
+                                                <span className="px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                                                    Đã duyệt
+                                                </span>
+                                            )}
+                                            {request.status === 'REJECTED' && (
+                                                <span className="px-3 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
+                                                    Từ chối
+                                                </span>
+                                            )}
+                                        </div>
+                                        <div className="space-y-2">
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-sm text-gray-600">Từ phòng:</span>
+                                                <span className="text-sm font-semibold text-gray-900">
+                                                    {request.currentRoomNumber}
+                                                </span>
+                                                <span className="text-gray-400">→</span>
+                                                <span className="text-sm font-semibold text-blue-600">
+                                                    {request.newRoomNumber}
+                                                </span>
+                                            </div>
+                                            <div>
+                                                <span className="text-sm text-gray-600">Lý do: </span>
+                                                <span className="text-sm text-gray-700">{request.reason}</span>
+                                            </div>
+                                            {request.responseNote && (
+                                                <div className="mt-3 p-3 bg-gray-50 rounded-md border border-gray-200">
+                                                    <span className="text-xs font-semibold text-gray-700">
+                                                        Phản hồi từ nhân viên:
+                                                    </span>
+                                                    <p className="text-sm text-gray-600 mt-1">
+                                                        {request.responseNote}
+                                                    </p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
                     {/* Incidents List */}
+                    <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                        <AlertCircle className="w-6 h-6 text-[#CCBDA3]" />
+                        Báo cáo sự cố
+                    </h2>
                     {isLoading ? (
                         <div className="flex items-center justify-center py-32">
                             <div className="text-center">
@@ -297,9 +577,35 @@ const IncidentReport: React.FC = () => {
                             </div>
                             <div className="p-6 overflow-y-auto max-h-[calc(90vh-4rem)]">
                                 <IncidentReportForm
-                                    bookingId={MOCK_BOOKING_ID}
+                                    bookingId={selectedBookingId}
                                     onSubmit={handleCreateIncident}
                                     onCancel={() => setShowForm(false)}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Room Change Form Modal */}
+                {showRoomChangeForm && (
+                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                        <div className="bg-white rounded-lg shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
+                            <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 flex items-center justify-between">
+                                <h2 className="text-xl font-bold text-white">
+                                    Yêu cầu đổi phòng
+                                </h2>
+                                <button
+                                    onClick={() => setShowRoomChangeForm(false)}
+                                    className="p-1.5 hover:bg-white/10 rounded-md transition-colors"
+                                >
+                                    <Plus className="w-5 h-5 rotate-45 text-white" />
+                                </button>
+                            </div>
+                            <div className="p-6 overflow-y-auto max-h-[calc(90vh-4rem)]">
+                                <RoomChangeForm
+                                    currentBooking={currentBooking || undefined}
+                                    onSubmit={handleSubmitRoomChange}
+                                    onCancel={() => setShowRoomChangeForm(false)}
                                 />
                             </div>
                         </div>

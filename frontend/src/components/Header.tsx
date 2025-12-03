@@ -14,6 +14,7 @@ const navItems: NavItem[] = [
   { label: "About Us", path: "/contact" },
   { label: "Accommodation", path: "/customer/room" },
   { label: "Services", path: "/customer/service" },
+  { label: "Incident Report", path: "/incident-report" },
   { label: "Events", path: "/news" },
   { label: "Exclusive Offers", path: "/customer/promotion/list" },
   { label: "My bookings", path: "/customer/booking/mybookings" },
