@@ -26,18 +26,6 @@ export const getBookingById = async (id: string): Promise<Booking> => {
   }
 };
 
-export const getBookingDetailsById = async (
-  id: string
-): Promise<BookingDetail[]> => {
-  try {
-    const response = await api.get(`${ENDPOINT}/details/${id}`);
-    return response.data;
-  } catch (error) {
-    console.error(`Error fetching booking details ${id}:`, error);
-    throw error;
-  }
-};
-
 export const createBooking = async (booking: object): Promise<Booking> => {
   try {
     const response = await api.post(`${ENDPOINT}/save`, booking);
