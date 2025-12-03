@@ -32,30 +32,25 @@ export interface Booking {
 }
 
 export interface RoomBooking {
-    id: string;
-    roomId: string;
-    roomNumber: string;
-    guestName: string;
-    checkIn: Date;
-    checkOut: Date;
-    status:
-        | 'pending'
-        | 'confirmed'
-        | 'checked-in'
-        | 'checked-out'
-        | 'cancelled';
-    numberOfGuests: number;
-    totalAmount: number;
-    specialRequests?: string;
-    paymentStatus?: string;
-    customer?: any;
-    bookingDetails?: any[];
-    earlyCheckin?: EarlyCheckin | null;
-    lateCheckout?: LateCheckout | null;
+  id: string;
+  roomId: string;
+  roomNumber: string;
+  guestName: string;
+  checkIn: Date;
+  checkOut: Date;
+  status: "pending" | "confirmed" | "checked-in" | "checked-out" | "cancelled";
+  numberOfGuests: number;
+  totalAmount: number;
+  specialRequests?: string;
+  paymentStatus?: string;
+  customer?: any;
+  bookingDetails?: any[];
+  earlyCheckin?: EarlyCheckin | null;
+  lateCheckout?: LateCheckout | null;
 }
 
 import type { Customer } from "./Customer";
 import type { Employee } from "./Employee";
 import type { BookingDetail } from "./BookingDetail";
-import type { EarlyCheckin } from './EarlyCheckin';
-import type { LateCheckout } from './LateCheckout';
+import type { EarlyCheckin } from "./EarlyCheckin";
+import type { LateCheckout } from "./LateCheckout";

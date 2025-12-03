@@ -10,12 +10,16 @@ const formatCheckInTime = (dateString: string | undefined): string => {
   return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 };
 
-// Khung uy tín
 const getTrustScore = (loyaltyPoints: number | undefined) => {
-  if (!loyaltyPoints) return { value: 50, level: "medium" };
-  if (loyaltyPoints >= 10000) return { value: 85, level: "high" };
-  if (loyaltyPoints >= 5000) return { value: 65, level: "medium" };
-  return { value: 40, level: "low" };
+  const points = loyaltyPoints ?? 0;
+
+  if (points >= 81 && points <= 100) {
+    return { value: points, level: "high" };
+  }
+  if (points >= 41 && points <= 80) {
+    return { value: points, level: "medium" };
+  }
+  return { value: points, level: "low" };
 };
 
 const getStatus = (status: string): string => {
@@ -26,21 +30,31 @@ const getStatus = (status: string): string => {
 
 const getPaymentStatus = (status: string) => {
   switch (status) {
+    case "PAID":
+      return { type: "paid", label: "Paid in Full" };
+    case "PERCENTAGE_50":
+      return { type: "percentage_50", label: "50% Paid" };
+    case "PERCENTAGE_30":
+      return { type: "percentage_30", label: "30% Paid" };
     case "COMPLETED":
-      return { type: "complete", label: "Paid in Full" };
-    case "PARTIAL":
-      return { type: "partial", label: "Partial (30%)" };
+      return { type: "completed", label: "Completed" };
     case "PENDING":
-      return { type: "checkout", label: "Pay at Checkout" };
+      return { type: "pending", label: "Pending" };
+    case "FAILED":
+      return { type: "failed", label: "Failed" };
+    case "REFUNDED":
+      return { type: "refunded", label: "Refunded" };
+    case "CANCELLED":
+      return { type: "cancelled", label: "Cancelled" };
     default:
-      return { type: "checkout", label: "Not Paid" };
+      return { type: "pending", label: "Pending" };
   }
 };
 
-const handleCheckIn = async (bookingId: string, originalBooking: any) => {
+const handleCheckIn = async (bookingId: string, booking: Booking) => {
   if (
     !window.confirm(
-      `Are you sure you want to check in guest: ${originalBooking.guest.name}?`
+      `Are you sure you want to check in guest: ${booking.customer?.fullName}?`
     )
   ) {
     return;
@@ -48,12 +62,7 @@ const handleCheckIn = async (bookingId: string, originalBooking: any) => {
 
   try {
     await checkIn(bookingId);
-    alert(`Check-in successful for ${originalBooking.guest.name}!`);
-
-    //TODO: LÀM MỚI GIAO DIỆN
-    // if (onRefresh) {
-    //   onRefresh();
-    // }
+    alert(`Check-in successful for ${booking.customer?.fullName}!`);
   } catch (error: any) {
     console.error("Check-in error:", error);
 
@@ -65,7 +74,6 @@ const handleCheckIn = async (bookingId: string, originalBooking: any) => {
   }
 };
 
-// Check ngày check-in
 const isToday = (dateString: string | undefined): boolean => {
   if (!dateString) return false;
   const checkInDate = new Date(dateString);
@@ -79,7 +87,7 @@ const isToday = (dateString: string | undefined): boolean => {
 };
 
 interface TodayTabProps {
-  onViewDetails: (booking: any) => void;
+  onViewDetails: (booking: Booking) => void;
   bookings?: Booking[];
 }
 
@@ -87,28 +95,6 @@ function TodayTab({ onViewDetails, bookings = [] }: TodayTabProps) {
   const filteredBookings = bookings.filter((booking) =>
     isToday(booking.checkInDate)
   );
-
-  const todayCheckins = filteredBookings.map((booking: Booking) => ({
-    id: booking.bookingID,
-    guest: {
-      name: booking.customer?.fullName || "Guest",
-      email: booking.customer?.email || "No email",
-      image: " ",
-    },
-
-    room: `${booking.bookingDetails?.[0]?.room?.roomNumber || "N/A"} - ${
-      booking.bookingDetails?.[0]?.room?.roomType?.typeName || "Standard"
-    }`,
-
-    checkInTime: formatCheckInTime(booking.checkInDate),
-    status: getStatus(booking.status),
-    trustScore: getTrustScore(booking.customer?.loyaltyPoints),
-    paymentStatus: getPaymentStatus(booking.paymentStatus),
-    actions:
-      booking.status === "CHECKED_IN"
-        ? ["view", "services"]
-        : ["checkin", "view"],
-  }));
 
   const renderStatusBadge = (status: string) => {
     const statusClasses: { [key: string]: string } = {
@@ -140,24 +126,26 @@ function TodayTab({ onViewDetails, bookings = [] }: TodayTabProps) {
         }`}
       >
         <span className="font-bold">{score.value}</span>
-        {/* <div className="text-xs">
-          {score.level.charAt(0).toUpperCase() + score.level.slice(1)}
-        </div> */}
       </div>
     );
   };
 
   const renderPaymentBadge = (payment: { type: string; label: string }) => {
     const paymentClasses: { [key: string]: string } = {
-      complete: "bg-green-50 text-green-700",
-      partial: "bg-amber-50 text-amber-700",
-      checkout: "bg-purple-50 text-purple-700",
+      paid: "bg-green-50 text-green-700 border border-green-200",
+      completed: "bg-green-50 text-green-700 border border-green-200",
+      percentage_50: "bg-blue-50 text-blue-700 border border-blue-200",
+      percentage_30: "bg-amber-50 text-amber-700 border border-amber-200",
+      pending: "bg-gray-50 text-gray-700 border border-gray-200",
+      failed: "bg-red-50 text-red-700 border border-red-200",
+      refunded: "bg-purple-50 text-purple-700 border border-purple-200",
+      cancelled: "bg-slate-50 text-slate-700 border border-slate-200",
     };
 
     return (
       <span
-        className={`px-2.5 py-1 rounded-full text-xs font-medium inline-block min-w-20 text-center ${
-          paymentClasses[payment.type]
+        className={`px-2.5 py-1 rounded-full text-xs font-medium inline-block min-w-24 text-center ${
+          paymentClasses[payment.type] || paymentClasses.pending
         }`}
       >
         {payment.label}
@@ -165,7 +153,7 @@ function TodayTab({ onViewDetails, bookings = [] }: TodayTabProps) {
     );
   };
 
-  if (todayCheckins.length === 0) {
+  if (filteredBookings.length === 0) {
     return (
       <div className="p-10 text-center">
         <p className="text-gray-500">No check-ins found for today.</p>
@@ -189,49 +177,66 @@ function TodayTab({ onViewDetails, bookings = [] }: TodayTabProps) {
           </tr>
         </thead>
         <tbody>
-          {todayCheckins.map((booking) => (
-            <tr
-              key={booking.id}
-              className="border-b border-[#EBE3D7]/50 hover:bg-[#EBE3D7]/10"
-            >
-              <td className="py-4 px-4">{booking.id}</td>
-              <td className="py-4 px-4">
-                <div className="flex items-center gap-3">
-                  <img
-                    src={booking.guest.image}
-                    alt={booking.guest.name}
-                    className="w-10 h-10 rounded-full object-cover"
-                  />
-                  <div className="flex flex-col">
-                    <span className="font-medium">{booking.guest.name}</span>
-                    <span className="text-sm text-gray-500">
-                      {booking.guest.email}
-                    </span>
+          {filteredBookings.map((booking) => {
+            const trustScore = getTrustScore(booking.customer?.reputationPoint);
+            const status = getStatus(booking.status);
+            const paymentStatus = getPaymentStatus(booking.paymentStatus);
+            const roomNumber =
+              booking.bookingDetails?.[0]?.room?.roomNumber || "N/A";
+            const roomType =
+              booking.bookingDetails?.[0]?.room?.roomType?.typeName ||
+              "Standard";
+            const checkInTime = formatCheckInTime(booking.checkInDate);
+
+            return (
+              <tr
+                key={booking.bookingID}
+                className="border-b border-[#EBE3D7]/50 hover:bg-[#EBE3D7]/10"
+              >
+                <td className="py-4 px-4">{booking.bookingID}</td>
+                <td className="py-4 px-4">
+                  <div className="flex items-center gap-3">
+                    {booking.customer?.avatarUrl ? (
+                      <img
+                        src={booking.customer.avatarUrl}
+                        alt={booking.customer.fullName || "Guest"}
+                        className="w-10 h-10 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-[#CCBDA3] flex items-center justify-center text-white text-sm">
+                        {(booking.customer?.fullName || "G")
+                          .charAt(0)
+                          .toUpperCase()}
+                      </div>
+                    )}
+                    <div className="flex flex-col">
+                      <span className="font-medium">
+                        {booking.customer?.fullName || "Guest"}
+                      </span>
+                      <span className="text-sm text-gray-500">
+                        {booking.customer?.email || "No email"}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              </td>
-              <td className="py-4 px-4">{booking.room}</td>
-              <td className="py-4 px-4">{booking.checkInTime}</td>
-              <td className="py-4 px-4">{renderStatusBadge(booking.status)}</td>
-              <td className="py-4 px-4">
-                {renderTrustScore(booking.trustScore)}
-              </td>
-              <td className="py-4 px-4">
-                {renderPaymentBadge(booking.paymentStatus)}
-              </td>
-              <td className="py-4 px-4">
-                <div className="flex gap-1">
-                  {booking.status === "PENDING" && (
-                    // handleCheckIn(booking.id, booking)
-                    <button
-                      title="Check In"
-                      onClick={() => onViewDetails(booking)}
-                      className="w-8 h-8 rounded-full bg-green-100 hover:bg-green-200 text-green-700 transition flex items-center justify-center"
-                    >
-                      <FaCheck size={14} />
-                    </button>
-                  )}
-                  {booking.status !== "PENDING" && (
+                </td>
+                <td className="py-4 px-4">{`${roomNumber} - ${roomType}`}</td>
+                <td className="py-4 px-4">{checkInTime}</td>
+                <td className="py-4 px-4">{renderStatusBadge(status)}</td>
+                <td className="py-4 px-4">{renderTrustScore(trustScore)}</td>
+                <td className="py-4 px-4">
+                  {renderPaymentBadge(paymentStatus)}
+                </td>
+                <td className="py-4 px-4">
+                  <div className="flex gap-1">
+                    {booking.status === "PENDING" && (
+                      <button
+                        title="Check In"
+                        onClick={() => onViewDetails(booking)}
+                        className="w-8 h-8 rounded-full bg-green-100 hover:bg-green-200 text-green-700 transition flex items-center justify-center"
+                      >
+                        <FaCheck size={14} />
+                      </button>
+                    )}
                     <button
                       title="View Details"
                       className="w-8 h-8 rounded-full bg-[#F5F0EB] hover:bg-[#EBE3D7] transition flex items-center justify-center"
@@ -239,11 +244,11 @@ function TodayTab({ onViewDetails, bookings = [] }: TodayTabProps) {
                     >
                       <FaEye size={14} />
                     </button>
-                  )}
-                </div>
-              </td>
-            </tr>
-          ))}
+                  </div>
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>

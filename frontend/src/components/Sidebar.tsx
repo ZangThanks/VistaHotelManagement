@@ -11,15 +11,12 @@ import {
   FaChevronRight,
 } from "react-icons/fa";
 import { MdMeetingRoom } from "react-icons/md";
-import {
-  RiInfoCardFill,
-  RiDiscountPercentFill
-} from "react-icons/ri";
+import { RiInfoCardFill, RiDiscountPercentFill } from "react-icons/ri";
 import { IoBagCheckOutline } from "react-icons/io5";
 import { LuMapPinCheckInside } from "react-icons/lu";
 import { cn } from "../utils/cn";
 import { MdRoomService, MdDiscount } from "react-icons/md";
-import { BiSolidCategory, BiSolidDiscount  } from "react-icons/bi";
+import { BiSolidCategory, BiSolidDiscount } from "react-icons/bi";
 import { motion } from "framer-motion";
 
 interface SidebarProps {
@@ -51,9 +48,8 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
     },
     {
       icon: <RiInfoCardFill />,
-      label: "Information Management",
+      label: "Information",
       path: "/admin/info",
-
     },
     {
       icon: <LuMapPinCheckInside />,
