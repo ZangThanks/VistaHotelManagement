@@ -13,6 +13,7 @@ import {
   generateBookingID,
   saveBookingWithDetails,
   getBookingById,
+  overlapBookingExists,
 } from "../../services/bookingService";
 import { getById } from "../../services/customerService";
 
@@ -30,7 +31,10 @@ import CustomerVoucherModal from "./CustomerVoucherModal";
 import { RiHotelLine } from "react-icons/ri";
 import { TbHotelService } from "react-icons/tb";
 import { getAllPolicyBaseRates } from "../../services/HourlyRatePolicyService";
-import type { HourlyRatePolicy, BaseRateItem } from "../../types/HourlyRatePolicy";
+import type {
+  HourlyRatePolicy,
+  BaseRateItem,
+} from "../../types/HourlyRatePolicy";
 
 interface BookingFormProps {
   currentStep: number;
@@ -83,10 +87,11 @@ export default function BookingForm({
   const [checkInTime, setCheckInTime] = useState<string>("14:00");
   const [duration, setDuration] = useState<number>(3);
 
-  const [promotionCode, setPromotionCode] = useState("");
-  const [selectedServices, setSelectedServices] = useState<string[]>([]);
-  const [specialRequests, setSpecialRequests] = useState("");
+  // Special requests text (was missing — required by booking payload)
+  const [specialRequests, setSpecialRequests] = useState<string>("");
 
+  const [promotionCode, setPromotionCode] = useState("");
+  // Services and vouchers state
   const [services, setServices] = useState<Service[]>([]);
   const [customerVouchers, setCustomerVouchers] = useState<CustomerVoucher[]>(
     []
@@ -94,6 +99,13 @@ export default function BookingForm({
   const [customer, setCustomer] = useState<Customer>();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+
+  // selected services (ids) and per-service targets (roomNumbers array or 'ALL')
+  const [selectedServices, setSelectedServices] = useState<string[]>([]);
+  const [selectedServiceTargets, setSelectedServiceTargets] = useState<
+    Record<string, string[] | "ALL">
+  >({}); // e.g. { serviceId: "ALL" } or { serviceId: ["101","102"] }
+
   const [selectedPaymentMethod, setSelectedPaymentMethod] =
     useState<PaymentMethod>(PAYMENT_METHODS[0]);
   const [selectedRoom, setSelectedRoom] = useState<string[]>([]);
@@ -105,6 +117,7 @@ export default function BookingForm({
   const [hourlyRatePolicies, setHourlyRatePolicies] = useState<
     HourlyRatePolicy[]
   >([]);
+  const [bookedDates, setBookedDates] = useState<Date[]>([]);
 
   const fetchedData = async () => {
     try {
@@ -163,6 +176,26 @@ export default function BookingForm({
       const roomsData = await Promise.all(roomPromises);
       setRooms(roomsData);
 
+      // Fetch booked dates for all selected rooms
+      if (roomsToUse.length > 0) {
+        try {
+          const bookedDatesPromises = roomsToUse.map((roomId) =>
+            overlapBookingExists(roomId)
+          );
+          const bookedDatesArrays = await Promise.all(bookedDatesPromises);
+
+          // Flatten and convert to Date objects
+          const allBookedDates = bookedDatesArrays
+            .flat()
+            .map((dateStr) => new Date(dateStr));
+
+          setBookedDates(allBookedDates);
+          console.log("Booked dates:", allBookedDates);
+        } catch (error) {
+          console.error("Failed to fetch booked dates:", error);
+        }
+      }
+
       if (customerId) {
         const customerData = await getById(customerId);
         setCustomer(customerData);
@@ -208,6 +241,31 @@ export default function BookingForm({
   }, []);
 
   const handleNextStep = () => {
+    if (!checkInDate) {
+      setError("Please select a check-in date.");
+      return;
+    }
+    if (!checkOutDate) {
+      setError("Please select a check-out date.");
+      return;
+    }
+
+    const ci = new Date(checkInDate);
+    ci.setHours(0, 0, 0, 0);
+    const co = new Date(checkOutDate);
+    co.setHours(0, 0, 0, 0);
+
+    if (currentStep === 1) {
+      // Kiểm tra chồng lấn với các ngày đã được đặt
+      if (isDateRangeOverlapping(ci, co, bookedDates)) {
+        setError(
+          "The selected date range overlaps with already booked dates. Please choose different dates."
+        );
+        return;
+      } else {
+        setError("");
+      }
+    }
     if (currentStep < 4) {
       setCurrentStep(currentStep + 1);
     }
@@ -219,90 +277,201 @@ export default function BookingForm({
     }
   };
 
-  const toggleService = (serviceId: string) => {
-    setSelectedServices((prev) =>
-      prev.includes(serviceId)
-        ? prev.filter((id) => id !== serviceId)
-        : [...prev, serviceId]
-    );
+  // Kiểm tra xem khoảng thời gian checkin-checkout có chồng lấn với ngày đã đặt
+  const isDateRangeOverlapping = (
+    checkIn: Date,
+    checkOut: Date,
+    bookedDates: Date[]
+  ): boolean => {
+    // Set giờ của ngày về 00:00:00 để so sánh chính xác
+    const normalizeDate = (date: Date) => {
+      const normalized = new Date(date);
+      normalized.setHours(0, 0, 0, 0);
+      return normalized;
+    };
+
+    const ciNormalized = normalizeDate(checkIn);
+    const coNormalized = normalizeDate(checkOut);
+
+    return bookedDates.some((bookedDate) => {
+      const bookedNormalized = normalizeDate(bookedDate);
+      return (
+        bookedNormalized >= ciNormalized && bookedNormalized < coNormalized
+      );
+    });
   };
 
-  const getSelectedServiceObjects = () => {
-    return services.filter((service) =>
-      selectedServices.includes(service.serviceID)
-    );
+  const toggleService = (serviceId: string) => {
+    setSelectedServices((prev) => {
+      const exists = prev.includes(serviceId);
+      if (exists) {
+        // remove service and its targets
+        setSelectedServiceTargets((t) => {
+          const copy = { ...t };
+          delete copy[serviceId];
+          return copy;
+        });
+        return prev.filter((id) => id !== serviceId);
+      } else {
+        // add service and default to ALL rooms
+        setSelectedServiceTargets((t) => ({
+          ...t,
+          [serviceId]: rooms.length <= 1 ? "ALL" : "ALL",
+        }));
+        return [...prev, serviceId];
+      }
+    });
+  };
+
+  // Return selected Service objects from services array
+  const getSelectedServiceObjects = (): Service[] =>
+    services.filter((s) => selectedServices.includes(s.serviceID));
+
+  // toggle a specific room target for a given service
+  const toggleServiceTarget = (serviceId: string, roomNumber: string) => {
+    setSelectedServiceTargets((prev) => {
+      const cur = prev[serviceId];
+      // if currently ALL, replace with single selected room
+      if (cur === "ALL" || !cur) {
+        return { ...prev, [serviceId]: [roomNumber] };
+      }
+      const arr = Array.isArray(cur) ? [...cur] : [];
+      if (arr.includes(roomNumber)) {
+        const next = arr.filter((r) => r !== roomNumber);
+        return { ...prev, [serviceId]: next.length ? next : "ALL" };
+      } else {
+        return { ...prev, [serviceId]: [...arr, roomNumber] };
+      }
+    });
+  };
+
+  const setServiceApplyAll = (serviceId: string, applyAll: boolean) => {
+    setSelectedServiceTargets((prev) => ({
+      ...prev,
+      [serviceId]: applyAll ? "ALL" : rooms.map((r) => r.roomNumber),
+    }));
   };
 
   // Tính tổng chi phí dịch vụ
   const calculateServiceCosts = () => {
-    return getSelectedServiceObjects().reduce(
-      (sum, service) => sum + service.price,
-      0
-    );
+    return getSelectedServiceObjects().reduce((sum, service) => {
+      const targets = selectedServiceTargets[service.serviceID];
+      let factor = 1;
+      if (!targets || targets === "ALL") {
+        factor = rooms.length || 1;
+      } else if (Array.isArray(targets)) {
+        factor = targets.length || 1;
+      }
+      return sum + service.price * factor;
+    }, 0);
   };
 
   /**
-   *  * Tính giá theo giờ dựa trên HourlyRatePolicy
+   * Tính phần trăm giá theo giờ dựa trên HourlyRatePolicy
    *
    * CÔNG THỨC:
    * 1. Lấy phần trăm cơ bản từ baseRates theo duration
-   * 2. Áp dụng phụ phí giờ cao điểm (18:00-20:00): +20%
-   * 3. Áp dụng phụ phí cuối tuần: +X% (từ weekendSurcharge)
-   * 4. Tính giá cuối: (basePrice × totalPercentage) / duration
+   * 2. Áp dụng phụ phí cuối tuần: +X% (từ weekendSurcharge)
+   * 3. Trả về tổng phần trăm (base % + weekend %)
    *
-   * Tính giá theo giờ dựa trên HourlyRatePolicy
-   * @param basePrice Giá gốc của phòng
    * @param duration Số giờ đặt
-   * @param checkInDate Ngày check-in
-   * @returns Giá mỗi giờ đã tính phụ phí (nếu có)
+   * @param checkInDate Ngày và giờ check-in
+   * @returns Phần trăm giá theo giờ (%) đã tính phụ phí
    */
   const calculateHourlyRate = (
-    basePrice: number,
     duration: number,
     checkInDate: Date | null
   ): number => {
     // Fallback nếu chưa có policy
     if (!checkInDate || hourlyRatePolicies.length === 0) {
-      return basePrice;
+      return 100;
     }
 
     const policy = hourlyRatePolicies[0]; // Lấy policy đầu tiên
 
     // Lấy phần trăm cơ bản từ baseRates
     let ratePercentage = 100; // default 100% nếu không tìm thấy
-  
-    if (policy.baseRates && Array.isArray(policy.baseRates)) {
-      const rates = policy.baseRates as BaseRateItem[];
 
-      // Sort giảm danaf theo baseHours để tìm rate phù hợp
-      // VD: [9h+100%, 8h+85%...]
-      const sortedRates = [...rates].sort((a, b) => b.baseHours - a.baseHours);
+    if (policy.baseRates) {
+      // Kiểm tra nếu baseRates là object (Map)
+      if (
+        typeof policy.baseRates === "object" &&
+        !Array.isArray(policy.baseRates)
+      ) {
+        const baseRatesMap = policy.baseRates as Record<string, number>;
 
-      // Tìm rate có baseHours <= duration
-      // VD: duration = 2 => lấy rate của 2h = 25%
-      const matchedRate = sortedRates.find((r) => duration >= r.baseHours);
+        // Lấy rate trực tiếp từ map theo duration
+        // VD: duration = 2 => baseRatesMap["2"] = 25
+        let rate = baseRatesMap[duration.toString()];
 
-      if (matchedRate) {
-        ratePercentage = matchedRate.baseRate; // % : ví dụ 25
-        console.log(`Matched base rate for ${duration} hours: ${ratePercentage}%`);
+        // Nếu không tìm thấy (VD: 12h không có trong map), lấy rate cao nhất (9h = 100%)
+        if (rate === undefined) {
+          // Tìm duration cao nhất trong map
+          const maxDuration = Math.max(
+            ...Object.keys(baseRatesMap).map((k) => parseInt(k))
+          );
+          rate = baseRatesMap[maxDuration.toString()];
+          console.log(
+            `Duration ${duration}h not found, using max rate (${maxDuration}h): ${rate}%`
+          );
+        }
+
+        if (rate !== undefined) {
+          ratePercentage = rate;
+          console.log(`Base rate for ${duration}h: ${ratePercentage}%`);
+        } else {
+          console.warn(
+            `No base rate found for ${duration}h, using default 100%`
+          );
+        }
+      }
+      // Fallback: nếu là array (cho tương thích)
+      else if (Array.isArray(policy.baseRates)) {
+        const rates = policy.baseRates as BaseRateItem[];
+        const sortedRates = [...rates].sort(
+          (a, b) => b.baseHours - a.baseHours
+        );
+        const matchedRate = sortedRates.find((r) => duration >= r.baseHours);
+
+        if (matchedRate) {
+          ratePercentage = matchedRate.baseRate;
+          console.log(`Base rate for ${duration}h: ${ratePercentage}%`);
+        }
       }
     }
 
-    // Áp dụng phụ phí giờ cao điểm (VD: 18:00 - 20:00)
+    // Áp dụng phụ cuối tuần
+    const dayOfWeek = checkInDate.getDay(); // 0 = Sunday, 6 = Saturday
+    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+
+    if (isWeekend && policy.weekendSurcharge) {
+      const beforeSurcharge = ratePercentage;
+      ratePercentage += policy.weekendSurcharge; // Cộng thêm weekend surcharge %
+      console.log(
+        `Weekend surcharge: ${beforeSurcharge}% → ${ratePercentage}% (+${policy.weekendSurcharge}%)`
+      );
+    }
+
+    console.log(`Final hourly rate percentage: ${ratePercentage}%`);
+
+    return ratePercentage;
   };
 
   // Tính tổng chi phí phòng
   const calculateRoomCosts = () => {
     if (bookingType === "HOURLY") {
-      // For hourly booking, calculate rate based on policy
+      // For hourly booking, calculate based on percentage
       return rooms.reduce((sum, room) => {
         const basePrice = room.roomType?.basePrice || 0;
-        const hourlyRate = calculateHourlyRate(
-          basePrice,
-          duration,
-          hourlyCheckInDate
+        const ratePercentage = calculateHourlyRate(duration, hourlyCheckInDate);
+        // Công thức: (Giá phòng/đêm × Tổng %) / 100
+        const totalPrice = (basePrice * ratePercentage) / 100;
+        console.log(
+          `Room ${
+            room.roomNumber
+          }: ${basePrice} × ${ratePercentage}% = ${totalPrice.toFixed(0)} VND`
         );
-        return sum + hourlyRate * duration;
+        return sum + totalPrice;
       }, 0);
     } else {
       // For daily booking
@@ -315,6 +484,9 @@ export default function BookingForm({
 
   const handleSaveBooking = async () => {
     setError("");
+
+    let ci: Date;
+    let co: Date;
 
     // Validation based on booking type
     if (bookingType === "DAILY") {
@@ -330,9 +502,9 @@ export default function BookingForm({
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
-      const ci = new Date(checkInDate);
+      ci = new Date(checkInDate);
       ci.setHours(0, 0, 0, 0);
-      const co = new Date(checkOutDate);
+      co = new Date(checkOutDate);
       co.setHours(0, 0, 0, 0);
 
       if (ci < today) {
@@ -341,6 +513,14 @@ export default function BookingForm({
       }
       if (co <= ci) {
         setError("Check-out must be after check-in.");
+        return;
+      }
+
+      // Kiểm tra chồng lấn với các ngày đã được đặt (chỉ cho daily booking)
+      if (isDateRangeOverlapping(ci, co, bookedDates)) {
+        setError(
+          "The selected date range overlaps with already booked dates. Please choose different dates."
+        );
         return;
       }
     } else {
@@ -353,11 +533,22 @@ export default function BookingForm({
         setError("Please select a check-in time.");
         return;
       }
-      if (duration < 2) {
-        setError("Minimum duration is 2 hours.");
+      if (duration < 1) {
+        setError("Minimum duration is 1 hour.");
         return;
       }
+
+      const [hours, minutes] = checkInTime.split(":").map(Number);
+      ci = new Date(hourlyCheckInDate);
+      ci.setHours(hours, minutes, 0, 0);
+      co = new Date(ci.getTime() + duration * 60 * 60 * 1000);
     }
+
+    let checkInWithTime = new Date(checkInDate);
+    checkInWithTime.setHours(14, 0, 0, 0);
+
+    let checkOutWithTime = new Date(checkOutDate);
+    checkOutWithTime.setHours(12, 0, 0, 0);
 
     const formatLocalDateTime = (date: Date) => {
       const year = date.getFullYear();
@@ -368,9 +559,6 @@ export default function BookingForm({
       const seconds = String(date.getSeconds()).padStart(2, "0");
       return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
     };
-
-    let checkInWithTime: Date;
-    let checkOutWithTime: Date;
 
     // Daily booking
     if (bookingType === "DAILY") {
@@ -390,17 +578,12 @@ export default function BookingForm({
       );
     }
 
-    // Tính hourlyRate cho booking
+    // Tính hourlyRate (%) cho booking
     let calculatedHourlyRate = 0;
-    if (bookingType === "HOURLY" && rooms.length > 0) {
-      const basePrice = rooms[0]?.roomType?.basePrice || 0;
-      calculatedHourlyRate = calculateHourlyRate(
-        basePrice,
-        duration,
-        hourlyCheckInDate
-      );
+    if (bookingType === "HOURLY") {
+      calculatedHourlyRate = calculateHourlyRate(duration, hourlyCheckInDate);
       console.log(
-        `Calculated hourly rate: ${calculatedHourlyRate} VND/hour for ${duration} hours`
+        `Calculated hourly rate: ${calculatedHourlyRate}% for ${duration} hours`
       );
     }
 
@@ -421,6 +604,7 @@ export default function BookingForm({
       customer: {
         id: customer?.id || null,
       },
+      totalCost: totalAmount,
     };
 
     const bookingDetails = rooms.map((r: Room) => ({
@@ -431,27 +615,48 @@ export default function BookingForm({
       review: null,
     }));
 
-    const bookingServices = getSelectedServiceObjects().map((s: Service) => ({
-      service: {
-        serviceID: s.serviceID,
-      },
-      servicePrice: s.price,
-      quantity: 1,
-      totalAmount: s.price,
-      orderStatus: "PLACE",
-      paymentMethod: selectedPaymentMethod,
-    }));
+    // Build bookingServices with room association: one entry per target room
+    const bookingServicesWithRooms: any[] = [];
+    getSelectedServiceObjects().forEach((s: Service) => {
+      const targets = selectedServiceTargets[s.serviceID];
+      if (!targets || targets === "ALL") {
+        // apply to every room in the booking
+        rooms.forEach((room) => {
+          bookingServicesWithRooms.push({
+            service: { serviceID: s.serviceID },
+            servicePrice: s.price,
+            quantity: 1,
+            totalAmount: s.price,
+            orderStatus: "PLACE",
+            paymentMethod: selectedPaymentMethod,
+            room: { roomNumber: room.roomNumber },
+          });
+        });
+      } else if (Array.isArray(targets)) {
+        targets.forEach((roomNumber) => {
+          bookingServicesWithRooms.push({
+            service: { serviceID: s.serviceID },
+            servicePrice: s.price,
+            quantity: 1,
+            totalAmount: s.price,
+            orderStatus: "PLACE",
+            paymentMethod: selectedPaymentMethod,
+            room: { roomNumber },
+          });
+        });
+      }
+    });
 
     console.log("Booking payload:", payload);
     console.log("Booking details: ", bookingDetails);
-    console.log("Booking services: ", bookingServices);
+    console.log("Booking services: ", bookingServicesWithRooms);
 
     try {
       setLoading(true);
       const success = await saveBookingWithDetails(
         payload,
         bookingDetails,
-        bookingServices
+        bookingServicesWithRooms
       );
 
       if (!success) {
@@ -531,6 +736,12 @@ export default function BookingForm({
   if (currentStep === 1) {
     return (
       <div className="max-w-6xl mx-auto">
+        {/* Error Message */}
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-sm text-red-600">{error}</p>
+          </div>
+        )}
         {bookingType === "DAILY" ? (
           <div className="grid grid-cols-3 gap-8">
             {/* Check-in Calendar */}
@@ -554,6 +765,7 @@ export default function BookingForm({
                   selectedDate={checkInDate}
                   onDateSelect={setCheckInDate}
                   minDate={new Date()}
+                  excludedDates={bookedDates}
                 />
               </div>
             </div>
@@ -585,6 +797,7 @@ export default function BookingForm({
                       ? new Date(checkInDate.getTime() + 86400000)
                       : new Date()
                   }
+                  excludedDates={bookedDates}
                 />
               </div>
             </div>
@@ -772,33 +985,107 @@ export default function BookingForm({
               ) : (
                 <div className="space-y-4">
                   {services.map((service, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center gap-4 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition cursor-pointer"
-                      onClick={() => toggleService(service.serviceID)}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={selectedServices.includes(service.serviceID)}
-                        onChange={() => toggleService(service.serviceID)}
-                        className="w-5 h-5 cursor-pointer accent-[#c9b8a8]"
-                      />
-                      <div className="flex-1">
-                        <h4 className="font-semibold text-gray-900">
-                          {service.serviceName}
-                        </h4>
-                        <p className="text-sm text-gray-600">
-                          {service.description}
-                        </p>
+                    <div key={index}>
+                      {/* Service Item */}
+                      <div
+                        className={`flex items-center gap-4 p-4 border border-gray-200 rounded-lg transition cursor-pointer ${
+                          selectedServices.includes(service.serviceID)
+                            ? "bg-gray-50"
+                            : "hover:bg-gray-50"
+                        }`}
+                        onClick={() => toggleService(service.serviceID)}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={selectedServices.includes(service.serviceID)}
+                          onChange={() => toggleService(service.serviceID)}
+                          className="w-5 h-5 cursor-pointer accent-[#c9b8a8]"
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-gray-900">
+                            {service.serviceName}
+                          </h4>
+                          <p className="text-sm text-gray-600">
+                            {service.description}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-semibold text-gray-900">
+                            {service.serviceHours}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            {service.price.toLocaleString()}đ
+                          </p>
+                        </div>
                       </div>
-                      <div className="text-right">
-                        <p className="text-sm font-semibold text-gray-900">
-                          {service.serviceHours}
-                        </p>
-                        <p className="text-sm text-gray-600">
-                          {service.price.toLocaleString()}đ
-                        </p>
-                      </div>
+
+                      {/* Room Target Selector (shown when service is selected) */}
+                      {selectedServices.includes(service.serviceID) && (
+                        <div
+                          className="mt-3 p-3 bg-gray-50 rounded-md border border-gray-100"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <div className="flex items-center gap-3 mb-2">
+                            <label className="flex items-center gap-2 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={
+                                  selectedServiceTargets[service.serviceID] ===
+                                    "ALL" ||
+                                  !selectedServiceTargets[service.serviceID]
+                                }
+                                onChange={(e) =>
+                                  setServiceApplyAll(
+                                    service.serviceID,
+                                    e.target.checked
+                                  )
+                                }
+                              />
+                              <span className="text-sm font-medium">
+                                Apply to all selected rooms
+                              </span>
+                            </label>
+                          </div>
+                          <div className="grid grid-cols-2 gap-2">
+                            {rooms.map((room) => {
+                              const roomNumber = room.roomNumber;
+                              const targets =
+                                selectedServiceTargets[service.serviceID];
+                              const checked =
+                                targets === "ALL"
+                                  ? false
+                                  : Array.isArray(targets) &&
+                                    targets.includes(roomNumber);
+                              const disabled = targets === "ALL";
+                              return (
+                                <label
+                                  key={roomNumber}
+                                  className={`flex items-center gap-2 cursor-pointer p-2 rounded ${
+                                    disabled
+                                      ? "opacity-50 cursor-not-allowed"
+                                      : "hover:bg-gray-100"
+                                  }`}
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={checked}
+                                    disabled={disabled}
+                                    onChange={() =>
+                                      toggleServiceTarget(
+                                        service.serviceID,
+                                        roomNumber
+                                      )
+                                    }
+                                    className="w-4 h-4"
+                                  />
+                                  <span className="text-sm">{roomNumber}</span>
+                                </label>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -959,7 +1246,8 @@ export default function BookingForm({
                     </span>
                     <span className="text-[#c9b8a8] font-semibold">
                       {room.roomType?.basePrice?.toLocaleString() || "0"} VND
-                      {bookingType === "HOURLY" && " /hour"}
+                      {/* {bookingType === "HOURLY" && " /hour"} */}
+                      /night
                     </span>
                   </div>
                 ))}

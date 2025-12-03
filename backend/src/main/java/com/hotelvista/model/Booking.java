@@ -47,7 +47,7 @@ public class Booking {
 
     @Column(name = "booking_date")
     private LocalDateTime bookingDate;
-
+    
     @Column(name = "cancellation_date")
     private LocalDateTime cancellationDate;
 
@@ -98,6 +98,11 @@ public class Booking {
     @ToString.Exclude
     private EarlyCheckin earlyCheckin;
 
+    @OneToOne(mappedBy = "booking")
+    @ToString.Exclude
+    private LateCheckout lateCheckout;
+
     @Enumerated(EnumType.STRING)
     private BookingType type;
+
 }

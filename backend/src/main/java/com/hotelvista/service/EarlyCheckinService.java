@@ -72,30 +72,30 @@ public class EarlyCheckinService {
      */
     private double calculateAdditionalFee(LocalTime time, double roomPrice) {
 
-        // Khung 50%
         LocalTime start50 = LocalTime.of(5, 0);
         LocalTime end50 = LocalTime.of(9, 0);
 
+        LocalTime end30 = LocalTime.of(13, 30);
+
+        // 50% fee
         if (!time.isBefore(start50) && !time.isAfter(end50)) {
             return roomPrice * 0.5;
         }
 
-        // Khung 30%
-        LocalTime start30 = LocalTime.of(9, 1);
-        LocalTime end30 = LocalTime.of(13, 30);
-
-        if (!time.isBefore(start30) && !time.isAfter(end30)) {
+        // 30% fee: sau 9:00 đến 13:30
+        if (time.isAfter(end50) && !time.isAfter(end30)) {
             return roomPrice * 0.3;
         }
 
         return 0.0;
     }
 
+
     /**
      * Sinh mã ECOddMMyy0001
      */
     private String generateRequestId() {
-        String prefix = "ECO" + LocalDate.now().format(DateTimeFormatter.ofPattern("ddMMyy"));
+        String prefix = "ECI" + LocalDate.now().format(DateTimeFormatter.ofPattern("ddMMyy"));
 
         String lastId = repo.findLastRequestId(prefix);
 

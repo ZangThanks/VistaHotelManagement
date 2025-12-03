@@ -50,6 +50,7 @@ public class Review {
     @Column(name = "images_url")
     private List<String> images;
 
+    @ToString.Exclude
     @JsonIgnore
     @OneToOne(mappedBy = "review")
     private BookingDetail bookingDetail;

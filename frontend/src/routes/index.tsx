@@ -104,10 +104,7 @@ export const router = createBrowserRouter([
             { path: 'room-management', element: <RoomManagementEmployee /> },
             { path: 'room-type-management', element: <RoomTypeManagement /> },
             { path: 'promotion-management', element: <PromotionManagement /> },
-            {
-                path: 'promotion-type-management',
-                element: <PromotionTypeManagement />,
-            },
+            { path: 'promotion-type-management', element: <PromotionTypeManagement /> },
             { path: 'voucher-management', element: <VoucherManagement /> },
             { path: 'bookingPage', element: <BookingPage /> },
             { path: 'employees', element: <EmployeeList /> },
@@ -144,13 +141,19 @@ export const router = createBrowserRouter([
             { path: 'room', element: <RoomList /> },
             { path: 'room/incident', element: <IncidentReport /> },
             { path: 'room/:id', element: <RoomDetail /> },
+
+            // Giữ từ HEAD
             { path: 'room-change', element: <RoomChange /> },
+
             { path: 'service', element: <ServiceList /> },
             { path: 'bookingPage', element: <BookingPage /> },
-            { path: 'cart', element: <RoomCart /> },
+
+            // Giữ HEAD (booking/:id)
             { path: 'booking/:id', element: <BookingDetail /> },
+
             { path: 'payment', element: <PaymentPage /> },
             { path: 'profile', element: <UserProfilePage /> },
+            { path: 'cart', element: <RoomCart /> },
         ],
     },
 ]);

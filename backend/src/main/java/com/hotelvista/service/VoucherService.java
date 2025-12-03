@@ -214,7 +214,7 @@ public class VoucherService {
                     CustomerVoucher cv = new CustomerVoucher();
                     cv.setCustomer(customer);
                     cv.setVoucher(voucher);
-                    cv.setState(false);
+                    cv.setState(true);
                     customerVoucherRepo.save(cv);
                     count++;
                 }

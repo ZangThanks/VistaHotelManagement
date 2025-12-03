@@ -21,7 +21,7 @@ public class CartBean {
     @JoinColumn(name = "customer_id")
     private Customer customer;
 
-        @ManyToMany(cascade = CascadeType.ALL)
+    @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(
             name = "cart_items",
             joinColumns = @JoinColumn(name = "cart_bean_id"),

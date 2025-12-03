@@ -41,7 +41,7 @@ export default function RoomCart() {
     }
 
     const cartBeans = await getCartBeanByCustomerId(customerId);
-    setRooms(cartBeans.items);
+    setRooms(cartBeans?.items || []);
   };
 
   useEffect(() => {
@@ -56,7 +56,7 @@ export default function RoomCart() {
     );
   };
 
-  const selectedRoomDetails = rooms.filter((room) =>
+  const selectedRoomDetails = (rooms || []).filter((room) =>
     selectedRooms.includes(room.roomNumber?.toString() || "")
   );
 
@@ -187,12 +187,24 @@ export default function RoomCart() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Rooms Grid */}
           <div className="lg:col-span-2">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {rooms.map((room) => (
+            {rooms && rooms.length === 0 ? (
+              <div className="text-center py-12 bg-white rounded-lg shadow-md">
+                <p className="text-gray-500 text-lg mb-2">Your cart is empty</p>
+                <p className="text-gray-400 text-sm mb-4">Add rooms to your cart to start booking</p>
+                <button
+                  onClick={() => navigate("/customer/room")}
+                  className="px-6 py-2 bg-[#d4c5b9] text-white rounded-lg hover:bg-opacity-90 transition"
+                >
+                  Browse Rooms
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {(rooms || []).map((room) => (
                 <div
                   key={room.roomNumber}
                   className={`bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300 ${
-                    selectedRooms.includes(room.roomNumber)
+                    selectedRooms.includes(room.roomNumber?.toString() || "")
                       ? "ring-2 ring-[#d4c5b9] scale-105"
                       : room.status === "BOOKED"
                       ? "opacity-60 cursor-not-allowed"
@@ -289,7 +301,7 @@ export default function RoomCart() {
                       <p className="text-xs font-semibold text-gray-700 mb-2">
                         Amenities:
                       </p>
-                      <div className="flex flex-wrap gap-2">
+                      {/* <div className="flex flex-wrap gap-2">
                         {room.roomType?.amenities
                           ?.slice(0, 3)
                           .map((amenity, idx) => (
@@ -305,7 +317,7 @@ export default function RoomCart() {
                             +{room.roomType?.amenities.length - 3} more
                           </span>
                         )}
-                      </div>
+                      </div> */}
                     </div>
 
                     {/* Selection Button */}
@@ -341,6 +353,7 @@ export default function RoomCart() {
                 </div>
               ))}
             </div>
+            )}
           </div>
 
           {/* Booking Summary */}
