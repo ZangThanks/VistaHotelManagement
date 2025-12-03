@@ -64,7 +64,7 @@ const IncidentCard: React.FC<IncidentCardProps> = ({ incident, onClick }) => {
     return (
         <div
             onClick={onClick}
-            className={`bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer border-l-4 ${statusConfig.borderColor} overflow-hidden group hover:scale-[1.01]`}
+            className={`bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer border border-gray-200 hover:border-gray-300 overflow-hidden group hover:scale-[1.01]`}
         >
             <div className="p-6">
                 {/* Header Row */}
@@ -88,7 +88,7 @@ const IncidentCard: React.FC<IncidentCardProps> = ({ incident, onClick }) => {
 
                     {/* Status Badge */}
                     <div
-                        className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-semibold whitespace-nowrap ${statusConfig.color}`}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap ${statusConfig.color} shadow-sm`}
                     >
                         {statusConfig.icon}
                         <span>{statusConfig.label}</span>

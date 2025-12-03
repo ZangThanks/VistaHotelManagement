@@ -42,12 +42,12 @@ const RoomChangeForm: React.FC<RoomChangeFormProps> = ({
             const rooms = await roomService.getAll();
             // Filter only available rooms
             const available = rooms.filter(
-                (room: Room) => room.status === 'AVAILABLE'
+                (room: Room) => room.status === 'AVAILABLE',
             );
             setAvailableRooms(available);
         } catch (err) {
             console.error('Error loading rooms:', err);
-            error('Không thể tải danh sách phòng');
+            error('Unable to load room list');
         } finally {
             setIsLoadingRooms(false);
         }
@@ -57,17 +57,17 @@ const RoomChangeForm: React.FC<RoomChangeFormProps> = ({
         e.preventDefault();
 
         if (!selectedRoom) {
-            error('Vui lòng chọn phòng mới');
+            error('Please select a new room');
             return;
         }
 
         if (!reason.trim()) {
-            error('Vui lòng nhập lý do đổi phòng');
+            error('Please enter a reason for room change');
             return;
         }
 
         if (!currentBooking) {
-            error('Không tìm thấy thông tin đặt phòng');
+            error('Booking information not found');
             return;
         }
 
@@ -83,10 +83,10 @@ const RoomChangeForm: React.FC<RoomChangeFormProps> = ({
             };
 
             await onSubmit(requestData);
-            success('Yêu cầu đổi phòng đã được gửi thành công');
+            success('Room change request submitted successfully');
         } catch (err) {
             console.error('Error submitting room change request:', err);
-            error('Có lỗi xảy ra khi gửi yêu cầu');
+            error('An error occurred while submitting the request');
         } finally {
             setIsLoading(false);
         }
@@ -103,17 +103,17 @@ const RoomChangeForm: React.FC<RoomChangeFormProps> = ({
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <h3 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
                     <Home className="w-5 h-5 text-blue-600" />
-                    Phòng hiện tại
+                    Current Room
                 </h3>
                 <div className="space-y-1 text-sm">
                     <p>
-                        <span className="text-gray-600">Số phòng:</span>{' '}
+                        <span className="text-gray-600">Room Number:</span>{' '}
                         <span className="font-semibold text-gray-900">
                             {currentRoomNumber}
                         </span>
                     </p>
                     <p>
-                        <span className="text-gray-600">Loại phòng:</span>{' '}
+                        <span className="text-gray-600">Room Type:</span>{' '}
                         <span className="font-semibold text-gray-900">
                             {currentRoomType}
                         </span>
@@ -124,7 +124,7 @@ const RoomChangeForm: React.FC<RoomChangeFormProps> = ({
             {/* Select New Room */}
             <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Chọn phòng mới <span className="text-red-500">*</span>
+                    Select New Room <span className="text-red-500">*</span>
                 </label>
                 {isLoadingRooms ? (
                     <div className="flex items-center justify-center py-8">
@@ -134,7 +134,7 @@ const RoomChangeForm: React.FC<RoomChangeFormProps> = ({
                     <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-center">
                         <AlertCircle className="w-8 h-8 text-yellow-600 mx-auto mb-2" />
                         <p className="text-gray-700">
-                            Hiện tại không có phòng trống
+                            No available rooms at the moment
                         </p>
                     </div>
                 ) : (
@@ -160,21 +160,23 @@ const RoomChangeForm: React.FC<RoomChangeFormProps> = ({
                                 />
                                 <div className="flex-1">
                                     <div className="font-semibold text-gray-900">
-                                        Phòng {room.roomNumber}
+                                        Room {room.roomNumber}
                                     </div>
                                     <div className="text-sm text-gray-600">
-                                        {room.roomType?.typeName || 'N/A'} - Tầng{' '}
-                                        {room.floor || 'N/A'}
+                                        {room.roomType?.typeName || 'N/A'} -
+                                        Floor {room.floor || 'N/A'}
                                     </div>
                                     {room.roomType?.basePrice && (
                                         <div className="text-sm text-[#CCBDA3] font-semibold mt-1">
-                                            {Number(room.roomType.basePrice).toLocaleString()}{' '}
-                                            VND/đêm
+                                            {Number(
+                                                room.roomType.basePrice,
+                                            ).toLocaleString()}{' '}
+                                            VND/night
                                         </div>
                                     )}
                                 </div>
                                 <div className="px-3 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full">
-                                    Trống
+                                    Available
                                 </div>
                             </label>
                         ))}
@@ -185,19 +187,20 @@ const RoomChangeForm: React.FC<RoomChangeFormProps> = ({
             {/* Reason */}
             <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Lý do đổi phòng <span className="text-red-500">*</span>
+                    Reason for Room Change{' '}
+                    <span className="text-red-500">*</span>
                 </label>
                 <textarea
                     value={reason}
                     onChange={(e) => setReason(e.target.value)}
                     rows={4}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#CCBDA3] focus:border-[#CCBDA3] resize-none"
-                    placeholder="Vui lòng mô tả lý do bạn muốn đổi phòng..."
+                    placeholder="Please describe the reason you want to change rooms..."
                     required
                 />
                 <p className="mt-1 text-xs text-gray-500">
-                    Ví dụ: Phòng hiện tại có tiếng ồn, muốn chuyển lên tầng cao
-                    hơn, v.v.
+                    Example: Current room is noisy, want to move to a higher
+                    floor, etc.
                 </p>
             </div>
 
@@ -207,19 +210,19 @@ const RoomChangeForm: React.FC<RoomChangeFormProps> = ({
                     <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
                     <div className="text-sm text-gray-700 space-y-1">
                         <p className="font-semibold text-amber-900">
-                            Lưu ý quan trọng:
+                            Important Notes:
                         </p>
                         <ul className="list-disc list-inside space-y-1 text-gray-600">
                             <li>
-                                Yêu cầu đổi phòng sẽ được xem xét và phê duyệt
-                                bởi nhân viên
+                                Room change requests will be reviewed and
+                                approved by staff
                             </li>
                             <li>
-                                Có thể phát sinh thêm chi phí nếu phòng mới có
-                                giá cao hơn
+                                Additional charges may apply if the new room has
+                                a higher price
                             </li>
                             <li>
-                                Thời gian xử lý thường từ 30 phút đến 2 giờ
+                                Processing time is usually 30 minutes to 2 hours
                             </li>
                         </ul>
                     </div>
@@ -234,7 +237,7 @@ const RoomChangeForm: React.FC<RoomChangeFormProps> = ({
                     className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-semibold transition-colors"
                     disabled={isLoading}
                 >
-                    Hủy
+                    Cancel
                 </button>
                 <button
                     type="submit"
@@ -244,12 +247,12 @@ const RoomChangeForm: React.FC<RoomChangeFormProps> = ({
                     {isLoading ? (
                         <>
                             <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
-                            <span>Đang gửi...</span>
+                            <span>Submitting...</span>
                         </>
                     ) : (
                         <>
                             <CheckCircle className="w-5 h-5" />
-                            <span>Gửi yêu cầu</span>
+                            <span>Submit Request</span>
                         </>
                     )}
                 </button>

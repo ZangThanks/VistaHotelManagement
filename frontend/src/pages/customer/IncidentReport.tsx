@@ -35,9 +35,14 @@ const IncidentReport: React.FC = () => {
     const [selectedIncident, setSelectedIncident] =
         useState<IncidentReportType | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
-    const [statusFilter, setStatusFilter] = useState<IncidentStatus | 'ALL'>(
-        'ALL',
-    );
+    const [statusFilter, setStatusFilter] = useState<
+        | IncidentStatus
+        | 'ALL'
+        | 'ROOM_PENDING'
+        | 'ROOM_APPROVED'
+        | 'ROOM_REJECTED'
+        | 'ROOM_COMPLETED'
+    >('ALL');
     const { success, error } = useToast();
 
     // Check authentication and load user's bookings
@@ -420,105 +425,146 @@ const IncidentReport: React.FC = () => {
 
             {/* Main Content */}
             <div
-                className="min-h-screen pt-16"
+                className="min-h-screen pt-20 pb-12"
                 style={{
                     background: 'var(--gradient-cream)',
                     fontFamily: 'var(--font-sans)',
                 }}
             >
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-                    {/* Page Header */}
-                    <div className="mb-10">
-                        <h1 className="text-4xl font-bold text-gray-900 mb-2">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    {/* Page Header - Elegant Design */}
+                    <div className="text-center mb-12 pt-8">
+                        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-[#CCBDA3] to-[#B8A890] mb-4 shadow-lg">
+                            <AlertCircle className="w-8 h-8 text-white" />
+                        </div>
+                        <h1 className="text-5xl font-playfair font-bold text-[#6B4B28] mb-3">
                             Incident Report
                         </h1>
-                        <p className="text-gray-600 text-lg">
-                            Report and track issues during your stay
+                        <div className="h-1 w-24 bg-gradient-to-r from-transparent via-[#CCBDA3] to-transparent mx-auto mb-4"></div>
+                        <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+                            Report and track issues during your stay with our
+                            dedicated support team
                         </p>
-
-                        {/* Booking Selector */}
-                        {userBookings.length > 0 && (
-                            <div className="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-4">
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                    Chọn đơn đặt phòng:
-                                </label>
-                                <select
-                                    value={selectedBookingId}
-                                    onChange={(e) =>
-                                        setSelectedBookingId(e.target.value)
-                                    }
-                                    className="w-full md:w-auto px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
-                                >
-                                    {userBookings.map((booking) => {
-                                        let statusText = 'Đã xác nhận';
-                                        if (booking.status === 'CHECKED_IN')
-                                            statusText = '✅ Đang ở';
-                                        else if (booking.status === 'CONFIRMED')
-                                            statusText = '📋 Đã xác nhận';
-                                        else if (booking.status === 'PENDING')
-                                            statusText = '⏳ Chờ xác nhận';
-
-                                        return (
-                                            <option
-                                                key={booking.bookingID}
-                                                value={booking.bookingID}
-                                            >
-                                                {booking.bookingID} - Phòng{' '}
-                                                {booking.bookingDetails?.[0]
-                                                    ?.room?.roomNumber ||
-                                                    'N/A'}{' '}
-                                                ({statusText})
-                                            </option>
-                                        );
-                                    })}
-                                </select>
-                            </div>
-                        )}
-
-                        {userBookings.length === 0 && !isLoading && (
-                            <div className="mt-4 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                                <p className="text-yellow-800 font-semibold mb-2">
-                                    ⚠️ Không tìm thấy đơn đặt phòng
-                                </p>
-                                <p className="text-yellow-700 text-sm mb-3">
-                                    Có thể do:
-                                </p>
-                                <ul className="list-disc list-inside text-yellow-700 text-sm space-y-1">
-                                    <li>Bạn chưa đặt phòng nào</li>
-                                    <li>Đơn đặt phòng đã bị hủy (CANCELLED)</li>
-                                    <li>Đã check-out rồi (CHECKED_OUT)</li>
-                                </ul>
-                                <p className="text-yellow-700 text-sm mt-3">
-                                    💡 Bạn cần có đơn đặt phòng với trạng thái:{' '}
-                                    <strong>PENDING</strong>,{' '}
-                                    <strong>CONFIRMED</strong>, hoặc{' '}
-                                    <strong>CHECKED_IN</strong> để báo cáo sự
-                                    cố.
-                                </p>
-                            </div>
-                        )}
                     </div>
 
-                    {/* Filters */}
-                    <div className="bg-white rounded-xl shadow-lg p-6 mb-8 border border-gray-100">
-                        <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center">
-                            {/* Search */}
-                            <div className="flex-1 relative">
-                                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    {/* Combined Control Panel - Booking Selection, Search & Actions */}
+                    <div className="bg-gradient-to-br from-blue-50/50 via-white to-purple-50/50 backdrop-blur-sm rounded-3xl shadow-2xl p-8 mb-8 border-2 border-[#CCBDA3]/30">
+                        {/* Booking Selector Section */}
+                        {userBookings.length > 0 ? (
+                            <></>
+                        ) : (
+                            !isLoading && (
+                                <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-l-4 border-amber-500 rounded-xl p-5 mb-6">
+                                    <div className="flex items-start gap-3">
+                                        <div className="flex-shrink-0">
+                                            <div className="w-10 h-10 bg-amber-500/20 rounded-full flex items-center justify-center">
+                                                <AlertCircle className="w-5 h-5 text-amber-600" />
+                                            </div>
+                                        </div>
+                                        <div className="flex-1">
+                                            <p className="text-amber-900 font-bold mb-1">
+                                                No Bookings Found
+                                            </p>
+                                            <p className="text-amber-700 text-sm">
+                                                💡 You need a booking with
+                                                status{' '}
+                                                <span className="font-semibold">
+                                                    PENDING
+                                                </span>
+                                                ,{' '}
+                                                <span className="font-semibold">
+                                                    CONFIRMED
+                                                </span>
+                                                , or{' '}
+                                                <span className="font-semibold">
+                                                    CHECKED_IN
+                                                </span>{' '}
+                                                to use this feature.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )
+                        )}
+
+                        {/* All Controls in One Row */}
+                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center">
+                            {/* Booking Selector */}
+                            {userBookings.length > 0 && (
+                                <div className="lg:col-span-3 relative">
+                                    <select
+                                        value={selectedBookingId}
+                                        onChange={(e) =>
+                                            setSelectedBookingId(e.target.value)
+                                        }
+                                        className="w-full px-4 py-3 border-2 border-[#CCBDA3]/40 rounded-xl focus:ring-2 focus:ring-[#CCBDA3] focus:border-[#CCBDA3] bg-white text-gray-800 font-medium transition-all hover:border-[#CCBDA3] hover:shadow-md appearance-none cursor-pointer text-sm"
+                                        style={{
+                                            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236B4B28'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
+                                            backgroundRepeat: 'no-repeat',
+                                            backgroundPosition:
+                                                'right 0.75rem center',
+                                            backgroundSize: '1.25rem',
+                                        }}
+                                    >
+                                        {userBookings.map((booking) => {
+                                            let statusEmoji = '📋';
+                                            if (booking.status === 'CHECKED_IN')
+                                                statusEmoji = '🏨';
+                                            else if (
+                                                booking.status === 'CONFIRMED'
+                                            )
+                                                statusEmoji = '✅';
+                                            else if (
+                                                booking.status === 'PENDING'
+                                            )
+                                                statusEmoji = '⏳';
+
+                                            const roomNumber =
+                                                booking.bookingDetails?.[0]
+                                                    ?.room?.roomNumber || 'N/A';
+                                            return (
+                                                <option
+                                                    key={booking.bookingID}
+                                                    value={booking.bookingID}
+                                                >
+                                                    {statusEmoji} Room{' '}
+                                                    {roomNumber}
+                                                </option>
+                                            );
+                                        })}
+                                    </select>
+                                </div>
+                            )}
+
+                            {/* Search Bar */}
+                            <div
+                                className={`${
+                                    userBookings.length > 0
+                                        ? 'lg:col-span-3'
+                                        : 'lg:col-span-4'
+                                } relative group`}
+                            >
+                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#CCBDA3] transition-colors group-hover:text-[#B8A890]" />
                                 <input
                                     type="text"
-                                    placeholder="Search by title, description, room number..."
+                                    placeholder="Search..."
                                     value={searchTerm}
                                     onChange={(e) =>
                                         setSearchTerm(e.target.value)
                                     }
-                                    className="w-full pl-11 pr-4 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#CCBDA3] focus:border-[#CCBDA3] transition-all"
+                                    className="w-full pl-12 pr-4 py-3 border-2 border-[#CCBDA3]/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#CCBDA3] focus:border-[#CCBDA3] transition-all bg-white placeholder:text-gray-400 hover:border-[#CCBDA3]/50"
                                 />
                             </div>
 
                             {/* Status Filter */}
-                            <div className="flex items-center gap-2">
-                                <Filter className="w-5 h-5 text-gray-600" />
+                            <div
+                                className={`${
+                                    userBookings.length > 0
+                                        ? 'lg:col-span-2'
+                                        : 'lg:col-span-3'
+                                } flex items-center gap-2`}
+                            >
+                                <Filter className="w-5 h-5 text-[#CCBDA3] flex-shrink-0" />
                                 <select
                                     value={statusFilter}
                                     onChange={(e) =>
@@ -528,193 +574,309 @@ const IncidentReport: React.FC = () => {
                                                 | 'ALL',
                                         )
                                     }
-                                    className="px-4 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#CCBDA3] focus:border-[#CCBDA3] transition-all bg-white font-medium text-gray-700"
+                                    className="w-full px-3 py-2.5 border-2 border-[#CCBDA3]/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#CCBDA3] focus:border-[#CCBDA3] transition-all bg-white font-medium text-[#6B4B28] hover:border-[#CCBDA3]/50 text-sm"
                                 >
                                     <option value="ALL">All Status</option>
-                                    <option value="PENDING">Pending</option>
-                                    <option value="COMPLETED">Completed</option>
-                                    <option value="FAILED">Failed</option>
+                                    <optgroup label="Incident Reports">
+                                        <option value="PENDING">Pending</option>
+                                        <option value="COMPLETED">
+                                            Completed
+                                        </option>
+                                        <option value="FAILED">Failed</option>
+                                    </optgroup>
+                                    <optgroup label="Room Change">
+                                        <option value="ROOM_PENDING">
+                                            Pending
+                                        </option>
+                                        <option value="ROOM_APPROVED">
+                                            Approved
+                                        </option>
+                                        <option value="ROOM_REJECTED">
+                                            Rejected
+                                        </option>
+                                        <option value="ROOM_COMPLETED">
+                                            Completed
+                                        </option>
+                                    </optgroup>
                                 </select>
                             </div>
 
                             {/* Action Buttons */}
-                            <div className="flex gap-3">
+                            <div
+                                className={`${
+                                    userBookings.length > 0
+                                        ? 'lg:col-span-4'
+                                        : 'lg:col-span-5'
+                                } flex gap-3`}
+                            >
                                 <button
                                     onClick={async () => {
-                                        // Load booking before showing form
                                         const booking =
                                             await loadCurrentBooking();
-                                        if (booking) {
+                                        if (booking)
                                             setShowRoomChangeForm(true);
-                                        }
                                     }}
                                     disabled={!selectedBookingId}
-                                    className="bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 px-6 py-2.5 rounded-lg font-semibold flex items-center gap-2 transition-all shadow-md hover:shadow-lg whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700 px-4 py-3 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:shadow-none text-sm"
                                 >
-                                    <RefreshCw className="w-5 h-5" />
-                                    Yêu cầu đổi phòng
+                                    <RefreshCw className="w-4 h-4" />
+                                    <span className="hidden xl:inline">
+                                        Room Change Request
+                                    </span>
+                                    <span className="xl:hidden">
+                                        Change Room
+                                    </span>
                                 </button>
                                 <button
                                     onClick={() => setShowForm(true)}
                                     disabled={!selectedBookingId}
-                                    className="bg-[#CCBDA3] text-white hover:bg-[#b8a88a] px-6 py-2.5 rounded-lg font-semibold flex items-center gap-2 transition-all shadow-md hover:shadow-lg whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="flex-1 bg-gradient-to-r from-[#CCBDA3] to-[#B8A890] text-white hover:from-[#B8A890] hover:to-[#A69680] px-4 py-3 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:shadow-none text-sm"
                                 >
-                                    <Plus className="w-5 h-5" />
-                                    Report Incident
+                                    <Plus className="w-4 h-4" />
+                                    <span className="hidden xl:inline">
+                                        Report Incident
+                                    </span>
+                                    <span className="xl:hidden">Report</span>
                                 </button>
                             </div>
                         </div>
                     </div>
 
-                    {/* Room Change Requests Section */}
+                    {/* Room Change Requests Section - Premium Cards */}
                     {myRoomChangeRequests.length > 0 && (
-                        <div className="mb-8">
-                            <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                                <RefreshCw className="w-6 h-6 text-blue-600" />
-                                Yêu cầu đổi phòng của bạn
-                            </h2>
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                                {myRoomChangeRequests.map((request: any) => (
-                                    <div
-                                        key={request.requestID}
-                                        className="bg-white rounded-lg shadow-md border border-gray-200 p-5 hover:shadow-lg transition-shadow"
-                                    >
-                                        <div className="flex items-start justify-between mb-3">
-                                            <div>
-                                                <span className="text-xs font-semibold text-gray-500">
-                                                    {request.requestID}
-                                                </span>
-                                                <div className="text-sm text-gray-500 mt-1">
-                                                    {new Date(
-                                                        request.requestDate,
-                                                    ).toLocaleString('vi-VN')}
-                                                </div>
-                                            </div>
-                                            {request.status === 'PENDING' && (
-                                                <span className="px-3 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                                                    Đang chờ
-                                                </span>
-                                            )}
-                                            {request.status === 'COMPLETED' && (
-                                                <span className="px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
-                                                    Đã duyệt
-                                                </span>
-                                            )}
-                                            {request.status === 'FAILED' && (
-                                                <span className="px-3 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
-                                                    Từ chối
-                                                </span>
-                                            )}
-                                        </div>
-                                        <div className="space-y-2">
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-sm text-gray-600">
-                                                    Từ phòng:
-                                                </span>
-                                                <span className="text-sm font-semibold text-gray-900">
-                                                    {
-                                                        request.currentRoom
-                                                            ?.roomNumber
-                                                    }
-                                                </span>
-                                                <span className="text-gray-400">
-                                                    →
-                                                </span>
-                                                <span className="text-sm font-semibold text-blue-600">
-                                                    {
-                                                        request.newRoom
-                                                            ?.roomNumber
-                                                    }
-                                                </span>
-                                            </div>
-                                            <div>
-                                                <span className="text-sm text-gray-600">
-                                                    Lý do:{' '}
-                                                </span>
-                                                <span className="text-sm text-gray-700">
-                                                    {request.reason}
-                                                </span>
-                                            </div>
-                                            {request.responseNote && (
-                                                <div className="mt-3 p-3 bg-gray-50 rounded-md border border-gray-200">
-                                                    <span className="text-xs font-semibold text-gray-700">
-                                                        Phản hồi từ nhân viên:
+                        <div className="mb-8 bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border-2 border-blue-200 p-8">
+                            <div className="flex items-center gap-3 mb-6">
+                                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+                                    <RefreshCw className="w-5 h-5 text-white" />
+                                </div>
+                                <h2 className="text-3xl font-bold text-[#6B4B28]">
+                                    Room Change Requests
+                                </h2>
+                            </div>
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                {myRoomChangeRequests
+                                    .filter((request: any) => {
+                                        if (statusFilter === 'ALL') return true;
+                                        if (statusFilter === 'ROOM_PENDING')
+                                            return request.status === 'PENDING';
+                                        if (statusFilter === 'ROOM_APPROVED')
+                                            return (
+                                                request.status === 'APPROVED'
+                                            );
+                                        if (statusFilter === 'ROOM_REJECTED')
+                                            return (
+                                                request.status === 'REJECTED'
+                                            );
+                                        if (statusFilter === 'ROOM_COMPLETED')
+                                            return (
+                                                request.status === 'COMPLETED'
+                                            );
+                                        return true;
+                                    })
+                                    .map((request: any) => (
+                                        <div
+                                            key={request.requestID}
+                                            className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg border-2 border-[#CCBDA3]/20 p-6 hover:shadow-2xl hover:border-[#CCBDA3]/40 transition-all duration-300 hover:scale-[1.02]"
+                                        >
+                                            <div className="flex items-start justify-between mb-4 pb-3 border-b-2 border-[#CCBDA3]/10">
+                                                <div>
+                                                    <span className="inline-flex items-center px-3 py-1 bg-[#CCBDA3]/10 text-[#6B4B28] rounded-lg text-xs font-bold">
+                                                        {request.requestID}
                                                     </span>
-                                                    <p className="text-sm text-gray-600 mt-1">
-                                                        {request.responseNote}
-                                                    </p>
-                                                    {request.processedBy && (
-                                                        <p className="text-xs text-gray-500 mt-1">
-                                                            Xử lý bởi:{' '}
+                                                    <div className="text-sm text-gray-500 mt-2 flex items-center gap-1.5">
+                                                        <svg
+                                                            className="w-4 h-4"
+                                                            fill="none"
+                                                            stroke="currentColor"
+                                                            viewBox="0 0 24 24"
+                                                        >
+                                                            <path
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                strokeWidth={2}
+                                                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                                                            />
+                                                        </svg>
+                                                        {new Date(
+                                                            request.requestDate,
+                                                        ).toLocaleString(
+                                                            'vi-VN',
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                {request.status ===
+                                                    'PENDING' && (
+                                                    <span className="px-4 py-2 text-xs font-bold rounded-xl bg-gradient-to-r from-yellow-100 to-yellow-200 text-yellow-800 shadow-sm border border-yellow-300">
+                                                        Đang chờ
+                                                    </span>
+                                                )}
+                                                {request.status ===
+                                                    'COMPLETED' && (
+                                                    <span className="px-4 py-2 text-xs font-bold rounded-xl bg-gradient-to-r from-green-100 to-green-200 text-green-800 shadow-sm border border-green-300">
+                                                        Đã duyệt
+                                                    </span>
+                                                )}
+                                                {request.status ===
+                                                    'FAILED' && (
+                                                    <span className="px-4 py-2 text-xs font-bold rounded-xl bg-gradient-to-r from-red-100 to-red-200 text-red-800 shadow-sm border border-red-300">
+                                                        Rejected
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <div className="space-y-3">
+                                                <div className="flex items-center gap-3 bg-gradient-to-r from-blue-50 to-indigo-50 p-3 rounded-xl border-2 border-blue-200">
+                                                    <div className="flex items-center gap-2 flex-1">
+                                                        <span className="text-sm font-semibold text-gray-700">
+                                                            From:
+                                                        </span>
+                                                        <span className="px-3 py-1 text-sm font-bold text-gray-900 bg-white rounded-lg border-2 border-gray-300 shadow-sm">
                                                             {
-                                                                request.processedBy
+                                                                request
+                                                                    .currentRoom
+                                                                    ?.roomNumber
+                                                            }
+                                                        </span>
+                                                    </div>
+                                                    <svg
+                                                        className="w-6 h-6 text-blue-600"
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        viewBox="0 0 24 24"
+                                                    >
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            strokeWidth={2}
+                                                            d="M13 7l5 5m0 0l-5 5m5-5H6"
+                                                        />
+                                                    </svg>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-sm font-semibold text-gray-700">
+                                                            To:
+                                                        </span>
+                                                        <span className="px-3 py-1 text-sm font-bold text-white bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg shadow-md">
+                                                            {
+                                                                request.newRoom
+                                                                    ?.roomNumber
+                                                            }
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div className="bg-gray-50 p-3 rounded-xl border-2 border-gray-200">
+                                                    <span className="text-sm font-semibold text-gray-700 block mb-1">
+                                                        Reason:
+                                                    </span>
+                                                    <span className="text-sm text-gray-800 leading-relaxed">
+                                                        {request.reason}
+                                                    </span>
+                                                </div>
+                                                {request.responseNote && (
+                                                    <div className="mt-3 p-4 bg-gradient-to-br from-[#CCBDA3]/10 to-[#B8A890]/10 rounded-xl border-2 border-[#CCBDA3]/30">
+                                                        <div className="flex items-center gap-2 mb-2">
+                                                            <svg
+                                                                className="w-4 h-4 text-[#6B4B28]"
+                                                                fill="none"
+                                                                stroke="currentColor"
+                                                                viewBox="0 0 24 24"
+                                                            >
+                                                                <path
+                                                                    strokeLinecap="round"
+                                                                    strokeLinejoin="round"
+                                                                    strokeWidth={
+                                                                        2
+                                                                    }
+                                                                    d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                                                                />
+                                                            </svg>
+                                                            <span className="text-sm font-bold text-[#6B4B28]">
+                                                                Staff Response:
+                                                            </span>
+                                                        </div>
+                                                        <p className="text-sm text-gray-700 leading-relaxed mb-2">
+                                                            {
+                                                                request.responseNote
                                                             }
                                                         </p>
-                                                    )}
-                                                </div>
-                                            )}
+                                                        {request.processedBy && (
+                                                            <p className="text-xs text-gray-600 font-medium">
+                                                                Processed by:{' '}
+                                                                <span className="text-[#6B4B28] font-semibold">
+                                                                    {
+                                                                        request.processedBy
+                                                                    }
+                                                                </span>
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
-                                    </div>
-                                ))}
+                                    ))}
                             </div>
                         </div>
                     )}
 
-                    {/* Incidents List */}
-                    <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                        <AlertCircle className="w-6 h-6 text-[#CCBDA3]" />
-                        Báo cáo sự cố
-                    </h2>
-                    {isLoading ? (
-                        <div className="flex items-center justify-center py-32">
-                            <div className="text-center">
-                                <div className="relative inline-block">
-                                    <div className="animate-spin rounded-full h-16 w-16 border-4 border-gray-200 border-t-[#CCBDA3] mx-auto"></div>
-                                </div>
-                                <p className="mt-6 text-gray-700 font-semibold text-lg">
-                                    Loading reports...
-                                </p>
+                    {/* Incidents List - Premium Section */}
+                    <div className="bg-white rounded-3xl shadow-sm border border-gray-200 p-8">
+                        <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-200">
+                            <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
+                                <AlertCircle className="w-5 h-5 text-gray-600" />
                             </div>
+                            <h2 className="text-2xl font-bold text-gray-800">
+                                Incident Reports
+                            </h2>
                         </div>
-                    ) : filteredIncidents.length === 0 ? (
-                        <div className="bg-white rounded-lg shadow-md border border-gray-200 py-20 px-8 text-center">
-                            <div className="max-w-md mx-auto">
-                                <div className="w-20 h-20 bg-gradient-to-br from-[#CCBDA3]/20 to-[#CCBDA3]/10 rounded-full flex items-center justify-center mx-auto mb-5">
-                                    <Search className="w-10 h-10 text-[#CCBDA3]" />
+                        {isLoading ? (
+                            <div className="flex items-center justify-center py-32">
+                                <div className="text-center">
+                                    <div className="relative inline-block">
+                                        <div className="animate-spin rounded-full h-16 w-16 border-4 border-gray-200 border-t-[#CCBDA3] mx-auto"></div>
+                                    </div>
+                                    <p className="mt-6 text-gray-700 font-semibold text-lg">
+                                        Loading reports...
+                                    </p>
                                 </div>
-                                <h3 className="text-xl font-bold text-gray-900 mb-3">
-                                    {searchTerm || statusFilter !== 'ALL'
-                                        ? 'No reports found'
-                                        : 'No incident reports yet'}
-                                </h3>
-                                <p className="text-gray-600 text-base mb-8 leading-relaxed">
-                                    {searchTerm || statusFilter !== 'ALL'
-                                        ? 'Please try again with different keywords or filters'
-                                        : 'You have not submitted any incident reports. Create your first report!'}
-                                </p>
-                                {!searchTerm && statusFilter === 'ALL' && (
-                                    <button
-                                        onClick={() => setShowForm(true)}
-                                        className="bg-[#CCBDA3] text-white hover:bg-[#b8a88a] px-10 py-3.5 rounded-lg font-semibold transition-all shadow-md hover:shadow-lg"
-                                    >
-                                        Create First Report
-                                    </button>
-                                )}
                             </div>
-                        </div>
-                    ) : (
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            {filteredIncidents.map((incident) => (
-                                <IncidentCard
-                                    key={incident.id}
-                                    incident={incident}
-                                    onClick={() =>
-                                        setSelectedIncident(incident)
-                                    }
-                                />
-                            ))}
-                        </div>
-                    )}
+                        ) : filteredIncidents.length === 0 ? (
+                            <div className="bg-white rounded-lg shadow-md border border-gray-200 py-20 px-8 text-center">
+                                <div className="max-w-md mx-auto">
+                                    <div className="w-20 h-20 bg-gradient-to-br from-[#CCBDA3]/20 to-[#CCBDA3]/10 rounded-full flex items-center justify-center mx-auto mb-5">
+                                        <Search className="w-10 h-10 text-[#CCBDA3]" />
+                                    </div>
+                                    <h3 className="text-xl font-bold text-gray-900 mb-3">
+                                        {searchTerm || statusFilter !== 'ALL'
+                                            ? 'No reports found'
+                                            : 'No incident reports yet'}
+                                    </h3>
+                                    <p className="text-gray-600 text-base mb-8 leading-relaxed">
+                                        {searchTerm || statusFilter !== 'ALL'
+                                            ? 'Please try again with different keywords or filters'
+                                            : 'You have not submitted any incident reports. Create your first report!'}
+                                    </p>
+                                    {!searchTerm && statusFilter === 'ALL' && (
+                                        <button
+                                            onClick={() => setShowForm(true)}
+                                            className="bg-[#CCBDA3] text-white hover:bg-[#b8a88a] px-10 py-3.5 rounded-lg font-semibold transition-all shadow-md hover:shadow-lg"
+                                        >
+                                            Create First Report
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                {filteredIncidents.map((incident) => (
+                                    <IncidentCard
+                                        key={incident.id}
+                                        incident={incident}
+                                        onClick={() =>
+                                            setSelectedIncident(incident)
+                                        }
+                                    />
+                                ))}
+                            </div>
+                        )}
+                    </div>
                 </div>
 
                 {/* Create Form Modal */}

@@ -49,6 +49,12 @@ const IncidentManagement: React.FC = () => {
     const [roomChangeStatusFilter, setRoomChangeStatusFilter] = useState<
         'ALL' | 'PENDING' | 'COMPLETED' | 'FAILED'
     >('ALL');
+    const [showRoomChangeModal, setShowRoomChangeModal] = useState(false);
+    const [selectedRoomChange, setSelectedRoomChange] = useState<{
+        id: string;
+        action: 'APPROVED' | 'REJECTED';
+    } | null>(null);
+    const [roomChangeNote, setRoomChangeNote] = useState('');
     const [selectedIncident, setSelectedIncident] =
         useState<IncidentReport | null>(null);
     const [showUpdateModal, setShowUpdateModal] = useState(false);
@@ -903,15 +909,17 @@ const IncidentManagement: React.FC = () => {
                                                     <div className="flex items-center justify-center gap-2">
                                                         <button
                                                             onClick={() => {
-                                                                const note =
-                                                                    prompt(
-                                                                        'Add note (optional):',
-                                                                    );
-                                                                handleRoomChangeAction(
-                                                                    request.id,
-                                                                    'APPROVED',
-                                                                    note ||
-                                                                        undefined,
+                                                                setSelectedRoomChange(
+                                                                    {
+                                                                        id: request.id,
+                                                                        action: 'APPROVED',
+                                                                    },
+                                                                );
+                                                                setRoomChangeNote(
+                                                                    '',
+                                                                );
+                                                                setShowRoomChangeModal(
+                                                                    true,
                                                                 );
                                                             }}
                                                             className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-green-600 hover:bg-green-50 rounded-lg transition-colors border border-green-600"
@@ -921,17 +929,18 @@ const IncidentManagement: React.FC = () => {
                                                         </button>
                                                         <button
                                                             onClick={() => {
-                                                                const note =
-                                                                    prompt(
-                                                                        'Reason for rejection:',
-                                                                    );
-                                                                if (note) {
-                                                                    handleRoomChangeAction(
-                                                                        request.id,
-                                                                        'REJECTED',
-                                                                        note,
-                                                                    );
-                                                                }
+                                                                setSelectedRoomChange(
+                                                                    {
+                                                                        id: request.id,
+                                                                        action: 'REJECTED',
+                                                                    },
+                                                                );
+                                                                setRoomChangeNote(
+                                                                    '',
+                                                                );
+                                                                setShowRoomChangeModal(
+                                                                    true,
+                                                                );
                                                             }}
                                                             className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors border border-red-600"
                                                         >
@@ -972,6 +981,193 @@ const IncidentManagement: React.FC = () => {
                     onClose={handleCloseModal}
                     onUpdate={handleUpdateIncident}
                 />
+            )}
+
+            {/* Room Change Response Modal */}
+            {showRoomChangeModal && selectedRoomChange && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full animate-in fade-in zoom-in duration-300">
+                        {/* Modal Header */}
+                        <div
+                            className={`px-6 py-5 border-b ${
+                                selectedRoomChange.action === 'APPROVED'
+                                    ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-green-200'
+                                    : 'bg-gradient-to-r from-red-50 to-rose-50 border-red-200'
+                            }`}
+                        >
+                            <div className="flex items-center gap-3">
+                                <div
+                                    className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                                        selectedRoomChange.action === 'APPROVED'
+                                            ? 'bg-green-500'
+                                            : 'bg-red-500'
+                                    } shadow-lg`}
+                                >
+                                    {selectedRoomChange.action ===
+                                    'APPROVED' ? (
+                                        <CheckCircle className="w-6 h-6 text-white" />
+                                    ) : (
+                                        <XCircle className="w-6 h-6 text-white" />
+                                    )}
+                                </div>
+                                <div>
+                                    <h3 className="text-xl font-bold text-gray-900">
+                                        {selectedRoomChange.action ===
+                                        'APPROVED'
+                                            ? 'Approve Request'
+                                            : 'Reject Request'}
+                                    </h3>
+                                    <p className="text-sm text-gray-600">
+                                        {selectedRoomChange.action ===
+                                        'APPROVED'
+                                            ? 'Add a response message for the customer (optional)'
+                                            : 'Please provide a reason for rejection'}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Modal Body */}
+                        <div className="p-6 space-y-4">
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                    {selectedRoomChange.action === 'APPROVED'
+                                        ? 'Response Note'
+                                        : 'Rejection Reason'}
+                                    {selectedRoomChange.action ===
+                                        'REJECTED' && (
+                                        <span className="text-red-500 ml-1">
+                                            *
+                                        </span>
+                                    )}
+                                </label>
+                                <textarea
+                                    value={roomChangeNote}
+                                    onChange={(e) =>
+                                        setRoomChangeNote(e.target.value)
+                                    }
+                                    rows={4}
+                                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none transition-all"
+                                    placeholder={
+                                        selectedRoomChange.action === 'APPROVED'
+                                            ? 'e.g., Your request has been approved. Please wait for staff to prepare the new room...'
+                                            : 'e.g., The requested room is currently unavailable. Please choose another room or contact reception...'
+                                    }
+                                />
+                                {selectedRoomChange.action === 'REJECTED' &&
+                                    !roomChangeNote.trim() && (
+                                        <p className="mt-2 text-xs text-red-600 flex items-center gap-1">
+                                            <AlertTriangle className="w-3 h-3" />
+                                            Rejection reason is required
+                                        </p>
+                                    )}
+                            </div>
+
+                            {/* Suggested Templates */}
+                            <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                                <p className="text-xs font-semibold text-gray-700 mb-2">
+                                    Quick Templates:
+                                </p>
+                                <div className="space-y-1.5">
+                                    {selectedRoomChange.action ===
+                                    'APPROVED' ? (
+                                        <>
+                                            <button
+                                                onClick={() =>
+                                                    setRoomChangeNote(
+                                                        'Your room change request has been approved. We will prepare your new room shortly.',
+                                                    )
+                                                }
+                                                className="w-full text-left px-3 py-2 text-xs text-gray-700 hover:bg-white hover:shadow-sm rounded-lg transition-all border border-transparent hover:border-gray-200"
+                                            >
+                                                ✓ Standard approval message
+                                            </button>
+                                            <button
+                                                onClick={() =>
+                                                    setRoomChangeNote(
+                                                        'Request approved. Your new room will be ready in 30 minutes. Please visit reception to collect the new key.',
+                                                    )
+                                                }
+                                                className="w-full text-left px-3 py-2 text-xs text-gray-700 hover:bg-white hover:shadow-sm rounded-lg transition-all border border-transparent hover:border-gray-200"
+                                            >
+                                                ✓ Approval with timeline
+                                            </button>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <button
+                                                onClick={() =>
+                                                    setRoomChangeNote(
+                                                        'The requested room is currently unavailable. Please choose another room from the available list.',
+                                                    )
+                                                }
+                                                className="w-full text-left px-3 py-2 text-xs text-gray-700 hover:bg-white hover:shadow-sm rounded-lg transition-all border border-transparent hover:border-gray-200"
+                                            >
+                                                ✗ Room unavailable
+                                            </button>
+                                            <button
+                                                onClick={() =>
+                                                    setRoomChangeNote(
+                                                        'Your current room type cannot be changed to the requested type at this time. Please contact reception for alternatives.',
+                                                    )
+                                                }
+                                                className="w-full text-left px-3 py-2 text-xs text-gray-700 hover:bg-white hover:shadow-sm rounded-lg transition-all border border-transparent hover:border-gray-200"
+                                            >
+                                                ✗ Type mismatch
+                                            </button>
+                                        </>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Modal Footer */}
+                        <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex gap-3 rounded-b-2xl">
+                            <button
+                                onClick={() => {
+                                    setShowRoomChangeModal(false);
+                                    setSelectedRoomChange(null);
+                                    setRoomChangeNote('');
+                                }}
+                                className="flex-1 px-4 py-2.5 text-sm font-semibold text-gray-700 bg-white border-2 border-gray-300 rounded-xl hover:bg-gray-50 transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={() => {
+                                    if (
+                                        selectedRoomChange.action ===
+                                            'REJECTED' &&
+                                        !roomChangeNote.trim()
+                                    ) {
+                                        return;
+                                    }
+                                    handleRoomChangeAction(
+                                        selectedRoomChange.id,
+                                        selectedRoomChange.action,
+                                        roomChangeNote.trim() || undefined,
+                                    );
+                                    setShowRoomChangeModal(false);
+                                    setSelectedRoomChange(null);
+                                    setRoomChangeNote('');
+                                }}
+                                disabled={
+                                    selectedRoomChange.action === 'REJECTED' &&
+                                    !roomChangeNote.trim()
+                                }
+                                className={`flex-1 px-4 py-2.5 text-sm font-semibold text-white rounded-xl transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed ${
+                                    selectedRoomChange.action === 'APPROVED'
+                                        ? 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700'
+                                        : 'bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700'
+                                }`}
+                            >
+                                {selectedRoomChange.action === 'APPROVED'
+                                    ? 'Approve Request'
+                                    : 'Reject Request'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     );
