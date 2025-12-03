@@ -108,6 +108,7 @@ export default function CustomerList() {
             password: '123456',
             email: data.email ?? '',
             phone: data.phone ?? '',
+            avatartUrl: data.avatartUrl ?? '',
             fullName: data.fullName ?? '',
             address: data.address ?? '',
             userRole: 'CUSTOMER',

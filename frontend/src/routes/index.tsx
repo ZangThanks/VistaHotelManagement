@@ -39,6 +39,10 @@ import RoomManagement from '../pages/employee/room/RoomManagement.tsx';
 
 import PricingManager from '../pages/admin/pricing/PricingManager.tsx';
 import MyBookings from '../pages/customer/MyBooking.tsx';
+import RoomCard from '../components/RoomCard.tsx';
+import RoomCart from '../pages/admin/booking/RoomCart.tsx';
+import UserProfilePage from '../pages/customer/UserProfile.tsx';
+import PaymentPage from '../pages/customer/booking/PaymentPage.tsx';
 
 export const router = createBrowserRouter([
     // AUTH
@@ -114,6 +118,10 @@ export const router = createBrowserRouter([
             { path: 'bookingPage', element: <BookingPage /> },
             { path: 'mybooking', element: <MyBookings /> },
             { path: 'mybooking/:id', element: <BookingDetail /> },
+            { path: 'mybooking', element: <MyBookings /> },
+            { path: 'payment', element: <PaymentPage /> },
+            { path: 'profile', element: <UserProfilePage /> },
+            { path: 'cart', element: <RoomCart /> },
         ],
     },
 ]);
