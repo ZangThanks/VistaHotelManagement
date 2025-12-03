@@ -120,10 +120,12 @@ export default function RoomDetail() {
 
     return (
         <div className="bg-white font-sans">
-            <Header />
+            <div className="fixed top-0 left-0 w-full z-[200]">
+                <Header />
+            </div>
 
             {/* HERO SECTION */}
-            <div className="relative w-full h-[75vh] overflow-hidden">
+            <div className="relative w-full h-[75vh] overflow-hidden ">
                 {/* Background Image */}
                 <div
                     className="absolute inset-0 bg-cover bg-center transition-all duration-500"

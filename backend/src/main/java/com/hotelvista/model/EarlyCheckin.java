@@ -1,5 +1,6 @@
 package com.hotelvista.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hotelvista.model.enums.ApprovalStatus;
 import com.hotelvista.model.enums.BookingStatus;
 import jakarta.persistence.*;
@@ -36,6 +37,7 @@ public class EarlyCheckin {
     private LocalDateTime requestDate;
 
     @OneToOne
+    @JsonIgnore
     @JoinColumn(name = "booking_id")
     private Booking booking;
 

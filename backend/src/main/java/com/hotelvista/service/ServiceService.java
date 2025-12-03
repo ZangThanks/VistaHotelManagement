@@ -25,6 +25,10 @@ public class ServiceService {
         return repo.findAll();
     }
 
+    public com.hotelvista.model.Service findById(String id) {
+        return repo.findById(id).orElse(null);
+    }
+
     public List<com.hotelvista.model.Service> findAllByAvailability(boolean availability) {
         return repo.findAllByAvailability(availability);
     }

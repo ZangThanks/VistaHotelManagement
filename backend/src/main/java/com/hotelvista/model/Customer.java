@@ -31,6 +31,10 @@ public class Customer extends User{
     @Column(name = "loyalty_points")
     private Integer loyaltyPoints;
 
+    //Điểm uy tín, mặc định khi thêm mới là 100đ
+    @Column(name = "reputation_point")
+    private Integer reputationPoint;
+
     @Column(name = "membership_level")
     @Enumerated(EnumType.STRING)
     private MemberShipLevel memberShipLevel;
@@ -45,4 +49,8 @@ public class Customer extends User{
     @OneToMany(mappedBy = "customer")
     private List<Booking> bookings;
 
+    @OneToOne(fetch = FetchType.EAGER)
+    @JsonIgnore
+    @JoinColumn(name = "cart_bean_id")
+    private CartBean cartBean;
 }

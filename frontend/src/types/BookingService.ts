@@ -1,41 +1,24 @@
-export type OrderStatus =
-    | 'PLACE'
-    | 'PREPARING'
-    | 'READY'
-    | 'DELIVERED'
-    | 'CANCELLED';
+import type { Booking } from "./Booking";
+import type { Service } from "./Service";
 
+export type OrderStatus =
+  | "PLACE"
+  | "PREPARING"
+  | "READY"
+  | "DELIVERED"
+  | "CANCELLED";
 export type PaymentMethod =
-    | 'CASH'
-    | 'CREDIT_CARD'
-    | 'BANK_TRANSFER'
-    | 'E_WALLET';
+  | "VNPAY_QR"
+  | "CREDIT_CARD"
+  | "BANK_TRANSFER"
+  | "CASH";
 
 export interface BookingService {
-    service: {
-        serviceID: string;
-        serviceName: string;
-        description: string;
-        price: number;
-        serviceCategory: string;
-        availability: boolean;
-        serviceHours?: string | null;
-    };
-    booking: {
-        bookingID: string;
-        checkInDate: string;
-        checkOutDate: string;
-        status: string;
-        customer?: {
-            customerID: string;
-            fullName: string;
-            phone: string;
-            email: string;
-        };
-    };
-    servicePrice: number;
-    quantity: number;
-    totalAmount: number;
-    orderStatus: OrderStatus;
-    paymentMethod: PaymentMethod;
+  service: Service;
+  booking: Booking;
+  servicePrice: number;
+  quantity: number;
+  totalAmount: number;
+  orderStatus: OrderStatus;
+  paymentMethod: PaymentMethod;
 }

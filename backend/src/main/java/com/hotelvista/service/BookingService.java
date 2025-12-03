@@ -1,10 +1,17 @@
 package com.hotelvista.service;
 
+import com.hotelvista.exception.BadRequestException;
 import com.hotelvista.model.Booking;
 import com.hotelvista.model.BookingDetail;
+import com.hotelvista.model.Room;
+import com.hotelvista.model.enums.ApprovalStatus;
+import com.hotelvista.model.enums.BookingStatus;
+import com.hotelvista.repository.BookingDetailRepository;
 import com.hotelvista.repository.BookingRepository;
+import com.hotelvista.repository.BookingServiceRepository;
+import com.hotelvista.repository.RoomRepository;
+import com.hotelvista.repository.ServiceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +24,18 @@ import java.util.List;
 public class BookingService {
     @Autowired
     private BookingRepository repo;
+
+    @Autowired
+    private BookingServiceRepository serviceRepo;
+
+    @Autowired
+    private BookingDetailRepository detailRepo;
+
+    @Autowired
+    private RoomRepository roomRepo;
+
+    @Autowired
+    private ServiceRepository serviceRepository;
 
     @Transactional(readOnly = true)
     public List<Booking> findAll() {
@@ -31,24 +50,58 @@ public class BookingService {
     @Transactional(rollbackFor = Exception.class)
     public boolean save(Booking booking) {
         try {
-            Booking savedBooking = repo.save(booking);
-            if (savedBooking.getBookingDetails() != null) {
-                for (BookingDetail detail : savedBooking.getBookingDetails()) {
-                    detail.setBooking(booking);
-                }
-            }
-            if (savedBooking.getBookingServices() != null) {
-                for (com.hotelvista.model.BookingService bs : savedBooking.getBookingServices()) {
-                    bs.setBooking(booking);
-                }
-            }
-
             repo.save(booking);
             return true;
         } catch (Exception e) {
+            System.err.println("ERROR saving booking: " + e.getMessage());
             e.printStackTrace();
         }
         return false;
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public boolean saveBooking(Booking booking, List<BookingDetail> bookingDetails, List<com.hotelvista.model.BookingService> bookingServices) {
+        try {
+            Booking savedBooking = repo.save(booking);
+
+            if(bookingDetails != null && !bookingDetails.isEmpty()) {
+                for (BookingDetail detail : bookingDetails) {
+                    Room room = roomRepo.findById(detail.getRoom().getRoomNumber())
+                        .orElseThrow(() -> new BadRequestException("Room not found: " + detail.getRoom().getRoomNumber()));
+                    
+                    detail.setRoom(room);
+                    detail.setBooking(savedBooking);
+                    detailRepo.save(detail);
+                }
+            }
+
+            if(bookingServices != null && !bookingServices.isEmpty()) {
+                for (com.hotelvista.model.BookingService service : bookingServices) {
+                    com.hotelvista.model.Service svc = serviceRepository.findById(service.getService().getServiceID())
+                        .orElseThrow(() -> new BadRequestException("Service not found: " + service.getService().getServiceID()));
+                    
+                    service.setService(svc);
+                    service.setBooking(savedBooking);
+                    serviceRepo.save(service);
+                }
+            }
+
+            return true;
+        } catch (Exception e) {
+            System.err.println("ERROR saving booking: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
+        }
+    }
+
+    public boolean deleteById(String id) {
+        try {
+            repo.deleteById(id);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     @Transactional(readOnly = true)
@@ -81,4 +134,57 @@ public class BookingService {
     public List<Booking> findAllByRoom_RoomNumber(String roomNumber) {
         return repo.findAllByRoom_RoomNumber(roomNumber);
     }
+
+    /**
+     * Check-in a booking
+     */
+    @Transactional
+    public Booking checkIn(String bookingId) {
+
+        Booking booking = repo.findById(bookingId)
+                .orElseThrow(() -> new BadRequestException("Booking not found: " + bookingId));
+
+        // Validate
+        if (booking.getStatus() == BookingStatus.CHECKED_IN) {
+            throw new BadRequestException("Booking is already checked in");
+        }
+
+        if (booking.getStatus() == BookingStatus.CHECKED_OUT) {
+            throw new BadRequestException("Cannot check in a checked out booking");
+        }
+
+        if (booking.getStatus() == BookingStatus.CANCELLED) {
+            throw new BadRequestException("Cannot check in a cancelled booking");
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime checkInDate = booking.getCheckInDate();
+
+        boolean canCheckIn = false;
+
+        if (now.toLocalDate().isEqual(checkInDate.toLocalDate()) || now.isAfter(checkInDate)) {
+            canCheckIn = true;
+        }
+
+        if (booking.getEarlyCheckin() != null &&
+                booking.getEarlyCheckin().getApprovalStatus() == ApprovalStatus.APPROVED) {
+
+            LocalDateTime earlyCheckInTime = booking.getEarlyCheckin().getRequestDate();
+
+            if (now.isAfter(earlyCheckInTime) || now.isEqual(earlyCheckInTime)) {
+                canCheckIn = true;
+            }
+        }
+
+        if (!canCheckIn) {
+            throw new BadRequestException("Check-in time has not arrived yet");
+        }
+
+        // Update
+        booking.setStatus(BookingStatus.CHECKED_IN);
+        booking.setActualCheckInTime(now);
+
+        return repo.save(booking);
+    }
+
 }

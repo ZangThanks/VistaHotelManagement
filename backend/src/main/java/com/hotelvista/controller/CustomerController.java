@@ -1,6 +1,8 @@
 package com.hotelvista.controller;
 
+import com.hotelvista.model.CartBean;
 import com.hotelvista.model.Customer;
+import com.hotelvista.service.CartBeanService;
 import com.hotelvista.service.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -12,6 +14,9 @@ import java.util.List;
 public class CustomerController {
     @Autowired
     private CustomerService service;
+
+    @Autowired
+    private CartBeanService cartBeanService;
 
     /**
      * Lấy danh sách tất cả khách hàng.
@@ -47,6 +52,15 @@ public class CustomerController {
      */
     @PostMapping("/save")
     public Customer createOrUpdateCustomer(@RequestBody Customer customer) {
+        if (customer.getReputationPoint() == null) {
+            customer.setReputationPoint(100);
+        }
+        if (customer.getCartBean() == null) {
+            CartBean cartBean = new CartBean();
+            cartBean.setCustomer(customer);
+            customer.setCartBean(cartBean);
+            cartBeanService.save(cartBean);
+        }
         service.save(customer);
         return customer;
     }

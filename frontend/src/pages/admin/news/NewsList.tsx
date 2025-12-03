@@ -11,14 +11,15 @@ import {
     FaAngleLeft,
     FaAngleRight,
 } from 'react-icons/fa';
-import PageHeader from '../../../components/info_management/PageHeader';
-import StatCard from '../../../components/info_management/StatCard';
-import InfoCard from '../../../components/info_management/InfoCard';
-import { Dialog } from '../../../components/info_management/Dialog';
-import AddInfoForm from '../../../components/info_management/AddInfoForm';
+
 import { getAll } from '../../../services/newsService';
 import type { NewsItem } from '../../../types/News';
 import EditNewsModal from '../../../components/news/EditNewsModal';
+import PageHeader from '../../../components/news/PageHeader';
+import StatCard from '../../../components/news/StatCard';
+import InfoCard from '../../../components/news/NewsCard';
+import AddInfoForm from '../../../components/news/AddNewsModal';
+import { Dialog } from '../../../components/news/Dialog';
 const NewsList: React.FC = () => {
     const navigate = useNavigate();
     const [newsList, setNewsList] = useState<NewsItem[]>([]);
