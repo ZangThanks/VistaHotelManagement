@@ -1,3 +1,4 @@
+/*eslint-disable */
 type HolidayEvent = {
     id: string;
     title: string;

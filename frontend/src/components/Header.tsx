@@ -16,7 +16,7 @@ const navItems: NavItem[] = [
     { label: 'Services', path: '/services' },
     { label: 'Events', path: '/newsPage' },
     { label: 'Exclusive Offers', path: '/customer/promotion/list' },
-    { label: 'My bookings', path: '/customer/booking/mybookings' },
+    { label: 'My bookings', path: '/customer/mybooking' },
 ];
 
 const Header: React.FC = () => {

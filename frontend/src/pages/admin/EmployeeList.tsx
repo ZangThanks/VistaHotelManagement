@@ -1,11 +1,11 @@
-/* eslint-disable */
+/*eslint-disable*/
 import type React from 'react';
 import { useEffect, useState } from 'react';
-
 import type { Employee } from '../../types/Employee';
-import { getAll } from '../../services/employeeService';
+import { getAll, deleteEmployee } from '../../services/employeeService';
 import AddEmployeeModal from '../../components/employee/AddEmployeeModal';
 import EditEmployeeModal from '../../components/employee/EditEmployeeModal';
+import { useToastContext } from '../../hooks/useToastContext';
 
 /* ---------------------------- Stat Card ---------------------------- */
 type StatCardProps = {
@@ -33,11 +33,10 @@ const StatCard: React.FC<StatCardProps> = ({ icon, label, value, color }) => (
     </div>
 );
 
-/* =======================================================================
-                            EMPLOYEE LIST PAGE
-======================================================================= */
+// EMPLOYEE LIST PAGE
 
 export default function EmployeeList() {
+    const toast = useToastContext();
     const [employees, setEmployees] = useState<Employee[]>([]);
     const [search, setSearch] = useState('');
     const [loading, setLoading] = useState(true);
@@ -52,53 +51,45 @@ export default function EmployeeList() {
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 5;
 
-    /* ------------------------- OPEN EDIT ------------------------- */
     const handleEditEmployee = (emp: Employee) => {
+        console.log('Opening edit modal for employee:', emp);
+        if (!emp.id) {
+            console.error('Employee missing ID:', emp);
+            toast.error('Nhân viên không có ID hợp lệ');
+            return;
+        }
         setSelectedEmployee(emp);
         setShowEditModal(true);
     };
 
-    /* ------------------------- SAVE EDIT ------------------------- */
-    const handleSaveEdit = (updated: Employee) => {
-        setEmployees((prev) =>
-            prev.map((e) =>
-                e.employeeID === updated.employeeID ? updated : e,
-            ),
-        );
+    const handleDeleteEmployee = async (employeeId: string) => {
+        if (!confirm('Bạn có chắc chắn muốn xóa nhân viên này?')) return;
+
+        try {
+            await deleteEmployee(employeeId);
+            setEmployees((prev) => prev.filter((e) => e.id !== employeeId));
+        } catch (error) {
+            console.error('Delete employee error:', error);
+            toast.error('Không thể xóa nhân viên');
+        }
     };
 
-    /* ------------------------- ADD NEW ------------------------- */
-    const handleAddEmployee = (data: Partial<Employee>) => {
-        const newId =
-            'EMP' + (employees.length + 1).toString().padStart(3, '0');
-
-        const newEmployee: Employee = {
-            employeeID: newId,
-            userName: data.userName ?? `user${newId}`,
-            password: '123456',
-            fullName: data.fullName ?? '',
-            email: data.email ?? '',
-            phone: data.phone ?? '',
-            address: data.address ?? '',
-            userRole: 'EMPLOYEE',
-            department: data.department ?? 'Khác',
-            position: data.position ?? 'Staff',
-            salary: data.salary ?? 0,
-            hireDate: new Date().toISOString().split('T')[0],
-        };
-
-        setEmployees((prev) => [...prev, newEmployee]);
-        setShowModal(false);
+    /* ------------------------- LOAD EMPLOYEES ------------------------- */
+    const loadEmployees = async () => {
+        try {
+            const data = await getAll();
+            setEmployees(data ?? []);
+        } catch (error) {
+            console.error('Load employees error:', error);
+            toast.error('Không thể tải danh sách nhân viên');
+        }
     };
 
     /* ------------------------- FETCH DATA ------------------------- */
     useEffect(() => {
         const load = async () => {
             try {
-                const data = await getAll();
-                setEmployees(data ?? []);
-            } catch (err) {
-                setError('Không thể tải danh sách nhân viên');
+                await loadEmployees();
             } finally {
                 setLoading(false);
             }
@@ -111,7 +102,7 @@ export default function EmployeeList() {
         const key =
             (e.fullName ?? '') +
             (e.email ?? '') +
-            (e.employeeID ?? '') +
+            (e.id ?? '') +
             (e.department ?? '');
 
         return key.toLowerCase().includes(search.toLowerCase());
@@ -255,11 +246,11 @@ export default function EmployeeList() {
                                 <tbody className="divide-y divide-gray-200">
                                     {currentEmployees.map((e) => (
                                         <tr
-                                            key={e.employeeID}
+                                            key={e.id}
                                             className="hover:bg-[#F5F0EB] transition group"
                                         >
                                             <td className="px-4 py-3 font-bold text-gray-900 text-sm">
-                                                {e.employeeID}
+                                                {e.id}
                                             </td>
 
                                             <td className="px-4 py-3 flex items-center gap-2">
@@ -290,7 +281,7 @@ export default function EmployeeList() {
                                             </td>
 
                                             <td className="px-4 py-3 text-center">
-                                                <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition">
+                                                <div className="flex gap-2 transition">
                                                     <button className="p-2 text-gray-900 hover:bg-gray-100 rounded-lg transition">
                                                         <i className="fa-solid fa-eye text-sm"></i>
                                                     </button>
@@ -304,10 +295,6 @@ export default function EmployeeList() {
                                                         className="p-2 text-gray-900 hover:bg-gray-100 rounded-lg transition"
                                                     >
                                                         <i className="fa-solid fa-pen text-sm"></i>
-                                                    </button>
-
-                                                    <button className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition">
-                                                        <i className="fa-solid fa-trash text-sm"></i>
                                                     </button>
                                                 </div>
                                             </td>
@@ -385,14 +372,24 @@ export default function EmployeeList() {
             <AddEmployeeModal
                 show={showModal}
                 onClose={() => setShowModal(false)}
-                onSave={handleAddEmployee}
+                onSuccess={() => {
+                    setShowModal(false);
+                    loadEmployees();
+                }}
             />
 
             <EditEmployeeModal
                 show={showEditModal}
                 employee={selectedEmployee}
-                onClose={() => setShowEditModal(false)}
-                onSave={handleSaveEdit}
+                onClose={() => {
+                    setShowEditModal(false);
+                    setSelectedEmployee(null);
+                }}
+                onSuccess={() => {
+                    setShowEditModal(false);
+                    setSelectedEmployee(null);
+                    loadEmployees();
+                }}
             />
         </div>
     );

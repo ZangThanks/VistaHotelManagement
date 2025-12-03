@@ -12,12 +12,12 @@ import lombok.ToString;
 import java.time.LocalDateTime;
 
 @Data
+@Entity
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
-@Entity
-@Table(name = "early_checkins")
-public class EarlyCheckin {
+@Table(name = "late_checkouts")
+public class LateCheckout {
     @Id
     @Column(name = "request_id")
     private String requestID;
@@ -37,7 +37,7 @@ public class EarlyCheckin {
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "booking_id")
-    @JsonIgnoreProperties({"earlyCheckin", "hibernateLazyInitializer", "handler"})
+    @JsonIgnoreProperties({"lateCheckout", "earlyCheckin", "hibernateLazyInitializer", "handler"})
     @ToString.Exclude
     private Booking booking;
 }
