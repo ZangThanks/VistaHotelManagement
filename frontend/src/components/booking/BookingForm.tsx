@@ -9,7 +9,6 @@ import { MdOutlineRoomService, MdRoomService } from "react-icons/md";
 import { getAll } from "../../services/serviceService";
 import { CiSquareQuestion } from "react-icons/ci";
 import {
-  createBooking,
   generateBookingID,
   saveBookingWithDetails,
   getBookingById,
@@ -111,7 +110,6 @@ export default function BookingForm({
 
   const [selectedPaymentMethod, setSelectedPaymentMethod] =
     useState<PaymentMethod>(PAYMENT_METHODS[0]);
-  const [selectedRoom, setSelectedRoom] = useState<string[]>([]);
   const [rooms, setRooms] = useState<Room[]>([]);
   const [bookingID, setBookingID] = useState<string>("");
   const [isVoucherModalOpen, setIsVoucherModalOpen] = useState(false);
@@ -609,9 +607,7 @@ export default function BookingForm({
         setLoading(false);
       } catch (err) {
         console.error("Error checking room availability:", err);
-        showErrorToast(
-          "Cannot check room availability. Please try again."
-        );
+        showErrorToast("Cannot check room availability. Please try again.");
         setLoading(false);
         return;
       }

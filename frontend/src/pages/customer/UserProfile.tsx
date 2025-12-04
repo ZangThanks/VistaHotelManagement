@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   FaUser,
@@ -10,6 +10,7 @@ import {
   FaSignOutAlt,
   FaBars,
   FaTimes,
+  FaArrowLeft,
 } from "react-icons/fa";
 import type {
   UserProfile,
@@ -33,11 +34,13 @@ import VoucherCard from "../../components/voucher/VoucherCard";
 import EmptyVoucher from "../../components/voucher/EmptyVoucher";
 import { AnimatePresence } from "framer-motion";
 import { changePassword } from "../../services/authService";
+import Breadcrumb from "../../components/common/Breadcrumb";
 
 type MenuTab = "profile" | "password" | "membership" | "bookings" | "vouchers";
 
 const UserProfilePage: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const toast = useToastContext();
   const [activeTab, setActiveTab] = useState<MenuTab>("profile");
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -238,43 +241,104 @@ const UserProfilePage: React.FC = () => {
     );
   }
 
-  return (
-    <div className="min-h-screen bg-light">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-primary to-secondary text-white py-8">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold mb-2">My Account</h1>
-              <p className="text-white/80">Hello, {profile.fullName}!</p>
-            </div>
-            <button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="lg:hidden text-white text-2xl"
-            >
-              {sidebarOpen ? <FaTimes /> : <FaBars />}
-            </button>
-          </div>
-        </div>
-      </div>
+  const getActiveTabLabel = () => {
+    const item = menuItems.find((item) => item.id === activeTab);
+    return item?.label || "My Account";
+  };
 
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex flex-col lg:flex-row gap-6">
+  return (
+    <div className="min-h-screen ">
+      <div className="container mx-auto px-6 py-4 ">
+        {/* Mobile Header with Menu Toggle */}
+        <div className="lg:hidden flex items-center justify-between mb-4 p-4 bg-gradient-to-r from-cream to-gold rounded-lg shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm">
+              <FaUser className="text-xl text-primary" />
+            </div>
+            <div>
+              <h3 className="font-bold text-gray-800 text-sm">
+                {profile.fullName}
+              </h3>
+              <p className="text-xs text-gray-600">{profile.email}</p>
+            </div>
+          </div>
+          <button
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="p-2 rounded-lg bg-white/80 backdrop-blur-sm text-primary hover:bg-white transition-colors shadow-sm"
+            aria-label="Toggle menu"
+          >
+            {sidebarOpen ? (
+              <FaTimes className="text-2xl" />
+            ) : (
+              <FaBars className="text-2xl" />
+            )}
+          </button>
+        </div>
+
+        {/* Breadcrumb - Only show for customer route */}
+        {location.pathname.startsWith("/customer/profile") && (
+          <div className="mb-2 md:mb-4 hidden md:block">
+            <Breadcrumb
+              items={[
+                { label: "My Account", path: "/customer/profile" },
+                {
+                  label: getActiveTabLabel(),
+                  icon: menuItems.find((item) => item.id === activeTab)?.icon,
+                },
+              ]}
+            />
+          </div>
+        )}
+
+        {/* Back Button */}
+        <div className="mb-4">
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-primary hover:bg-cream/50 rounded-lg transition-all duration-200 group cursor-pointer"
+          >
+            <FaArrowLeft className="group-hover:-translate-x-1 transition-transform" />
+            <span className="font-medium">Back</span>
+          </button>
+        </div>
+
+        <div className="flex flex-col lg:flex-row gap-4 md:gap-6 relative">
+          {/* Mobile Sidebar Overlay */}
+          {sidebarOpen && (
+            <div
+              className="lg:hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
+              onClick={() => setSidebarOpen(false)}
+            />
+          )}
+
           {/* Sidebar Menu */}
           <motion.div
             initial={{ x: -20, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
-            className={`lg:w-64 ${sidebarOpen ? "block" : "hidden lg:block"}`}
+            className={`${
+              sidebarOpen
+                ? "fixed inset-y-0 left-0 z-50 w-80 bg-white shadow-2xl"
+                : "hidden"
+            } lg:block lg:relative lg:w-64 lg:shadow-none`}
           >
-            <div className="bg-white rounded-xl shadow-md border border-cream overflow-hidden sticky top-4">
-              <div className="p-6 bg-gradient-to-r from-primary to-secondary text-white">
-                <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto mb-4">
-                  <FaUser className="text-4xl text-primary" />
+            <div className="bg-white rounded-none lg:rounded-xl shadow-none lg:shadow-md border-0 lg:border border-cream overflow-hidden lg:sticky lg:top-4 h-full lg:h-auto">
+              {/* Close button for mobile */}
+              <div className="lg:hidden flex justify-end p-4 border-b border-cream">
+                <button
+                  onClick={() => setSidebarOpen(false)}
+                  className="p-2 rounded-lg hover:bg-cream transition-colors"
+                >
+                  <FaTimes className="text-xl text-gray-600" />
+                </button>
+              </div>
+
+              <div className="p-4 md:p-6 bg-[#ccbda3] text-white">
+                <div className="w-16 h-16 md:w-20 md:h-20 bg-white rounded-full flex items-center justify-center mx-auto mb-3 md:mb-4 shadow-lg">
+                  <FaUser className="text-3xl md:text-4xl text-[#ccbda3]" />
                 </div>
-                <h3 className="text-center font-semibold text-lg">
+                <h3 className="text-center font-semibold text-base md:text-lg">
                   {profile.fullName}
                 </h3>
-                <p className="text-center text-sm text-white/80">
+                <p className="text-center text-xs md:text-sm text-white/80">
                   {profile.email}
                 </p>
                 {profile.userRole === "CUSTOMER" && profile.memberShipLevel && (
@@ -292,7 +356,7 @@ const UserProfilePage: React.FC = () => {
                 )}
               </div>
 
-              <nav className="p-2">
+              <nav className="p-2 md:p-2 max-h-[calc(100vh-280px)] lg:max-h-none overflow-y-auto">
                 {menuItems.map((item) => (
                   <button
                     key={item.id}
@@ -300,9 +364,9 @@ const UserProfilePage: React.FC = () => {
                       setActiveTab(item.id);
                       setSidebarOpen(false);
                     }}
-                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors mb-1 ${
+                    className={`cursor-pointer w-full flex items-center gap-3 px-4 py-3 md:py-3 rounded-lg transition-colors mb-1 text-sm md:text-base ${
                       activeTab === item.id
-                        ? "bg-primary text-white"
+                        ? "bg-[#ccbda3] text-white"
                         : "text-gray-700 hover:bg-cream"
                     }`}
                   >
@@ -313,7 +377,7 @@ const UserProfilePage: React.FC = () => {
 
                 <button
                   onClick={handleLogoutClick}
-                  className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-red-600 hover:bg-red-50 mt-4"
+                  className="cursor-pointer w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-red-600 hover:bg-red-50 mt-4"
                 >
                   <FaSignOutAlt className="text-xl" />
                   <span className="font-medium">Logout</span>
@@ -323,84 +387,94 @@ const UserProfilePage: React.FC = () => {
           </motion.div>
 
           {/* Main Content */}
-          <div className="flex-1">
-            {activeTab === "profile" && (
-              <ProfileInfoSection
-                profile={profile}
-                onUpdate={handleUpdateProfile}
-              />
-            )}
+          <div className="flex-1 min-w-0">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              {activeTab === "profile" && (
+                <ProfileInfoSection
+                  profile={profile}
+                  onUpdate={handleUpdateProfile}
+                />
+              )}
 
-            {activeTab === "password" && (
-              <PasswordChangeSection onChangePassword={handleChangePassword} />
-            )}
+              {activeTab === "password" && (
+                <PasswordChangeSection
+                  onChangePassword={handleChangePassword}
+                />
+              )}
 
-            {activeTab === "membership" && profile.userRole === "CUSTOMER" && (
-              <MembershipInfoSection profile={profile} />
-            )}
+              {activeTab === "membership" &&
+                profile.userRole === "CUSTOMER" && (
+                  <MembershipInfoSection profile={profile} />
+                )}
 
-            {activeTab === "bookings" && profile.userRole === "CUSTOMER" && (
-              <BookingHistorySection
-                bookings={bookings}
-                loading={bookingsLoading}
-              />
-            )}
+              {activeTab === "bookings" && profile.userRole === "CUSTOMER" && (
+                <BookingHistorySection
+                  bookings={bookings}
+                  loading={bookingsLoading}
+                />
+              )}
 
-            {activeTab === "vouchers" && (
-              <div>
-                {vouchersLoading ? (
-                  <div className="bg-white rounded-xl shadow-md border border-cream p-6">
-                    <div className="flex items-center justify-center py-12">
-                      <div className="text-center">
-                        <div className="relative">
-                          <div className="animate-spin rounded-full h-14 w-14 border-4 border-cream mx-auto"></div>
-                          <div className="animate-spin rounded-full h-14 w-14 border-t-4 border-primary absolute top-0 left-1/2 -translate-x-1/2"></div>
+              {activeTab === "vouchers" && (
+                <div>
+                  {vouchersLoading ? (
+                    <div className="bg-white rounded-xl shadow-md border border-cream p-6">
+                      <div className="flex items-center justify-center py-12">
+                        <div className="text-center">
+                          <div className="relative">
+                            <div className="animate-spin rounded-full h-14 w-14 border-4 border-cream mx-auto"></div>
+                            <div className="animate-spin rounded-full h-14 w-14 border-t-4 border-primary absolute top-0 left-1/2 -translate-x-1/2"></div>
+                          </div>
+                          <p className="mt-4 text-gray-700 font-medium text-sm">
+                            Loading your vouchers...
+                          </p>
                         </div>
-                        <p className="mt-4 text-gray-700 font-medium text-sm">
-                          Loading your vouchers...
-                        </p>
                       </div>
                     </div>
-                  </div>
-                ) : (
-                  <>
-                    <VoucherHero stats={getVoucherStats()} />
+                  ) : (
+                    <>
+                      <VoucherHero stats={getVoucherStats()} />
 
-                    <div className="mt-6">
-                      <VoucherFilter
-                        filter={voucherFilter}
-                        onFilterChange={setVoucherFilter}
-                      />
+                      <div className="mt-6">
+                        <VoucherFilter
+                          filter={voucherFilter}
+                          onFilterChange={setVoucherFilter}
+                        />
 
-                      {getFilteredVouchers().length === 0 ? (
-                        <EmptyVoucher />
-                      ) : (
-                        <div className="space-y-4 mt-4">
-                          <AnimatePresence>
-                            {getFilteredVouchers().map((voucher, index) => {
-                              const { status, label } = getVoucherStatus(
-                                voucher.endDate
-                              );
-                              return (
-                                <VoucherCard
-                                  key={`${voucher.voucherID}-${index}`}
-                                  voucher={voucher}
-                                  index={index}
-                                  status={status}
-                                  label={label}
-                                  copiedCode={copiedCode}
-                                  onCopy={copyToClipboard}
-                                />
-                              );
-                            })}
-                          </AnimatePresence>
-                        </div>
-                      )}
-                    </div>
-                  </>
-                )}
-              </div>
-            )}
+                        {getFilteredVouchers().length === 0 ? (
+                          <EmptyVoucher />
+                        ) : (
+                          <div className="space-y-4 mt-4">
+                            <AnimatePresence>
+                              {getFilteredVouchers().map((voucher, index) => {
+                                const { status, label } = getVoucherStatus(
+                                  voucher.endDate
+                                );
+                                return (
+                                  <VoucherCard
+                                    key={`${voucher.voucherID}-${index}`}
+                                    voucher={voucher}
+                                    index={index}
+                                    status={status}
+                                    label={label}
+                                    copiedCode={copiedCode}
+                                    onCopy={copyToClipboard}
+                                  />
+                                );
+                              })}
+                            </AnimatePresence>
+                          </div>
+                        )}
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+            </motion.div>
           </div>
         </div>
       </div>

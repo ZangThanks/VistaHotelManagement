@@ -95,7 +95,7 @@ const VoucherList: React.FC = () => {
         <div className="text-center">
           <div className="relative">
             <div className="animate-spin rounded-full h-14 w-14 border-4 border-[#ebe3d7] mx-auto"></div>
-            <div className="animate-spin rounded-full h-14 w-14 border-t-4 border-[#c3923c] absolute top-0 left-1/2 -translate-x-1/2"></div>
+            <div className="animate-spin rounded-full h-14 w-14 border-t-4 border-[#6b5e4c] absolute top-0 left-1/2 -translate-x-1/2"></div>
           </div>
           <p className="mt-4 text-gray-700 font-medium text-sm">
             Loading your vouchers...

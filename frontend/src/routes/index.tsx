@@ -1,48 +1,52 @@
-import { createBrowserRouter } from 'react-router-dom';
+import { createBrowserRouter } from "react-router-dom";
 
 // Layouts
-import AuthLayout from '../layouts/AuthLayout';
-import EmployeeLayout from '../layouts/EmployeeLayout';
+import AuthLayout from "../layouts/AuthLayout";
+import EmployeeLayout from "../layouts/EmployeeLayout";
 // import CustomerLayout from "../layouts/CustomerLayout";
 
 // Auth pages
-import Login from '../pages/auth/Login';
-import Register from '../pages/auth/Register';
-import ForgotPassword from '../pages/auth/ForgotPassword';
-import ResetPassword from '../pages/auth/ResetPassword';
-import OAuthSuccess from '../pages/auth/OAuthSuccess';
+import Login from "../pages/auth/Login";
+import Register from "../pages/auth/Register";
+import ForgotPassword from "../pages/auth/ForgotPassword";
+import ResetPassword from "../pages/auth/ResetPassword";
+import OAuthSuccess from "../pages/auth/OAuthSuccess";
 
-import CustomerList from '../pages/employee/CustomerList';
-import NewsPage from '../pages/employee/NewsPage';
-import AdminLayout from '../layouts/AdminLayout';
+import CustomerList from "../pages/employee/CustomerList";
+import NewsPage from "../pages/employee/NewsPage";
+import AdminLayout from "../layouts/AdminLayout";
 
-import MainLayout from '../layouts/MainLayout';
-import CheckInManager from '../pages/employee/CheckInManager';
-import CheckOutManager from '../pages/employee/CheckOutManager';
-import IncidentManagement from '../pages/employee/IncidentManagement';
+import MainLayout from "../layouts/MainLayout";
+import CheckInManager from "../pages/employee/CheckInManager";
+import CheckOutManager from "../pages/employee/CheckOutManager";
+import IncidentManagement from "../pages/employee/IncidentManagement";
 
-import Home from '../pages/customer/Home';
-import RoomList from '../pages/customer/RoomList';
-import Dashboard from '../pages/admin/dashboard/Dashboard.tsx';
-import NewsDetail from '../pages/admin/news/NewsDetail.tsx';
-import RoomDetail from '../pages/customer/RoomDetail.tsx';
-import CustomerLayout from '../layouts/CustomerLayout.tsx';
-import DailyWorkStatistics from '../pages/employee/DailyWorkStatistics.tsx';
-import NewsList from '../pages/admin/news/NewsList.tsx';
-import ServiceList from '../pages/customer/ServiceList.tsx';
-import IncidentReport from '../pages/customer/IncidentReport.tsx';
-import ServiceManagement from '../pages/admin/ServiceManagement.tsx';
-import BookingDetail from '../pages/customer/BookingDetail.tsx';
-import Contact from '../pages/customer/Contact.tsx';
-import EmployeeList from '../pages/admin/EmployeeList.tsx';
-import BookingPage from '../pages/customer/booking/BookingPage.tsx';
-import RoomManagement from '../pages/employee/room/RoomManagement.tsx';
+import Home from "../pages/customer/Home";
+import RoomList from "../pages/customer/RoomList";
+import Dashboard from "../pages/admin/dashboard/Dashboard.tsx";
+import NewsDetail from "../pages/admin/news/NewsDetail.tsx";
+import RoomDetail from "../pages/customer/RoomDetail.tsx";
+import CustomerLayout from "../layouts/CustomerLayout.tsx";
+import DailyWorkStatistics from "../pages/employee/DailyWorkStatistics.tsx";
+import NewsList from "../pages/admin/news/NewsList.tsx";
+import ServiceList from "../pages/customer/ServiceList.tsx";
+import IncidentReport from "../pages/customer/IncidentReport.tsx";
+import ServiceManagement from "../pages/admin/ServiceManagement.tsx";
+import BookingDetail from "../pages/customer/BookingDetail.tsx";
+import Contact from "../pages/customer/Contact.tsx";
+import EmployeeList from "../pages/admin/EmployeeList.tsx";
+import BookingPage from "../pages/customer/booking/BookingPage.tsx";
+import RoomManagement from "../pages/employee/room/RoomManagement.tsx";
+import RoomTypeManagement from "../pages/employee/room/RoomTypeManagement.tsx";
+import VoucherManagement from "../pages/admin/voucher/VoucherManagement.tsx";
+import PromotionManagement from "../pages/admin/promotion/PromotionManagement.tsx";
+import PromotionTypeManagement from "../pages/admin/promotion/PromotionTypeManagement.tsx";
 
-import PricingManager from '../pages/admin/pricing/PricingManager.tsx';
-import MyBookings from '../pages/customer/MyBooking.tsx';
-import RoomCart from '../pages/admin/booking/RoomCart.tsx';
-import UserProfilePage from '../pages/customer/UserProfile.tsx';
-import PaymentPage from '../pages/customer/booking/PaymentPage.tsx';
+import PricingManager from "../pages/admin/pricing/PricingManager.tsx";
+import MyBookings from "../pages/customer/MyBooking.tsx";
+import RoomCart from "../pages/admin/booking/RoomCart.tsx";
+import UserProfilePage from "../pages/customer/UserProfile.tsx";
+import PaymentPage from "../pages/customer/booking/PaymentPage.tsx";
 
 export const router = createBrowserRouter([
   // OAuth
@@ -62,7 +66,6 @@ export const router = createBrowserRouter([
     ],
   },
 
-
   // EMPLOYEE
   {
     path: "employee",
@@ -72,6 +75,7 @@ export const router = createBrowserRouter([
       { path: "incidents", element: <IncidentManagement /> },
       { path: "bookingPage", element: <BookingPage /> },
       { path: "daily", element: <DailyWorkStatistics /> },
+      { path: "room-management", element: <RoomManagement /> },
     ],
   },
 
@@ -87,10 +91,18 @@ export const router = createBrowserRouter([
       { path: "info/:id", element: <NewsDetail /> },
       { path: "services", element: <ServiceManagement /> },
       { path: "room-management", element: <RoomManagement /> },
+      { path: "room-type-management", element: <RoomTypeManagement /> },
       { path: "bookingPage", element: <BookingPage /> },
       { path: "employees", element: <EmployeeList /> },
       // { path: 'employees/:id', element: <EmployeeDetail /> },
       { path: "pricing", element: <PricingManager /> },
+      { path: "voucher-management", element: <VoucherManagement /> },
+      { path: "promotion-management", element: <PromotionManagement /> },
+      {
+        path: "promotion-type-management",
+        element: <PromotionTypeManagement />,
+      },
+      { path: "profile", element: <UserProfilePage /> },
     ],
   },
 
