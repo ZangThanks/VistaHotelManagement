@@ -12,4 +12,6 @@ export interface Review {
   isAnonymous: boolean;
   images: string[];
   bookingDetail: BookingDetail;
+  parentReview?: Review;
+  replies?: Review[];
 }

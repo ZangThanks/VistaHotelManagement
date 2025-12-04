@@ -6,6 +6,7 @@ import type { Review } from "../../../types/Review";
 import type { BookingDetail } from "../../../types/BookingDetail";
 import { getBookingDetailsById } from "../../../services/bookingDetailService";
 import { saveReview } from "../../../services/reviewService";
+import { uploadReviewImagesToCloudinary } from "../../../services/cloudinaryService";
 import { useParams } from "react-router-dom";
 import type { Booking } from "../../../types/Booking";
 import { getBookingById } from "../../../services/bookingService";
@@ -41,7 +42,7 @@ export default function ReviewsList() {
       const bdData = await getBookingDetailsById(id);
       setBookingDetails(bdData);
 
-      // Load existing reviews from bookingDetails
+      // Load reviews đã có từ bookingDetails
       const existingReviews: Record<string, Review> = {};
       bdData.forEach((bd) => {
         if (bd.review) {
@@ -69,7 +70,7 @@ export default function ReviewsList() {
     bookingID: string,
     bookingDetail: BookingDetail
   ) => {
-    //Không mở modal nếu đã có review rồi
+    //Không mở modal nếu đã có review
     const reviewKey = `${bookingID}-${bookingDetail.room.roomNumber}`;
     if (reviews[reviewKey]) {
       return;
@@ -100,7 +101,26 @@ export default function ReviewsList() {
       const bookingID = modalState.bookingID;
       const roomNumber = modalState.bookingDetail.room.roomNumber;
 
-      // Prepare review payload matching backend Review entity
+      // Upload ảnh đến Cloudinary nếu có
+      let imageUrls: string[] = [];
+      if (reviewData.imageFiles && reviewData.imageFiles.length > 0) {
+        console.log(
+          "Uploading",
+          reviewData.imageFiles.length,
+          "images to Cloudinary..."
+        );
+        try {
+          imageUrls = await uploadReviewImagesToCloudinary(
+            reviewData.imageFiles
+          );
+          console.log("Successfully uploaded image URLs:", imageUrls);
+        } catch (uploadError) {
+          console.error("Failed to upload images:", uploadError);
+          alert("Failed to upload images. Please try again.");
+          return;
+        }
+      }
+
       const reviewPayload = {
         rating: reviewData.rating,
         roomQuantity: reviewData.roomQuality,
@@ -109,13 +129,12 @@ export default function ReviewsList() {
         valueForMoney: reviewData.valueForMoney,
         comment: reviewData.comment,
         isAnonymous: reviewData.isAnonymous,
-        images: [], // Add images support later if needed
+        images: imageUrls,
       };
 
-      console.log("Saving review:", reviewPayload);
+      console.log("Saving review with payload:", reviewPayload);
       console.log("For booking:", bookingID, "Room:", roomNumber);
 
-      // Call API to save review
       const savedReview = await saveReview(
         reviewPayload,
         bookingID,
@@ -124,10 +143,9 @@ export default function ReviewsList() {
 
       console.log("Review saved successfully:", savedReview);
 
-      // Update local state
       setReviews((prev) => ({
         ...prev,
-        [`${bookingID}-${roomNumber}`]: reviewData,
+        [`${bookingID}-${roomNumber}`]: { ...reviewData, images: imageUrls },
       }));
 
       alert("Review submitted successfully!");

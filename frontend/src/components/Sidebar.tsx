@@ -10,7 +10,7 @@ import {
   FaCog,
   FaChevronRight,
 } from "react-icons/fa";
-import { MdMeetingRoom } from "react-icons/md";
+import { MdMeetingRoom, MdOutlineReviews } from "react-icons/md";
 import { RiInfoCardFill, RiDiscountPercentFill } from "react-icons/ri";
 import { IoBagCheckOutline } from "react-icons/io5";
 import { LuMapPinCheckInside } from "react-icons/lu";
@@ -18,6 +18,7 @@ import { cn } from "../utils/cn";
 import { MdRoomService, MdDiscount } from "react-icons/md";
 import { BiSolidCategory, BiSolidDiscount } from "react-icons/bi";
 import { motion } from "framer-motion";
+import { icon } from "@fortawesome/fontawesome-svg-core";
 
 interface SidebarProps {
   className?: string;
@@ -69,6 +70,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
 
     { icon: <FaUsers />, label: "Guests", path: "/guests" },
     { icon: <MdRoomService />, label: "Services", path: "/services" },
+    { icon: <MdOutlineReviews />, label: "Reply Review", path: "/reviews" },
     {
       icon: <RiDiscountPercentFill />,
       label: "Promotions",

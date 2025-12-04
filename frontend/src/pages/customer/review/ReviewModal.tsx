@@ -1,6 +1,6 @@
 /* eslint-disable */
 import { useState, useEffect } from "react";
-import { Star } from "lucide-react";
+import { Star, Image as ImageIcon, X } from "lucide-react";
 import type { BookingDetail } from "../../../types/BookingDetail";
 import type { Review } from "../../../types/Review";
 import {
@@ -9,6 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "../../../components/dialog/Dialog";
+import StarRating from "../../../components/review/StarRating";
 
 interface ReviewModalProps {
   isOpen: boolean;
@@ -39,6 +40,9 @@ export default function ReviewModal({
   const [isAnonymous, setIsAnonymous] = useState(
     existingReview?.isAnonymous || false
   );
+  const [images, setImages] = useState<string[]>(existingReview?.images || []);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [uploadingImages, setUploadingImages] = useState(false);
   const [hoverQuality, setHoverQuality] = useState(0);
   const [hoverService, setHoverService] = useState(0);
   const [hoverLocation, setHoverLocation] = useState(0);
@@ -46,7 +50,7 @@ export default function ReviewModal({
 
   const [submitting, setSubmitting] = useState(false);
 
-  // Calculate overall rating automatically
+  // Tính overall rating
   const overallRating = () => {
     const ratings = [
       roomQuality,
@@ -56,7 +60,24 @@ export default function ReviewModal({
     ].filter((r) => r > 0);
     if (ratings.length === 0) return 0;
     const sum = ratings.reduce((acc, val) => acc + val, 0);
-    return Math.round((sum / ratings.length) * 10) / 10; // Round to 1 decimal place
+    return Math.round((sum / ratings.length) * 10) / 10; // Làm tròn 1 chữ số thập phân
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length + images.length + imageFiles.length > 5) {
+      alert("You can only upload up to 5 images");
+      return;
+    }
+
+    const newImageUrls = files.map((file) => URL.createObjectURL(file));
+    setImages((prev) => [...prev, ...newImageUrls]);
+    setImageFiles((prev) => [...prev, ...files]);
+  };
+
+  const handleRemoveImage = (index: number) => {
+    setImages((prev) => prev.filter((_, i) => i !== index));
+    setImageFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async () => {
@@ -80,6 +101,8 @@ export default function ReviewModal({
         comment,
         isAnonymous,
         reviewDate: new Date(),
+        images: images,
+        imageFiles: imageFiles,
       });
     } catch (error) {
       console.error("Error submitting review:", error);
@@ -87,42 +110,6 @@ export default function ReviewModal({
       setSubmitting(false);
     }
   };
-
-  const StarRating = ({
-    value,
-    onChange,
-    onHover,
-    onHoverLeave,
-    hoverValue,
-  }: {
-    value: number;
-    onChange: (val: number) => void;
-    onHover: (val: number) => void;
-    onHoverLeave: () => void;
-    hoverValue: number;
-  }) => (
-    <div className="flex gap-2">
-      {[1, 2, 3, 4, 5].map((star) => (
-        <button
-          key={star}
-          type="button"
-          onClick={() => onChange(star)}
-          onMouseEnter={() => onHover(star)}
-          onMouseLeave={onHoverLeave}
-          className="p-1 transition-transform hover:scale-110"
-        >
-          <Star
-            size={24}
-            className={`${
-              star <= (hoverValue > 0 ? hoverValue : value)
-                ? "fill-[#d4c5b9] text-[#d4c5b9]"
-                : "text-gray-300"
-            }`}
-          />
-        </button>
-      ))}
-    </div>
-  );
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -266,6 +253,51 @@ export default function ReviewModal({
             />
           </div>
 
+          {/* Image Upload */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-900 mb-2">
+              Photos (Optional)
+            </label>
+            <p className="text-xs text-gray-500 mb-3">Upload up to 5 images</p>
+
+            {/* Image Preview Grid */}
+            {images.length > 0 && (
+              <div className="grid grid-cols-3 sm:grid-cols-5 gap-3 mb-3">
+                {images.map((img, index) => (
+                  <div key={index} className="relative group">
+                    <img
+                      src={img}
+                      alt={`Preview ${index + 1}`}
+                      className="w-full h-24 object-cover rounded-lg border border-gray-200"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveImage(index)}
+                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Upload Button */}
+            {images.length < 5 && (
+              <label className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-[#d4c5b9] hover:bg-gray-50 transition-colors">
+                <ImageIcon size={20} className="text-gray-400" />
+                <span className="text-sm text-gray-600">Choose images</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleImageUpload}
+                  className="hidden"
+                />
+              </label>
+            )}
+          </div>
+
           {/* Anonymous Toggle */}
           <label className="flex items-center gap-3 cursor-pointer">
             <input
@@ -283,16 +315,20 @@ export default function ReviewModal({
           <button
             onClick={onClose}
             className="px-6 py-2.5 border border-gray-300 rounded-lg text-gray-700 bg-white hover:bg-gray-50 font-medium transition-colors duration-200"
-            disabled={submitting}
+            disabled={submitting || uploadingImages}
           >
             Cancel
           </button>
           <button
             onClick={handleSubmit}
             className="px-6 py-2.5 bg-[#d4c5b9] hover:bg-[#c9b8a8] text-white rounded-lg font-semibold transition-colors duration-200 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
-            disabled={submitting}
+            disabled={submitting || uploadingImages}
           >
-            {submitting ? "Submitting..." : "Submit Review"}
+            {submitting
+              ? "Submitting..."
+              : uploadingImages
+              ? "Uploading images..."
+              : "Submit Review"}
           </button>
         </div>
       </DialogContent>

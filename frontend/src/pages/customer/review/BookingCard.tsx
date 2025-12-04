@@ -1,3 +1,4 @@
+/* eslint-disable*/
 import { Badge, Star } from "lucide-react";
 import type { Review } from "../../../types/Review";
 import type { Booking } from "../../../types/Booking";
