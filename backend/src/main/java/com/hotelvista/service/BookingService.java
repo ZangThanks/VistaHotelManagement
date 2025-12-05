@@ -2,15 +2,11 @@ package com.hotelvista.service;
 
 import com.hotelvista.exception.BadRequestException;
 import com.hotelvista.model.Booking;
+import com.hotelvista.model.BookingCancellation;
 import com.hotelvista.model.BookingDetail;
 import com.hotelvista.model.Room;
-import com.hotelvista.model.enums.ApprovalStatus;
-import com.hotelvista.model.enums.BookingStatus;
-import com.hotelvista.repository.BookingDetailRepository;
-import com.hotelvista.repository.BookingRepository;
-import com.hotelvista.repository.BookingServiceRepository;
-import com.hotelvista.repository.RoomRepository;
-import com.hotelvista.repository.ServiceRepository;
+import com.hotelvista.model.enums.*;
+import com.hotelvista.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,7 +14,11 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 @Service
 public class BookingService {
@@ -36,6 +36,9 @@ public class BookingService {
 
     @Autowired
     private ServiceRepository serviceRepository;
+
+    @Autowired
+    private BookingCancellationRepository cancellationRepo;
 
     @Transactional(readOnly = true)
     public List<Booking> findAll() {
@@ -194,5 +197,108 @@ public class BookingService {
     public List<Booking> findAllByCheckOutDateBetween(LocalDateTime startDate, LocalDateTime endDate) {
         return repo.findAllByCheckOutDateBetween(startDate, endDate);
     }
+
+    @Transactional(rollbackFor = Exception.class)
+    public BookingCancellation cancelBooking(String bookingId, Map<String, Object> body) {
+
+        Booking booking = repo.findById(bookingId)
+                .orElseThrow(() -> new BadRequestException("Booking not found: " + bookingId));
+
+        // Validate trạng thái booking
+        if (booking.getStatus() == BookingStatus.CHECKED_IN)
+            throw new BadRequestException("Không thể hủy sau khi đã check-in");
+
+        if (booking.getStatus() == BookingStatus.CHECKED_OUT)
+            throw new BadRequestException("Không thể hủy sau khi đã check-out");
+
+        if (booking.getStatus() == BookingStatus.CANCELLED)
+            throw new BadRequestException("Booking đã bị hủy trước đó");
+
+
+        // Lấy dữ liệu từ JSON
+        String cancelReason = (String) body.get("cancelReason");
+        String cancelledBy = (String) body.get("cancelledBy");
+
+        if (cancelReason == null || cancelReason.isBlank())
+            throw new BadRequestException("Vui lòng nhập lý do hủy");
+
+        // Tính số ngày giữa hôm nay và ngày check-in
+        long daysUntilCheckin =
+                ChronoUnit.DAYS.between(LocalDate.now(), booking.getCheckInDate().toLocalDate());
+
+        double refundAmount = 0;
+
+        // Xử lý logic hoàn tiền
+        Set<PaymentStatus> paidStatuses = Set.of(
+                PaymentStatus.COMPLETED,
+                PaymentStatus.PERCENTAGE_30,
+                PaymentStatus.PERCENTAGE_50,
+                PaymentStatus.PAID
+        );
+
+        if (paidStatuses.contains(booking.getPaymentStatus()) &&
+                booking.getStatus() == BookingStatus.PENDING) {
+
+            if (daysUntilCheckin >= 7)
+                refundAmount = booking.getTotalAmount();
+            else if (daysUntilCheckin >= 3)
+                refundAmount = booking.getTotalAmount() * 0.5;
+            else
+                refundAmount = 0;
+        }
+
+        // Cập nhật booking
+        booking.setStatus(BookingStatus.CANCELLED);
+        booking.setCancellationDate(LocalDateTime.now());
+        repo.save(booking);
+
+        // cập nhật Room -> AVAILABLE
+        for (BookingDetail detail : booking.getBookingDetails()) {
+            Room room = detail.getRoom();
+            room.setStatus(RoomStatus.AVAILABLE);
+            roomRepo.save(room);
+        }
+
+        // Tạo bản ghi BookingCancellation
+        BookingCancellation cancel = new BookingCancellation();
+        cancel.setId(generateCancellationId(bookingId));
+        cancel.setBooking(booking);
+        cancel.setCancelReason(cancelReason);
+        cancel.setCancelledAt(LocalDateTime.now());
+        cancel.setRefundAmount(refundAmount);
+
+        // Nếu có refund
+        if (refundAmount > 0 && body.containsKey("refundMethod")) {
+
+            Map<String, Object> rm = (Map<String, Object>) body.get("refundMethod");
+
+            String methodStr = (String) rm.get("method");
+            RefundMethod method = RefundMethod.valueOf(methodStr);
+            cancel.setRefundMethod(method);
+
+            String refundInfo = "";
+
+            switch (method) {
+                case BANK_TRANSFER -> {
+                    refundInfo =
+                            rm.get("bankName") + " | " +
+                                    rm.get("accountNumber") + " | " +
+                                    rm.get("accountName");
+                }
+                case MOMO, ZALOPAY, VNPAY -> {
+                    refundInfo = (String) rm.get("mobileNumber");
+                }
+            }
+
+            cancel.setRefundAccountInfo(refundInfo);
+        }
+
+        return cancellationRepo.save(cancel);
+    }
+    public String generateCancellationId(String bookingId) {
+        return "C-" + bookingId;
+    }
+
+
 }
 

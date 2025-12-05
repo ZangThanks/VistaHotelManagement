@@ -3,6 +3,7 @@ package com.hotelvista.controller;
 import com.hotelvista.dto.BookingRequestDTO;
 import com.hotelvista.dto.PaymentWebhookDTO;
 import com.hotelvista.model.Booking;
+import com.hotelvista.model.BookingCancellation;
 import com.hotelvista.model.BookingDetail;
 import com.hotelvista.model.Customer;
 import com.hotelvista.model.enums.BookingStatus;
@@ -485,5 +486,17 @@ public class BookingController {
     @GetMapping("/overlapping-bookings/{roomNumber}")
     public List<LocalDateTime> findOverlappingBookings(@PathVariable("roomNumber") String roomNumber) {
         return bookingDetailService.findOverlappingBookings(roomNumber);
+    }
+
+    /**
+     * Hủy booking
+     */
+    @PostMapping("/{id}/cancel")
+    public ResponseEntity<?> cancelBooking(
+            @PathVariable String id,
+            @RequestBody Map<String, Object> body
+    ) {
+        BookingCancellation cancellation = service.cancelBooking(id, body);
+        return ResponseEntity.ok(cancellation);
     }
 }

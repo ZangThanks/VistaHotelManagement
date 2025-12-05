@@ -416,6 +416,40 @@ export const getByRoom = async (roomNumber: string) => {
     return response.data;
 };
 
+export const cancelBooking = async (
+    bookingId: string,
+    cancelReason: string,
+    cancelledBy: string,
+    refundMethod: any | null,
+) => {
+    try {
+        const payload: any = {
+            cancelReason,
+            cancelledBy,
+        };
+
+        if (refundMethod) {
+            payload.refundMethod = refundMethod;
+        }
+
+        console.log('=== BOOKING SERVICE DEBUG ===');
+        console.log(
+            'Cancel booking payload:',
+            JSON.stringify(payload, null, 2),
+        );
+        console.log('API endpoint:', `${ENDPOINT}/${bookingId}/cancel`);
+
+        const response = await api.post(
+            `${ENDPOINT}/${bookingId}/cancel`,
+            payload,
+        );
+        return response.data;
+    } catch (error) {
+        console.error(`Error cancelling booking ${bookingId}:`, error);
+        throw error;
+    }
+};
+
 export default {
     getAll,
     getBookingById,
@@ -424,4 +458,5 @@ export default {
     getAllRoomBookings,
     convertToRoomBooking,
     getByRoom,
+    cancelBooking,
 };

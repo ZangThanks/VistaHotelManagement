@@ -42,6 +42,10 @@ import MyBookings from '../pages/customer/MyBooking.tsx';
 import RoomCart from '../pages/admin/booking/RoomCart.tsx';
 import UserProfilePage from '../pages/customer/UserProfile.tsx';
 import PaymentPage from '../pages/customer/booking/PaymentPage.tsx';
+import RoomTypeManagement from '../pages/employee/room/RoomTypeManagement.tsx';
+import VoucherManagement from '../pages/admin/voucher/VoucherManagement.tsx';
+import PromotionManagement from '../pages/admin/promotion/PromotionManagement.tsx';
+import PromotionTypeManagement from '../pages/admin/promotion/PromotionTypeManagement.tsx';
 
 export const router = createBrowserRouter([
     // AUTH
@@ -65,6 +69,7 @@ export const router = createBrowserRouter([
             { path: 'incidents', element: <IncidentManagement /> },
             { path: 'bookingPage', element: <BookingPage /> },
             { path: 'daily', element: <DailyWorkStatistics /> },
+            { path: 'room-management', element: <RoomManagement /> },
         ],
     },
 
@@ -76,14 +81,22 @@ export const router = createBrowserRouter([
             { path: '', element: <Dashboard /> },
             { path: 'checkin', element: <CheckInManager /> },
             { path: 'checkout', element: <CheckOutManager /> },
-            { path: 'info', element: <NewsList /> }, // NewsList thay InfoManagement
+            { path: 'info', element: <NewsList /> },
             { path: 'info/:id', element: <NewsDetail /> },
             { path: 'services', element: <ServiceManagement /> },
             { path: 'room-management', element: <RoomManagement /> },
+            { path: 'room-type-management', element: <RoomTypeManagement /> },
             { path: 'bookingPage', element: <BookingPage /> },
             { path: 'employees', element: <EmployeeList /> },
             // { path: 'employees/:id', element: <EmployeeDetail /> },
             { path: 'pricing', element: <PricingManager /> },
+            { path: 'voucher-management', element: <VoucherManagement /> },
+            { path: 'promotion-management', element: <PromotionManagement /> },
+            {
+                path: 'promotion-type-management',
+                element: <PromotionTypeManagement />,
+            },
+            { path: 'profile', element: <UserProfilePage /> },
         ],
     },
 
@@ -117,7 +130,6 @@ export const router = createBrowserRouter([
             { path: 'bookingPage', element: <BookingPage /> },
             { path: 'mybooking', element: <MyBookings /> },
             { path: 'mybooking/:id', element: <BookingDetail /> },
-            { path: 'mybooking', element: <MyBookings /> },
             { path: 'payment', element: <PaymentPage /> },
             { path: 'profile', element: <UserProfilePage /> },
             { path: 'cart', element: <RoomCart /> },

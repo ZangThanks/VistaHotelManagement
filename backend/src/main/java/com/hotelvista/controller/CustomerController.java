@@ -2,11 +2,17 @@ package com.hotelvista.controller;
 
 import com.hotelvista.model.CartBean;
 import com.hotelvista.model.Customer;
+import com.hotelvista.model.enums.Gender;
+import com.hotelvista.model.enums.MemberShipLevel;
+import com.hotelvista.model.enums.UserRole;
 import com.hotelvista.service.CartBeanService;
 import com.hotelvista.service.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -17,6 +23,9 @@ public class CustomerController {
 
     @Autowired
     private CartBeanService cartBeanService;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     /**
      * Lấy danh sách tất cả khách hàng.
@@ -51,19 +60,80 @@ public class CustomerController {
      * @return Customer đã lưu
      */
     @PostMapping("/save")
-    public Customer createOrUpdateCustomer(@RequestBody Customer customer) {
-        if (customer.getReputationPoint() == null) {
-            customer.setReputationPoint(100);
+    // java
+    public ResponseEntity<?> createOrUpdateCustomer(@RequestBody Customer customer) {
+        // If updating existing customer -> update (but prevent collisions with other records)
+        if (customer.getId() != null) {
+            Customer existing = service.findById(customer.getId());
+            if (existing != null) {
+                Customer byEmail = customer.getEmail() != null ? service.findByEmail(customer.getEmail()) : null;
+                if (byEmail != null && !byEmail.getId().equals(existing.getId())) {
+                    return ResponseEntity.status(409).body("Email already exists");
+                }
+                Customer byPhone = customer.getPhone() != null ? service.findByPhone(customer.getPhone()) : null;
+                if (byPhone != null && !byPhone.getId().equals(existing.getId())) {
+                    return ResponseEntity.status(409).body("Phone already exists");
+                }
+                Customer byUser = customer.getUserName() != null ? service.findByUserName(customer.getUserName()) : null;
+                if (byUser != null && !byUser.getId().equals(existing.getId())) {
+                    return ResponseEntity.status(409).body("Username already exists");
+                }
+
+                existing.setFullName(customer.getFullName());
+                existing.setEmail(customer.getEmail());
+                existing.setPhone(customer.getPhone());
+                existing.setAddress(customer.getAddress());
+                existing.setBirthDate(customer.getBirthDate());
+                existing.setGender(customer.getGender() != null ? customer.getGender() : existing.getGender());
+                if (customer.getPassword() != null && !customer.getPassword().isBlank()) {
+                    existing.setPassword(passwordEncoder.encode(customer.getPassword()));
+                }
+                service.save(existing);
+                return ResponseEntity.ok(existing);
+            }
         }
-        if (customer.getCartBean() == null) {
-            CartBean cartBean = new CartBean();
-            cartBean.setCustomer(customer);
-            customer.setCartBean(cartBean);
-            cartBeanService.save(cartBean);
+
+        // Creating new customer -> reject if any unique field already exists
+        if (customer.getEmail() != null && service.findByEmail(customer.getEmail()) != null) {
+            return ResponseEntity.status(409).body("Email already exists");
         }
-        service.save(customer);
-        return customer;
+        if (customer.getPhone() != null && service.findByPhone(customer.getPhone()) != null) {
+            return ResponseEntity.status(409).body("Phone already exists");
+        }
+        if (customer.getUserName() != null && service.findByUserName(customer.getUserName()) != null) {
+            return ResponseEntity.status(409).body("Username already exists");
+        }
+
+        Customer c = new Customer();
+        c.setId(service.generateCustomerId());
+        c.setUserName(customer.getUserName());
+        c.setFullName(customer.getFullName());
+        c.setEmail(customer.getEmail());
+        c.setPhone(customer.getPhone());
+        c.setAddress(customer.getAddress());
+        c.setGender(customer.getGender() != null ? customer.getGender() : Gender.MALE);
+        c.setUserRole(UserRole.CUSTOMER);
+        c.setJoinedDate(LocalDate.now());
+        c.setLoyaltyPoints(0);
+        c.setReputationPoint(100);
+        c.setMemberShipLevel(MemberShipLevel.BRONZE);
+
+        if (customer.getPassword() != null) {
+            c.setPassword(passwordEncoder.encode(customer.getPassword()));
+        }
+
+        service.save(c);
+
+        CartBean cartBean = new CartBean();
+        cartBean.setCustomer(c);
+        cartBeanService.save(cartBean);
+
+        c.setCartBean(cartBean);
+        service.save(c);
+
+        return ResponseEntity.status(201).body(c);
     }
+
 
     @PutMapping("/{customerId}")
     public Customer updateCustomerProfile(@PathVariable String customerId, @RequestBody Customer customer) {

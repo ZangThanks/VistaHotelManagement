@@ -13,11 +13,11 @@ export interface Customer {
     password: string;
     email: string;
     phone: string;
-    avatartUrl: string | null;
+    avatarUrl: string | null;
     fullName?: string | null;
     address: string;
     userRole: UserRole;
-    birthDate: string; // YYYY-MM-DD
+    birthDate: string | null; // YYYY-MM-DD
     gender: Gender;
     joinedDate: string; // YYYY-MM-DD
     loyaltyPoints: number;
