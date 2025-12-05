@@ -416,6 +416,33 @@ export const getByRoom = async (roomNumber: string) => {
     return response.data;
 };
 
+// ========== ADD SERVICES TO BOOKING ==========
+// Chỉ lưu serviceID và quantity (không lưu room áp dụng)
+export type BookingServiceCreateItem = {
+    serviceID: string;
+    quantity: number;
+};
+
+// Thêm nhiều dịch vụ cho 1 booking (nếu backend hỗ trợ bulk)
+export const addServicesToBooking = async (
+    bookingId: string,
+    items: BookingServiceCreateItem[],
+) => {
+    const res = await api.post(`${ENDPOINT}/${bookingId}/services/bulk`, items);
+    return res.data;
+};
+
+// Thêm 1 dịch vụ cho 1 booking
+export const addServiceToBooking = async (
+    bookingId: string,
+    item: BookingServiceCreateItem,
+) => {
+    const res = await api.post(`${ENDPOINT}/${bookingId}/services`, item);
+    return res.data;
+};
+
+// =============================================
+
 export default {
     getAll,
     getBookingById,
@@ -424,4 +451,6 @@ export default {
     getAllRoomBookings,
     convertToRoomBooking,
     getByRoom,
+    addServicesToBooking,
+    addServiceToBooking,
 };

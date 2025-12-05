@@ -29,7 +29,7 @@ import { getCartBeanByCustomerId } from '../../services/cartBeanService';
 import CustomerVoucherModal from './CustomerVoucherModal';
 import { RiHotelLine } from 'react-icons/ri';
 import { TbHotelService } from 'react-icons/tb';
-import { getAllPolicyBaseRates } from '../../services/HourlyRatePolicyService';
+import { getAllPolicyBaseRates } from '../../services/hourlyRatePolicyService';
 import type {
     HourlyRatePolicy,
     BaseRateItem,
