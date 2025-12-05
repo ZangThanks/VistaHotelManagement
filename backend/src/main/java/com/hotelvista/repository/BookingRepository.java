@@ -41,7 +41,6 @@ public interface BookingRepository extends JpaRepository<Booking, String> {
         """)
     List<Booking> searchBookings(@Param("keyword") String keyword);
 
-
     //B1109250001
     /**
      * Tìm số thứ tự lớn nhất của booking trong ngày hôm nay

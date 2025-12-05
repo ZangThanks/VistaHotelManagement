@@ -666,6 +666,7 @@ export default function BookingForm({
       bookingDate: new Date().toISOString(),
       packageType: booking.packageType || "Standard",
       totalAmount,
+      invoiceType: "ROOM_BOOKING",
       paymentStatus: "PENDING",
       type: bookingType,
       duration: bookingType === "HOURLY" ? duration : 0,
