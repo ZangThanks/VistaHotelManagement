@@ -8,15 +8,15 @@ import RoomCompareModal from '../../components/customer/RoomCompareModal';
 import Header from '../../components/Header';
 
 export default function RoomList() {
-  const [rooms, setRooms] = useState<Room[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+    const [rooms, setRooms] = useState<Room[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
-  // Compare functionality
-  const [compareRooms, setCompareRooms] = useState<Room[]>([]);
-  const [showCompareModal, setShowCompareModal] = useState(false);
-  const [isModalMinimized, setIsModalMinimized] = useState(false);
-  const MAX_COMPARE = 3;
+    // Compare functionality
+    const [compareRooms, setCompareRooms] = useState<Room[]>([]);
+    const [showCompareModal, setShowCompareModal] = useState(false);
+    const [isModalMinimized, setIsModalMinimized] = useState(false);
+    const MAX_COMPARE = 3;
 
     // Filters
     const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
@@ -96,18 +96,18 @@ export default function RoomList() {
         return true;
     });
 
-  // Computed displayedRooms = filtered + sorted
-  const displayedRooms = useMemo(() => {
-    if (!sortOrder) return filteredRooms;
-    const copy = [...filteredRooms];
-    copy.sort((a, b) => {
-      const pa = a.roomType?.basePrice ?? 0;
-      const pb = b.roomType?.basePrice ?? 0;
-      if (sortOrder === "price_asc") return pa - pb;
-      return pb - pa;
-    });
-    return copy;
-  }, [filteredRooms, sortOrder]);
+    // Computed displayedRooms = filtered + sorted
+    const displayedRooms = useMemo(() => {
+        if (!sortOrder) return filteredRooms;
+        const copy = [...filteredRooms];
+        copy.sort((a, b) => {
+            const pa = a.roomType?.basePrice ?? 0;
+            const pb = b.roomType?.basePrice ?? 0;
+            if (sortOrder === 'price_asc') return pa - pb;
+            return pb - pa;
+        });
+        return copy;
+    }, [filteredRooms, sortOrder]);
 
     const clearFilters = () => {
         setSelectedTypes([]);
@@ -176,9 +176,9 @@ export default function RoomList() {
 
             <div
                 style={{
-                    background: 'var(--gradient-cream)',
                     fontFamily: 'var(--font-sans)',
                 }}
+                className="pt-10"
             >
                 {/* Header Section */}
                 <div className="max-w-2xl text-center flex flex-col mx-auto pt-16 pb-8 px-4">

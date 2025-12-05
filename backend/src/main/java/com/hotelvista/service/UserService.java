@@ -28,6 +28,9 @@ public class UserService {
     private final UserRepository userRepository;
     private final CartBeanService cartBeanService;
 
+   @Autowired
+    private CustomerService customerService;
+
     /**
      * Tìm user bằng email hoặc phone, áp dụng cho Customer + Admin + Employee
      */
@@ -86,7 +89,7 @@ public class UserService {
 
         // create user mới
         Customer c = new Customer();
-        c.setId(GenerateIDUtil.generateID("CUS", 8));
+        c.setId(customerService.generateCustomerId());
 
         // username tự phát sinh
         c.setUserName(email.split("@")[0] + "_" + provider);

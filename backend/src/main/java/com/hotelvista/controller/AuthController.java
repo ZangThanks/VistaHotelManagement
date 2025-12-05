@@ -111,7 +111,7 @@ public class AuthController {
 
         // Tạo customer
         Customer c = new Customer();
-        c.setId(GenerateIDUtil.generateID("CU", 8));
+        c.setId(service.generateCustomerId());
         c.setUserName(req.getUserName());
         c.setFullName(req.getFullName());
         c.setEmail(req.getEmail());
