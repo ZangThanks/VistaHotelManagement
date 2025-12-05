@@ -1,53 +1,53 @@
-import { motion } from 'framer-motion';
+import { motion } from "framer-motion";
 
 interface VoucherFilterProps {
-    filter: 'all' | 'active' | 'expiring';
-    onFilterChange: (filter: 'all' | 'active' | 'expiring') => void;
+  filter: "all" | "active" | "expiring";
+  onFilterChange: (filter: "all" | "active" | "expiring") => void;
 }
 
 const VoucherFilter: React.FC<VoucherFilterProps> = ({
-    filter,
-    onFilterChange,
+  filter,
+  onFilterChange,
 }) => {
-    return (
-        <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="flex justify-center gap-2 mb-8"
-        >
-            <button
-                onClick={() => onFilterChange('all')}
-                className={`px-6 py-2 rounded-full text-sm font-semibold transition-all duration-300 ${
-                    filter === 'all'
-                        ? 'bg-gradient-to-r from-[#c3923c] to-[#b4893e] text-white shadow-lg shadow-[#c3923c]/50 scale-105'
-                        : 'bg-white text-gray-700 hover:shadow-md border-2 border-[#ebe3d7]'
-                }`}
-            >
-                All Vouchers
-            </button>
-            <button
-                onClick={() => onFilterChange('active')}
-                className={`px-6 py-2 rounded-full text-sm font-semibold transition-all duration-300 ${
-                    filter === 'active'
-                        ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg shadow-green-500/50 scale-105'
-                        : 'bg-white text-gray-700 hover:shadow-md border-2 border-[#ebe3d7]'
-                }`}
-            >
-                Active Only
-            </button>
-            <button
-                onClick={() => onFilterChange('expiring')}
-                className={`px-6 py-2 rounded-full text-sm font-semibold transition-all duration-300 ${
-                    filter === 'expiring'
-                        ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg shadow-orange-500/50 scale-105'
-                        : 'bg-white text-gray-700 hover:shadow-md border-2 border-[#ebe3d7]'
-                }`}
-            >
-                Expiring Soon
-            </button>
-        </motion.div>
-    );
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.3 }}
+      className="flex flex-wrap justify-center gap-2 md:gap-3 mb-6 md:mb-8 px-2"
+    >
+      <button
+        onClick={() => onFilterChange("all")}
+        className={`cursor-pointer px-4 md:px-8 py-2 md:py-3 rounded-full text-xs md:text-sm font-bold transition-all duration-300 shadow-md ${
+          filter === "all"
+            ? "bg-[#ccbda3] text-white shadow-lg shadow-gold/50 scale-105"
+            : "bg-[#ebe3d7] to-white text-gray-700 hover:shadow-lg hover:from-gold/30 hover:to-cream border-2 border-gold/40"
+        }`}
+      >
+        All Vouchers
+      </button>
+      <button
+        onClick={() => onFilterChange("active")}
+        className={` cursor-pointer px-4 md:px-8 py-2 md:py-3 rounded-full text-xs md:text-sm font-bold transition-all duration-300 shadow-md ${
+          filter === "active"
+            ? "bg-[#19ba3c] text-white shadow-lg shadow-success/50 scale-105"
+            : "bg-[#ebe3d7] to-white text-gray-700 hover:shadow-lg hover:from-gold/30 hover:to-cream border-2 border-gold/40"
+        }`}
+      >
+        Active Only
+      </button>
+      <button
+        onClick={() => onFilterChange("expiring")}
+        className={` cursor-pointer px-4 md:px-8 py-2 md:py-3 rounded-full text-xs md:text-sm font-bold transition-all duration-300 shadow-md ${
+          filter === "expiring"
+            ? "bg-[#f97316] text-white shadow-lg shadow-warning/50 scale-105"
+            : "bg-[#ebe3d7] to-white text-gray-700 hover:shadow-lg hover:from-gold/30 hover:to-cream border-2 border-gold/40"
+        }`}
+      >
+        Expiring Soon
+      </button>
+    </motion.div>
+  );
 };
 
 export default VoucherFilter;

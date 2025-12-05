@@ -47,7 +47,7 @@ public class Booking {
 
     @Column(name = "booking_date")
     private LocalDateTime bookingDate;
-
+    
     @Column(name = "cancellation_date")
     private LocalDateTime cancellationDate;
 

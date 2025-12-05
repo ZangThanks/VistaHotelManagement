@@ -8,6 +8,7 @@ import com.hotelvista.model.Room;
 import com.hotelvista.model.enums.*;
 import com.hotelvista.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -197,6 +198,10 @@ public class BookingService {
     public List<Booking> findAllByCheckOutDateBetween(LocalDateTime startDate, LocalDateTime endDate) {
         return repo.findAllByCheckOutDateBetween(startDate, endDate);
     }
+    
+    public List<Booking> findConflictingBookings(String roomNumber, LocalDateTime checkIn, LocalDateTime checkOut) {
+        return repo.findConflictingBookings(roomNumber, checkIn, checkOut);
+    }
 
     @Transactional(rollbackFor = Exception.class)
     public BookingCancellation cancelBooking(String bookingId, Map<String, Object> body) {
@@ -298,7 +303,6 @@ public class BookingService {
     public String generateCancellationId(String bookingId) {
         return "C-" + bookingId;
     }
-
 
 }
 

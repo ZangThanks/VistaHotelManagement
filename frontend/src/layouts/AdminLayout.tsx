@@ -51,7 +51,7 @@ const AdminLayout = () => {
                     isSidebarOpen={isSidebarOpen}
                 />
 
-                <main className="flex-grow overflow-auto bg-light">
+                <main className="flex-grow overflow-auto bg-light py-3">
                     <Outlet />
                 </main>
             </div>

@@ -42,6 +42,34 @@ public class AuthController {
     private final JwtTokenProvider jwtTokenProvider;
 
     /**
+     * Helper method để tạo user data response đầy đủ (không bao gồm password)
+     */
+    private Map<String, Object> buildUserDataResponse(User user) {
+        Map<String, Object> userData = new HashMap<>();
+        userData.put("id", user.getId());
+        userData.put("userName", user.getUserName());
+        userData.put("fullName", user.getFullName());
+        userData.put("email", user.getEmail());
+        userData.put("phone", user.getPhone());
+        userData.put("address", user.getAddress());
+        userData.put("userRole", user.getUserRole());
+        userData.put("avatarUrl", user.getAvatarUrl());
+
+        // Thêm thông tin Customer nếu là CUSTOMER
+        if (user instanceof Customer) {
+            Customer customer = (Customer) user;
+            userData.put("birthDate", customer.getBirthDate());
+            userData.put("gender", customer.getGender());
+            userData.put("joinedDate", customer.getJoinedDate());
+            userData.put("loyaltyPoints", customer.getLoyaltyPoints());
+            userData.put("reputationPoint", customer.getReputationPoint());
+            userData.put("memberShipLevel", customer.getMemberShipLevel());
+        }
+
+        return userData;
+    }
+
+    /**
      * API đăng ký tài khoản khách hàng mới.
      * Thực hiện validate thông tin, kiểm tra trùng lặp và tạo tài khoản mới.
      *
@@ -95,6 +123,7 @@ public class AuthController {
         c.setLoyaltyPoints(0);
         c.setReputationPoint(100);
         c.setMemberShipLevel(MemberShipLevel.BRONZE);
+        c.setAvatarUrl(null); // Mặc định chưa có avatar
 
         String encodedPassword = passwordEncoder.encode(req.getPassword());
         c.setPassword(encodedPassword);
@@ -109,18 +138,11 @@ public class AuthController {
         c.setCartBean(cartBean);
         service.save(c);
 
-        // Trả về Response
-        Map<String, Object> userData = new HashMap<>();
-        userData.put("id", c.getId());
-        userData.put("userName", c.getUserName());
-        userData.put("fullName", c.getFullName());
-        userData.put("email", c.getEmail());
-        userData.put("phone", c.getPhone());
-
+        // Trả về Response với đầy đủ thông tin
         return Map.of(
                 "success", true,
                 "message", "Đăng ký thành công!",
-                "data", userData
+                "data", buildUserDataResponse(c)
         );
     }
 
@@ -162,19 +184,11 @@ public class AuthController {
 
         String refreshToken = jwtTokenProvider.generateRefreshToken(user.getId());
 
-        // Tạo user data response (không bao gồm password)
-        Map<String, Object> userData = new HashMap<>();
-        userData.put("id", user.getId());
-        userData.put("userName", user.getUserName());
-        userData.put("fullName", user.getFullName());
-        userData.put("email", user.getEmail());
-        userData.put("phone", user.getPhone());
-        userData.put("userRole", user.getUserRole());
-
+        // Trả về đầy đủ thông tin user
         return Map.of(
                 "success", true,
                 "message", "Đăng nhập thành công",
-                "data", userData,
+                "data", buildUserDataResponse(user),
                 "token", accessToken,
                 "refreshToken", refreshToken
         );
@@ -249,15 +263,8 @@ public class AuthController {
                     return Map.of("success", false, "message", "Người dùng không tồn tại");
                 }
 
-                Map<String, Object> userData = new HashMap<>();
-                userData.put("id", user.getId());
-                userData.put("userName", user.getUserName());
-                userData.put("fullName", user.getFullName());
-                userData.put("email", user.getEmail());
-                userData.put("phone", user.getPhone());
-                userData.put("userRole", user.getUserRole());
-
-                return Map.of("success", true, "message", userData);
+                // Trả về đầy đủ thông tin user
+                return Map.of("success", true, "message", buildUserDataResponse(user));
             } else {
                 return Map.of("success", false, "message", "Token đã hết hạn");
             }

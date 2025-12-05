@@ -1,7 +1,11 @@
 package com.hotelvista.controller;
 
+import com.hotelvista.model.Booking;
 import com.hotelvista.model.BookingDetail;
+import com.hotelvista.model.Room;
 import com.hotelvista.service.BookingDetailService;
+import com.hotelvista.service.BookingService;
+import com.hotelvista.service.RoomService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,6 +16,21 @@ import java.util.List;
 public class BookingDetailController {
     @Autowired
     private BookingDetailService service;
+
+    @Autowired
+    private BookingService bookingService;
+
+    @Autowired
+    private RoomService roomService;
+
+    @GetMapping("/{bookingID}/{roomNumber}")
+    public BookingDetail getById(@PathVariable String bookingID, @PathVariable String roomNumber) {
+        Room room = roomService.findById(roomNumber);
+        Booking booking = bookingService.findById(bookingID);
+        BookingDetail.BookingDetailId id = new BookingDetail.BookingDetailId(room, booking);
+
+        return service.findById(id);
+    }
 
     @GetMapping("")
     public List<BookingDetail> findAll() {
@@ -28,6 +47,4 @@ public class BookingDetailController {
     public List<BookingDetail> findAllByBooking_BookingID(@PathVariable("id") String bookingBookingID) {
         return service.findAllByBooking_BookingID(bookingBookingID);
     }
-
-
 }

@@ -41,7 +41,7 @@ const PromotionTypeDetailModal: React.FC<PromotionTypeDetailModalProps> = ({
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-3">
-                    <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-[#b27c1f] to-[#eab354] flex items-center justify-center">
+                    <div className="w-12 h-12 rounded-lg bg-gold flex items-center justify-center">
                       <FaTag className="text-white text-xl" />
                     </div>
                     <div>
