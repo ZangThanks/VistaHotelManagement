@@ -111,6 +111,7 @@ export default function BookingForm({
   const [selectedPaymentMethod, setSelectedPaymentMethod] =
     useState<PaymentMethod>(PAYMENT_METHODS[0]);
   const [rooms, setRooms] = useState<Room[]>([]);
+  const [selectedRoom, setSelectedRoom] = useState<string[]>([]);
   const [bookingID, setBookingID] = useState<string>("");
   const [isVoucherModalOpen, setIsVoucherModalOpen] = useState(false);
   const [selectedVoucher, setSelectedVoucher] = useState<CustomerVoucher[]>([]);

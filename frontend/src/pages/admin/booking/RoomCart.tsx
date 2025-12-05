@@ -249,34 +249,6 @@ export default function RoomCart() {
                       </div>
 
                       {/* Checkbox Overlay */}
-                      <button
-                        onClick={() =>
-                          handleRemoveFromCart(
-                            room.roomNumber?.toString() || ""
-                          )
-                        }
-                        disabled={removing === room.roomNumber?.toString()}
-                        className="absolute top-3 left-3 w-8 h-8 bg-white text-gray-700 hover:bg-[#CCBDA3] hover:text-white rounded-full flex items-center justify-center transition-all disabled:opacity-50 group-hover:opacity-100 hover:scale-110"
-                        title="Remove from cart"
-                      >
-                        {removing === room.roomNumber?.toString() ? (
-                          <span className="animate-spin">⏳</span>
-                        ) : (
-                          <X className="w-5 h-5" />
-                        )}
-                      </button>
-                      {/* Status Badge */}
-                      <div
-                        className={`absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-semibold ${
-                          room.status === "AVAILABLE"
-                            ? "bg-green-100 text-green-800"
-                            : "bg-red-100 text-red-800"
-                        }`}
-                      >
-                        {room.status === "AVAILABLE" ? "Available" : "Booked"}
-                      </div>
-
-                      {/* Checkbox Overlay */}
                       {room.status === "AVAILABLE" && (
                         <button
                           onClick={() =>
@@ -297,11 +269,6 @@ export default function RoomCart() {
                           ) && <Check className="w-4 h-4 text-white m-auto" />}
                         </button>
                       )}
-                      <button>
-                        {selectedRooms.includes(
-                          room.roomNumber?.toString() || ""
-                        ) && <Check className="w-4 h-4 text-white m-auto" />}
-                      </button>
                     </div>
 
                     {/* Room Details */}
@@ -394,24 +361,6 @@ export default function RoomCart() {
                           Booked
                         </button>
                       )}
-                      <button
-                        onClick={() =>
-                          toggleRoomSelection(room.roomNumber?.toString() || "")
-                        }
-                        className={`w-full py-2 rounded font-semibold transition-all ${
-                          selectedRooms.includes(
-                            room.roomNumber?.toString() || ""
-                          )
-                            ? "bg-[#d4c5b9] text-white"
-                            : "bg-gray-100 text-[#2a2a2a] hover:bg-[#d4c5b9] hover:text-white"
-                        }`}
-                      >
-                        {selectedRooms.includes(
-                          room.roomNumber?.toString() || ""
-                        )
-                          ? "Selected"
-                          : "Select Room"}
-                      </button>
                     </div>
                   </div>
                 ))}
