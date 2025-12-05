@@ -15,6 +15,7 @@ interface UserData {
   email: string;
   userRole: string;
   memberShipLevel?: string;
+  avatarUrl?: string | null;
 }
 
 const HeaderAdmin: React.FC<HeaderProps> = ({
@@ -99,10 +100,18 @@ const HeaderAdmin: React.FC<HeaderProps> = ({
             className="flex items-center gap-3 hover:bg-gold/10 px-3 py-2 rounded-lg transition-all duration-200 group cursor-pointer"
           >
             <div className="relative">
-              <FaUserCircle
-                size={36}
-                className="text-gold group-hover:text-gold transition-colors"
-              />
+              {userData?.avatarUrl ? (
+                <img
+                  src={userData.avatarUrl}
+                  alt="Avatar"
+                  className="w-9 h-9 rounded-full border-2 border-gold object-cover group-hover:border-gold/70 transition-all"
+                />
+              ) : (
+                <FaUserCircle
+                  size={36}
+                  className="text-gold group-hover:text-gold transition-colors"
+                />
+              )}
               <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
             </div>
             <div className="hidden md:block text-left">

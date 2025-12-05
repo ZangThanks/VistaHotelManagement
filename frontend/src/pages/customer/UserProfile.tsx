@@ -18,11 +18,14 @@ import type {
   PasswordChangeRequest,
 } from "../../types/UserProfile";
 import type { Booking } from "../../types/Booking";
-import userProfileService from "../../services/userProfileService";
+import userProfileService, {
+  updateUserProfile,
+} from "../../services/userProfileService";
 import ProfileInfoSection from "../../components/profile/ProfileInfoSection";
 import PasswordChangeSection from "../../components/profile/PasswordChangeSection";
 import MembershipInfoSection from "../../components/profile/MembershipInfoSection";
 import BookingHistorySection from "../../components/profile/BookingHistorySection";
+import AvatarSection from "../../components/profile/AvatarSection";
 import ConfirmDialog from "../../components/dialog/ConfirmDialog";
 import { useToastContext } from "../../hooks/useToastContext";
 import { handleLogout } from "../../services/authService";
@@ -192,12 +195,23 @@ const UserProfilePage: React.FC = () => {
   const handleUpdateProfile = async (data: ProfileUpdateRequest) => {
     if (!profile) return;
 
-    const updated = await userProfileService.updateCustomerProfile(
+    // Sử dụng hàm updateUserProfile chung cho tất cả role
+    const updated = await updateUserProfile(
       profile.id,
+      profile.userRole || "CUSTOMER",
       data
     );
     setProfile(updated as unknown as UserProfile);
     userProfileService.updateUserInStorage(updated as unknown as UserProfile);
+  };
+
+  const handleAvatarUpdate = (avatarUrl: string) => {
+    if (!profile) return;
+
+    // Cập nhật avatar trong state và localStorage
+    const updatedProfile = { ...profile, avatarUrl };
+    setProfile(updatedProfile);
+    userProfileService.updateUserInStorage(updatedProfile);
   };
 
   const handleChangePassword = async (data: PasswordChangeRequest) => {
@@ -332,8 +346,19 @@ const UserProfilePage: React.FC = () => {
               </div>
 
               <div className="p-4 md:p-6 bg-[#ccbda3] text-white">
-                <div className="w-16 h-16 md:w-20 md:h-20 bg-white rounded-full flex items-center justify-center mx-auto mb-3 md:mb-4 shadow-lg">
-                  <FaUser className="text-3xl md:text-4xl text-[#ccbda3]" />
+                <div className="relative w-20 h-20 md:w-24 md:h-24 mx-auto mb-3 md:mb-4">
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/30 to-white/10 rounded-full blur-sm"></div>
+                  <div className="relative w-full h-full bg-white rounded-full flex items-center justify-center shadow-2xl ring-4 ring-white/30 overflow-hidden">
+                    {profile.avatarUrl ? (
+                      <img
+                        src={profile.avatarUrl}
+                        alt="Avatar"
+                        className="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
+                      />
+                    ) : (
+                      <FaUser className="text-3xl md:text-4xl text-[#ccbda3]" />
+                    )}
+                  </div>
                 </div>
                 <h3 className="text-center font-semibold text-base md:text-lg">
                   {profile.fullName}
@@ -395,10 +420,19 @@ const UserProfilePage: React.FC = () => {
               transition={{ duration: 0.3 }}
             >
               {activeTab === "profile" && (
-                <ProfileInfoSection
-                  profile={profile}
-                  onUpdate={handleUpdateProfile}
-                />
+                <div className="space-y-6">
+                  {/* Avatar Section */}
+                  <AvatarSection
+                    profile={profile}
+                    onAvatarUpdate={handleAvatarUpdate}
+                  />
+
+                  {/* Profile Info Section */}
+                  <ProfileInfoSection
+                    profile={profile}
+                    onUpdate={handleUpdateProfile}
+                  />
+                </div>
               )}
 
               {activeTab === "password" && (

@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/customers")
@@ -69,6 +70,20 @@ public class CustomerController {
             cust.setBirthDate(customer.getBirthDate());
             cust.setGender(customer.getGender());
 
+            service.save(cust);
+        }
+        return cust;
+    }
+
+    /**
+     * Cập nhật avatar Customer
+     */
+    @PutMapping("/{customerId}/avatar")
+    public Customer updateCustomerAvatar(@PathVariable String customerId, @RequestBody Map<String, String> body) {
+        String avatarUrl = body.get("avatarUrl");
+        Customer cust = service.findById(customerId);
+        if (cust != null && avatarUrl != null) {
+            cust.setAvatarUrl(avatarUrl);
             service.save(cust);
         }
         return cust;
