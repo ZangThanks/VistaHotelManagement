@@ -55,3 +55,19 @@ export type ReportPeriod =
   | "monthly"
   | "quarterly"
   | "yearly";
+export interface ServiceData {
+  date: string;
+  foodBeverage: number;
+  laundry: number;
+  others: number;
+  totalOrders: number;
+  avgOrderValue: number;
+}
+
+export type ReportTab =
+  | "revenue"
+  | "occupancy"
+  | "loyalty"
+  | "reviews"
+  | "bookings"
+  | "services";

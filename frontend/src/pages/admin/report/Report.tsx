@@ -5,6 +5,7 @@ import {
   FaStar,
   FaUsers,
   FaCalendarCheck,
+  FaConciergeBell,
 } from "react-icons/fa";
 import type {
   RevenueData,
@@ -13,6 +14,7 @@ import type {
   ReviewData,
   BookingData,
   ReportPeriod,
+  ServiceData,
 } from "../../../types/Report";
 import RevenueSummary from "../../../components/report/RevenueSummary";
 import RevenueChart from "../../../components/report/RevenueChart";
@@ -31,14 +33,26 @@ import DateRangePicker from "../../../components/report/DateRangePicker";
 import FilterBar from "../../../components/report/FilterBar";
 import ExportButton from "../../../components/report/ExportButton";
 import OccupancyStats from "../../../components/report/OccupancyStats";
+import ServiceSummary from "../../../components/report/ServiceSummary";
+import ServiceChart from "../../../components/report/ServiceChart";
+import ServiceDistribution from "../../../components/report/ServiceDistribution";
+import PopularServices from "../../../components/report/PopularServices";
 
-type ReportTab = "revenue" | "occupancy" | "loyalty" | "reviews" | "bookings";
+type ReportTab =
+  | "revenue"
+  | "occupancy"
+  | "loyalty"
+  | "reviews"
+  | "bookings"
+  | "services";
 
 const ReportPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<ReportTab>("revenue");
   const [period, setPeriod] = useState<ReportPeriod>("monthly");
   const [startDate, setStartDate] = useState("2024-01-01");
   const [endDate, setEndDate] = useState("2024-12-31");
+
+  //TODO: DATA MẪU!!
 
   // Mock data - Revenue
   const revenueData: RevenueData[] = useMemo(
@@ -440,6 +454,108 @@ const ReportPage: React.FC = () => {
     ],
     []
   );
+  // Mock data - Services
+  const serviceData: ServiceData[] = useMemo(
+    () => [
+      {
+        date: "Jan 2024",
+        foodBeverage: 85000000,
+        laundry: 28000000,
+        others: 18000000,
+        totalOrders: 420,
+        avgOrderValue: 311904,
+      },
+      {
+        date: "Feb 2024",
+        foodBeverage: 92000000,
+        laundry: 31000000,
+        others: 20000000,
+        totalOrders: 455,
+        avgOrderValue: 314285,
+      },
+      {
+        date: "Mar 2024",
+        foodBeverage: 98000000,
+        laundry: 35000000,
+        others: 22000000,
+        totalOrders: 485,
+        avgOrderValue: 319587,
+      },
+      {
+        date: "Apr 2024",
+        foodBeverage: 95000000,
+        laundry: 33000000,
+        others: 21000000,
+        totalOrders: 470,
+        avgOrderValue: 317021,
+      },
+      {
+        date: "May 2024",
+        foodBeverage: 102000000,
+        laundry: 37000000,
+        others: 24000000,
+        totalOrders: 495,
+        avgOrderValue: 329292,
+      },
+      {
+        date: "Jun 2024",
+        foodBeverage: 115000000,
+        laundry: 42000000,
+        others: 28000000,
+        totalOrders: 550,
+        avgOrderValue: 336363,
+      },
+      {
+        date: "Jul 2024",
+        foodBeverage: 125000000,
+        laundry: 45000000,
+        others: 30000000,
+        totalOrders: 580,
+        avgOrderValue: 344827,
+      },
+      {
+        date: "Aug 2024",
+        foodBeverage: 120000000,
+        laundry: 43000000,
+        others: 29000000,
+        totalOrders: 565,
+        avgOrderValue: 339823,
+      },
+      {
+        date: "Sep 2024",
+        foodBeverage: 108000000,
+        laundry: 38000000,
+        others: 25000000,
+        totalOrders: 515,
+        avgOrderValue: 332038,
+      },
+      {
+        date: "Oct 2024",
+        foodBeverage: 105000000,
+        laundry: 36000000,
+        others: 23000000,
+        totalOrders: 500,
+        avgOrderValue: 328000,
+      },
+      {
+        date: "Nov 2024",
+        foodBeverage: 100000000,
+        laundry: 34000000,
+        others: 22000000,
+        totalOrders: 485,
+        avgOrderValue: 321649,
+      },
+      {
+        date: "Dec 2024",
+        foodBeverage: 130000000,
+        laundry: 48000000,
+        others: 32000000,
+        totalOrders: 600,
+        avgOrderValue: 350000,
+      },
+    ],
+    []
+  );
 
   const tabs = [
     {
@@ -471,6 +587,12 @@ const ReportPage: React.FC = () => {
       label: "Booking Report",
       icon: <FaCalendarCheck />,
       color: "#00C853",
+    },
+    {
+      id: "services" as ReportTab,
+      label: "Service Report",
+      icon: <FaConciergeBell />,
+      color: "#9B59B6",
     },
   ];
 
@@ -555,6 +677,22 @@ const ReportPage: React.FC = () => {
               <BookingChart data={bookingData} />
             </div>
             <ChannelAnalysis />
+          </div>
+        );
+      case "services":
+        return (
+          <div className="space-y-6">
+            <ServiceSummary data={serviceData} />
+            <div className="bg-white p-6 rounded-lg shadow-sm border border-[#EBE3D7]">
+              <h3 className="text-lg font-semibold mb-4">
+                Service Revenue Trends
+              </h3>
+              <ServiceChart data={serviceData} />
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <ServiceDistribution />
+              <PopularServices />
+            </div>
           </div>
         );
 
