@@ -247,8 +247,40 @@ const IncidentManagement: React.FC = () => {
     ): Promise<void> => {
         try {
             await incidentService.updateIncident(id, status, note);
+
+            // Send email notification to customer
+            try {
+                const updatedIncident = incidents.find((inc) => inc.id === id);
+                if (updatedIncident) {
+                    // Get customer email from booking
+                    const bookingService = (
+                        await import('../../services/bookingService')
+                    ).default;
+                    if (updatedIncident.bookingId) {
+                        const booking = await bookingService.getBookingById(
+                            updatedIncident.bookingId,
+                        );
+                        const customerEmail = booking.customer.email;
+                        const customerName = booking.customer.fullName;
+
+                        await incidentService.sendStatusEmail(
+                            customerEmail,
+                            customerName,
+                            { ...updatedIncident, status, assignedTo: note },
+                        );
+                        console.log('✅ Email notification sent to customer');
+                    }
+                }
+            } catch (emailError) {
+                console.error(
+                    '❌ Failed to send email notification:',
+                    emailError,
+                );
+                // Don't throw - email failure shouldn't block the update
+            }
+
             showToast({
-                message: 'Cập nhật sự cố thành công',
+                message: 'Incident updated successfully and customer notified',
                 type: 'success',
             });
             await loadIncidents();
@@ -292,13 +324,40 @@ const IncidentManagement: React.FC = () => {
                 processedBy: processedBy,
             };
 
-            await roomChangeRequestService.processRequest(id, response);
+            const processedRequest =
+                await roomChangeRequestService.processRequest(id, response);
+
+            // Send email notification to customer
+            try {
+                if (processedRequest.booking) {
+                    const customerEmail =
+                        processedRequest.booking.customer?.email;
+                    const customerName =
+                        processedRequest.booking.customer?.fullName;
+
+                    if (customerEmail && customerName) {
+                        await roomChangeRequestService.sendRoomChangeEmail(
+                            customerEmail,
+                            customerName,
+                            processedRequest,
+                            action === 'APPROVED',
+                        );
+                        console.log('✅ Room change email sent to customer');
+                    }
+                }
+            } catch (emailError) {
+                console.error(
+                    '❌ Failed to send room change email:',
+                    emailError,
+                );
+                // Don't throw - email failure shouldn't block the update
+            }
 
             showToast({
                 message:
                     action === 'APPROVED'
-                        ? 'Đã phê duyệt yêu cầu đổi phòng'
-                        : 'Đã từ chối yêu cầu đổi phòng',
+                        ? 'Room change approved and customer notified'
+                        : 'Room change rejected and customer notified',
                 type: 'success',
             });
 
