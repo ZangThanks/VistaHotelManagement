@@ -23,6 +23,9 @@ export const getAllPromotions = async () => {
   }
 };
 
+// Alias for consistency
+export const getPromotions = getAllPromotions;
+
 export const createPromotion = async (
   promotionData: Partial<Promotion> & {
     promotionID?: string;

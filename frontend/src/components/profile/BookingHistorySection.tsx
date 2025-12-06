@@ -8,8 +8,10 @@ import {
   FaCheckCircle,
   FaClock,
   FaTimesCircle,
+  FaEye,
 } from "react-icons/fa";
 import type { Booking } from "../../types/Booking";
+import BookingDetailDialog from "./BookingDetailDialog";
 
 interface BookingHistorySectionProps {
   bookings: Booking[];
@@ -23,6 +25,20 @@ const BookingHistorySection: React.FC<BookingHistorySectionProps> = ({
   const [filter, setFilter] = useState<
     "all" | "PENDING" | "CHECKED_IN" | "CHECKED_OUT" | "CANCELLED"
   >("all");
+  const [selectedBookingId, setSelectedBookingId] = useState<string | null>(
+    null
+  );
+  const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
+
+  const handleViewDetails = (bookingId: string) => {
+    setSelectedBookingId(bookingId);
+    setIsDetailDialogOpen(true);
+  };
+
+  const handleCloseDialog = () => {
+    setIsDetailDialogOpen(false);
+    setSelectedBookingId(null);
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -125,7 +141,7 @@ const BookingHistorySection: React.FC<BookingHistorySectionProps> = ({
         >
           Pending ({bookings.filter((b) => b.status === "PENDING").length})
         </button>
-  
+
         <button
           onClick={() => setFilter("CHECKED_IN")}
           className={`cursor-pointer px-4 py-2 rounded-lg font-medium transition-colors ${
@@ -145,7 +161,8 @@ const BookingHistorySection: React.FC<BookingHistorySectionProps> = ({
               : "bg-gray-100 text-gray-700 hover:bg-cream"
           }`}
         >
-          Checked Out ({bookings.filter((b) => b.status === "CHECKED_OUT").length})
+          Checked Out (
+          {bookings.filter((b) => b.status === "CHECKED_OUT").length})
         </button>
         <button
           onClick={() => setFilter("CANCELLED")}
@@ -241,31 +258,53 @@ const BookingHistorySection: React.FC<BookingHistorySectionProps> = ({
                     </p>
                   </div>
                 </div>
-                <div>
-                  <p className="text-sm text-gray-600">Payment</p>
-                  <p
-                    className={`font-semibold ${
-                      booking.paymentStatus === "PAID"
-                        ? "text-green-600"
-                        : "text-[#6b5e4c]"
-                    }`}
-                  >
-                    {getPaymentStatusLabel(booking.paymentStatus)}
-                  </p>
+                <div className="flex items-center gap-3">
+                  <div>
+                    <p className="text-sm text-gray-600">Payment</p>
+                    <p
+                      className={`font-semibold ${
+                        booking.paymentStatus === "PAID"
+                          ? "text-green-600"
+                          : "text-[#6b5e4c]"
+                      }`}
+                    >
+                      {getPaymentStatusLabel(booking.paymentStatus)}
+                    </p>
+                  </div>
                 </div>
               </div>
 
               {booking.specialRequests && (
-                <div className="mt-4 pt-4 border-t border-cream">
-                  <p className="text-sm text-gray-600 mb-1">Special Requests</p>
-                  <p className="text-sm text-gray-900">
-                    {booking.specialRequests}
-                  </p>
+                <div className="flex items-center gap-3 justify-between mt-4 pt-4 border-t border-cream">
+                  <div>
+                    <p className="text-sm text-gray-600 mb-1">
+                      Special Requests
+                    </p>
+                    <p className="text-sm text-gray-900">
+                      {booking.specialRequests}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => handleViewDetails(booking.bookingID)}
+                    className="cursor-pointer flex items-center gap-2 px-4 py-2 bg-[#CCBDA3] hover:bg-[#C3923C] text-white rounded-lg transition-colors font-medium shadow-sm hover:shadow-md"
+                  >
+                    <FaEye />
+                    <span>View Details</span>
+                  </button>
                 </div>
               )}
             </motion.div>
           ))}
         </div>
+      )}
+
+      {/* Booking Detail Dialog */}
+      {selectedBookingId && (
+        <BookingDetailDialog
+          bookingId={selectedBookingId}
+          isOpen={isDetailDialogOpen}
+          onClose={handleCloseDialog}
+        />
       )}
     </motion.div>
   );

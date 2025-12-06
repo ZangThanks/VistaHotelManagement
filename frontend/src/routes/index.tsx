@@ -41,6 +41,7 @@ import RoomTypeManagement from "../pages/employee/room/RoomTypeManagement.tsx";
 import VoucherManagement from "../pages/admin/voucher/VoucherManagement.tsx";
 import PromotionManagement from "../pages/admin/promotion/PromotionManagement.tsx";
 import PromotionTypeManagement from "../pages/admin/promotion/PromotionTypeManagement.tsx";
+import ExclusiveOffers from "../pages/customer/ExclusiveOffers.tsx";
 
 import PricingManager from "../pages/admin/pricing/PricingManager.tsx";
 import MyBookings from "../pages/customer/MyBooking.tsx";
@@ -121,6 +122,7 @@ export const router = createBrowserRouter([
       { path: "room", element: <RoomList /> },
       { path: "room/:id", element: <RoomDetail /> },
       { path: "service", element: <ServiceList /> },
+      { path: "promotion-and-voucher", element: <ExclusiveOffers /> },
     ],
   },
 
@@ -136,7 +138,6 @@ export const router = createBrowserRouter([
       { path: "bookingPage", element: <BookingPage /> },
       { path: "mybooking", element: <MyBookings /> },
       { path: "mybooking/:id", element: <BookingDetail /> },
-      { path: "mybooking", element: <MyBookings /> },
       { path: "payment", element: <PaymentPage /> },
       { path: "profile", element: <UserProfilePage /> },
       { path: "cart", element: <RoomCart /> },

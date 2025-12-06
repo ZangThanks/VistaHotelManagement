@@ -52,7 +52,7 @@ const HeaderHome: React.FC = () => {
     { label: "Accommodation", path: "/room" },
     { label: "Services", path: "/service" },
     { label: "Events", path: "/news" },
-    { label: "Exclusive Offers", path: "/customer/promotion/list" },
+    { label: "Exclusive Offers", path: "/promotion-and-voucher" },
   ];
 
   // Menu items based on user role
