@@ -15,7 +15,7 @@ public class QRGenerateUtil {
     //Cop link generated xong cấu hình lại webhook trên sepay
     //https://qr.sepay.vn/img?acc=VQRQAFMGQ4306&bank=MBBank&amount=100000&des=B2411250001
     public static String buildVietQRUrl(String bookingId, Double amount) {
-        return "https://qr.sepay.vn/img?acc=VQRQAFMGQ4306&bank=" +
+        return "https://qr.sepay.vn/img?acc=VQRQAFRFK5546&bank=" +
                 BANK_CORE + "&amount=" + amount + "&des=" + bookingId;
     }
 

@@ -1,16 +1,60 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUser } from '@fortawesome/free-solid-svg-icons';
-import { Link } from 'react-router-dom';
+import {
+    faUser,
+    faUserCircle,
+    faBookmark,
+    faSignOutAlt,
+} from '@fortawesome/free-solid-svg-icons';
+import { Link, useNavigate } from 'react-router-dom';
+
+interface User {
+    id: string;
+    userName: string;
+    fullName?: string;
+    email: string;
+}
+
 const HeaderHome: React.FC = () => {
+    const navigate = useNavigate();
+    const [user, setUser] = useState<User | null>(null);
+
     const navItems = [
         { label: 'Overview', path: '/home' },
         { label: 'About Us', path: '/contact' },
         { label: 'Accommodation', path: '/room' },
-        { label: 'Services', path: '/services' },
-        { label: 'Events', path: '/newsPage' },
+        { label: 'Services', path: '/service' },
+        { label: 'Events', path: '/news' },
         { label: 'Exclusive Offers', path: '/customer/promotion/list' },
     ];
+
+    // Check user login status
+    useEffect(() => {
+        const checkUserStatus = () => {
+            const userData = localStorage.getItem('user');
+            if (userData) {
+                try {
+                    const parsedUser = JSON.parse(userData);
+                    setUser(parsedUser);
+                } catch (error) {
+                    console.error('Error parsing user data:', error);
+                    localStorage.removeItem('user');
+                }
+            }
+        };
+
+        checkUserStatus();
+
+        // Listen for storage changes (when user logs in/out in another tab)
+        window.addEventListener('storage', checkUserStatus);
+        return () => window.removeEventListener('storage', checkUserStatus);
+    }, []);
+
+    const handleLogout = () => {
+        localStorage.removeItem('user');
+        setUser(null);
+        navigate('/auth/login');
+    };
 
     return (
         <header className="fixed top-0 left-0 w-full z-[9999]">
@@ -69,20 +113,68 @@ const HeaderHome: React.FC = () => {
                                 className=" text-white"
                             />
                         </button>
-                        <div className="absolute right-0 mt-2 w-40 bg-black/50 backdrop-blur-md rounded-md shadow-lg ring-1 ring-white/10 py-1 z-50 opacity-0 invisible scale-95 transform transition-all duration-300 ease-out group-hover:opacity-100 group-hover:visible group-hover:scale-100">
-                            <Link
-                                to="/auth/login"
-                                className="block px-4 py-2 text-sm text-white hover:bg-white/10 font-serif transition"
-                            >
-                                Login
-                            </Link>
+                        <div className="absolute right-0 mt-2 w-48 bg-black/50 backdrop-blur-md rounded-md shadow-lg ring-1 ring-white/10 py-1 z-50 opacity-0 invisible scale-95 transform transition-all duration-300 ease-out group-hover:opacity-100 group-hover:visible group-hover:scale-100">
+                            {user ? (
+                                // Logged in user menu
+                                <>
+                                    <div className="px-4 py-2 border-b border-white/10">
+                                        <p className="text-sm text-white font-serif">
+                                            Hello,{' '}
+                                            {user.fullName || user.userName}
+                                        </p>
+                                    </div>
 
-                            <Link
-                                to="/auth/register"
-                                className="block px-4 py-2 text-sm text-white hover:bg-white/10 font-serif transition"
-                            >
-                                Register
-                            </Link>
+                                    <Link
+                                        to="/customer/profile"
+                                        className="flex items-center px-4 py-2 text-sm text-white hover:bg-white/10 font-serif transition"
+                                    >
+                                        <FontAwesomeIcon
+                                            icon={faUserCircle}
+                                            className="mr-2 w-4"
+                                        />
+                                        Profile
+                                    </Link>
+
+                                    <Link
+                                        to="/customer/mybooking"
+                                        className="flex items-center px-4 py-2 text-sm text-white hover:bg-white/10 font-serif transition"
+                                    >
+                                        <FontAwesomeIcon
+                                            icon={faBookmark}
+                                            className="mr-2 w-4"
+                                        />
+                                        My Booking
+                                    </Link>
+
+                                    <button
+                                        onClick={handleLogout}
+                                        className="flex items-center w-full text-left px-4 py-2 text-sm text-white hover:bg-white/10 font-serif transition"
+                                    >
+                                        <FontAwesomeIcon
+                                            icon={faSignOutAlt}
+                                            className="mr-2 w-4"
+                                        />
+                                        Logout
+                                    </button>
+                                </>
+                            ) : (
+                                // Not logged in menu
+                                <>
+                                    <Link
+                                        to="/auth/login"
+                                        className="block px-4 py-2 text-sm text-white hover:bg-white/10 font-serif transition"
+                                    >
+                                        Login
+                                    </Link>
+
+                                    <Link
+                                        to="/auth/register"
+                                        className="block px-4 py-2 text-sm text-white hover:bg-white/10 font-serif transition"
+                                    >
+                                        Register
+                                    </Link>
+                                </>
+                            )}
                         </div>
                     </div>
 

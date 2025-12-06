@@ -20,7 +20,7 @@ import { Input } from '../../../../components/my-input/components/ui/input';
 import {
     getAllPolicyBaseRates,
     saveHourlyRatePolicy,
-} from '../../../../services/HourlyRatePolicyService';
+} from '../../../../services/hourlyRatePolicyService';
 import { CiEdit } from 'react-icons/ci';
 import { FiClock, FiPlus, FiTrash2 } from 'react-icons/fi';
 import type { HourlyRatePolicy } from '../../../../types/HourlyRatePolicy';

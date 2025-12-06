@@ -40,6 +40,7 @@ import FAQ from "../pages/customer/FAQ.tsx";
 import AIConcierge from "../pages/customer/AIConcierge.tsx";
 import ChatSupport from "../pages/employee/ChatSupport.tsx";
 import PricingManager from "../pages/admin/pricing/PricingManager.tsx";
+import MyBookings from '../pages/customer/MyBooking.tsx';
 import RoomManagement from "../pages/employee/room/RoomManagement.tsx";
 import RoomCart from "../pages/admin/booking/RoomCart.tsx";
 import PaymentPage from "../pages/customer/booking/PaymentPage.tsx";
@@ -134,20 +135,21 @@ export const router = createBrowserRouter([
     ],
   },
 
-  // CUSTOMER
-  {
-    path: "customer",
-    element: <CustomerLayout />,
-    children: [
-      { path: "room", element: <RoomList /> },
-      { path: "room/incident", element: <IncidentReport /> },
-      { path: "room/:id", element: <RoomDetail /> },
-      { path: "service", element: <ServiceList /> },
-      { path: "bookingPage", element: <BookingPage /> },
-      { path: "cart", element: <RoomCart /> },
-      { path: "booking/:id", element: <BookingDetail /> },
-      { path: "payment", element: <PaymentPage /> },
-      { path: "profile", element: <UserProfilePage /> },
-    ],
-  },
+    // CUSTOMER
+    {
+        path: 'customer',
+        element: <CustomerLayout />,
+        children: [
+            { path: 'room', element: <RoomList /> },
+            { path: 'room/incident', element: <IncidentReport /> },
+            { path: 'room/:id', element: <RoomDetail /> },
+            { path: 'service', element: <ServiceList /> },
+            { path: 'bookingPage', element: <BookingPage /> },
+            { path: 'mybooking', element: <MyBookings /> },
+            { path: 'mybooking/:id', element: <BookingDetail /> },
+            { path: 'payment', element: <PaymentPage /> },
+            { path: 'profile', element: <UserProfilePage /> },
+            { path: 'cart', element: <RoomCart /> },
+        ],
+    },
 ]);
