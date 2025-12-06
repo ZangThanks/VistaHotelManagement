@@ -104,7 +104,10 @@ export const router = createBrowserRouter([
             { path: 'room-management', element: <RoomManagementEmployee /> },
             { path: 'room-type-management', element: <RoomTypeManagement /> },
             { path: 'promotion-management', element: <PromotionManagement /> },
-            { path: 'promotion-type-management', element: <PromotionTypeManagement /> },
+            {
+                path: 'promotion-type-management',
+                element: <PromotionTypeManagement />,
+            },
             { path: 'voucher-management', element: <VoucherManagement /> },
             { path: 'bookingPage', element: <BookingPage /> },
             { path: 'employees', element: <EmployeeList /> },

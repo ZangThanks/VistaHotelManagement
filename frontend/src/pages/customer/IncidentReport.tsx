@@ -43,6 +43,11 @@ const IncidentReport: React.FC = () => {
         | 'ROOM_REJECTED'
         | 'ROOM_COMPLETED'
     >('ALL');
+    const [pendingOverOneHour, setPendingOverOneHour] = useState<
+        IncidentReportType[]
+    >([]);
+    const [showAutoRoomChangeSuggestion, setShowAutoRoomChangeSuggestion] =
+        useState(false);
     const { success, error } = useToast();
 
     // Check authentication and load user's bookings
@@ -82,6 +87,60 @@ const IncidentReport: React.FC = () => {
 
         return () => clearInterval(intervalId);
     }, [user]);
+
+    // Check for incidents pending over 1 hour and suggest room change
+    useEffect(() => {
+        if (incidents.length === 0) {
+            setPendingOverOneHour([]);
+            setShowAutoRoomChangeSuggestion(false);
+            return;
+        }
+
+        const checkInterval = setInterval(() => {
+            const now = new Date().getTime();
+            const oneHourInMs = 60 * 60 * 1000; // 1 hour in milliseconds
+
+            // Get list of bookings that already have room change requests (approved or pending)
+            const bookingsWithRoomChange = new Set(
+                myRoomChangeRequests
+                    .filter(
+                        (req: any) =>
+                            req.status === 'PENDING' ||
+                            req.status === 'APPROVED' ||
+                            req.status === 'COMPLETED',
+                    )
+                    .map((req: any) => req.bookingId),
+            );
+
+            const overOneHour = incidents.filter((incident) => {
+                if (incident.status !== 'PENDING') return false;
+
+                // Don't show if there's already a room change request for THIS incident's booking
+                if (bookingsWithRoomChange.has(incident.bookingId))
+                    return false;
+
+                const reportedTime = new Date(incident.reportedDate).getTime();
+                const timeDiff = now - reportedTime;
+
+                return timeDiff >= oneHourInMs;
+            });
+
+            setPendingOverOneHour(overOneHour);
+
+            if (overOneHour.length > 0 && !showAutoRoomChangeSuggestion) {
+                setShowAutoRoomChangeSuggestion(true);
+            } else if (overOneHour.length === 0) {
+                setShowAutoRoomChangeSuggestion(false);
+            }
+        }, 10000); // Check every 10 seconds
+
+        return () => clearInterval(checkInterval);
+    }, [
+        incidents,
+        myRoomChangeRequests,
+        selectedBookingId,
+        showAutoRoomChangeSuggestion,
+    ]);
 
     const loadUserBookings = async (customerId: string) => {
         try {
@@ -211,9 +270,29 @@ const IncidentReport: React.FC = () => {
                 customerId,
                 selectedBookingId,
             );
-            console.log('✅ Loaded incidents:', data.length, 'records');
-            console.log('📊 Data:', data);
-            setIncidents(data);
+
+            // CRITICAL FIX: Ensure all incidents have bookingId
+            const fixedData = data.map((incident) => {
+                if (!incident.bookingId) {
+                    console.warn(
+                        '⚠️ Fixing missing bookingId for incident:',
+                        incident.id,
+                    );
+                    return { ...incident, bookingId: selectedBookingId };
+                }
+                return incident;
+            });
+
+            console.log('✅ Loaded incidents:', fixedData.length, 'records');
+            console.log('📊 Data:', fixedData);
+
+            // Only update if data has changed to prevent unnecessary re-renders
+            setIncidents((prev) => {
+                if (JSON.stringify(prev) === JSON.stringify(fixedData)) {
+                    return prev; // No change, return previous state
+                }
+                return fixedData;
+            });
         } catch (err) {
             console.error('❌ Error loading incidents:', err);
             error('Không thể tải danh sách báo cáo');
@@ -258,7 +337,14 @@ const IncidentReport: React.FC = () => {
                 );
 
             console.log('📋 My room change requests:', requests);
-            setMyRoomChangeRequests(requests);
+
+            // Only update if data has changed to prevent unnecessary re-renders
+            setMyRoomChangeRequests((prev) => {
+                if (JSON.stringify(prev) === JSON.stringify(requests)) {
+                    return prev; // No change, return previous state
+                }
+                return requests;
+            });
         } catch (err) {
             console.error('❌ Error loading room change requests:', err);
         }
@@ -288,18 +374,6 @@ const IncidentReport: React.FC = () => {
 
         setFilteredIncidents(filtered);
     }, [incidents, searchTerm, statusFilter]);
-
-    // Auto-refresh room change requests every 3 seconds
-    useEffect(() => {
-        if (!selectedBookingId) return;
-
-        const intervalId = setInterval(() => {
-            console.log('🔄 Auto-refreshing room change requests...');
-            loadMyRoomChangeRequests();
-        }, 3000); // Refresh every 3 seconds
-
-        return () => clearInterval(intervalId);
-    }, [selectedBookingId, loadMyRoomChangeRequests]);
 
     useEffect(() => {
         if (selectedBookingId) {
@@ -642,6 +716,114 @@ const IncidentReport: React.FC = () => {
                         </div>
                     </div>
 
+                    {/* Auto Room Change Suggestion Banner */}
+                    {showAutoRoomChangeSuggestion &&
+                        pendingOverOneHour.length > 0 && (
+                            <div className="mb-8 bg-gradient-to-r from-orange-50 via-red-50 to-rose-50 border-2 border-red-300 rounded-3xl shadow-2xl p-6 animate-pulse">
+                                <div className="flex items-start gap-4">
+                                    <div className="flex-shrink-0">
+                                        <div className="w-14 h-14 bg-gradient-to-br from-red-500 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg animate-bounce">
+                                            <AlertCircle className="w-8 h-8 text-white" />
+                                        </div>
+                                    </div>
+                                    <div className="flex-1">
+                                        <div className="flex items-center gap-2 mb-3">
+                                            <h3 className="text-xl font-bold text-red-900">
+                                                🚨 Incident Resolution Time
+                                                Exceeded
+                                            </h3>
+                                            <span className="px-3 py-1 bg-red-500 text-white text-xs font-bold rounded-full animate-pulse">
+                                                Action Required
+                                            </span>
+                                        </div>
+                                        <div className="space-y-3">
+                                            <p className="text-red-800 font-semibold">
+                                                Your incident has been pending
+                                                for over 1 hour. According to
+                                                hotel policy:
+                                            </p>
+                                            <div className="bg-white/80 rounded-xl p-4 border-l-4 border-red-500">
+                                                <p className="text-gray-800 font-medium mb-2">
+                                                    📋 <strong>Policy:</strong>{' '}
+                                                    If repairs cannot be
+                                                    completed within 1 hour, the
+                                                    hotel will offer a room
+                                                    change to ensure your
+                                                    comfort.
+                                                </p>
+                                                <div className="flex flex-wrap gap-2 mt-3">
+                                                    {pendingOverOneHour.map(
+                                                        (incident, index) => (
+                                                            <div
+                                                                key={
+                                                                    incident.incidentID
+                                                                }
+                                                                className="inline-flex items-center gap-2 px-3 py-1.5 bg-red-100 text-red-800 rounded-lg text-sm font-medium border border-red-300"
+                                                            >
+                                                                <AlertCircle className="w-4 h-4" />
+                                                                <span>
+                                                                    {
+                                                                        incident.title
+                                                                    }
+                                                                </span>
+                                                                <span className="text-xs opacity-75">
+                                                                    (
+                                                                    {Math.floor(
+                                                                        (new Date().getTime() -
+                                                                            new Date(
+                                                                                incident.reportedDate,
+                                                                            ).getTime()) /
+                                                                            (1000 *
+                                                                                60),
+                                                                    )}{' '}
+                                                                    min)
+                                                                </span>
+                                                            </div>
+                                                        ),
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <div className="flex gap-3 pt-2">
+                                                <button
+                                                    onClick={async () => {
+                                                        const booking =
+                                                            await loadCurrentBooking();
+                                                        if (booking) {
+                                                            setShowRoomChangeForm(
+                                                                true,
+                                                            );
+                                                            setShowAutoRoomChangeSuggestion(
+                                                                false,
+                                                            );
+                                                        }
+                                                    }}
+                                                    disabled={
+                                                        !selectedBookingId
+                                                    }
+                                                    className="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 px-6 py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] disabled:opacity-50"
+                                                >
+                                                    <RefreshCw className="w-5 h-5" />
+                                                    <span>
+                                                        Request Room Change Now
+                                                    </span>
+                                                </button>
+                                                <button
+                                                    onClick={() =>
+                                                        setShowAutoRoomChangeSuggestion(
+                                                            false,
+                                                        )
+                                                    }
+                                                    className="px-6 py-3.5 border-2 border-gray-300 text-gray-700 hover:bg-gray-50 rounded-xl font-semibold transition-all"
+                                                >
+                                                    Dismiss
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
                     {/* Room Change Requests Section - Premium Cards */}
                     {myRoomChangeRequests.length > 0 && (
                         <div className="mb-8 bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border-2 border-blue-200 p-8">
@@ -865,15 +1047,69 @@ const IncidentReport: React.FC = () => {
                             </div>
                         ) : (
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                {filteredIncidents.map((incident) => (
-                                    <IncidentCard
-                                        key={incident.id}
-                                        incident={incident}
-                                        onClick={() =>
-                                            setSelectedIncident(incident)
-                                        }
-                                    />
-                                ))}
+                                {filteredIncidents.map((incident) => {
+                                    // Check if this incident is over 1 hour AND has no room change request yet
+                                    const now = new Date().getTime();
+                                    const reportedTime = new Date(
+                                        incident.reportedDate,
+                                    ).getTime();
+                                    const timeDiff = now - reportedTime;
+                                    const oneHourInMs = 60 * 60 * 1000;
+
+                                    // Check if this incident's booking already has a room change request
+                                    const hasRoomChangeRequest =
+                                        myRoomChangeRequests.some(
+                                            (req: any) =>
+                                                req.bookingId ===
+                                                    incident.bookingId &&
+                                                (req.status === 'PENDING' ||
+                                                    req.status === 'APPROVED' ||
+                                                    req.status === 'COMPLETED'),
+                                        );
+
+                                    // Debug log
+                                    console.log(
+                                        '🔍 Incident:',
+                                        incident.id,
+                                        'BookingId:',
+                                        incident.bookingId,
+                                    );
+                                    console.log(
+                                        '🔍 Room Change Requests:',
+                                        myRoomChangeRequests.map((r: any) => ({
+                                            id: r.id,
+                                            bookingId: r.bookingId,
+                                            status: r.status,
+                                        })),
+                                    );
+                                    console.log(
+                                        '🔍 Has Room Change Request:',
+                                        hasRoomChangeRequest,
+                                    );
+
+                                    const isOverOneHour =
+                                        incident.status === 'PENDING' &&
+                                        timeDiff >= oneHourInMs &&
+                                        !hasRoomChangeRequest;
+
+                                    return (
+                                        <IncidentCard
+                                            key={incident.id}
+                                            incident={incident}
+                                            onClick={() =>
+                                                setSelectedIncident(incident)
+                                            }
+                                            isOverOneHour={isOverOneHour}
+                                            onRequestRoomChange={async () => {
+                                                const booking =
+                                                    await loadCurrentBooking();
+                                                if (booking) {
+                                                    setShowRoomChangeForm(true);
+                                                }
+                                            }}
+                                        />
+                                    );
+                                })}
                             </div>
                         )}
                     </div>
