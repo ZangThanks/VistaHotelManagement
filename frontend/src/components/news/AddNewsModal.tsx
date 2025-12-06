@@ -16,7 +16,7 @@ import { createNews } from '../../services/newsService';
 import { useToastContext } from '../../hooks/useToastContext';
 
 interface AddInfoFormProps {
-    open: boolean; // 🟢 thêm để điều khiển mở modal
+    open: boolean; // thêm để điều khiển mở modal
     onClose: () => void;
     onSuccess?: () => void;
     onError?: (msg: string) => void;

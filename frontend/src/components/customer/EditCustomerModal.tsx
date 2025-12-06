@@ -1,6 +1,6 @@
 /* eslint-disable */
 import React, { useState, useEffect } from 'react';
-import type { Customer, Gender, MemberShipLevel } from '../../types/Customer';
+import type { Customer} from '../../types/Customer';
 
 interface EditCustomerModalProps {
     show: boolean;

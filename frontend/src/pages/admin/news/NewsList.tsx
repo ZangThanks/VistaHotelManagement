@@ -201,23 +201,30 @@ const NewsList: React.FC = () => {
                     transition={{ delay: 0.2, duration: 0.5 }}
                     className="bg-white p-6 rounded-xl shadow-sm"
                 >
-                    <div className="flex flex-col lg:flex-row gap-4">
+                    <div className="flex flex-col lg:flex-row lg:items-end gap-4">
                         {/* Search */}
                         <div className="relative flex-1">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <FaSearch className="text-gray-400" />
+                            <label className="block text-sm text-gray-500 mb-1">
+                                Search:
+                            </label>
+                            <div className="relative">
+                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <FaSearch className="text-gray-400" />
+                                </div>
+                                <input
+                                    type="text"
+                                    placeholder="Search..."
+                                    className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-cream focus:border-gold focus:ring focus:ring-gold/20 outline-none transition"
+                                    value={searchTerm}
+                                    onChange={(e) =>
+                                        setSearchTerm(e.target.value)
+                                    }
+                                />
                             </div>
-                            <input
-                                type="text"
-                                placeholder="Search..."
-                                className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-cream focus:border-gold focus:ring focus:ring-gold/20 outline-none transition"
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                            />
                         </div>
 
                         {/* Category Filter */}
-                        <div className="w-full md:w-44">
+                        <div className="w-full lg:w-48">
                             <label className="block text-sm text-gray-500 mb-1">
                                 Category:
                             </label>
@@ -229,7 +236,9 @@ const NewsList: React.FC = () => {
 
                                 <SelectContent>
                                     <SelectItem value="all">All</SelectItem>
-                                    <SelectItem value="NEWS">News</SelectItem>
+                                    <SelectItem value="NEWS">
+                                        News
+                                    </SelectItem>
                                     <SelectItem value="EVENT">
                                         Events
                                     </SelectItem>
@@ -241,7 +250,7 @@ const NewsList: React.FC = () => {
                         </div>
 
                         {/* Sort */}
-                        <div className="w-full md:w-44">
+                        <div className="w-full lg:w-48">
                             <label className="block text-sm text-gray-500 mb-1">
                                 Sort By:
                             </label>
