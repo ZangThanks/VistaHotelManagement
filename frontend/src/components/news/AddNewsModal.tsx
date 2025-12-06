@@ -1,5 +1,5 @@
 /* eslint-disable */
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaCloudUploadAlt, FaTimes, FaSave } from 'react-icons/fa';
 
@@ -67,6 +67,38 @@ const AddNewsForm: React.FC<AddInfoFormProps> = ({
         string | null
     >(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // Reset form when modal opens
+    useEffect(() => {
+        if (open) {
+            setFormData({
+                title: '',
+                type: 'NEWS',
+                status: 'published',
+                subtitle: '',
+                content: '',
+                featuredImage: null,
+                startDate: '',
+                endDate: '',
+            });
+            setErrors({
+                title: '',
+                subtitle: '',
+                content: '',
+                startDate: '',
+                endDate: '',
+                image: '',
+            });
+            setCharCount({ subtitle: 0 });
+            setFeaturedImagePreview(null);
+            setIsSubmitting(false);
+
+            // Reset TinyMCE editor if it exists
+            if (tinyInstance) {
+                tinyInstance.setContent('');
+            }
+        }
+    }, [open]);
 
     // INPUT CHANGE
     const handleInputChange = (e: any) => {
@@ -209,299 +241,371 @@ const AddNewsForm: React.FC<AddInfoFormProps> = ({
         <AnimatePresence>
             {open && (
                 <>
-                    {/* BACKDROP */}
                     <motion.div
-                        className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40"
+                        className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/30 backdrop-blur-sm"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={onClose}
-                    />
-
-                    {/* MODAL */}
-                    <motion.div
-                        className="fixed inset-0 z-50 flex items-center justify-center px-4"
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.9 }}
                     >
-                        <div
-                            className="bg-white rounded-2xl shadow-xl w-full max-w-4xl p-6 overflow-y-auto max-h-[90vh] border border-[#F5F0EB]"
+                        <motion.div
+                            initial={{ scale: 0.9 }}
+                            animate={{ scale: 1 }}
+                            exit={{ scale: 0.9 }}
+                            transition={{
+                                type: 'spring',
+                                stiffness: 300,
+                                damping: 25,
+                            }}
                             onClick={(e) => e.stopPropagation()}
                         >
-                            {/* HEADER */}
-                            <div className="grid grid-cols-3 items-center mb-4">
-                                <div></div>
-
-                                <h2 className="text-4xl text-center font-serif mt-4 col-span-1">
-                                    ADD NEWS
-                                </h2>
-
-                                <div className="flex justify-end">
-                                    <button
-                                        onClick={onClose}
-                                        className="text-gray-600 hover:text-black"
-                                    >
-                                        <FaTimes size={20} />
-                                    </button>
+                            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl overflow-hidden max-h-[90vh] border border-gray-300">
+                                {/* Header với gradient background */}
+                                <div className="bg-[#b9ad96] text-white px-6 py-4">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                                                <FaCloudUploadAlt
+                                                    className="text-white"
+                                                    size={14}
+                                                />
+                                            </div>
+                                            <div>
+                                                <h2 className="text-xl font-bold">
+                                                    Create News
+                                                </h2>
+                                                <p className="text-white/80 text-xs">
+                                                    Add new content to your site
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <motion.button
+                                            whileHover={{ scale: 1.1 }}
+                                            whileTap={{ scale: 0.9 }}
+                                            onClick={onClose}
+                                            className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition-colors"
+                                        >
+                                            <FaTimes size={14} />
+                                        </motion.button>
+                                    </div>
                                 </div>
-                            </div>
 
-                            {/* FORM */}
-                            <form onSubmit={handleSubmit} className="space-y-8">
-                                {/* BASIC INFO */}
-                                <div className="space-y-4 pb-6 border-b border-[#F5F0EB]">
-                                    <h3 className="text-xl font-semibold">
-                                        Basic Information
-                                    </h3>
+                                {/* Scrollable content */}
+                                <div className="overflow-y-auto max-h-[calc(90vh-100px)] p-6">
+                                    {/* FORM */}
+                                    <form
+                                        onSubmit={handleSubmit}
+                                        className="space-y-8"
+                                    >
+                                        {/* BASIC INFO */}
+                                        <div className="bg-white/50 p-4 rounded-xl border border-gray-100 space-y-4">
+                                            <div className="flex items-center gap-2">
+                                                <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
+                                                    <span className="text-blue-600 font-semibold text-xs">
+                                                        1
+                                                    </span>
+                                                </div>
+                                                <h3 className="text-lg font-bold text-gray-800">
+                                                    Basic Information
+                                                </h3>
+                                            </div>
 
-                                    {/* TYPE */}
-                                    <div ref={typeRef}>
-                                        <label className="block mb-2 text-sm font-semibold">
-                                            Type *
-                                        </label>
-                                        <Select
-                                            value={formData.type}
-                                            onValueChange={(v) =>
-                                                setFormData((p) => ({
-                                                    ...p,
-                                                    type: v,
-                                                }))
-                                            }
-                                        >
-                                            <SelectTrigger />
-                                            <SelectContent>
-                                                <SelectItem value="NEWS">
-                                                    News
-                                                </SelectItem>
-                                                <SelectItem value="EVENT">
-                                                    Event
-                                                </SelectItem>
-                                                <SelectItem value="PROMOTION">
-                                                    Promotion
-                                                </SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
+                                            {/* TYPE */}
+                                            <div ref={typeRef}>
+                                                <label className="block mb-2 text-sm font-semibold">
+                                                    Type *
+                                                </label>
+                                                <Select
+                                                    value={formData.type}
+                                                    onValueChange={(v) =>
+                                                        setFormData((p) => ({
+                                                            ...p,
+                                                            type: v,
+                                                        }))
+                                                    }
+                                                >
+                                                    <SelectTrigger />
+                                                    <SelectContent>
+                                                        <SelectItem value="NEWS">
+                                                            News
+                                                        </SelectItem>
+                                                        <SelectItem value="EVENT">
+                                                            Event
+                                                        </SelectItem>
+                                                        <SelectItem value="PROMOTION">
+                                                            Promotion
+                                                        </SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
 
-                                    {/* TITLE */}
-                                    <div>
-                                        <label className="block mb-2 text-sm font-semibold">
-                                            Title *
-                                        </label>
-                                        <input
-                                            ref={titleRef}
-                                            type="text"
-                                            name="title"
-                                            value={formData.title}
-                                            onChange={handleInputChange}
-                                            className={`w-full px-4 py-3 border-2 rounded-2xl bg-white ${
-                                                errors.title
-                                                    ? 'border-red-500'
-                                                    : 'border-[#F5F0EB]'
-                                            }`}
-                                        />
-                                        {errors.title && (
-                                            <p className="text-red-500 text-sm">
-                                                {errors.title}
-                                            </p>
-                                        )}
-                                    </div>
-
-                                    {/* STATUS */}
-                                    <div>
-                                        <label className="block mb-2 text-sm font-semibold">
-                                            Status
-                                        </label>
-                                        <Select
-                                            value={formData.status}
-                                            onValueChange={(value) =>
-                                                setFormData((prev) => ({
-                                                    ...prev,
-                                                    status: value,
-                                                }))
-                                            }
-                                        >
-                                            <SelectTrigger />
-                                            <SelectContent>
-                                                <SelectItem value="published">
-                                                    Published
-                                                </SelectItem>
-                                                <SelectItem value="draft">
-                                                    Draft
-                                                </SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-
-                                    {/* DATES */}
-                                    {formData.type !== 'NEWS' && (
-                                        <div className="grid grid-cols-2 gap-4">
+                                            {/* TITLE */}
                                             <div>
                                                 <label className="block mb-2 text-sm font-semibold">
-                                                    Start Date *
+                                                    Title *
                                                 </label>
                                                 <input
-                                                    ref={startDateRef}
-                                                    type="datetime-local"
-                                                    name="startDate"
-                                                    value={formData.startDate}
+                                                    ref={titleRef}
+                                                    type="text"
+                                                    name="title"
+                                                    value={formData.title}
                                                     onChange={handleInputChange}
                                                     className={`w-full px-4 py-3 border-2 rounded-2xl bg-white ${
-                                                        errors.startDate
+                                                        errors.title
                                                             ? 'border-red-500'
                                                             : 'border-[#F5F0EB]'
                                                     }`}
                                                 />
-                                                {errors.startDate && (
+                                                {errors.title && (
                                                     <p className="text-red-500 text-sm">
-                                                        {errors.startDate}
+                                                        {errors.title}
                                                     </p>
                                                 )}
                                             </div>
 
+                                            {/* STATUS */}
                                             <div>
                                                 <label className="block mb-2 text-sm font-semibold">
-                                                    End Date *
+                                                    Status
+                                                </label>
+                                                <Select
+                                                    value={formData.status}
+                                                    onValueChange={(value) =>
+                                                        setFormData((prev) => ({
+                                                            ...prev,
+                                                            status: value,
+                                                        }))
+                                                    }
+                                                >
+                                                    <SelectTrigger />
+                                                    <SelectContent>
+                                                        <SelectItem value="published">
+                                                            Published
+                                                        </SelectItem>
+                                                        <SelectItem value="draft">
+                                                            Draft
+                                                        </SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+
+                                            {/* DATES */}
+                                            {formData.type !== 'NEWS' && (
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div>
+                                                        <label className="block mb-2 text-sm font-semibold">
+                                                            Start Date *
+                                                        </label>
+                                                        <input
+                                                            ref={startDateRef}
+                                                            type="datetime-local"
+                                                            name="startDate"
+                                                            value={
+                                                                formData.startDate
+                                                            }
+                                                            onChange={
+                                                                handleInputChange
+                                                            }
+                                                            className={`w-full px-4 py-3 border-2 rounded-2xl bg-white ${
+                                                                errors.startDate
+                                                                    ? 'border-red-500'
+                                                                    : 'border-[#F5F0EB]'
+                                                            }`}
+                                                        />
+                                                        {errors.startDate && (
+                                                            <p className="text-red-500 text-sm">
+                                                                {
+                                                                    errors.startDate
+                                                                }
+                                                            </p>
+                                                        )}
+                                                    </div>
+
+                                                    <div>
+                                                        <label className="block mb-2 text-sm font-semibold">
+                                                            End Date *
+                                                        </label>
+                                                        <input
+                                                            ref={endDateRef}
+                                                            type="datetime-local"
+                                                            name="endDate"
+                                                            value={
+                                                                formData.endDate
+                                                            }
+                                                            onChange={
+                                                                handleInputChange
+                                                            }
+                                                            className={`w-full px-4 py-3 border-2 rounded-2xl bg-white ${
+                                                                errors.endDate
+                                                                    ? 'border-red-500'
+                                                                    : 'border-[#F5F0EB]'
+                                                            }`}
+                                                        />
+                                                        {errors.endDate && (
+                                                            <p className="text-red-500 text-sm">
+                                                                {errors.endDate}
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* CONTENT */}
+                                        <div className="bg-white/50 p-6 rounded-2xl border border-gray-100 space-y-6">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                                                    <span className="text-green-600 font-semibold text-sm">
+                                                        2
+                                                    </span>
+                                                </div>
+                                                <h3 className="text-xl font-bold text-gray-800">
+                                                    Content
+                                                </h3>
+                                            </div>
+
+                                            {/* SUBTITLE */}
+                                            <div>
+                                                <label className="block mb-2 text-sm font-semibold">
+                                                    Subtitle *
                                                 </label>
                                                 <input
-                                                    ref={endDateRef}
-                                                    type="datetime-local"
-                                                    name="endDate"
-                                                    value={formData.endDate}
+                                                    ref={subtitleRef}
+                                                    type="text"
+                                                    name="subtitle"
+                                                    value={formData.subtitle}
                                                     onChange={handleInputChange}
                                                     className={`w-full px-4 py-3 border-2 rounded-2xl bg-white ${
-                                                        errors.endDate
+                                                        errors.subtitle
                                                             ? 'border-red-500'
                                                             : 'border-[#F5F0EB]'
                                                     }`}
                                                 />
-                                                {errors.endDate && (
+                                                {errors.subtitle && (
                                                     <p className="text-red-500 text-sm">
-                                                        {errors.endDate}
+                                                        {errors.subtitle}
+                                                    </p>
+                                                )}
+                                            </div>
+
+                                            {/* TINYMCE */}
+                                            <div ref={contentRef}>
+                                                <label className="block mb-2 text-sm font-semibold">
+                                                    Full Content *
+                                                </label>
+
+                                                <TinyMCE
+                                                    initialValue=""
+                                                    onChange={
+                                                        handleContentChange
+                                                    }
+                                                />
+
+                                                {errors.content && (
+                                                    <p className="text-red-500 text-sm">
+                                                        {errors.content}
                                                     </p>
                                                 )}
                                             </div>
                                         </div>
-                                    )}
+
+                                        {/* IMAGE UPLOAD */}
+                                        <div
+                                            ref={imageRef}
+                                            className="bg-white/50 p-6 rounded-2xl border border-gray-100 space-y-6"
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                                                    <span className="text-purple-600 font-semibold text-sm">
+                                                        3
+                                                    </span>
+                                                </div>
+                                                <h3 className="text-xl font-bold text-gray-800">
+                                                    Featured Image
+                                                </h3>
+                                            </div>
+
+                                            <div
+                                                className={`border-2 border-dashed p-8 rounded-2xl text-center cursor-pointer ${
+                                                    errors.image
+                                                        ? 'border-red-500'
+                                                        : 'border-[#F5F0EB]'
+                                                }`}
+                                                onClick={() =>
+                                                    imageInputRef.current?.click()
+                                                }
+                                            >
+                                                <FaCloudUploadAlt className="text-4xl mx-auto mb-3" />
+                                                <p className="font-semibold">
+                                                    Click to upload
+                                                </p>
+
+                                                <input
+                                                    ref={imageInputRef}
+                                                    type="file"
+                                                    accept="image/*"
+                                                    className="hidden"
+                                                    onChange={
+                                                        handleFeaturedImageChange
+                                                    }
+                                                />
+                                            </div>
+
+                                            {errors.image && (
+                                                <p className="text-red-500 text-sm mt-1">
+                                                    {errors.image}
+                                                </p>
+                                            )}
+
+                                            {featuredImagePreview && (
+                                                <img
+                                                    src={featuredImagePreview}
+                                                    className="w-full h-48 object-cover rounded-2xl shadow mt-4"
+                                                />
+                                            )}
+                                        </div>
+
+                                        {/* BUTTONS */}
+                                        <div className="flex justify-end gap-4 pt-8 border-t border-gray-100">
+                                            <motion.button
+                                                type="button"
+                                                onClick={onClose}
+                                                whileHover={{ scale: 1.02 }}
+                                                whileTap={{ scale: 0.98 }}
+                                                className="px-8 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 hover:border-gray-400 transition-all font-medium"
+                                            >
+                                                Cancel
+                                            </motion.button>
+
+                                            <motion.button
+                                                type="submit"
+                                                disabled={isSubmitting}
+                                                whileHover={{
+                                                    scale: isSubmitting
+                                                        ? 1
+                                                        : 1.02,
+                                                }}
+                                                whileTap={{
+                                                    scale: isSubmitting
+                                                        ? 1
+                                                        : 0.98,
+                                                }}
+                                                className="px-8 py-3 bg-black hover:bg-gray-800 text-white rounded-xl transition-all font-medium shadow-lg disabled:opacity-70 disabled:cursor-not-allowed flex items-center gap-2"
+                                            >
+                                                {isSubmitting ? (
+                                                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                                ) : (
+                                                    <FaSave />
+                                                )}
+                                                {isSubmitting
+                                                    ? 'Publishing...'
+                                                    : 'Publish News'}
+                                            </motion.button>
+                                        </div>
+                                    </form>
                                 </div>
-
-                                {/* CONTENT */}
-                                <div className="space-y-4 pb-6 border-b border-[#F5F0EB]">
-                                    <h3 className="text-xl font-semibold">
-                                        Content
-                                    </h3>
-
-                                    {/* SUBTITLE */}
-                                    <div>
-                                        <label className="block mb-2 text-sm font-semibold">
-                                            Subtitle *
-                                        </label>
-                                        <input
-                                            ref={subtitleRef}
-                                            type="text"
-                                            name="subtitle"
-                                            value={formData.subtitle}
-                                            onChange={handleInputChange}
-                                            className={`w-full px-4 py-3 border-2 rounded-2xl bg-white ${
-                                                errors.subtitle
-                                                    ? 'border-red-500'
-                                                    : 'border-[#F5F0EB]'
-                                            }`}
-                                        />
-                                        {errors.subtitle && (
-                                            <p className="text-red-500 text-sm">
-                                                {errors.subtitle}
-                                            </p>
-                                        )}
-                                    </div>
-
-                                    {/* TINYMCE */}
-                                    <div ref={contentRef}>
-                                        <label className="block mb-2 text-sm font-semibold">
-                                            Full Content *
-                                        </label>
-
-                                        <TinyMCE
-                                            initialValue=""
-                                            onChange={handleContentChange}
-                                        />
-
-                                        {errors.content && (
-                                            <p className="text-red-500 text-sm">
-                                                {errors.content}
-                                            </p>
-                                        )}
-                                    </div>
-                                </div>
-
-                                {/* IMAGE UPLOAD */}
-                                <div ref={imageRef} className="space-y-4">
-                                    <h3 className="text-xl font-semibold">
-                                        Featured Image *
-                                    </h3>
-
-                                    <div
-                                        className={`border-2 border-dashed p-8 rounded-2xl text-center cursor-pointer ${
-                                            errors.image
-                                                ? 'border-red-500'
-                                                : 'border-[#F5F0EB]'
-                                        }`}
-                                        onClick={() =>
-                                            imageInputRef.current?.click()
-                                        }
-                                    >
-                                        <FaCloudUploadAlt className="text-4xl mx-auto mb-3" />
-                                        <p className="font-semibold">
-                                            Click to upload
-                                        </p>
-
-                                        <input
-                                            ref={imageInputRef}
-                                            type="file"
-                                            accept="image/*"
-                                            className="hidden"
-                                            onChange={handleFeaturedImageChange}
-                                        />
-                                    </div>
-
-                                    {errors.image && (
-                                        <p className="text-red-500 text-sm mt-1">
-                                            {errors.image}
-                                        </p>
-                                    )}
-
-                                    {featuredImagePreview && (
-                                        <img
-                                            src={featuredImagePreview}
-                                            className="w-full h-48 object-cover rounded-2xl shadow mt-4"
-                                        />
-                                    )}
-                                </div>
-
-                                {/* BUTTONS */}
-                                <div className="flex justify-end gap-4 pt-4">
-                                    <button
-                                        type="button"
-                                        onClick={onClose}
-                                        className="px-6 py-3 border border-black rounded-2xl hover:bg-black hover:text-white"
-                                    >
-                                        Cancel
-                                    </button>
-
-                                    <button
-                                        type="submit"
-                                        disabled={isSubmitting}
-                                        className="px-8 py-3 bg-black text-white rounded-2xl hover:bg-gray-900"
-                                    >
-                                        {isSubmitting
-                                            ? 'Publishing...'
-                                            : 'Publish News'}
-                                        <FaSave className="inline ml-2" />
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
+                            </div>
+                        </motion.div>
                     </motion.div>
                 </>
             )}

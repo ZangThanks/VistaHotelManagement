@@ -3,6 +3,7 @@ package com.hotelvista.controller;
 import com.hotelvista.dto.BookingRequestDTO;
 import com.hotelvista.dto.PaymentWebhookDTO;
 import com.hotelvista.model.Booking;
+import com.hotelvista.model.BookingCancellation;
 import com.hotelvista.model.BookingDetail;
 import com.hotelvista.model.Customer;
 import com.hotelvista.model.enums.BookingStatus;
@@ -71,8 +72,6 @@ public class BookingController {
         return service.findAllByCustomer_Id(customerId);
     }
 
-    
-    
     @GetMapping("/search")
     public List<Booking> searchBookings(@RequestParam(required = false) String keyword) {
         return service.searchBookings(keyword);
@@ -233,76 +232,6 @@ public class BookingController {
             System.err.println("ERROR processing payment webhook: " + e.getMessage());
             e.printStackTrace();
             return ResponseEntity.internalServerError().body("Error processing payment: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Trích booking ID từ payment content or description
-     * "Qafmgq4306  SEPAY7974 1  108449638088-B2411250005-CHUYEN TIEN..."
-     */
-    private String extractBookingId(String content, String description) {
-        // Try content first
-        String text = (content != null && !content.trim().isEmpty()) ? content : description;
-        if (text == null || text.trim().isEmpty()) {
-            return null;
-        }
-
-        System.out.println("Extracting booking ID from: " + text);
-
-        // Bank format: Look for booking ID pattern B + 10 digits
-        // Example: "Qafmgq4306  SEPAY7974 1  108449638088-B2411250005-CHUYEN TIEN..."
-        // Booking ID format: B[ddMMyy][sequence] e.g., B2411250005
-
-        // Use regex to find booking ID pattern in the entire text
-        Pattern pattern = java.util.regex.Pattern.compile("B\\d{10}");
-        Matcher matcher = pattern.matcher(text);
-
-        if (matcher.find()) {
-            String bookingId = matcher.group();
-            System.out.println("Extracted booking ID using regex pattern: " + bookingId);
-            return bookingId;
-        }
-
-        System.out.println("No booking ID found in text");
-        return null;
-    }
-
-    /**
-     * Tính toán số tiền thanh toán dự kiến dự trên điểm uy tín (reputationScore) của khách hàng
-     */
-    private double calculateExpectedPaymentAmount(Booking booking, Customer customer) {
-        double totalAmount = booking.getTotalAmount();
-        int reputation = customer.getReputationPoint();
-
-        if (reputation >= 0 && reputation <= 40) {
-            return totalAmount; // 100% prepayment
-        } else if (reputation > 40 && reputation <= 80) {
-            return totalAmount * 0.3; // 30% prepayment
-        } else {
-            // For high reputation (81-100), they can choose 0%, 50%, or 100%
-            // We can't know their choice here, so return 0 to skip validation
-            return 0;
-        }
-    }
-
-    /**
-     * Xác định payment status dựa trên số tiền đã thanh toán và tổng số tiền
-     */
-    private PaymentStatus determinePaymentStatus(double paidAmount, double totalAmount, Customer customer) {
-        if (paidAmount <= 0) {
-            return PaymentStatus.PENDING;
-        }
-
-        double percentage = (paidAmount / totalAmount) * 100;
-
-        if (percentage >= 99) { // Allow small tolerance
-            return PaymentStatus.PAID;
-        } else if (percentage >= 45 && percentage < 55) {
-            return PaymentStatus.PERCENTAGE_50;
-        } else if (percentage >= 25 && percentage < 35) {
-            return PaymentStatus.PERCENTAGE_30;
-        } else {
-            return PaymentStatus.PAID; // Any payment received marks as paid
         }
     }
 
@@ -485,5 +414,47 @@ public class BookingController {
     @GetMapping("/overlapping-bookings/{roomNumber}")
     public List<LocalDateTime> findOverlappingBookings(@PathVariable("roomNumber") String roomNumber) {
         return bookingDetailService.findOverlappingBookings(roomNumber);
+    }
+
+    /**
+     * Kiểm tra phòng có available trong khoảng thời gian không
+     * Trả về danh sách các booking bị trùng lịch
+     */
+    @GetMapping("check-availability")
+    public ResponseEntity<?> checkRoomAvailability(
+            @RequestParam String roomNumber,
+            @RequestParam String checkinDate,
+            @RequestParam String checkoutDate
+    ) {
+        try {
+            LocalDateTime checkIn = LocalDateTime.parse(checkinDate);
+            LocalDateTime checkOut = LocalDateTime.parse(checkoutDate);
+
+            // Validate input
+            if (checkOut.isBefore(checkIn) || checkOut.isEqual(checkIn)) {
+                return ResponseEntity.badRequest().body("Check-out must be after check-in");
+            }
+
+            // Tìm các booking bị conflict
+            List<Booking> conflicts = service.findConflictingBookings(roomNumber, checkIn, checkOut);
+
+            return ResponseEntity.ok(conflicts);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError()
+                    .body("Error checking room availability: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Hủy booking
+     */
+    @PostMapping("/{id}/cancel")
+    public ResponseEntity<?> cancelBooking(
+            @PathVariable String id,
+            @RequestBody Map<String, Object> body
+    ) {
+        BookingCancellation cancellation = service.cancelBooking(id, body);
+        return ResponseEntity.ok(cancellation);
     }
 }

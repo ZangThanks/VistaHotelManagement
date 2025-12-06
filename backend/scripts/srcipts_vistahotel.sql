@@ -165,13 +165,13 @@ VALUES ('STE', 3),
 -- CUSTOMERS
 INSERT INTO customers (customer_id, address, email, full_name, PASSWORD, joined_date, phone, user_name, user_role,
                        birth_date, gender, loyalty_points, membership_level)
-VALUES ('CUST001', 'TP.HCM', 'nguyenvana@gmail.com', 'Nguyễn Văn A', 'hashedpw1', '2025-10-20', '0901234567',
+VALUES ('CUS0412250001', 'TP.HCM', 'nguyenvana@gmail.com', 'Nguyễn Văn A', 'hashedpw1', '2025-10-20', '0901234567',
         'nguyenvana', 'CUSTOMER', '1990-05-20', 'MALE', 12000, 'SILVER'),
-       ('CUST002', 'TP.HCM', 'tranthib@gmail.com', 'Trần Thị B', 'hashedpw2', '2025-10-20', '0912345678', 'tranthib',
+       ('CUS0412250002', 'TP.HCM', 'tranthib@gmail.com', 'Trần Thị B', 'hashedpw2', '2025-10-20', '0912345678', 'tranthib',
         'CUSTOMER', '1988-08-15', 'FEMALE', 55000, 'GOLD'),
-       ('CUST003', 'TP.HCM', 'lequocd@gmail.com', 'Lê Quốc D', 'hashedpw3', '2025-10-20', '0923456789', 'lequocd',
+       ('CUS0412250003', 'TP.HCM', 'lequocd@gmail.com', 'Lê Quốc D', 'hashedpw3', '2025-10-20', '0923456789', 'lequocd',
         'CUSTOMER', '1995-12-01', 'MALE', 2500, 'BRONZE'),
-       ('CUST004', 'TP.HCM', 'phamthic@gmail.com', 'Phạm Thị C', 'hashedpw4', '2025-10-20', '0934567890', 'phamthic',
+       ('CUS0412250004', 'TP.HCM', 'phamthic@gmail.com', 'Phạm Thị C', 'hashedpw4', '2025-10-20', '0934567890', 'phamthic',
         'CUSTOMER', '1992-03-10', 'FEMALE', 105000, 'PLATINUM');
 
 -- EMPLOYEES (Using the specified names)
@@ -247,8 +247,8 @@ VALUES ('VOUCHER001', 5, 'PERCENT', NULL, '2024-12-31', b'1', '2024-06-01', 'Gi�
 
 -- CUSTOMER VOUCHERS
 INSERT INTO customer_vouchers (state, vouchers_id, customer_id)
-VALUES (b'1', 'VOUCHER001', 'CUST002'),
-       (b'1', 'VOUCHER002', 'CUST003');
+VALUES (b'1', 'VOUCHER001', 'CUS0412250002'),
+       (b'1', 'VOUCHER002', 'CUS0412250003');
 
 -- REVIEWS (Need to create reviews before booking_details since booking_details references reviews)
 INSERT INTO reviews (review_id, comment, is_anonymous, location, rating, review_date, room_quantity, service_quantity,
@@ -270,13 +270,13 @@ INSERT INTO bookings (booking_id, booking_date, cancellation_date, check_in_date
                       number_of_guests, package_type, payment_status, special_requests, status, total_amount,
                       total_cost, customer_id, employee_id)
 VALUES ('BOOK001', '2024-06-01 09:00:00', NULL, '2024-06-10 14:00:00', '2024-06-12 12:00:00', 2, NULL, 2, 'Standard',
-        'COMPLETED', 'Yêu cầu phòng tầng thấp', 'CHECKED_OUT', 1800000, 1800000, 'CUST001', 'EMP001'),
+        'COMPLETED', 'Yêu cầu phòng tầng thấp', 'CHECKED_OUT', 1800000, 1800000, 'CUS0412250001', 'EMP001'),
        ('BOOK002', '2024-06-02 10:00:00', NULL, '2024-06-15 14:00:00', '2024-06-18 12:00:00', 3, NULL, 3, 'Deluxe',
-        'COMPLETED', 'Ban công view biển', 'CHECKED_IN', 4500000, 4500000, 'CUST002', 'EMP001'),
+        'COMPLETED', 'Ban công view biển', 'CHECKED_IN', 4500000, 4500000, 'CUS0412250002', 'EMP001'),
        ('BOOK003', '2024-06-03 11:00:00', NULL, '2024-06-20 14:00:00', '2024-06-21 12:00:00', 1, NULL, 1, 'Suite',
-        'PENDING', 'Check-in sớm', 'PENDING', 3000000, 3000000, 'CUST003', 'EMP003'),
+        'PENDING', 'Check-in sớm', 'PENDING', 3000000, 3000000, 'CUS0412250003', 'EMP003'),
        ('BOOK004', '2024-06-04 12:00:00', '2024-06-05 15:00:00', '2024-06-25 14:00:00', '2024-06-27 12:00:00', 2, NULL,
-        2, 'Deluxe', 'REFUNDED', 'Hủy phòng do việc đột xuất', 'CANCELLED', 0, 0, 'CUST004', 'EMP005');
+        2, 'Deluxe', 'REFUNDED', 'Hủy phòng do việc đột xuất', 'CANCELLED', 0, 0, 'CUS0412250004', 'EMP005');
 
 -- BOOKING DETAILS
 INSERT INTO booking_details (room_price, booking_id, room_number, review_id) VALUES
@@ -322,7 +322,7 @@ VALUES ('REP001', '2024-06-01 18:00:00', '2024-06', 'OCCUPANCY', 'EMP003'),
        ('REP004', '2024-06-03 10:00:00', '2024-06', 'SERVICE', 'EMP005');
 
 INSERT INTO cart_beans (cart_bean_id, customer_id)
-                              VALUES ('CA5073', 'CUST004');
+                              VALUES ('CA5073', 'CUS0412250004');
 
 INSERT INTO cart_items (room_number, cart_bean_id)
 VALUES ('STD101', 'CA5073'),

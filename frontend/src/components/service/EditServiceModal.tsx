@@ -23,7 +23,8 @@ const EditServiceModal: React.FC<EditServiceModalProps> = ({
 
     const validateServiceHours = (hours: string): boolean => {
         if (!hours || hours.trim() === '') return false;
-        const pattern = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]\s*-\s*([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
+        const pattern =
+            /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]\s*-\s*([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
         return pattern.test(hours.trim());
     };
 
@@ -53,7 +54,9 @@ const EditServiceModal: React.FC<EditServiceModalProps> = ({
 
         // Validate giờ hoạt động
         if (!validateServiceHours(formData.serviceHours)) {
-            setError('Giờ hoạt động không được để trống và phải đúng định dạng. Vui lòng nhập theo mẫu: 08:00-22:00');
+            setError(
+                'Giờ hoạt động không được để trống và phải đúng định dạng. Vui lòng nhập theo mẫu: 08:00-22:00',
+            );
             setLoading(false);
             return;
         }
@@ -123,7 +126,8 @@ const EditServiceModal: React.FC<EditServiceModalProps> = ({
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Tên Dịch Vụ <span className="text-red-500">*</span>
+                                Tên Dịch Vụ{' '}
+                                <span className="text-red-500">*</span>
                             </label>
                             <input
                                 type="text"
@@ -151,7 +155,8 @@ const EditServiceModal: React.FC<EditServiceModalProps> = ({
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Giá (VNĐ) <span className="text-red-500">*</span>
+                                Giá (VNĐ){' '}
+                                <span className="text-red-500">*</span>
                             </label>
                             <input
                                 type="number"
@@ -167,7 +172,8 @@ const EditServiceModal: React.FC<EditServiceModalProps> = ({
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Giờ Hoạt Động <span className="text-red-500">*</span>
+                                Giờ Hoạt Động{' '}
+                                <span className="text-red-500">*</span>
                             </label>
                             <input
                                 type="text"

@@ -56,14 +56,14 @@ const InfoCard: React.FC<InfoCardProps> = ({
 
     return (
         <motion.div
-            className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300"
-            whileHover={{ y: -5 }}
-            transition={{ type: 'spring', stiffness: 300 }}
+            className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-shadow duration-300"
+            whileHover={{ y: -8 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 20 }}
         >
             {/* Image */}
             <div
                 onClick={onView}
-                className="h-52 bg-cover bg-center relative cursor-pointer"
+                className="h-52 bg-cover bg-center relative cursor-pointer rounded-t-2xl"
                 style={{ backgroundImage: `url(${item.image})` }}
             >
                 <div className="absolute top-4 right-4">
@@ -72,7 +72,7 @@ const InfoCard: React.FC<InfoCardProps> = ({
             </div>
 
             {/* Body */}
-            <div className="p-5 flex flex-col h-[calc(100%-13rem)]">
+            <div className="p-5 flex flex-col h-[calc(100%-13rem)] rounded-b-2xl">
                 <h3 className="font-playfair text-xl mb-2 line-clamp-1">
                     {item.title}
                 </h3>
