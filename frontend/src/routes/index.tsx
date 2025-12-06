@@ -32,7 +32,6 @@ import NewsList from "../pages/admin/news/NewsList.tsx";
 import ServiceList from "../pages/customer/ServiceList.tsx";
 import IncidentReport from "../pages/customer/IncidentReport.tsx";
 import ServiceManagement from "../pages/admin/ServiceManagement.tsx";
-import BookingDetail from "../pages/admin/booking/BookingDetail.tsx";
 import Contact from "../pages/customer/Contact.tsx";
 import EmployeeList from "../pages/admin/EmployeeList.tsx";
 import BookingPage from "../pages/customer/booking/BookingPage.tsx";
@@ -40,7 +39,7 @@ import FAQ from "../pages/customer/FAQ.tsx";
 import AIConcierge from "../pages/customer/AIConcierge.tsx";
 import ChatSupport from "../pages/employee/ChatSupport.tsx";
 import PricingManager from "../pages/admin/pricing/PricingManager.tsx";
-import MyBookings from '../pages/customer/MyBooking.tsx';
+import MyBookings from "../pages/customer/MyBooking.tsx";
 import RoomManagement from "../pages/employee/room/RoomManagement.tsx";
 import RoomCart from "../pages/admin/booking/RoomCart.tsx";
 import PaymentPage from "../pages/customer/booking/PaymentPage.tsx";
@@ -50,6 +49,7 @@ import PromotionManagement from "../pages/admin/promotion/PromotionManagement.ts
 import PromotionTypeManagement from "../pages/admin/promotion/PromotionTypeManagement.tsx";
 import VoucherManagement from "../pages/admin/voucher/VoucherManagement.tsx";
 import ReportPage from "../pages/admin/report/Report.tsx";
+import BookingDetailPage from "../pages/customer/BookingDetail.tsx";
 
 export const router = createBrowserRouter([
   // OAuth
@@ -135,21 +135,21 @@ export const router = createBrowserRouter([
     ],
   },
 
-    // CUSTOMER
-    {
-        path: 'customer',
-        element: <CustomerLayout />,
-        children: [
-            { path: 'room', element: <RoomList /> },
-            { path: 'room/incident', element: <IncidentReport /> },
-            { path: 'room/:id', element: <RoomDetail /> },
-            { path: 'service', element: <ServiceList /> },
-            { path: 'bookingPage', element: <BookingPage /> },
-            { path: 'mybooking', element: <MyBookings /> },
-            { path: 'mybooking/:id', element: <BookingDetail /> },
-            { path: 'payment', element: <PaymentPage /> },
-            { path: 'profile', element: <UserProfilePage /> },
-            { path: 'cart', element: <RoomCart /> },
-        ],
-    },
+  // CUSTOMER
+  {
+    path: "customer",
+    element: <CustomerLayout />,
+    children: [
+      { path: "room", element: <RoomList /> },
+      { path: "room/incident", element: <IncidentReport /> },
+      { path: "room/:id", element: <RoomDetail /> },
+      { path: "service", element: <ServiceList /> },
+      { path: "bookingPage", element: <BookingPage /> },
+      { path: "mybooking", element: <MyBookings /> },
+      { path: "mybooking/:id", element: <BookingDetailPage /> },
+      { path: "payment", element: <PaymentPage /> },
+      { path: "profile", element: <UserProfilePage /> },
+      { path: "cart", element: <RoomCart /> },
+    ],
+  },
 ]);
