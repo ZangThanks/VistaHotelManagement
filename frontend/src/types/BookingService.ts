@@ -1,4 +1,5 @@
 import type { Booking } from './Booking';
+import type { Room } from './Room';
 import type { Service } from './Service';
 
 export type OrderStatus =
@@ -14,11 +15,13 @@ export type PaymentMethod =
     | 'CASH';
 
 export interface BookingService {
-    service: Service;
-    booking: Booking;
+    id?: number;
+    service?: Service;
+    booking?: Booking;
+    room?: Room;
     servicePrice: number;
     quantity: number;
     totalAmount: number;
     orderStatus: OrderStatus;
-    paymentMethod: PaymentMethod;
+    paymentMethod?: string;
 }

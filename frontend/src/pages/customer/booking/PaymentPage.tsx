@@ -7,6 +7,7 @@ import {
 } from '../../../services/bookingService';
 import type { Booking } from '../../../types/Booking';
 import CountdownTimer from '../../../components/common/CountdownTimer';
+import Header from '../../../components/Header';
 
 const PaymentPage: React.FC = () => {
     const location = useLocation();
@@ -192,7 +193,10 @@ const PaymentPage: React.FC = () => {
 
     return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4">
-            <div className="max-w-2xl w-full bg-white rounded-lg shadow-lg p-8">
+            <div className="fixed top-0 left-0 w-full z-[200]">
+                <Header />
+            </div>
+            <div className="max-w-2xl w-full bg-white rounded-lg shadow-lg p-8 pt-24">
                 <h1 className="text-3xl font-bold mb-6 text-center text-gray-900">
                     Payment
                 </h1>

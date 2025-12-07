@@ -1,4 +1,3 @@
-/*eslint-disable */
 import { useState, useEffect } from 'react';
 import type { Booking } from '../../types/Booking';
 import { cancelBooking } from '../../services/bookingService';
@@ -18,7 +17,6 @@ export default function CancelBookingModal({
     const [reason, setReason] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [confirmed, setConfirmed] = useState(false);
-    const [showPaymentInfo, setShowPaymentInfo] = useState(false);
     const [paymentInfo, setPaymentInfo] = useState({
         method: 'BANK_TRANSFER',
         accountNumber: '',
