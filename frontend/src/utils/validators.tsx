@@ -162,12 +162,15 @@ export const validateUserName = (userName: string): string => {
  */
 export const detectInputType = (
   value: string
-): "email" | "phone" | "unknown" => {
+): "email" | "phone" | "username" | "unknown" => {
   const phoneRegex = /^(0|\+84)[3|5|7|8|9][0-9]{8}$/;
   if (phoneRegex.test(value)) return "phone";
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (emailRegex.test(value)) return "email";
+
+  const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/;
+  if (usernameRegex.test(value)) return "username";
 
   return "unknown";
 };

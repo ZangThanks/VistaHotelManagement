@@ -459,12 +459,12 @@ public class BookingController {
     /**
      * Hủy booking
      */
-//    @PostMapping("/{id}/cancel")
-//    public ResponseEntity<?> cancelBooking(
-//            @PathVariable String id,
-//            @RequestBody Map<String, Object> body
-//    ) {
-//        BookingCancellation cancellation = service.cancelBooking(id, body);
-//        return ResponseEntity.ok(cancellation);
-//    }
+    @PostMapping("/{id}/cancel")
+    public ResponseEntity<?> cancelBooking(
+            @PathVariable String id,
+            @RequestBody Map<String, Object> body
+    ) {
+        BookingCancellation cancellation = service.cancelBooking(id, body);
+        return ResponseEntity.ok(cancellation);
+    }
 }

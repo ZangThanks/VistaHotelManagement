@@ -71,8 +71,8 @@ public class BookingService {
             if(bookingDetails != null && !bookingDetails.isEmpty()) {
                 for (BookingDetail detail : bookingDetails) {
                     Room room = roomRepo.findById(detail.getRoom().getRoomNumber())
-                        .orElseThrow(() -> new BadRequestException("Room not found: " + detail.getRoom().getRoomNumber()));
-                    
+                            .orElseThrow(() -> new BadRequestException("Room not found: " + detail.getRoom().getRoomNumber()));
+
                     detail.setRoom(room);
                     detail.setBooking(savedBooking);
                     detailRepo.save(detail);
@@ -82,8 +82,8 @@ public class BookingService {
             if(bookingServices != null && !bookingServices.isEmpty()) {
                 for (com.hotelvista.model.BookingService service : bookingServices) {
                     com.hotelvista.model.Service svc = serviceRepository.findById(service.getService().getServiceID())
-                        .orElseThrow(() -> new BadRequestException("Service not found: " + service.getService().getServiceID()));
-                    
+                            .orElseThrow(() -> new BadRequestException("Service not found: " + service.getService().getServiceID()));
+
                     service.setService(svc);
                     service.setBooking(savedBooking);
                     serviceRepo.save(service);
@@ -125,12 +125,12 @@ public class BookingService {
 
     @Transactional
     public String generateBookingID() {
-         LocalDate today = LocalDate.now();
-         String prefix = "B" + today.format(DateTimeFormatter.ofPattern("ddMMyy")); // B110925
-    
+        LocalDate today = LocalDate.now();
+        String prefix = "B" + today.format(DateTimeFormatter.ofPattern("ddMMyy")); // B110925
+
         Integer maxSequence = repo.findMaxSequenceForToday(prefix);
         int nextSequence = (maxSequence == null) ? 1 : maxSequence + 1;
-    
+
         return prefix + String.format("%04d", nextSequence); // B1109250001
     }
 
@@ -203,8 +203,6 @@ public class BookingService {
         return repo.findConflictingBookings(roomNumber, checkIn, checkOut);
     }
 
-<<<<<<< HEAD
-=======
     @Transactional(rollbackFor = Exception.class)
     public BookingCancellation cancelBooking(String bookingId, Map<String, Object> body) {
 
@@ -305,7 +303,6 @@ public class BookingService {
     public String generateCancellationId(String bookingId) {
         return "C-" + bookingId;
     }
->>>>>>> parent of 49f8cef (Merge remote-tracking branch 'origin/doankhoe' into vuxvux)
 
 }
 
