@@ -27,9 +27,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
     private final CartBeanService cartBeanService;
-
-   @Autowired
-    private CustomerService customerService;
+    private final CustomerService customerService;
 
     /**
      * Tìm user bằng email hoặc phone, áp dụng cho Customer + Admin + Employee

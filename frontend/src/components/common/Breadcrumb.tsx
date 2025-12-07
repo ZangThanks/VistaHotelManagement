@@ -18,22 +18,14 @@ const Breadcrumb: React.FC<BreadcrumbProps> = ({ items, className = "" }) => {
       className={`flex items-center gap-2 text-sm ${className}`}
       aria-label="Breadcrumb"
     >
-      {/* Home */}
-      <Link
-        to="/"
-        className="flex items-center gap-1 text-gray-600 hover:text-[#ccbda3] transition-colors"
-      >
-        <FaHome className="text-base" />
-        <span className="font-medium">Home</span>
-      </Link>
-
       {/* Breadcrumb Items */}
       {items.map((item, index) => {
         const isLast = index === items.length - 1;
+        const isFirst = index === 0;
 
         return (
           <div key={index} className="flex items-center gap-2">
-            <FaChevronRight className="text-xs text-gray-400" />
+            {!isFirst && <FaChevronRight className="text-xs text-gray-400" />}
 
             {item.path && !isLast ? (
               <Link
