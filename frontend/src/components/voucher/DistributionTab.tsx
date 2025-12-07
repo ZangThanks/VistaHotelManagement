@@ -34,36 +34,11 @@ export default function DistributionTab({
     const loadDistributionHistory = async () => {
         setLoading(true);
         try {
-            // TODO: Replace with actual API call when backend is ready
-            const mockHistory: DistributionHistory[] = [
-                {
-                    id: 1,
-                    voucherName: 'Spring Sale 20%',
-                    criteria: 'Gold Members, Female, March Birthday',
-                    recipientCount: 156,
-                    distributedAt: '2024-03-15 10:30:00',
-                    status: 'success',
-                },
-                {
-                    id: 2,
-                    voucherName: 'Welcome Bonus',
-                    criteria: 'All New Members',
-                    recipientCount: 89,
-                    distributedAt: '2024-03-10 14:20:00',
-                    status: 'success',
-                },
-                {
-                    id: 3,
-                    voucherName: 'VIP Exclusive',
-                    criteria: 'Platinum Members',
-                    recipientCount: 0,
-                    distributedAt: '2024-03-08 09:15:00',
-                    status: 'failed',
-                },
-            ];
-            setHistory(mockHistory);
+            const data = await voucherService.getDistributionHistory();
+            setHistory(data);
         } catch (error) {
             console.error('Error loading distribution history:', error);
+            setHistory([]);
         } finally {
             setLoading(false);
         }
@@ -113,7 +88,7 @@ export default function DistributionTab({
                                 >
                                     {voucher.voucherName} -{' '}
                                     {voucher.discountType === 'PERCENT'
-                                        ? `${voucher.discountValue}%`
+                                        ? `${voucher.discountPercentage}%`
                                         : `${voucher.discountValue?.toLocaleString()}đ`}
                                 </option>
                             ))}

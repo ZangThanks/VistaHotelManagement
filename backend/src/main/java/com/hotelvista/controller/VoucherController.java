@@ -1,6 +1,7 @@
 package com.hotelvista.controller;
 
 import com.hotelvista.dto.DistributionCriteriaDTO;
+import com.hotelvista.dto.DistributionHistoryDTO;
 import com.hotelvista.dto.DistributionResultDTO;
 import com.hotelvista.model.Voucher;
 import com.hotelvista.service.VoucherService;
@@ -218,5 +219,15 @@ public class VoucherController {
         return result.isSuccess()
                 ? ResponseEntity.ok(result)
                 : ResponseEntity.badRequest().body(result);
+    }
+
+    /**
+     * Lấy lịch sử phân phối voucher
+     * @return Danh sách lịch sử phân phối
+     */
+    @GetMapping("/distribution-history")
+    public ResponseEntity<List<DistributionHistoryDTO>> getDistributionHistory() {
+        List<DistributionHistoryDTO> history = service.getDistributionHistory();
+        return ResponseEntity.ok(history);
     }
 }

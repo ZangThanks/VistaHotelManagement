@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   FaChartLine,
   FaBed,
@@ -7,6 +7,11 @@ import {
   FaCalendarCheck,
   FaConciergeBell,
 } from "react-icons/fa";
+import reportService from "../../../services/reportService";
+import {
+  exportLoyaltyToPDF,
+  exportLoyaltyToExcel,
+} from "../../../utils/exportUtils";
 import type {
   RevenueData,
   OccupancyData,
@@ -22,7 +27,8 @@ import OccupancyChart from "../../../components/report/OccupancyChart";
 import RoomTypeAnalysis from "../../../components/report/RoomTypeAnalysis";
 import LoyaltyChart from "../../../components/report/LoyaltyChart";
 import MembershipDistribution from "../../../components/report/MembershipDistribution";
-import PointsRedemption from "../../../components/report/PointsRedemption";
+import LoyaltySummary from "../../../components/report/LoyaltySummary";
+// import PointsRedemption from "../../../components/report/PointsRedemption";
 import ReviewChart from "../../../components/report/ReviewChart";
 import RatingBreakdown from "../../../components/report/RatingBreakdown";
 import SentimentAnalysis from "../../../components/report/SentimentAnalysis";
@@ -52,7 +58,10 @@ const ReportPage: React.FC = () => {
   const [startDate, setStartDate] = useState("2024-01-01");
   const [endDate, setEndDate] = useState("2024-12-31");
 
-  //TODO: DATA MẪU!!
+  // State for API data
+  const [loyaltyData, setLoyaltyData] = useState<LoyaltyData[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Mock data - Revenue
   const revenueData: RevenueData[] = useMemo(
@@ -224,66 +233,44 @@ const ReportPage: React.FC = () => {
     []
   );
 
-  // Mock data - Loyalty
-  const loyaltyData: LoyaltyData[] = useMemo(
-    () => [
-      {
-        month: "Jan",
-        bronze: 420,
-        silver: 250,
-        gold: 130,
-        platinum: 38,
-        totalPoints: 125000,
-        redemptions: 45000,
-      },
-      {
-        month: "Feb",
-        bronze: 425,
-        silver: 255,
-        gold: 135,
-        platinum: 40,
-        totalPoints: 132000,
-        redemptions: 48000,
-      },
-      {
-        month: "Mar",
-        bronze: 430,
-        silver: 260,
-        gold: 138,
-        platinum: 42,
-        totalPoints: 138000,
-        redemptions: 52000,
-      },
-      {
-        month: "Apr",
-        bronze: 435,
-        silver: 265,
-        gold: 142,
-        platinum: 43,
-        totalPoints: 142000,
-        redemptions: 55000,
-      },
-      {
-        month: "May",
-        bronze: 440,
-        silver: 270,
-        gold: 145,
-        platinum: 44,
-        totalPoints: 148000,
-        redemptions: 58000,
-      },
-      {
-        month: "Jun",
-        bronze: 445,
-        silver: 275,
-        gold: 148,
-        platinum: 45,
-        totalPoints: 155000,
-        redemptions: 62000,
-      },
-    ],
-    []
-  );
+  // Fetch Loyalty Data from API
+  useEffect(() => {
+    const fetchLoyaltyData = async () => {
+      if (activeTab !== "loyalty") return;
+
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await reportService.getLoyaltyReport(
+          startDate,
+          endDate,
+          period.toUpperCase()
+        );
+        setLoyaltyData(data);
+      } catch (err) {
+        console.error("Failed to fetch loyalty report:", err);
+        setError("Failed to load loyalty data. Using sample data.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLoyaltyData();
+  }, [activeTab, startDate, endDate, period]);
+
+  // Handle export
+  const handleExport = (format: "pdf" | "excel") => {
+    const dateRangeText = `${startDate} to ${endDate}`;
+
+    if (activeTab === "loyalty") {
+      if (format === "pdf") {
+        exportLoyaltyToPDF(loyaltyData, dateRangeText);
+      } else {
+        exportLoyaltyToExcel(loyaltyData, dateRangeText);
+      }
+    }
+    // Add other report types here in the future
+  };
 
   // Mock data - Reviews
   const reviewData: ReviewData[] = useMemo(
@@ -637,16 +624,49 @@ const ReportPage: React.FC = () => {
       case "loyalty":
         return (
           <div className="space-y-6">
-            <div className="bg-white p-6 rounded-lg shadow-sm border border-[#EBE3D7]">
-              <h3 className="text-lg font-semibold mb-4">
-                Membership Growth Over Time
-              </h3>
-              <LoyaltyChart data={loyaltyData} />
-            </div>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <MembershipDistribution />
-              <PointsRedemption data={loyaltyData} />
-            </div>
+            {/* Loading State */}
+            {loading && (
+              <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-lg">
+                <p className="text-blue-700 font-medium">
+                  Loading loyalty data...
+                </p>
+              </div>
+            )}
+
+            {/* Error State */}
+            {error && (
+              <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-lg">
+                <p className="text-yellow-700 font-medium">{error}</p>
+              </div>
+            )}
+
+            {/* Data Display */}
+            {!loading && loyaltyData.length > 0 && (
+              <>
+                {/* Summary Statistics */}
+                <LoyaltySummary data={loyaltyData} />
+
+                {/* Charts Grid */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div className="bg-white p-6 rounded-lg shadow-sm border border-[#EBE3D7]">
+                    <h3 className="text-lg font-semibold mb-4">
+                      Membership Growth Trend
+                    </h3>
+                    <LoyaltyChart data={loyaltyData} />
+                  </div>
+                  <MembershipDistribution data={loyaltyData} />
+                </div>
+              </>
+            )}
+
+            {/* No Data State */}
+            {!loading && loyaltyData.length === 0 && !error && (
+              <div className="bg-gray-50 border border-gray-200 p-8 rounded-lg text-center">
+                <p className="text-gray-600">
+                  No loyalty data available for the selected period.
+                </p>
+              </div>
+            )}
           </div>
         );
 
@@ -728,6 +748,7 @@ const ReportPage: React.FC = () => {
               <ExportButton
                 reportType={activeTab}
                 dateRange={{ startDate, endDate }}
+                onExport={handleExport}
               />
             </div>
           </div>
