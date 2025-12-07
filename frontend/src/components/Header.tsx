@@ -10,6 +10,7 @@ import {
     faSignOutAlt,
 } from '@fortawesome/free-solid-svg-icons';
 import { CiShoppingCart, CiSearch, CiMenuBurger } from 'react-icons/ci';
+import NotificationBell from './common/NotificationBell';
 
 import type { NavItem } from '../types/Header';
 interface User {
@@ -92,77 +93,81 @@ const Header: React.FC = () => {
                 />
             </Link>
 
-            <div className="ml-auto relative group">
-                <button className="flex items-center text-black hover:opacity-80 transition">
-                    <FontAwesomeIcon
-                        icon={faUser}
-                        className="cursor-pointer text-black text-xl"
-                    />
-                </button>
-                <div className="absolute right-0 mt-2 w-48 bg-black/50 backdrop-blur-md rounded-md shadow-lg ring-1 ring-white/10 py-1 z-50 opacity-0 invisible scale-95 transform transition-all duration-300 ease-out group-hover:opacity-100 group-hover:visible group-hover:scale-100">
-                    {user ? (
-                        // Logged in user menu
-                        <>
-                            <div className="px-4 py-2 border-b border-white/10">
-                                <p className="text-sm text-white font-serif">
-                                    Hello,{' '}
-                                    {getLastTwoWords(
-                                        user.fullName || user.userName,
-                                    )}
-                                </p>
-                            </div>
+            <div className="ml-auto flex items-center gap-3">
+                <NotificationBell />
 
-                            <Link
-                                to="/customer/profile"
-                                className="flex items-center px-4 py-2 text-sm text-white hover:bg-white/10 font-serif transition"
-                            >
-                                <FontAwesomeIcon
-                                    icon={faUserCircle}
-                                    className="mr-2 w-4"
-                                />
-                                My Profile
-                            </Link>
+                <div className="relative group">
+                    <button className="flex items-center text-black hover:opacity-80 transition">
+                        <FontAwesomeIcon
+                            icon={faUser}
+                            className="cursor-pointer text-black text-xl"
+                        />
+                    </button>
+                    <div className="absolute right-0 mt-2 w-48 bg-black/50 backdrop-blur-md rounded-md shadow-lg ring-1 ring-white/10 py-1 z-50 opacity-0 invisible scale-95 transform transition-all duration-300 ease-out group-hover:opacity-100 group-hover:visible group-hover:scale-100">
+                        {user ? (
+                            // Logged in user menu
+                            <>
+                                <div className="px-4 py-2 border-b border-white/10">
+                                    <p className="text-sm text-white font-serif">
+                                        Hello,{' '}
+                                        {getLastTwoWords(
+                                            user.fullName || user.userName,
+                                        )}
+                                    </p>
+                                </div>
 
-                            <Link
-                                to="/customer/mybooking"
-                                className="flex items-center px-4 py-2 text-sm text-white hover:bg-white/10 font-serif transition"
-                            >
-                                <FontAwesomeIcon
-                                    icon={faBookmark}
-                                    className="mr-2 w-4"
-                                />
-                                My Booking
-                            </Link>
+                                <Link
+                                    to="/customer/profile"
+                                    className="flex items-center px-4 py-2 text-sm text-white hover:bg-white/10 font-serif transition"
+                                >
+                                    <FontAwesomeIcon
+                                        icon={faUserCircle}
+                                        className="mr-2 w-4"
+                                    />
+                                    My Profile
+                                </Link>
 
-                            <button
-                                onClick={handleLogout}
-                                className="flex items-center w-full text-left px-4 py-2 text-sm text-white hover:bg-white/10 font-serif transition"
-                            >
-                                <FontAwesomeIcon
-                                    icon={faSignOutAlt}
-                                    className="mr-2 w-4"
-                                />
-                                Logout
-                            </button>
-                        </>
-                    ) : (
-                        // Not logged in menu
-                        <>
-                            <Link
-                                to="/auth/login"
-                                className="block px-4 py-2 text-sm text-white hover:bg-white/10 font-serif transition"
-                            >
-                                Login
-                            </Link>
+                                <Link
+                                    to="/customer/mybooking"
+                                    className="flex items-center px-4 py-2 text-sm text-white hover:bg-white/10 font-serif transition"
+                                >
+                                    <FontAwesomeIcon
+                                        icon={faBookmark}
+                                        className="mr-2 w-4"
+                                    />
+                                    My Booking
+                                </Link>
 
-                            <Link
-                                to="/auth/register"
-                                className="block px-4 py-2 text-sm text-white hover:bg-white/10 font-serif transition"
-                            >
-                                Register
-                            </Link>
-                        </>
-                    )}
+                                <button
+                                    onClick={handleLogout}
+                                    className="flex items-center w-full text-left px-4 py-2 text-sm text-white hover:bg-white/10 font-serif transition"
+                                >
+                                    <FontAwesomeIcon
+                                        icon={faSignOutAlt}
+                                        className="mr-2 w-4"
+                                    />
+                                    Logout
+                                </button>
+                            </>
+                        ) : (
+                            // Not logged in menu
+                            <>
+                                <Link
+                                    to="/auth/login"
+                                    className="block px-4 py-2 text-sm text-white hover:bg-white/10 font-serif transition"
+                                >
+                                    Login
+                                </Link>
+
+                                <Link
+                                    to="/auth/register"
+                                    className="block px-4 py-2 text-sm text-white hover:bg-white/10 font-serif transition"
+                                >
+                                    Register
+                                </Link>
+                            </>
+                        )}
+                    </div>
                 </div>
             </div>
 

@@ -72,7 +72,7 @@ export const getBookingsByCustomerId = async (
 ): Promise<Booking[]> => {
   try {
     const response = await api.get(`${ENDPOINT}/customer/${customerId}`);
-    console.log(`📋 Bookings for customer ${customerId}:`, response.data);
+    // console.log(`📋 Bookings for customer ${customerId}:`, response.data);
     return response.data;
   } catch (error) {
     console.error(`Error fetching bookings for customer ${customerId}:`, error);

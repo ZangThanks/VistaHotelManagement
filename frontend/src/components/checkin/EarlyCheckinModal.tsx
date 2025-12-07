@@ -4,6 +4,9 @@ import { useToastContext } from '../../hooks/useToastContext';
 import { createEarlyCheckinRequest } from '../../services/earlyCheckinService';
 import ModernCalendar from '../common/ModernCalendar';
 import TimePicker from '../common/Time';
+import { useNotificationContext } from '../../context/NotificationContextAPI';
+import { earlyCheckinNotificationService } from '../../services/earlyCheckinNotificationService';
+import type { EarlyCheckinRequest } from '../../services/earlyCheckinNotificationService';
 
 type Props = {
     onClose: () => void;
@@ -12,6 +15,7 @@ type Props = {
 
 export default function EarlyCheckinModal({ onClose, booking }: Props) {
     const toast = useToastContext();
+    const { refreshNotifications } = useNotificationContext();
 
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [time, setTime] = useState('');
@@ -201,6 +205,12 @@ export default function EarlyCheckinModal({ onClose, booking }: Props) {
     const handleSubmit = async () => {
         if (!validate()) return;
 
+        console.log('🚀 Starting early check-in request with notification...', {
+            booking,
+            time,
+            selectedDate,
+        });
+
         try {
             const finalDate = selectedDate.toISOString().split('T')[0];
             const payload = {
@@ -213,6 +223,42 @@ export default function EarlyCheckinModal({ onClose, booking }: Props) {
             const res = await createEarlyCheckinRequest(payload);
 
             if (res.success || res.requestID) {
+                // Send notifications through notification system
+                try {
+                    const notificationRequest: EarlyCheckinRequest = {
+                        customerId: booking.customer.id,
+                        customerName:
+                            booking.customer.fullName ||
+                            booking.customer.name ||
+                            'Khách hàng',
+                        roomNumber:
+                            booking.bookingDetails?.[0]?.room?.roomNumber ||
+                            'N/A',
+                        bookingId: booking.bookingID,
+                        requestedTime: time,
+                        standardCheckInTime: '14:00', // Default check-in time
+                        reason: 'Yêu cầu check-in sớm từ khách hàng',
+                        userRole: 'CUSTOMER',
+                    };
+
+                    await earlyCheckinNotificationService.sendEarlyCheckinRequest(
+                        notificationRequest,
+                    );
+
+                    // Refresh notifications to show immediately
+                    await refreshNotifications();
+
+                    console.log(
+                        '✅ Notifications sent successfully for early check-in request',
+                    );
+                } catch (notifError) {
+                    console.error(
+                        '⚠️ Failed to send notifications:',
+                        notifError,
+                    );
+                    // Don't block the main flow if notification fails
+                }
+
                 toast.success('Yêu cầu check-in sớm đã được gửi!');
                 onClose();
                 setTimeout(() => window.location.reload(), 300);
