@@ -55,7 +55,7 @@ export const validateEmailOrPhone = (value: string): string => {
 
   if (phoneRegex.test(value) || emailRegex.test(value)) return "";
 
-  return "Invalid email or phone number format";
+  return "Invalid email format";
 };
 
 /**
