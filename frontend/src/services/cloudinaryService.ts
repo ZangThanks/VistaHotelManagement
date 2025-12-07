@@ -1,5 +1,7 @@
-const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || "your_cloud_name";
-const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || "your_upload_preset";
+const CLOUDINARY_CLOUD_NAME =
+    import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'your_cloud_name';
+const CLOUDINARY_UPLOAD_PRESET =
+    import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || 'your_upload_preset';
 
 export interface CloudinaryUploadResponse {
     secure_url: string;
@@ -13,30 +15,30 @@ export interface CloudinaryUploadResponse {
  * Upload 1 ảnh lên Cloudinary
  */
 export const uploadImageToCloudinary = async (
-    file: File
+    file: File,
 ): Promise<CloudinaryUploadResponse> => {
     const formData = new FormData();
-    formData.append("file", file);
-    formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
-    formData.append("folder", "vistal-hotel");
+    formData.append('file', file);
+    formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+    formData.append('folder', 'vistal-hotel');
 
     try {
         const response = await fetch(
             `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
             {
-                method: "POST",
+                method: 'POST',
                 body: formData,
-            }
+            },
         );
 
         if (!response.ok) {
-            throw new Error("Failed to upload image to Cloudinary");
+            throw new Error('Failed to upload image to Cloudinary');
         }
-        
+
         const data = await response.json();
         return data;
     } catch (error) {
-        console.error("Error uploading to Cloudinary:", error);
+        console.error('Error uploading to Cloudinary:', error);
         throw error;
     }
 };
@@ -45,9 +47,9 @@ export const uploadImageToCloudinary = async (
  * Upload nhiều ảnh lên Cloudinary
  */
 export const uploadMultipleImagesToCloudinary = async (
-    files: File[]
+    files: File[],
 ): Promise<CloudinaryUploadResponse[]> => {
-    const uploadPromises  = files.map((file) => uploadImageToCloudinary(file));
+    const uploadPromises = files.map((file) => uploadImageToCloudinary(file));
     return Promise.all(uploadPromises);
 };
 

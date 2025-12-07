@@ -16,40 +16,40 @@ interface IncidentReportFormProps {
 }
 
 const CATEGORIES: { value: IncidentCategory; label: string; icon: string }[] = [
-    { value: 'ROOM_MAINTENANCE', label: 'Room maintenance', icon: '🔧' },
-    { value: 'CLEANLINESS', label: 'Cleanliness', icon: '🧹' },
-    { value: 'NOISE', label: 'Noise', icon: '🔊' },
-    { value: 'EQUIPMENT_FAILURE', label: 'Equipment failure', icon: '⚠️' },
-    { value: 'SAFETY_SECURITY', label: 'Safety & Security', icon: '🔒' },
-    { value: 'SERVICE_COMPLAINT', label: 'Service complaint', icon: '📋' },
-    { value: 'OTHER', label: 'Other', icon: '💬' },
+    { value: 'ROOM_MAINTENANCE', label: 'Bảo trì phòng', icon: '🔧' },
+    { value: 'CLEANLINESS', label: 'Vệ sinh', icon: '🧹' },
+    { value: 'NOISE', label: 'Tiếng ồn', icon: '🔊' },
+    { value: 'EQUIPMENT_FAILURE', label: 'Thiết bị hỏng', icon: '⚠️' },
+    { value: 'SAFETY_SECURITY', label: 'An toàn & Bảo mật', icon: '🔒' },
+    { value: 'SERVICE_COMPLAINT', label: 'Khiếu nại dịch vụ', icon: '📋' },
+    { value: 'OTHER', label: 'Khác', icon: '💬' },
 ];
 
 const PRIORITIES: { value: IncidentPriority; label: string; color: string }[] =
     [
         {
             value: 'LOW',
-            label: 'Low',
+            label: 'Thấp',
             color: 'bg-green-100 text-green-800 border-green-300',
         },
         {
             value: 'MEDIUM',
-            label: 'Medium',
+            label: 'Trung bình',
             color: 'bg-yellow-100 text-yellow-800 border-yellow-300',
         },
         {
             value: 'HIGH',
-            label: 'High',
+            label: 'Cao',
             color: 'bg-orange-100 text-orange-800 border-orange-300',
         },
         {
             value: 'URGENT',
-            label: 'Urgent',
+            label: 'Khẩn cấp',
             color: 'bg-red-100 text-red-800 border-red-300',
         },
         {
             value: 'CRITICAL',
-            label: 'Critical',
+            label: 'Nghiêm trọng',
             color: 'bg-red-200 text-red-900 border-red-400',
         },
     ];
@@ -90,7 +90,7 @@ const IncidentReportForm: React.FC<IncidentReportFormProps> = ({
             if (file.size > 5 * 1024 * 1024) {
                 setErrors((prev) => ({
                     ...prev,
-                    image: 'Image size must not exceed 5MB',
+                    image: 'Kích thước ảnh không được vượt quá 5MB',
                 }));
                 return;
             }
@@ -99,7 +99,7 @@ const IncidentReportForm: React.FC<IncidentReportFormProps> = ({
             if (!file.type.startsWith('image/')) {
                 setErrors((prev) => ({
                     ...prev,
-                    image: 'Please select a valid image file',
+                    image: 'Vui lòng chọn file ảnh hợp lệ',
                 }));
                 return;
             }
@@ -125,16 +125,15 @@ const IncidentReportForm: React.FC<IncidentReportFormProps> = ({
         const newErrors: Record<string, string> = {};
 
         if (!formData.title.trim()) {
-            newErrors.title = 'Please enter a title';
+            newErrors.title = 'Vui lòng nhập tiêu đề';
         }
 
         if (!formData.description.trim()) {
-            newErrors.description = 'Please describe the incident in detail';
+            newErrors.description = 'Vui lòng mô tả chi tiết sự cố';
         }
 
         if (formData.description.trim().length < 10) {
-            newErrors.description =
-                'Description must be at least 10 characters';
+            newErrors.description = 'Mô tả phải có ít nhất 10 ký tự';
         }
 
         setErrors(newErrors);
@@ -163,7 +162,7 @@ const IncidentReportForm: React.FC<IncidentReportFormProps> = ({
                 } catch (uploadError) {
                     console.error('❌ Lỗi upload ảnh:', uploadError);
                     setErrors({
-                        submit: 'Unable to upload image. Please try again.',
+                        submit: 'Không thể tải ảnh lên. Vui lòng thử lại.',
                     });
                     setIsSubmitting(false);
                     return;
@@ -178,7 +177,7 @@ const IncidentReportForm: React.FC<IncidentReportFormProps> = ({
         } catch (error) {
             console.error('Error submitting incident report:', error);
             setErrors({
-                submit: 'An error occurred while submitting the report. Please try again.',
+                submit: 'Có lỗi xảy ra khi gửi báo cáo. Vui lòng thử lại.',
             });
         } finally {
             setIsSubmitting(false);
@@ -190,7 +189,7 @@ const IncidentReportForm: React.FC<IncidentReportFormProps> = ({
             {/* Category Selection */}
             <div>
                 <label className="block text-sm font-medium text-gray-700 mb-3">
-                    Incident Type <span className="text-red-500">*</span>
+                    Loại sự cố <span className="text-red-500">*</span>
                 </label>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     {CATEGORIES.map((cat) => (
@@ -218,7 +217,7 @@ const IncidentReportForm: React.FC<IncidentReportFormProps> = ({
             {/* Priority Selection */}
             <div>
                 <label className="block text-sm font-medium text-gray-700 mb-3">
-                    Priority Level <span className="text-red-500">*</span>
+                    Mức độ ưu tiên <span className="text-red-500">*</span>
                 </label>
                 <div className="flex flex-wrap gap-2">
                     {PRIORITIES.map((priority) => (
@@ -243,7 +242,7 @@ const IncidentReportForm: React.FC<IncidentReportFormProps> = ({
             {/* Title */}
             <div>
                 <FloatingInput
-                    label="Title"
+                    label="Tiêu đề"
                     type="text"
                     value={formData.title}
                     onChange={(value) => handleInputChange('title', value)}
@@ -256,7 +255,7 @@ const IncidentReportForm: React.FC<IncidentReportFormProps> = ({
             {/* Description */}
             <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Detailed Description <span className="text-red-500">*</span>
+                    Mô tả chi tiết <span className="text-red-500">*</span>
                 </label>
                 <textarea
                     value={formData.description}
@@ -269,7 +268,7 @@ const IncidentReportForm: React.FC<IncidentReportFormProps> = ({
                             ? 'border-red-500'
                             : 'border-gray-300'
                     }`}
-                    placeholder="Please describe the incident in detail..."
+                    placeholder="Vui lòng mô tả chi tiết sự cố đã xảy ra..."
                 />
                 {errors.description && (
                     <p className="text-red-500 text-sm mt-1">
@@ -281,7 +280,7 @@ const IncidentReportForm: React.FC<IncidentReportFormProps> = ({
             {/* Image Upload */}
             <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Image (optional)
+                    Hình ảnh (tùy chọn)
                 </label>
                 {!imagePreview ? (
                     <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer hover:bg-gray-50 transition">
@@ -289,9 +288,9 @@ const IncidentReportForm: React.FC<IncidentReportFormProps> = ({
                             <Upload className="w-8 h-8 text-gray-400 mb-2" />
                             <p className="text-sm text-gray-500">
                                 <span className="font-semibold">
-                                    Click to upload image
+                                    Nhấp để tải ảnh lên
                                 </span>{' '}
-                                or drag and drop
+                                hoặc kéo thả
                             </p>
                             <p className="text-xs text-gray-400">
                                 PNG, JPG, GIF (MAX. 5MB)
@@ -339,7 +338,7 @@ const IncidentReportForm: React.FC<IncidentReportFormProps> = ({
                     <Button
                         type="button"
                         onClick={onCancel}
-                        text="Cancel"
+                        text="Hủy"
                         className="flex-1"
                         color="bg-gray-200"
                         textColor="text-gray-700"
@@ -348,7 +347,7 @@ const IncidentReportForm: React.FC<IncidentReportFormProps> = ({
                 )}
                 <Button
                     type="submit"
-                    text={isSubmitting ? 'Submitting...' : 'Submit Report'}
+                    text={isSubmitting ? 'Đang gửi...' : 'Gửi báo cáo'}
                     className="flex-1"
                     color="bg-[#CCBDA3]"
                     textColor="text-white"

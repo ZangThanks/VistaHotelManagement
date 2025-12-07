@@ -104,4 +104,10 @@ public class Booking {
     @Enumerated(EnumType.STRING)
     private BookingType type;
 
+    @OneToOne(mappedBy = "booking", cascade = CascadeType.ALL)
+    @JsonIgnore
+    private BookingCancellation cancellation;
+
+
+
 }

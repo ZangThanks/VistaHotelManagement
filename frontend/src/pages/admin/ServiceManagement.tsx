@@ -64,7 +64,7 @@ const ServiceManagement: React.FC = () => {
             setServices(data);
             setFilteredServices(data);
         } catch (err) {
-            setError('Unable to load service list');
+            setError('Không thể tải danh sách dịch vụ');
             console.error(err);
         } finally {
             setLoading(false);
@@ -97,12 +97,12 @@ const ServiceManagement: React.FC = () => {
 
     const getCategoryLabel = (category: string) => {
         const labels: Record<string, string> = {
-            LAUNDRY: 'Laundry',
-            FOOD_BEVERAGE: 'Food & Beverage',
+            LAUNDRY: 'Giặt là',
+            FOOD_BEVERAGE: 'Đồ ăn & Thức uống',
             SPA: 'Spa',
-            TRANSPORT: 'Transport',
-            TOUR: 'Tour',
-            OTHER: 'Other',
+            TRANSPORT: 'Vận chuyển',
+            TOUR: 'Tour du lịch',
+            OTHER: 'Khác',
         };
         return labels[category] || category;
     };
@@ -148,7 +148,7 @@ const ServiceManagement: React.FC = () => {
                     <Sparkles className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-6 h-6 text-[#CCBDA3] animate-pulse" />
                 </div>
                 <p className="mt-4 text-lg text-gray-700 font-medium">
-                    Loading...
+                    Đang tải...
                 </p>
             </div>
         );
@@ -156,10 +156,44 @@ const ServiceManagement: React.FC = () => {
 
     return (
         <div className="p-4 sm:p-6 space-y-6 sm:space-y-8">
-            {/* Header */}
+            {/* Header with Gradient */}
             <div>
-                <h1 className="text-3xl font-bold text-gray-800">Services</h1>
-                <p className="text-gray-600 mt-1">View and manage services</p>
+                <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#CCBDA3] via-[#b8a88a] to-[#a89976] p-6 sm:p-8 shadow-xl">
+                    <div className="absolute inset-0 bg-black opacity-5"></div>
+                    <div className="relative z-10">
+                        <div className="flex items-center gap-3 mb-3">
+                            <div className="p-2 sm:p-3 bg-white/20 backdrop-blur-sm rounded-xl">
+                                <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
+                            </div>
+                            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white">
+                                Quản Lý Dịch Vụ
+                            </h1>
+                        </div>
+                        <p className="text-white/90 text-base sm:text-lg">
+                            Thêm mới và cập nhật thông tin dịch vụ khách sạn
+                        </p>
+                        <div className="mt-4 flex items-center gap-6">
+                            <div className="flex items-center gap-2">
+                                <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                                <span className="text-white/80 text-sm">
+                                    {services.length} dịch vụ
+                                </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <div
+                                    className="w-2 h-2 bg-white rounded-full animate-pulse"
+                                    style={{ animationDelay: '0.2s' }}
+                                ></div>
+                                <span className="text-white/80 text-sm">
+                                    {filteredServices.length} hiển thị
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    {/* Decorative elements */}
+                    <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
+                    <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
+                </div>
             </div>
 
             {error && (
@@ -181,7 +215,7 @@ const ServiceManagement: React.FC = () => {
                             }`}
                         >
                             <Package className="w-4 h-4" />
-                            All
+                            Tất cả
                         </button>
                         <button
                             onClick={() => setCategoryFilter('LAUNDRY')}
@@ -192,7 +226,7 @@ const ServiceManagement: React.FC = () => {
                             }`}
                         >
                             <Droplets className="w-4 h-4" />
-                            Laundry
+                            Giặt là
                         </button>
                         <button
                             onClick={() => setCategoryFilter('FOOD_BEVERAGE')}
@@ -203,7 +237,7 @@ const ServiceManagement: React.FC = () => {
                             }`}
                         >
                             <Coffee className="w-4 h-4" />
-                            Food & Beverage
+                            Đồ ăn & Thức uống
                         </button>
                         <button
                             onClick={() => setCategoryFilter('SPA')}
@@ -225,7 +259,7 @@ const ServiceManagement: React.FC = () => {
                             }`}
                         >
                             <Car className="w-4 h-4" />
-                            Transport
+                            Vận chuyển
                         </button>
                         <button
                             onClick={() => setCategoryFilter('TOUR')}
@@ -236,7 +270,7 @@ const ServiceManagement: React.FC = () => {
                             }`}
                         >
                             <Map className="w-4 h-4" />
-                            Tour
+                            Tour du lịch
                         </button>
                     </div>
 
@@ -245,7 +279,7 @@ const ServiceManagement: React.FC = () => {
                             <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                             <input
                                 type="text"
-                                placeholder="Search services..."
+                                placeholder="Tìm kiếm dịch vụ..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 className="pl-12 pr-4 py-3 border-2 border-[#CCBDA3]/30 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#CCBDA3] focus:border-transparent w-64 transition-all duration-300"
@@ -256,7 +290,7 @@ const ServiceManagement: React.FC = () => {
                             className="px-6 py-3 bg-gradient-to-r from-[#CCBDA3] to-[#b8a88a] text-white rounded-xl hover:shadow-lg hover:scale-105 font-medium flex items-center gap-2 transition-all duration-300"
                         >
                             <Plus className="w-5 h-5" />
-                            Add Service
+                            Thêm Dịch Vụ
                         </button>
                     </div>
                 </div>
@@ -269,25 +303,25 @@ const ServiceManagement: React.FC = () => {
                         <thead className="bg-gradient-to-r from-[#CCBDA3]/20 to-[#b8a88a]/20 border-b-2 border-[#CCBDA3]/30">
                             <tr>
                                 <th className="px-8 py-5 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">
-                                    Service ID
+                                    Mã DV
                                 </th>
                                 <th className="px-8 py-5 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">
-                                    Service Name
+                                    Tên Dịch Vụ
                                 </th>
                                 <th className="px-8 py-5 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">
-                                    Category
+                                    Danh Mục
                                 </th>
                                 <th className="px-8 py-5 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">
-                                    Price
+                                    Giá
                                 </th>
                                 <th className="px-8 py-5 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">
-                                    Service Hours
+                                    Giờ Hoạt Động
                                 </th>
                                 <th className="px-8 py-5 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">
-                                    Status
+                                    Trạng Thái
                                 </th>
                                 <th className="px-8 py-5 text-left text-sm font-bold text-gray-700 uppercase tracking-wider">
-                                    Action
+                                    Hành Động
                                 </th>
                             </tr>
                         </thead>
@@ -303,10 +337,10 @@ const ServiceManagement: React.FC = () => {
                                                 <Package className="w-10 h-10 text-[#CCBDA3]" />
                                             </div>
                                             <p className="text-gray-600 text-xl font-medium">
-                                                No services found
+                                                Không tìm thấy dịch vụ nào
                                             </p>
                                             <p className="text-gray-400 text-base mt-2">
-                                                Try adjusting your filters
+                                                Thử điều chỉnh bộ lọc của bạn
                                             </p>
                                         </div>
                                     </td>
@@ -356,12 +390,12 @@ const ServiceManagement: React.FC = () => {
                                             {service.availability ? (
                                                 <span className="inline-flex items-center gap-2 px-4 py-2 bg-green-100 text-green-800 rounded-lg text-sm font-bold border border-green-200">
                                                     <div className="w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse"></div>
-                                                    Available
+                                                    Khả dụng
                                                 </span>
                                             ) : (
                                                 <span className="inline-flex items-center gap-2 px-4 py-2 bg-red-100 text-red-800 rounded-lg text-sm font-bold border border-red-200">
                                                     <div className="w-2.5 h-2.5 bg-red-500 rounded-full"></div>
-                                                    Unavailable
+                                                    Không khả dụng
                                                 </span>
                                             )}
                                         </td>
@@ -373,7 +407,7 @@ const ServiceManagement: React.FC = () => {
                                                 className="inline-flex items-center gap-2 px-5 py-2.5 bg-amber-50 text-amber-800 rounded-lg hover:bg-[#CCBDA3] hover:text-white font-semibold transition-all duration-300 group-hover:scale-105 border-2 border-amber-200 hover:border-[#CCBDA3]"
                                             >
                                                 <Edit className="w-4 h-4" />
-                                                Edit
+                                                Sửa
                                             </button>
                                         </td>
                                     </tr>
@@ -391,7 +425,7 @@ const ServiceManagement: React.FC = () => {
                         <div className="flex items-center gap-2">
                             <div className="px-5 py-3 bg-gradient-to-r from-[#CCBDA3]/10 to-[#b8a88a]/10 rounded-xl border border-[#CCBDA3]/30">
                                 <span className="text-base text-gray-700">
-                                    Showing{' '}
+                                    Hiển thị{' '}
                                     <span className="font-bold bg-gradient-to-r from-[#CCBDA3] to-[#a89976] bg-clip-text text-transparent">
                                         {indexOfFirstItem + 1}
                                     </span>{' '}
@@ -402,7 +436,7 @@ const ServiceManagement: React.FC = () => {
                                             filteredServices.length,
                                         )}
                                     </span>{' '}
-                                    / {filteredServices.length} services
+                                    / {filteredServices.length} dịch vụ
                                 </span>
                             </div>
                         </div>

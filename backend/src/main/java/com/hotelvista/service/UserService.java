@@ -1,9 +1,6 @@
 package com.hotelvista.service;
 
-import com.hotelvista.model.Admin;
-import com.hotelvista.model.Customer;
-import com.hotelvista.model.Employee;
-import com.hotelvista.model.User;
+import com.hotelvista.model.*;
 import com.hotelvista.model.enums.Gender;
 import com.hotelvista.model.enums.MemberShipLevel;
 import com.hotelvista.model.enums.UserRole;
@@ -65,46 +62,6 @@ public class UserService {
         return null;
     }
 
-    /**
-     * Tìm user bằng email, phone hoặc userName, áp dụng cho Customer + Admin + Employee
-     */
-    public User findByEmailOrPhoneOrUserName(String email, String phone, String userName) {
-        if (email != null && !email.isBlank()) {
-            User u = customerRepo.findByEmail(email).orElse(null);
-            if (u != null) return u;
-
-            u = adminRepo.findByEmail(email).orElse(null);
-            if (u != null) return u;
-
-            u = employeeRepo.findByEmail(email).orElse(null);
-            if (u != null) return u;
-        }
-
-        if (phone != null && !phone.isBlank()) {
-            User u = customerRepo.findByPhone(phone).orElse(null);
-            if (u != null) return u;
-
-            u = adminRepo.findByPhone(phone).orElse(null);
-            if (u != null) return u;
-
-            u = employeeRepo.findByPhone(phone).orElse(null);
-            if (u != null) return u;
-        }
-
-        if (userName != null && !userName.isBlank()) {
-            User u = customerRepo.findByUserName(userName).orElse(null);
-            if (u != null) return u;
-
-            u = adminRepo.findByUserName(userName).orElse(null);
-            if (u != null) return u;
-
-            u = employeeRepo.findByUserName(userName).orElse(null);
-            if (u != null) return u;
-        }
-
-        return null;
-    }
-
     public boolean resetPasswordByEmail(String email, String newPassword) {
         User user = null;
 
@@ -132,7 +89,7 @@ public class UserService {
 
         // create user mới
         Customer c = new Customer();
-        c.setId(GenerateIDUtil.generateID("CUS", 8));
+        c.setId(customerService.generateCustomerId());
 
         // username tự phát sinh
         c.setUserName(email.split("@")[0] + "_" + provider);
@@ -149,6 +106,14 @@ public class UserService {
 
         // mật khẩu random
         c.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
+
+        customerRepo.save(c);
+
+        CartBean cartBean = new CartBean();
+        cartBean.setCustomer(c);
+        cartBeanService.save(cartBean);
+
+        c.setCartBean(cartBean);
 
         customerRepo.save(c);
         return c;

@@ -4,6 +4,7 @@ import com.hotelvista.model.CartBean;
 import com.hotelvista.model.Customer;
 import com.hotelvista.repository.CustomerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
@@ -15,6 +16,9 @@ public class CustomerService {
 
     @Autowired
     private CustomerRepository repo;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     /**
      * Find all customers
@@ -38,26 +42,26 @@ public class CustomerService {
      * @param customer
      */
     public Customer save(Customer customer) {
-        // Nếu khách hàng chưa có ID -> thêm mới
+
+        // UPDATE
+        Customer existing = repo.findById(customer.getId()).orElse(null);
+
+        if (existing != null) {
+            customer.setUserName(existing.getUserName());
+
+            if (customer.getCartBean() == null) {
+                customer.setCartBean(existing.getCartBean());
+            }
+        }
         if (customer.getId() == null || customer.getId().isEmpty()) {
             customer.setId(generateCustomerId());
             customer.setUserName(generateUserName(customer.getFullName()));
-        } else {
-            // Edit: lấy dữ liệu cũ từ DB để giữ lại các trường không được sửa
-            Customer existing = repo.findById(customer.getId()).orElse(null);
-            if (existing != null) {
-                // Giữ nguyên username và các trường quan trọng khác
-                customer.setUserName(existing.getUserName());
-            } else {
-                // Nếu ID không tồn tại thật trong DB (tránh lỗi khi FE gửi nhầm)
-                customer.setUserName(generateUserName(customer.getFullName()));
-            }
+            customer.setPassword(passwordEncoder.encode(customer.getPassword()));
+            return repo.save(customer);
         }
 
         return repo.save(customer);
     }
-
-
 
     /**
      * Tìm tất cả khách hàng có tên chứa chuỗi name (không phân biệt hoa thường)
@@ -118,7 +122,7 @@ public class CustomerService {
      *
      * @return mã khách hàng mới
      */
-    private String generateCustomerId() {
+    public String generateCustomerId() {
         String datePart = new SimpleDateFormat("ddMMyy").format(new Date());
         String prefix = "CUS" + datePart;
 
@@ -138,7 +142,7 @@ public class CustomerService {
     /**
      * Tạo username từ họ tên: bỏ dấu, viết thường, nối liền
      */
-    private String generateUserName(String fullName) {
+    public String generateUserName(String fullName) {
         if (fullName == null) return null;
         String normalized = removeVietnameseAccents(fullName);
         return normalized.toLowerCase().replaceAll("\\s+", "");
@@ -147,7 +151,7 @@ public class CustomerService {
     /**
      * Hàm bỏ dấu tiếng Việt
      */
-    private String removeVietnameseAccents(String input) {
+    public String removeVietnameseAccents(String input) {
         if (input == null) return null;
         String normalized = java.text.Normalizer.normalize(input, java.text.Normalizer.Form.NFD);
         return normalized.replaceAll("\\p{InCombiningDiacriticalMarks}+", "")

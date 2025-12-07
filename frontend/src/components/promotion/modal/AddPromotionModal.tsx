@@ -160,6 +160,8 @@ const AddPromotionModal: React.FC<AddPromotionModalProps> = ({
         newErrors.promotionID = "Promotion Code is required";
       } else if (formData.promotionID.length < 3) {
         newErrors.promotionID = "Promotion Code must be at least 3 characters";
+      } else if (formData.promotionID.length > 20) {
+        newErrors.promotionID = "Promotion Code must not exceed 20 characters";
       } else if (!/^[A-Z0-9]+$/.test(formData.promotionID)) {
         newErrors.promotionID =
           "Promotion Code must contain only uppercase letters and numbers";
@@ -410,6 +412,7 @@ const AddPromotionModal: React.FC<AddPromotionModalProps> = ({
                       }`}
                       placeholder="e.g., SUMMER2025"
                       disabled={!!editPromotion}
+                      maxLength={20}
                       required
                     />
                     {errors.promotionID && (

@@ -15,35 +15,35 @@ const IncidentPriorityBadge: React.FC<IncidentPriorityBadgeProps> = ({
         switch (priority) {
             case 'CRITICAL':
                 return {
-                    text: 'Critical',
+                    text: 'Khẩn cấp',
                     bgColor: 'bg-red-100',
                     textColor: 'text-red-800',
                     borderColor: 'border-red-300',
                 };
             case 'URGENT':
                 return {
-                    text: 'Urgent',
+                    text: 'Gấp',
                     bgColor: 'bg-orange-100',
                     textColor: 'text-orange-800',
                     borderColor: 'border-orange-300',
                 };
             case 'HIGH':
                 return {
-                    text: 'High',
+                    text: 'Cao',
                     bgColor: 'bg-yellow-100',
                     textColor: 'text-yellow-800',
                     borderColor: 'border-yellow-300',
                 };
             case 'MEDIUM':
                 return {
-                    text: 'Medium',
+                    text: 'Trung bình',
                     bgColor: 'bg-blue-100',
                     textColor: 'text-blue-800',
                     borderColor: 'border-blue-300',
                 };
             case 'LOW':
                 return {
-                    text: 'Low',
+                    text: 'Thấp',
                     bgColor: 'bg-gray-100',
                     textColor: 'text-gray-800',
                     borderColor: 'border-gray-300',

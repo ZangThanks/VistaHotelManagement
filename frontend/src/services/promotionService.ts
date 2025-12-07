@@ -23,6 +23,9 @@ export const getAllPromotions = async () => {
   }
 };
 
+// Alias for consistency
+export const getPromotions = getAllPromotions;
+
 export const createPromotion = async (
   promotionData: Partial<Promotion> & {
     promotionID?: string;
@@ -40,25 +43,36 @@ export const createPromotion = async (
     // Trích xuất roomTypePromotions trước khi gửi
     const { roomTypePromotions, ...promotionOnly } = promotionData;
 
-    // TODO: Get admin from localStorage (JWT token) when authentication is implemented
-    // fake admin for testing
-    const fakeAdmin = {
-      id: "ADMIN001",
-      userName: "adminvista",
-      password: "@admin",
-      email: "admin@vista.com",
-      phone: "0999999999",
-      fullName: "Admin Vista",
-      address: "TP.HCM",
-      userRole: "ADMIN",
-      adminLevel: 1,
-      permissions: ["ALL"],
+    // Lấy admin từ localStorage
+    const userString = localStorage.getItem("user");
+    if (!userString) {
+      throw new Error("User not authenticated. Please login first.");
+    }
+
+    const currentUser = JSON.parse(userString);
+
+    // Kiểm tra quyền admin
+    if (currentUser.userRole !== "ADMIN") {
+      throw new Error("Only administrators can create promotions.");
+    }
+
+    // Tạo admin object từ thông tin trong localStorage
+    const admin = {
+      id: currentUser.id,
+      userName: currentUser.userName,
+      email: currentUser.email,
+      phone: currentUser.phone,
+      fullName: currentUser.fullName,
+      address: currentUser.address,
+      userRole: currentUser.userRole,
+      adminLevel: currentUser.adminLevel || 1,
+      permissions: currentUser.permissions || [],
     };
 
-    // Thêm fake admin vào promotion
+    // Thêm admin vào promotion
     const promotionWithAdmin = {
       ...promotionOnly,
-      admin: fakeAdmin,
+      admin: admin,
     };
 
     // Tạo promotion trước

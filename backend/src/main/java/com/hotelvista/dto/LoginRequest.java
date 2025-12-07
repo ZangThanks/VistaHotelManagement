@@ -8,14 +8,11 @@ import lombok.Data;
  */
 @Data
 public class LoginRequest {
-    /** Email của người dùng (có thể null nếu dùng phone hoặc userName) */
+    /** Email của người dùng (có thể null nếu dùng phone) */
     private String email;
     
-    /** Số điện thoại của người dùng (có thể null nếu dùng email hoặc userName) */
+    /** Số điện thoại của người dùng (có thể null nếu dùng email) */
     private String phone;
-    
-    /** Tên đăng nhập của người dùng (có thể null nếu dùng email hoặc phone) */
-    private String userName;
     
     /** Mật khẩu của người dùng (bắt buộc) */
     private String password;

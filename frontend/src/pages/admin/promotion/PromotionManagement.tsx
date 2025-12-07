@@ -85,6 +85,11 @@ const PromotionManagement: React.FC = () => {
     }));
   }, [promotions]);
 
+  // Scroll to top on mount
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   useEffect(() => {
     fetchPromotions();
   }, []);
@@ -235,22 +240,23 @@ const PromotionManagement: React.FC = () => {
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex items-center justify-between mt-[-30px]"
+          className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mt-[-30px]"
         >
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">
+            <h1 className="text-2xl sm:text-3xl font-bold text-[#6b5e4c]">
               Promotion Management
             </h1>
-            <p className="text-gray-600 mt-1">
+            <p className="text-sm sm:text-base text-gray-600 mt-1">
               Manage hotel promotions and special offers
             </p>
           </div>
           <button
             onClick={() => setIsAddModalOpen(true)}
-            className="flex items-center gap-2 px-6 py-3 bg-[#6b5e4c] hover:bg-[#5a4d3e] text-white rounded-lg font-semibold shadow-md hover:shadow-lg transition-all cursor-pointer"
+            className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-[#6b5e4c] hover:bg-[#5a4d3e] text-white rounded-lg font-semibold shadow-md hover:shadow-lg transition-all cursor-pointer text-sm sm:text-base"
           >
             <FaPlus />
-            Add Promotion
+            <span className="hidden sm:inline">Add Promotion</span>
+            <span className="sm:hidden">Add</span>
           </button>
         </motion.div>
 
@@ -259,72 +265,76 @@ const PromotionManagement: React.FC = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6"
         >
           <motion.div
             whileHover={{ y: -5, boxShadow: "0 10px 30px rgba(0,0,0,0.1)" }}
-            className="bg-white rounded-xl shadow-sm border border-[#ebe3d7] p-6 cursor-pointer"
+            className="bg-white rounded-xl shadow-sm border border-[#ebe3d7] p-3 cursor-pointer"
           >
             <div className="flex items-center gap-4">
               <div className="w-14 h-14 rounded-lg bg-[#e3f2fd] flex items-center justify-center flex-shrink-0">
                 <FaChartLine className="text-2xl text-[#1976d2]" />
               </div>
               <div className="flex-1">
-                <h3 className="text-3xl font-bold text-gray-800">
+                <h3 className="text-2xl font-bold text-gray-800">
                   {stats.total}
                 </h3>
-                <p className="text-sm text-gray-600 mt-1">Total Promotions</p>
+                <p className="text-[14px] text-gray-600 mt-1">
+                  Total Promotions
+                </p>
               </div>
             </div>
           </motion.div>
 
           <motion.div
             whileHover={{ y: -5, boxShadow: "0 10px 30px rgba(0,0,0,0.1)" }}
-            className="bg-white rounded-xl shadow-sm border border-[#ebe3d7] p-6 cursor-pointer"
+            className="bg-white rounded-xl shadow-sm border border-[#ebe3d7] p-3 cursor-pointer"
           >
             <div className="flex items-center gap-4">
               <div className="w-14 h-14 rounded-lg bg-[#e8f5e9] flex items-center justify-center flex-shrink-0">
                 <FaCheckCircle className="text-2xl text-[#2e7d32]" />
               </div>
               <div className="flex-1">
-                <h3 className="text-3xl font-bold text-gray-800">
+                <h3 className="text-2xl font-bold text-gray-800">
                   {stats.active}
                 </h3>
-                <p className="text-sm text-gray-600 mt-1">Active</p>
+                <p className="text-[14px] text-gray-600 mt-1">Active</p>
               </div>
             </div>
           </motion.div>
 
           <motion.div
             whileHover={{ y: -5, boxShadow: "0 10px 30px rgba(0,0,0,0.1)" }}
-            className="bg-white rounded-xl shadow-sm border border-[#ebe3d7] p-6 cursor-pointer"
+            className="bg-white rounded-xl shadow-sm border border-[#ebe3d7] p-3 cursor-pointer"
           >
             <div className="flex items-center gap-4">
               <div className="w-14 h-14 rounded-lg bg-[#ffebee] flex items-center justify-center flex-shrink-0">
                 <FaTimesCircle className="text-2xl text-[#c62828]" />
               </div>
               <div className="flex-1">
-                <h3 className="text-3xl font-bold text-gray-800">
+                <h3 className="text-2xl font-bold text-gray-800">
                   {stats.inactive}
                 </h3>
-                <p className="text-sm text-gray-600 mt-1">Inactive</p>
+                <p className="text-[14px] text-gray-600 mt-1">Inactive</p>
               </div>
             </div>
           </motion.div>
 
           <motion.div
             whileHover={{ y: -5, boxShadow: "0 10px 30px rgba(0,0,0,0.1)" }}
-            className="bg-white rounded-xl shadow-sm border border-[#ebe3d7] p-6 cursor-pointer"
+            className="bg-white rounded-xl shadow-sm border border-[#ebe3d7] p-3 cursor-pointer"
           >
             <div className="flex items-center gap-4">
               <div className="w-14 h-14 rounded-lg bg-[#fff8e1] flex items-center justify-center flex-shrink-0">
                 <FaTag className="text-2xl text-[#f57c00]" />
               </div>
               <div className="flex-1">
-                <h3 className="text-3xl font-bold text-gray-800">
+                <h3 className="text-2xl font-bold text-gray-800">
                   {stats.types}
                 </h3>
-                <p className="text-sm text-gray-600 mt-1">Promotion Types</p>
+                <p className="text-[14px] text-gray-600 mt-1">
+                  Promotion Types
+                </p>
               </div>
             </div>
           </motion.div>

@@ -16,7 +16,7 @@ const IncidentStatusBadge: React.FC<IncidentStatusBadgeProps> = ({
             case 'PENDING':
                 return {
                     icon: Clock,
-                    text: 'Pending',
+                    text: 'Chờ xử lý',
                     bgColor: 'bg-yellow-100',
                     textColor: 'text-yellow-800',
                     iconColor: 'text-yellow-600',
@@ -24,7 +24,7 @@ const IncidentStatusBadge: React.FC<IncidentStatusBadgeProps> = ({
             case 'COMPLETED':
                 return {
                     icon: CheckCircle,
-                    text: 'Completed',
+                    text: 'Đã hoàn thành',
                     bgColor: 'bg-green-100',
                     textColor: 'text-green-800',
                     iconColor: 'text-green-600',
@@ -32,7 +32,7 @@ const IncidentStatusBadge: React.FC<IncidentStatusBadgeProps> = ({
             case 'FAILED':
                 return {
                     icon: XCircle,
-                    text: 'Failed',
+                    text: 'Thất bại',
                     bgColor: 'bg-red-100',
                     textColor: 'text-red-800',
                     iconColor: 'text-red-600',

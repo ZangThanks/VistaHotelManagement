@@ -3,7 +3,7 @@ package com.hotelvista.controller;
 import com.hotelvista.dto.BookingRequestDTO;
 import com.hotelvista.dto.PaymentWebhookDTO;
 import com.hotelvista.model.Booking;
-//import com.hotelvista.model.BookingCancellation;
+import com.hotelvista.model.BookingCancellation;
 import com.hotelvista.model.BookingDetail;
 import com.hotelvista.model.Customer;
 import com.hotelvista.model.enums.BookingStatus;
@@ -71,7 +71,7 @@ public class BookingController {
     public List<Booking> findAllByCustomer_Id(@PathVariable("id") String customerId) {
         return service.findAllByCustomer_Id(customerId);
     }
-
+    
     @GetMapping("/search")
     public List<Booking> searchBookings(@RequestParam(required = false) String keyword) {
         return service.searchBookings(keyword);
@@ -206,9 +206,9 @@ public class BookingController {
             Customer customer = booking.getCustomer();
             double receivedAmount = data.getTransferAmount();
             double totalAmount = booking.getTotalAmount();
-
+            
             PaymentStatus newStatus = PaymentUtil.determinePaymentStatus(receivedAmount, totalAmount, customer);
-
+            
             // Log amount validation
             double expectedAmount = PaymentUtil.calculateExpectedPaymentAmount(booking, customer);
             if (expectedAmount > 0 && Math.abs(receivedAmount - expectedAmount) > 0.01) {

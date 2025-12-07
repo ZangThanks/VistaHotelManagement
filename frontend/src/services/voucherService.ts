@@ -4,29 +4,34 @@ import type { Voucher } from "../types/Voucher";
 const ENDPOINT = "/vouchers";
 
 /**
-* Ánh xạ phản hồi từ backend sang loại Voucher từ frontend
-* Backend có thể sử dụng 'active' thay vì 'isActive'
-*/
+ * Ánh xạ phản hồi từ backend sang loại Voucher từ frontend
+ * Backend có thể sử dụng 'active' thay vì 'isActive'
+ */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mapBackendVoucher = (data: any): Voucher => {
   return {
     ...data,
     // Handle both 'active' and 'isActive' from backend
-    isActive: data.isActive !== undefined ? data.isActive : data.active !== undefined ? data.active : true,
+    isActive:
+      data.isActive !== undefined
+        ? data.isActive
+        : data.active !== undefined
+        ? data.active
+        : true,
   };
 };
 
 /**
-* Ánh xạ Voucher từ frontend sang định dạng backend
-* Backend có thể yêu cầu 'active' thay vì 'isActive'
-*/
+ * Ánh xạ Voucher từ frontend sang định dạng backend
+ * Backend có thể yêu cầu 'active' thay vì 'isActive'
+ */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mapFrontendVoucher = (voucher: Partial<Voucher>): any => {
   const { isActive, ...rest } = voucher;
   return {
     ...rest,
-    active: isActive, 
-    isActive: isActive, 
+    active: isActive,
+    isActive: isActive,
   };
 };
 
@@ -43,6 +48,9 @@ export const getAllVouchers = async (): Promise<Voucher[]> => {
     throw error;
   }
 };
+
+// Alias for consistency
+export const getVouchers = getAllVouchers;
 
 /**
  * Lấy voucher theo ID
@@ -68,14 +76,18 @@ export const saveVoucher = async (
     // Format dates to yyyy-MM-dd and map to backend format
     const backendData = mapFrontendVoucher({
       ...voucherData,
-      startDate: voucherData.startDate instanceof Date 
-        ? voucherData.startDate.toISOString().split('T')[0] as unknown as Date
-        : voucherData.startDate,
-      endDate: voucherData.endDate instanceof Date
-        ? voucherData.endDate.toISOString().split('T')[0] as unknown as Date
-        : voucherData.endDate,
+      startDate:
+        voucherData.startDate instanceof Date
+          ? (voucherData.startDate
+              .toISOString()
+              .split("T")[0] as unknown as Date)
+          : voucherData.startDate,
+      endDate:
+        voucherData.endDate instanceof Date
+          ? (voucherData.endDate.toISOString().split("T")[0] as unknown as Date)
+          : voucherData.endDate,
     });
-    
+
     const response = await api.post(`${ENDPOINT}/create`, backendData);
     return mapBackendVoucher(response.data);
   } catch (error) {
@@ -107,7 +119,7 @@ export const updateVoucher = async (
           : voucherData.endDate,
       isActive: voucherData.isActive ?? true, // Đảm bảo isActive luôn được gửi
     });
-    
+
     const response = await api.put(`${ENDPOINT}/${id}`, backendData);
     return mapBackendVoucher(response.data);
   } catch (error) {
@@ -132,8 +144,8 @@ export const getVouchersByCustomerId = async (
 };
 
 /**
-* Chuyển đổi trạng thái hoạt động của phiếu giảm giá
-*/
+ * Chuyển đổi trạng thái hoạt động của phiếu giảm giá
+ */
 export const toggleVoucherStatus = async (
   id: string,
   isActive: boolean
@@ -159,8 +171,8 @@ export const deleteVoucher = async (id: string): Promise<void> => {
 };
 
 /**
-* Phân phối phiếu giảm giá cho khách hàng dựa trên tiêu chí
-*/
+ * Phân phối phiếu giảm giá cho khách hàng dựa trên tiêu chí
+ */
 export const distributeVoucher = async (
   voucherId: string,
   criteria: Record<string, unknown>
@@ -178,8 +190,8 @@ export const distributeVoucher = async (
 };
 
 /**
-* Xem trước những khách hàng sẽ nhận được phiếu giảm giá (mà không cần phân phối thực tế)
-*/
+ * Xem trước những khách hàng sẽ nhận được phiếu giảm giá (mà không cần phân phối thực tế)
+ */
 export const previewDistribution = async (
   criteria: Record<string, unknown>
 ): Promise<{ count: number; message?: string; success?: boolean }> => {
