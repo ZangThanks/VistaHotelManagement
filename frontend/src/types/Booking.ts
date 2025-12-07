@@ -3,7 +3,7 @@ export interface Booking {
   checkInDate: string;
   checkOutDate: string;
   numberOfGuests: number;
-  status: "PENDING" | "CONFIRMED" | "CHECKED_IN" | "CHECKED_OUT" | "CANCELLED";
+  status: "PENDING" | "WAITING" | "CHECKED_IN" | "CHECKED_OUT" | "CANCELLED";
   specialRequests?: string;
   bookingDate: string;
   cancellationDate?: string;
@@ -26,33 +26,6 @@ export interface Booking {
   employee?: Employee;
   bookingDetails: BookingDetail[];
   earlyCheckin?: EarlyCheckin | null;
-    bookingID: string;
-    checkInDate: string;
-    checkOutDate: string;
-    numberOfGuests: number;
-    status: 'PENDING' | 'CHECKED_IN' | 'CHECKED_OUT' | 'CANCELLED';
-    specialRequests?: string;
-    bookingDate: string;
-    cancellationDate?: string;
-    hourlyRate?: number | null;
-    duration: number;
-    packageType: string;
-    totalAmount: number;
-    paymentStatus:
-        | 'PENDING'
-        | 'COMPLETED'
-        | 'PERCENTAGE_30'
-        | 'PERCENTAGE_50'
-        | 'PAID'
-        | 'REFUNDED'
-        | 'CANCELLED';
-    invoiceType?: string | null;
-    totalCost: number;
-    type: 'HOURLY' | 'DAILY';
-    customer: Customer;
-    employee?: Employee;
-    bookingDetails: BookingDetail[];
-    earlyCheckin?: EarlyCheckin | null;
 }
 
 export interface EarlyCheckin {
@@ -73,7 +46,7 @@ export interface RoomBooking {
     checkOut: Date;
     status:
         | 'pending'
-        | 'confirmed'
+        | 'waiting'
         | 'checked-in'
         | 'checked-out'
         | 'cancelled';
@@ -81,8 +54,8 @@ export interface RoomBooking {
     totalAmount: number;
     specialRequests?: string;
     paymentStatus?: string;
-    customer?: any;
-    bookingDetails?: any[];
+    customer?: unknown;
+    bookingDetails?: unknown[];
     earlyCheckin?: EarlyCheckin | null;
 }
 
