@@ -1,4 +1,4 @@
-import { X } from 'lucide-react';
+import { X, ChevronDown, ChevronUp } from 'lucide-react';
 import type { Room } from '../../types/Room';
 
 interface RoomCompareBarProps {
@@ -6,6 +6,8 @@ interface RoomCompareBarProps {
     onRemove: (roomNumber: string) => void;
     onCompare: () => void;
     onClear: () => void;
+    isMinimized?: boolean;
+    onMinimizeChange?: (minimized: boolean) => void;
 }
 
 export default function RoomCompareBar({
@@ -13,21 +15,50 @@ export default function RoomCompareBar({
     onRemove,
     onCompare,
     onClear,
+    isMinimized = false,
+    onMinimizeChange,
 }: RoomCompareBarProps) {
     if (selectedRooms.length === 0) return null;
 
     const maxRooms = 3;
     const emptySlots = maxRooms - selectedRooms.length;
 
+    if (isMinimized) {
+        return (
+            <button
+                onClick={() => onMinimizeChange?.(false)}
+                className="fixed bottom-6 right-6 z-50 bg-[#CCBDA3] text-white px-5 py-3 rounded-full shadow-lg hover:bg-[#b8a88a] transition-all flex items-center gap-3 hover:scale-105"
+            >
+                <ChevronUp size={20} />
+                <div className="flex flex-col items-start">
+                    <span className="text-sm font-semibold">
+                        Compare ({selectedRooms.length})
+                    </span>
+                    <span className="text-xs opacity-90">Click to expand</span>
+                </div>
+            </button>
+        );
+    }
+
     return (
-        <div className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t-2 border-[#CCBDA3] shadow-2xl">
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t-2 border-[#CCBDA3] shadow-2xl transition-all duration-300">
             <div className="container mx-auto px-6 py-4">
                 <div className="flex items-center justify-between gap-4">
                     {/* Left: Selected rooms preview */}
                     <div className="flex items-center gap-4 flex-1 overflow-x-auto">
                         <div className="flex items-center gap-2 min-w-fit">
+                            <button
+                                onClick={() => onMinimizeChange?.(true)}
+                                className="p-1 hover:bg-gray-100 rounded transition-colors"
+                                title="Minimize"
+                            >
+                                <ChevronDown
+                                    size={20}
+                                    className="text-gray-600"
+                                />
+                            </button>
                             <h3 className="text-sm font-semibold text-gray-700 whitespace-nowrap">
-                                So sánh phòng
+                                Room Comparison
                             </h3>
                             <span className="px-2 py-0.5 text-xs font-medium text-white bg-[#CCBDA3] rounded-full">
                                 {selectedRooms.length}/{maxRooms}
@@ -63,12 +94,11 @@ export default function RoomCompareBar({
                                             room.roomNumber &&
                                             onRemove(room.roomNumber)
                                         }
-                                        className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                                        className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg z-10"
                                         aria-label="Remove"
                                     >
                                         <X size={14} />
                                     </button>
-                                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors rounded-lg" />
                                 </div>
                             ))}
 
@@ -92,14 +122,14 @@ export default function RoomCompareBar({
                             onClick={onClear}
                             className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
                         >
-                            Xóa tất cả
+                            Clear All
                         </button>
                         <button
                             onClick={onCompare}
                             disabled={selectedRooms.length < 2}
                             className="px-6 py-2.5 text-sm font-medium text-white bg-[#CCBDA3] rounded-lg hover:bg-[#b8a88a] transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed shadow-md"
                         >
-                            So sánh ngay
+                            Compare Now
                         </button>
                     </div>
                 </div>

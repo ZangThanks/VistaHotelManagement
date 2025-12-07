@@ -5,24 +5,25 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
 import java.time.LocalDateTime;
 
-
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
 @Entity
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 @Table(name = "booking_cancellations")
 public class BookingCancellation {
-
+    
     @Id
+    @Column(name = "cancellation_id")
     private String id;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "booking_id", nullable = false)
     private Booking booking;
 
-    @Column(name = "cancel_reason", columnDefinition = "NVARCHAR(255)")
+    @Column(name = "cancel_reason", columnDefinition = "NVARCHAR(500)")
     private String cancelReason;
 
     @Column(name = "cancelled_at")
@@ -31,11 +32,10 @@ public class BookingCancellation {
     @Column(name = "refund_amount")
     private Double refundAmount;
 
-    @Column(name = "refund_method")
     @Enumerated(EnumType.STRING)
+    @Column(name = "refund_method")
     private RefundMethod refundMethod;
 
-    @Column(name = "refund_account_info", columnDefinition = "LONGTEXT")
+    @Column(name = "refund_account_info", columnDefinition = "NVARCHAR(255)")
     private String refundAccountInfo;
 }
-

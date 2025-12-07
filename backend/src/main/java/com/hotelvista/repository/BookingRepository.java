@@ -31,7 +31,6 @@ public interface BookingRepository extends JpaRepository<Booking, String> {
 
     /**
      * Tìm booking theo tiêu chí mã booking, tên khách hàng, hoặc số điện thoại
-     *
      * @param keyword
      * @return
      */
@@ -43,10 +42,8 @@ public interface BookingRepository extends JpaRepository<Booking, String> {
     List<Booking> searchBookings(@Param("keyword") String keyword);
 
     //B1109250001
-
     /**
      * Tìm số thứ tự lớn nhất của booking trong ngày hôm nay
-     *
      * @param todayPrefix
      * @return
      */
@@ -60,7 +57,6 @@ public interface BookingRepository extends JpaRepository<Booking, String> {
 
     /**
      * Tìm bookings theo khoảng ngày check-in
-     *
      * @param startDate
      * @param endDate
      * @return
@@ -69,7 +65,6 @@ public interface BookingRepository extends JpaRepository<Booking, String> {
 
     /**
      * Tìm booking theo ngày check-out
-     *
      * @param startDate
      * @param endDate
      * @return
@@ -94,7 +89,7 @@ public interface BookingRepository extends JpaRepository<Booking, String> {
      * @param checkOut   Thời gian check-out mong muốn
      * @return Danh sách booking bị trùng lịch
      */
-    @Query("SELECT DISTINCT b FROM Booking b " +
+    @Query("SELECT b FROM Booking b " +
             "JOIN b.bookingDetails bd " +
             "WHERE bd.room.roomNumber = :roomNumber " +
             "AND (b.status = com.hotelvista.model.enums.BookingStatus.PENDING " +
@@ -107,6 +102,4 @@ public interface BookingRepository extends JpaRepository<Booking, String> {
             @Param("checkIn") LocalDateTime checkIn,
             @Param("checkOut") LocalDateTime checkOut
     );
-
-
 }

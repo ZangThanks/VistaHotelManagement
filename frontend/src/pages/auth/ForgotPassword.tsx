@@ -11,8 +11,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import logoImage from '../../assets/images/logoWhite.png';
 import Button from '../../components/common/Button';
 import FloatingInput from '../../components/common/FloatingInput';
+import CustomCaptcha from '../../components/common/CustomCaptcha';
 import { validateEmailOrPhone, detectInputType } from '../../utils/validators';
-import logoCaptcha from '../../assets/images/captcha.png';
 import { sendOtpEmail } from '../../services/authService';
 
 type Step = 'input' | 'captcha' | 'otp';
@@ -22,7 +22,7 @@ const ForgotPassword: React.FC = () => {
     const [identifier, setIdentifier] = useState('');
     const [identifierError, setIdentifierError] = useState('');
     const [identifierSuccess, setIdentifierSuccess] = useState(false);
-    const [captchaChecked, setCaptchaChecked] = useState(false);
+    const [isCaptchaVerified, setIsCaptchaVerified] = useState(false);
     const [otp, setOtp] = useState(['', '', '', '', '', '']);
     const [loading, setLoading] = useState(false);
     const [shakeKey, setShakeKey] = useState(0);
@@ -58,7 +58,8 @@ const ForgotPassword: React.FC = () => {
 
     // Handle captcha verification
     const handleCaptchaVerify = async () => {
-        if (!captchaChecked) {
+        if (!isCaptchaVerified) {
+            alert('Vui lòng nhập đúng mã xác thực');
             return;
         }
 
@@ -70,6 +71,7 @@ const ForgotPassword: React.FC = () => {
 
         if (!result.success) {
             alert(result.message);
+            setIsCaptchaVerified(false);
             return;
         }
 
@@ -243,8 +245,7 @@ const ForgotPassword: React.FC = () => {
                                     Quên mật khẩu?
                                 </h1>
                                 <p className="text-sm text-yellow-50/80">
-                                    Nhập email hoặc số điện thoại của bạn để
-                                    nhận mã xác thực
+                                    Nhập email của bạn để nhận mã xác thực
                                 </p>
                             </div>
 
@@ -257,7 +258,7 @@ const ForgotPassword: React.FC = () => {
                                 }`}
                             >
                                 <FloatingInput
-                                    label="Email hoặc Số điện thoại"
+                                    label="Email"
                                     type="text"
                                     value={identifier}
                                     onChange={handleIdentifierChange}
@@ -309,6 +310,26 @@ const ForgotPassword: React.FC = () => {
                                 )}
                             </div>
 
+                            {/* Custom Captcha */}
+                            <div>
+                                <CustomCaptcha
+                                    onVerify={(isValid) =>
+                                        setIsCaptchaVerified(isValid)
+                                    }
+                                />
+                            </div>
+
+                            {isCaptchaVerified && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: -10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="p-3 bg-[#00c853]/20 border border-[#00c853]/50 rounded-lg flex items-center gap-2 text-[#00c853] text-sm"
+                                >
+                                    <FontAwesomeIcon icon={faCheckCircle} />
+                                    <span>Xác thực thành công!</span>
+                                </motion.div>
+                            )}
+
                             <div className="flex gap-3">
                                 <Button
                                     text="Quay lại"
@@ -326,7 +347,8 @@ const ForgotPassword: React.FC = () => {
                                     size="lg"
                                     rounded="md"
                                     onClick={handleSendOTP}
-                                    className="flex-1 font-semibold hover:bg-[#b4893e] transition-colors"
+                                    disabled={!isCaptchaVerified}
+                                    className="flex-1 font-semibold hover:bg-[#b4893e] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 />
                             </div>
                         </motion.div>
@@ -360,51 +382,6 @@ const ForgotPassword: React.FC = () => {
                                 </p>
                             </div>
 
-                            {/* Mock Captcha */}
-                            <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg p-6">
-                                <div className="flex items-start gap-4">
-                                    <input
-                                        type="checkbox"
-                                        id="captcha"
-                                        checked={captchaChecked}
-                                        onChange={(e) =>
-                                            setCaptchaChecked(e.target.checked)
-                                        }
-                                        className="w-6 h-6 mt-1 cursor-pointer accent-[#c3923c]"
-                                    />
-                                    <label
-                                        htmlFor="captcha"
-                                        className="flex-1 text-white cursor-pointer"
-                                    >
-                                        <span className="font-medium">
-                                            Tôi không phải là robot
-                                        </span>
-                                        <p className="text-xs text-white/60 mt-1">
-                                            Nhấn vào ô để xác thực
-                                        </p>
-                                    </label>
-                                    {/* Logo capcha  */}
-                                    <div className="text-white/40">
-                                        <img
-                                            src={logoCaptcha}
-                                            alt="captcha"
-                                            className="w-15 h-15"
-                                        />
-                                    </div>
-                                </div>
-
-                                {captchaChecked && (
-                                    <motion.div
-                                        initial={{ opacity: 0, y: -10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        className="mt-4 p-3 bg-[#00c853]/20 border border-[#00c853]/50 rounded-lg flex items-center gap-2 text-[#00c853] text-sm"
-                                    >
-                                        <FontAwesomeIcon icon={faCheckCircle} />
-                                        <span>Xác thực thành công!</span>
-                                    </motion.div>
-                                )}
-                            </div>
-
                             <div className="flex gap-3">
                                 <Button
                                     text="Quay lại"
@@ -426,7 +403,7 @@ const ForgotPassword: React.FC = () => {
                                     size="lg"
                                     rounded="md"
                                     onClick={handleCaptchaVerify}
-                                    disabled={!captchaChecked || loading}
+                                    disabled={!isCaptchaVerified || loading}
                                     loading={loading}
                                     className="flex-1 font-semibold hover:bg-[#8f6318] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 />

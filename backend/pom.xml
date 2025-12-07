@@ -165,6 +165,12 @@
             <artifactId>jackson-databind</artifactId>
         </dependency>
 
+        <!-- WebSocket for Real-time Notifications -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-websocket</artifactId>
+        </dependency>
+
     </dependencies>
     <dependencyManagement>
         <dependencies>

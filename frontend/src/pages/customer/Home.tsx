@@ -2,7 +2,6 @@ import React, { useEffect, useState, useRef } from 'react';
 import ServiceButton from '../../components/ServiceButton';
 import HeaderHome from '../../components/HeaderHome';
 import Header from '../../components/Header';
-
 const Home: React.FC = () => {
     const [showSolidHeader, setShowSolidHeader] = useState(false);
     const bannerRef = useRef<HTMLVideoElement | null>(null);
@@ -96,6 +95,8 @@ const Home: React.FC = () => {
                         is crafted to perfection, and every moment becomes an
                         everlasting memory.
                     </p>
+
+                    
                 </div>
             </section>
 
@@ -248,10 +249,16 @@ const Home: React.FC = () => {
                     <p className="text-lg md:text-lg font-light mb-12 max-w-lg leading-relaxed drop-shadow-[2px_4px_12px_rgba(0,0,0,0.4)]">
                         Emotions are soothed, and the soul rests and rejuvenates
                     </p>
-                    <ServiceButton
-                        text="EXPLORE SERVICES"
-                        href="/productPage"
-                    />
+                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                        <ServiceButton
+                            text="EXPLORE SERVICES"
+                            href="/productPage"
+                        />
+                        <ServiceButton
+                            text="REPORT INCIDENT"
+                            href="/incident-report"
+                        />
+                    </div>
                 </div>
             </section>
 

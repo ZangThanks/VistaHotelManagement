@@ -8,31 +8,34 @@ import FloatingInput from '../../components/common/FloatingInput';
 import { handleRegister } from '../../services/authService';
 import {
     validateFullName,
-    validateEmailOrPhone,
+    validateEmail,
+    validatePhone,
     validatePassword,
     validateConfirmPassword,
     validateUserName,
-    detectInputType,
 } from '../../utils/validators';
 import { useToastContext } from '../../hooks/useToastContext';
 
 const Register: React.FC = () => {
     const [userName, setUserName] = useState('');
     const [fullName, setFullName] = useState('');
-    const [identifier, setIdentifier] = useState(''); // Email or phone
+    const [email, setEmail] = useState('');
+    const [phone, setPhone] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
 
     const [userNameError, setUserNameError] = useState('');
     const [fullNameError, setFullNameError] = useState('');
-    const [identifierError, setIdentifierError] = useState('');
+    const [emailError, setEmailError] = useState('');
+    const [phoneError, setPhoneError] = useState('');
     const [passwordError, setPasswordError] = useState('');
     const [confirmPasswordError, setConfirmPasswordError] = useState('');
 
     // Trạng thái thành công cho border màu xanh
     const [userNameSuccess, setUserNameSuccess] = useState(false);
     const [fullNameSuccess, setFullNameSuccess] = useState(false);
-    const [identifierSuccess, setIdentifierSuccess] = useState(false);
+    const [emailSuccess, setEmailSuccess] = useState(false);
+    const [phoneSuccess, setPhoneSuccess] = useState(false);
     const [passwordSuccess, setPasswordSuccess] = useState(false);
     const [confirmPasswordSuccess, setConfirmPasswordSuccess] = useState(false);
 
@@ -67,15 +70,27 @@ const Register: React.FC = () => {
         }
     };
 
-    const handleIdentifierChange = (value: string) => {
-        setIdentifier(value);
+    const handleEmailChange = (value: string) => {
+        setEmail(value);
         if (value.trim()) {
-            const error = validateEmailOrPhone(value);
-            setIdentifierError(error);
-            setIdentifierSuccess(!error);
+            const error = validateEmail(value);
+            setEmailError(error);
+            setEmailSuccess(!error);
         } else {
-            setIdentifierError('');
-            setIdentifierSuccess(false);
+            setEmailError('');
+            setEmailSuccess(false);
+        }
+    };
+
+    const handlePhoneChange = (value: string) => {
+        setPhone(value);
+        if (value.trim()) {
+            const error = validatePhone(value);
+            setPhoneError(error);
+            setPhoneSuccess(!error);
+        } else {
+            setPhoneError('');
+            setPhoneSuccess(false);
         }
     };
 
@@ -127,11 +142,17 @@ const Register: React.FC = () => {
         setFullNameSuccess(!fullNameErr);
         if (fullNameErr) isValid = false;
 
-        // Identifier (email or phone)
-        const identifierErr = validateEmailOrPhone(identifier);
-        setIdentifierError(identifierErr);
-        setIdentifierSuccess(!identifierErr);
-        if (identifierErr) isValid = false;
+        // Email
+        const emailErr = validateEmail(email);
+        setEmailError(emailErr);
+        setEmailSuccess(!emailErr);
+        if (emailErr) isValid = false;
+
+        // Phone
+        const phoneErr = validatePhone(phone);
+        setPhoneError(phoneErr);
+        setPhoneSuccess(!phoneErr);
+        if (phoneErr) isValid = false;
 
         // Password
         const passwordErr = validatePassword(password);
@@ -157,7 +178,8 @@ const Register: React.FC = () => {
         // Clear lỗi cũ
         setUserNameError('');
         setFullNameError('');
-        setIdentifierError('');
+        setEmailError('');
+        setPhoneError('');
         setPasswordError('');
         setConfirmPasswordError('');
 
@@ -169,25 +191,13 @@ const Register: React.FC = () => {
 
         setIsSubmitting(true);
         try {
-            // Xác định xem identifier là email hay số điện thoại
-            const inputType = detectInputType(identifier.trim());
-            const payload: {
-                userName: string;
-                fullName: string;
-                email?: string;
-                phone?: string;
-                password: string;
-            } = {
+            const payload = {
                 userName: userName.trim(),
                 fullName: fullName.trim(),
+                email: email.trim(),
+                phone: phone.trim(),
                 password,
             };
-
-            if (inputType === 'email') {
-                payload.email = identifier.trim();
-            } else if (inputType === 'phone') {
-                payload.phone = identifier.trim();
-            }
 
             const result = await handleRegister(payload);
 
@@ -361,64 +371,114 @@ const Register: React.FC = () => {
                     )}
                 </div>
 
-                {/* Email / Phone */}
+                {/* Email */}
                 <div
                     key={`email-${shakeKey}`}
                     className={`min-h-[70px] ${
-                        identifierError
-                            ? 'animate-[shake_400ms_ease-in-out]'
-                            : ''
+                        emailError ? 'animate-[shake_400ms_ease-in-out]' : ''
                     }`}
                 >
                     <FloatingInput
-                        label="Email hoặc Số điện thoại"
-                        type="text"
-                        value={identifier}
-                        onChange={handleIdentifierChange}
+                        label="Email"
+                        type="email"
+                        value={email}
+                        onChange={handleEmailChange}
                         iconLeft={faEnvelope}
                         size="md"
                         borderColor={
-                            identifierError
+                            emailError
                                 ? 'border-red-500'
-                                : identifierSuccess
+                                : emailSuccess
                                 ? 'border-green-500'
                                 : 'border-white/40'
                         }
                         focusBorderColor={
-                            identifierError
+                            emailError
                                 ? 'focus:border-red-500'
-                                : identifierSuccess
+                                : emailSuccess
                                 ? 'focus:border-green-500'
                                 : 'focus:border-[#c3923c]'
                         }
                         labelColor={
-                            identifierError
+                            emailError
                                 ? 'text-red-500'
-                                : identifierSuccess
+                                : emailSuccess
                                 ? 'text-green-500'
                                 : 'text-white/80'
                         }
                         focusLabelColor={
-                            identifierError
+                            emailError
                                 ? 'text-red-500'
-                                : identifierSuccess
+                                : emailSuccess
                                 ? 'text-green-500'
                                 : 'text-[#c3923c]'
                         }
                         className="bg-transparent text-white"
                     />
-                    {identifierError && (
+                    {emailError && (
                         <p className="text-red-500 text-xs mt-1">
-                            {identifierError}
+                            {emailError}
                         </p>
                     )}
-                    {identifierSuccess && !identifierError && (
+                    {emailSuccess && !emailError && (
                         <p className="text-green-500 text-xs mt-1">
-                            ✓{' '}
-                            {detectInputType(identifier) === 'email'
-                                ? 'Email'
-                                : 'Số điện thoại'}{' '}
-                            hợp lệ
+                            ✓ Email hợp lệ
+                        </p>
+                    )}
+                </div>
+
+                {/* Phone */}
+                <div
+                    key={`phone-${shakeKey}`}
+                    className={`min-h-[70px] ${
+                        phoneError ? 'animate-[shake_400ms_ease-in-out]' : ''
+                    }`}
+                >
+                    <FloatingInput
+                        label="Số điện thoại"
+                        type="text"
+                        value={phone}
+                        onChange={handlePhoneChange}
+                        iconLeft={faEnvelope}
+                        size="md"
+                        borderColor={
+                            phoneError
+                                ? 'border-red-500'
+                                : phoneSuccess
+                                ? 'border-green-500'
+                                : 'border-white/40'
+                        }
+                        focusBorderColor={
+                            phoneError
+                                ? 'focus:border-red-500'
+                                : phoneSuccess
+                                ? 'focus:border-green-500'
+                                : 'focus:border-[#c3923c]'
+                        }
+                        labelColor={
+                            phoneError
+                                ? 'text-red-500'
+                                : phoneSuccess
+                                ? 'text-green-500'
+                                : 'text-white/80'
+                        }
+                        focusLabelColor={
+                            phoneError
+                                ? 'text-red-500'
+                                : phoneSuccess
+                                ? 'text-green-500'
+                                : 'text-[#c3923c]'
+                        }
+                        className="bg-transparent text-white"
+                    />
+                    {phoneError && (
+                        <p className="text-red-500 text-xs mt-1">
+                            {phoneError}
+                        </p>
+                    )}
+                    {phoneSuccess && !phoneError && (
+                        <p className="text-green-500 text-xs mt-1">
+                            ✓ Số điện thoại hợp lệ
                         </p>
                     )}
                 </div>
