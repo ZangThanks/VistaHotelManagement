@@ -768,7 +768,11 @@ const ReportPage: React.FC = () => {
                         <ExportButton
                             reportType={activeTab}
                             dateRange={{ startDate, endDate }}
-                            data={activeTab === 'services' ? serviceData : undefined}
+                            data={
+                                activeTab === 'services'
+                                    ? serviceData
+                                    : undefined
+                            }
                         />
                     </div>
                 </div>
