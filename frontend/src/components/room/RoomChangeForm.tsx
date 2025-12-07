@@ -40,9 +40,14 @@ const RoomChangeForm: React.FC<RoomChangeFormProps> = ({
         setIsLoadingRooms(true);
         try {
             const rooms = await roomService.getAll();
-            // Filter only available rooms
+            // Get current room number
+            const currentRoomNumber =
+                currentBooking?.bookingDetails?.[0]?.room?.roomNumber;
+            // Filter only available rooms and exclude current room
             const available = rooms.filter(
-                (room: Room) => room.status === 'AVAILABLE',
+                (room: Room) =>
+                    room.status === 'AVAILABLE' &&
+                    room.roomNumber !== currentRoomNumber,
             );
             setAvailableRooms(available);
         } catch (err) {

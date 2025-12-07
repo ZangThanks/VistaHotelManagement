@@ -14,20 +14,32 @@ import type {
 } from '../../types/Incident';
 import incidentService from '../../services/incidentService';
 import bookingService from '../../services/bookingService';
-import roomChangeRequestService from '../../services/roomChangeRequestService';
+import roomChangeRequestService, {
+    type RoomChangeRequestResponse,
+} from '../../services/roomChangeRequestService';
 import type { Booking } from '../../types/Booking';
 import { useToast } from '../../hooks/useToast';
 
+interface UserData {
+    id?: string;
+    customerId?: string;
+    customerID?: string;
+    email?: string;
+    fullName?: string;
+}
+
 const IncidentReport: React.FC = () => {
     const navigate = useNavigate();
-    const [user, setUser] = useState<any>(null);
+    const [user, setUser] = useState<UserData | null>(null);
     const [userBookings, setUserBookings] = useState<Booking[]>([]);
     const [selectedBookingId, setSelectedBookingId] = useState<string>('');
     const [incidents, setIncidents] = useState<IncidentReportType[]>([]);
     const [filteredIncidents, setFilteredIncidents] = useState<
         IncidentReportType[]
     >([]);
-    const [myRoomChangeRequests, setMyRoomChangeRequests] = useState<any[]>([]);
+    const [myRoomChangeRequests, setMyRoomChangeRequests] = useState<
+        RoomChangeRequestResponse[]
+    >([]);
     const [isLoading, setIsLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
     const [showRoomChangeForm, setShowRoomChangeForm] = useState(false);
@@ -51,6 +63,7 @@ const IncidentReport: React.FC = () => {
     const { success, error } = useToast();
 
     // Check authentication and load user's bookings
+
     useEffect(() => {
         const userStr = localStorage.getItem('user');
         if (userStr) {
@@ -74,6 +87,7 @@ const IncidentReport: React.FC = () => {
     }, []);
 
     // Auto-refresh bookings every 5 seconds to detect check-in status changes
+
     useEffect(() => {
         if (!user) return;
 
@@ -104,19 +118,21 @@ const IncidentReport: React.FC = () => {
             const bookingsWithRoomChange = new Set(
                 myRoomChangeRequests
                     .filter(
-                        (req: any) =>
+                        (req) =>
                             req.status === 'PENDING' ||
-                            req.status === 'APPROVED' ||
                             req.status === 'COMPLETED',
                     )
-                    .map((req: any) => req.bookingId),
+                    .map((req) => req.booking.bookingID),
             );
 
             const overOneHour = incidents.filter((incident) => {
                 if (incident.status !== 'PENDING') return false;
 
                 // Don't show if there's already a room change request for THIS incident's booking
-                if (bookingsWithRoomChange.has(incident.bookingId))
+                if (
+                    incident.bookingId &&
+                    bookingsWithRoomChange.has(incident.bookingId)
+                )
                     return false;
 
                 const reportedTime = new Date(incident.reportedDate).getTime();
@@ -166,9 +182,7 @@ const IncidentReport: React.FC = () => {
             // Filter bookings for this customer that are active (CHECKED_IN, CONFIRMED, or PENDING)
             const userActiveBookings = allBookings.filter(
                 (booking: Booking) => {
-                    const bookingCustomerId =
-                        booking.customer?.customerID ||
-                        booking.customer?.customerId;
+                    const bookingCustomerId = booking.customer?.id;
                     const bookingEmail = booking.customer?.email;
                     const bookingFullName = booking.customer?.fullName;
 
@@ -264,7 +278,12 @@ const IncidentReport: React.FC = () => {
         setIsLoading(true);
         try {
             console.log('🔄 Loading customer incidents...');
-            const customerId = user.customerId || user.customerID;
+            const customerId = user.customerId || user.customerID || user.id;
+            if (!customerId) {
+                console.error('❌ No customer ID found');
+                setIsLoading(false);
+                return;
+            }
             // Load incidents by customer ID AND booking ID
             const data = await incidentService.getCustomerIncidents(
                 customerId,
@@ -753,10 +772,10 @@ const IncidentReport: React.FC = () => {
                                                 </p>
                                                 <div className="flex flex-wrap gap-2 mt-3">
                                                     {pendingOverOneHour.map(
-                                                        (incident, index) => (
+                                                        (incident) => (
                                                             <div
                                                                 key={
-                                                                    incident.incidentID
+                                                                    incident.id
                                                                 }
                                                                 className="inline-flex items-center gap-2 px-3 py-1.5 bg-red-100 text-red-800 rounded-lg text-sm font-medium border border-red-300"
                                                             >
@@ -837,25 +856,22 @@ const IncidentReport: React.FC = () => {
                             </div>
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                 {myRoomChangeRequests
-                                    .filter((request: any) => {
+                                    .filter((request) => {
                                         if (statusFilter === 'ALL') return true;
                                         if (statusFilter === 'ROOM_PENDING')
                                             return request.status === 'PENDING';
-                                        if (statusFilter === 'ROOM_APPROVED')
-                                            return (
-                                                request.status === 'APPROVED'
-                                            );
-                                        if (statusFilter === 'ROOM_REJECTED')
-                                            return (
-                                                request.status === 'REJECTED'
-                                            );
                                         if (statusFilter === 'ROOM_COMPLETED')
                                             return (
                                                 request.status === 'COMPLETED'
                                             );
+                                        if (
+                                            statusFilter === 'ROOM_APPROVED' ||
+                                            statusFilter === 'ROOM_REJECTED'
+                                        )
+                                            return request.status === 'FAILED';
                                         return true;
                                     })
-                                    .map((request: any) => (
+                                    .map((request) => (
                                         <div
                                             key={request.requestID}
                                             className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg border-2 border-[#CCBDA3]/20 p-6 hover:shadow-2xl hover:border-[#CCBDA3]/40 transition-all duration-300 hover:scale-[1.02]"
@@ -1059,11 +1075,10 @@ const IncidentReport: React.FC = () => {
                                     // Check if this incident's booking already has a room change request
                                     const hasRoomChangeRequest =
                                         myRoomChangeRequests.some(
-                                            (req: any) =>
-                                                req.bookingId ===
+                                            (req) =>
+                                                req.booking.bookingID ===
                                                     incident.bookingId &&
                                                 (req.status === 'PENDING' ||
-                                                    req.status === 'APPROVED' ||
                                                     req.status === 'COMPLETED'),
                                         );
 
@@ -1076,9 +1091,9 @@ const IncidentReport: React.FC = () => {
                                     );
                                     console.log(
                                         '🔍 Room Change Requests:',
-                                        myRoomChangeRequests.map((r: any) => ({
-                                            id: r.id,
-                                            bookingId: r.bookingId,
+                                        myRoomChangeRequests.map((r) => ({
+                                            id: r.requestID,
+                                            bookingId: r.booking.bookingID,
                                             status: r.status,
                                         })),
                                     );

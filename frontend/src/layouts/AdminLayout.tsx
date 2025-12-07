@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
-import { Outlet } from "react-router-dom";
-import HeaderAdmin from "../components/HeaderAdmin";
-import Sidebar from "../components/Sidebar";
+import { useState, useEffect } from 'react';
+import { Outlet } from 'react-router-dom';
+import HeaderAdmin from '../components/HeaderAdmin';
+import Sidebar from '../components/Sidebar';
 
 const AdminLayout = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -21,8 +21,8 @@ const AdminLayout = () => {
             }
         };
 
-        window.addEventListener("resize", handleResize);
-        return () => window.removeEventListener("resize", handleResize);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
     }, []);
 
     return (
@@ -33,9 +33,11 @@ const AdminLayout = () => {
                 className={
                     isMobile
                         ? `z-30 transform ${
-                            isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-                        }`
-                        : ""
+                              isSidebarOpen
+                                  ? 'translate-x-0'
+                                  : '-translate-x-full'
+                          }`
+                        : ''
                 }
             />
 
@@ -44,13 +46,16 @@ const AdminLayout = () => {
                 <div
                     className="fixed inset-0 bg-black/50 z-20"
                     onClick={toggleSidebar}
-                    style={{ pointerEvents: "auto" }}
+                    style={{ pointerEvents: 'auto' }}
                 ></div>
             )}
 
             {/* MAIN CONTENT */}
             <div className="flex flex-col flex-grow ml-13 transition-all duration-300 ease-in-out">
-                <HeaderAdmin toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} />
+                <HeaderAdmin
+                    toggleSidebar={toggleSidebar}
+                    isSidebarOpen={isSidebarOpen}
+                />
 
                 <main className="flex-grow overflow-auto bg-light">
                     <Outlet />

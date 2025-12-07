@@ -15,11 +15,19 @@ export interface RoomChangeResponseDTO {
     processedBy: string;
 }
 
+export interface BookingRef {
+    bookingID: string;
+}
+
+export interface RoomRef {
+    roomNumber: string;
+}
+
 export interface RoomChangeRequestResponse {
     requestID: string;
-    booking: any;
-    currentRoom: any;
-    newRoom: any;
+    booking: BookingRef;
+    currentRoom: RoomRef;
+    newRoom: RoomRef;
     reason: string;
     requestDate: string;
     status: 'PENDING' | 'COMPLETED' | 'FAILED';
