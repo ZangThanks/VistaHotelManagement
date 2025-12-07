@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { faEnvelope, faLock } from "@fortawesome/free-solid-svg-icons";
 import logoImage from "../../assets/images/logoWhite.png";
@@ -6,10 +6,11 @@ import googleLogo from "../../assets/images/google-logo.svg";
 import Button from "../../components/common/Button";
 import FloatingInput from "../../components/common/FloatingInput";
 import CustomCaptcha from "../../components/common/CustomCaptcha";
+import type { CustomCaptchaRef } from "../../components/common/CustomCaptcha";
 import { handleLogin } from "../../services/authService";
 import {
-  validateEmailOrPhone,
-  validatePassword,
+  validateEmailOrPhoneOrUsername,
+  validateLoginPassword,
   detectInputType,
 } from "../../utils/validators";
 import { useToastContext } from "../../hooks/useToastContext";
@@ -24,6 +25,8 @@ const Login: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [shakeKey, setShakeKey] = useState(0);
   const [isCaptchaVerified, setIsCaptchaVerified] = useState(false);
+  const [captchaError, setCaptchaError] = useState("");
+  const captchaRef = useRef<CustomCaptchaRef>(null);
   const navigate = useNavigate();
   const toast = useToastContext();
 
@@ -31,7 +34,7 @@ const Login: React.FC = () => {
   const handleIdentifierChange = (value: string) => {
     setIdentifier(value);
     if (value.trim()) {
-      const error = validateEmailOrPhone(value);
+      const error = validateEmailOrPhoneOrUsername(value);
       setIdentifierError(error);
       setIdentifierSuccess(!error);
     } else {
@@ -40,14 +43,11 @@ const Login: React.FC = () => {
     }
   };
 
-  // Real-time validation cho password
+  // Xử lý thay đổi password (không validate real-time)
   const handlePasswordChange = (value: string) => {
     setPassword(value);
-    if (value) {
-      const error = validatePassword(value);
-      setPasswordError(error);
-      setPasswordSuccess(!error);
-    } else {
+    // Clear error khi user typing
+    if (passwordError) {
       setPasswordError("");
       setPasswordSuccess(false);
     }
@@ -57,31 +57,37 @@ const Login: React.FC = () => {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const idErr = validateEmailOrPhone(identifier);
-    const pwErr = validatePassword(password);
+    // Validate identifier
+    const idErr = validateEmailOrPhoneOrUsername(identifier);
     setIdentifierError(idErr);
-    setPasswordError(pwErr);
     setIdentifierSuccess(!idErr);
+
+    // Validate password (chỉ check không trống)
+    const pwErr = validateLoginPassword(password);
+    setPasswordError(pwErr);
     setPasswordSuccess(!pwErr);
 
+    // Validate captcha
+    if (!isCaptchaVerified) {
+      setCaptchaError("Vui lòng nhập đúng mã xác thực");
+      setShakeKey((prev) => prev + 1);
+      return;
+    }
+
+    // Nếu có lỗi validation
     if (idErr || pwErr) {
       setShakeKey((prev) => prev + 1); // Trigger shake animation
       return;
     }
 
-    // Verify captcha
-    if (!isCaptchaVerified) {
-      toast.error("Vui lòng nhập đúng mã xác thực", { duration: 3000 });
-      return;
-    }
-
     setLoading(true);
 
-    // Kiểm tra xem email hay phone và gửi payload tương ứng
+    // Kiểm tra xem email, phone hay username và gửi payload tương ứng
     const inputType = detectInputType(identifier.trim());
     const loginPayload: {
       email?: string;
       phone?: string;
+      userName?: string;
       password: string;
     } = {
       password,
@@ -91,6 +97,8 @@ const Login: React.FC = () => {
       loginPayload.email = identifier.trim();
     } else if (inputType === "phone") {
       loginPayload.phone = identifier.trim();
+    } else if (inputType === "username") {
+      loginPayload.userName = identifier.trim();
     }
 
     const res = await handleLogin(loginPayload);
@@ -110,6 +118,8 @@ const Login: React.FC = () => {
       setPasswordSuccess(false);
       toast.error(res.message, { duration: 3000 });
       setIsCaptchaVerified(false);
+      // Tự động refresh captcha khi đăng nhập thất bại
+      captchaRef.current?.refresh();
     }
   };
 
@@ -153,7 +163,7 @@ const Login: React.FC = () => {
           }`}
         >
           <FloatingInput
-            label="Email hoặc Số điện thoại"
+            label="Email, Số điện thoại hoặc Tên đăng nhập"
             type="text"
             value={identifier}
             onChange={handleIdentifierChange}
@@ -197,7 +207,9 @@ const Login: React.FC = () => {
               ✓{" "}
               {detectInputType(identifier) === "email"
                 ? "Email"
-                : "Số điện thoại"}{" "}
+                : detectInputType(identifier) === "phone"
+                ? "Số điện thoại"
+                : "Tên đăng nhập"}{" "}
               hợp lệ
             </p>
           )}
@@ -256,10 +268,25 @@ const Login: React.FC = () => {
         </div>
 
         {/* Captcha */}
-        <CustomCaptcha
-          onVerify={(isValid) => setIsCaptchaVerified(isValid)}
-          className="my-2"
-        />
+        <div
+          key={`captcha-${shakeKey}`}
+          className={`min-h-[100px] ${
+            captchaError ? "animate-[shake_400ms_ease-in-out]" : ""
+          }`}
+        >
+          <CustomCaptcha
+            ref={captchaRef}
+            onVerify={(isValid) => {
+              setIsCaptchaVerified(isValid);
+              if (isValid) setCaptchaError("");
+            }}
+            autoRefreshMinutes={2}
+            className="my-2"
+          />
+          {captchaError && (
+            <p className="text-red-500 text-xs mt-1">{captchaError}</p>
+          )}
+        </div>
 
         {/* Quên mật khẩu? */}
         <div className="flex justify-end">
