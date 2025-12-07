@@ -194,5 +194,11 @@ public class BookingService {
     public List<Booking> findAllByCheckOutDateBetween(LocalDateTime startDate, LocalDateTime endDate) {
         return repo.findAllByCheckOutDateBetween(startDate, endDate);
     }
+
+    public List<Booking> findConflictingBookings(String roomNumber, LocalDateTime checkIn, LocalDateTime checkOut) {
+        return repo.findConflictingBookings(roomNumber, checkIn, checkOut);
+    }
+
+
 }
 
