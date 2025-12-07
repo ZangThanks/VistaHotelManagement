@@ -77,11 +77,12 @@ const Login: React.FC = () => {
 
         setLoading(true);
 
-        // Kiểm tra xem email hay phone và gửi payload tương ứng
+        // Kiểm tra xem email, phone hay username và gửi payload tương ứng
         const inputType = detectInputType(identifier.trim());
         const loginPayload: {
             email?: string;
             phone?: string;
+            userName?: string;
             password: string;
         } = {
             password,
@@ -91,6 +92,8 @@ const Login: React.FC = () => {
             loginPayload.email = identifier.trim();
         } else if (inputType === 'phone') {
             loginPayload.phone = identifier.trim();
+        } else if (inputType === 'username') {
+            loginPayload.userName = identifier.trim();
         }
 
         const res = await handleLogin(loginPayload);
@@ -152,7 +155,7 @@ const Login: React.FC = () => {
                     </p>
                 </div>
 
-                {/* Email hoặc Số điện thoại  */}
+                {/* Email, Số điện thoại hoặc Tên đăng nhập  */}
                 <div
                     key={`identifier-${shakeKey}`}
                     className={`min-h-[70px] mt-5 ${
@@ -162,7 +165,7 @@ const Login: React.FC = () => {
                     }`}
                 >
                     <FloatingInput
-                        label="Email hoặc Số điện thoại"
+                        label="Email, Số điện thoại, Tên đăng nhập"
                         type="text"
                         value={identifier}
                         onChange={handleIdentifierChange}
@@ -208,7 +211,9 @@ const Login: React.FC = () => {
                             ✓{' '}
                             {detectInputType(identifier) === 'email'
                                 ? 'Email'
-                                : 'Số điện thoại'}{' '}
+                                : detectInputType(identifier) === 'phone'
+                                ? 'Số điện thoại'
+                                : 'Tên đăng nhập'}{' '}
                             hợp lệ
                         </p>
                     )}

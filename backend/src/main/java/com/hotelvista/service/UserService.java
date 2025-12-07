@@ -68,6 +68,46 @@ public class UserService {
         return null;
     }
 
+    /**
+     * Tìm user bằng email, phone hoặc userName, áp dụng cho Customer + Admin + Employee
+     */
+    public User findByEmailOrPhoneOrUserName(String email, String phone, String userName) {
+        if (email != null && !email.isBlank()) {
+            User u = customerRepo.findByEmail(email).orElse(null);
+            if (u != null) return u;
+
+            u = adminRepo.findByEmail(email).orElse(null);
+            if (u != null) return u;
+
+            u = employeeRepo.findByEmail(email).orElse(null);
+            if (u != null) return u;
+        }
+
+        if (phone != null && !phone.isBlank()) {
+            User u = customerRepo.findByPhone(phone).orElse(null);
+            if (u != null) return u;
+
+            u = adminRepo.findByPhone(phone).orElse(null);
+            if (u != null) return u;
+
+            u = employeeRepo.findByPhone(phone).orElse(null);
+            if (u != null) return u;
+        }
+
+        if (userName != null && !userName.isBlank()) {
+            User u = customerRepo.findByUserName(userName).orElse(null);
+            if (u != null) return u;
+
+            u = adminRepo.findByUserName(userName).orElse(null);
+            if (u != null) return u;
+
+            u = employeeRepo.findByUserName(userName).orElse(null);
+            if (u != null) return u;
+        }
+
+        return null;
+    }
+
     public boolean resetPasswordByEmail(String email, String newPassword) {
         User user = null;
 

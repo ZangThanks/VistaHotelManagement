@@ -133,15 +133,21 @@ public class AuthController {
      */
     @PostMapping("/login")
     public Map<String, Object> login(@RequestBody LoginRequest req) {
-        // Tìm user bằng email hoặc phone
-        User user = userService.findByEmailOrPhone(req.getEmail(), req.getPhone());
+        // Log để debug
+        System.out.println("Login request - Email: " + req.getEmail() + ", Phone: " + req.getPhone() + ", UserName: " + req.getUserName());
+        
+        // Tìm user bằng email, phone hoặc userName
+        User user = userService.findByEmailOrPhoneOrUserName(req.getEmail(), req.getPhone(), req.getUserName());
 
         if (user == null) {
+            System.out.println("User not found!");
             return Map.of(
                     "success", false,
                     "message", "Tài khoản không tồn tại"
             );
         }
+        
+        System.out.println("User found: " + user.getUserName());
 
         String passwordError = ValidatorsUtil.validatePassword(req.getPassword());
         if (passwordError != null) {
