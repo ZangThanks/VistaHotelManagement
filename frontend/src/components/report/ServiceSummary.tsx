@@ -142,11 +142,7 @@ const ServiceSummary: React.FC<ServiceSummaryProps> = ({ data }) => {
             value: `${summary.avgOrderValue.toLocaleString('vi-VN')} VND`,
             subtitle: `From ${summary.totalOrders} orders`,
         },
-    ].filter(
-        (card) =>
-            card.title === 'Avg Order Value' ||
-            parseFloat(card.value.replace(/[^\d]/g, '')) > 0,
-    );
+    ];
 
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-6">

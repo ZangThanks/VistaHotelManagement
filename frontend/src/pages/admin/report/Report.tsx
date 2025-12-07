@@ -50,10 +50,67 @@ type ReportTab =
 const ReportPage: React.FC = () => {
     const [activeTab, setActiveTab] = useState<ReportTab>('revenue');
     const [period, setPeriod] = useState<ReportPeriod>('monthly');
-    const [startDate, setStartDate] = useState('2024-01-01');
-    const [endDate, setEndDate] = useState('2024-12-31');
+
+    // Get current date
+    const today = new Date();
+    const currentYear = today.getFullYear();
+    const currentMonth = String(today.getMonth() + 1).padStart(2, '0');
+    const currentDay = String(today.getDate()).padStart(2, '0');
+    const todayStr = `${currentYear}-${currentMonth}-${currentDay}`;
+
+    const [startDate, setStartDate] = useState(todayStr);
+    const [endDate, setEndDate] = useState(todayStr);
     const [serviceData, setServiceData] = useState<ServiceData[]>([]);
     const [isLoadingServiceData, setIsLoadingServiceData] = useState(false);
+    const [showDateFilter, setShowDateFilter] = useState(false);
+
+    // Auto update date range when period changes
+    useEffect(() => {
+        if (!showDateFilter) {
+            const today = new Date();
+            let start = new Date();
+            let end = new Date();
+
+            switch (period) {
+                case 'daily':
+                    // Today only
+                    start = today;
+                    end = today;
+                    break;
+                case 'weekly':
+                    // Last 7 days
+                    start.setDate(today.getDate() - 6);
+                    end = today;
+                    break;
+                case 'monthly':
+                    // Current month
+                    start = new Date(today.getFullYear(), today.getMonth(), 1);
+                    end = today;
+                    break;
+                case 'quarterly':
+                    // Current quarter
+                    const quarter = Math.floor(today.getMonth() / 3);
+                    start = new Date(today.getFullYear(), quarter * 3, 1);
+                    end = today;
+                    break;
+                case 'yearly':
+                    // Current year
+                    start = new Date(today.getFullYear(), 0, 1);
+                    end = today;
+                    break;
+            }
+
+            const formatDate = (date: Date) => {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            };
+
+            setStartDate(formatDate(start));
+            setEndDate(formatDate(end));
+        }
+    }, [period, showDateFilter]);
 
     // Fetch service report data from API
     useEffect(() => {
@@ -666,22 +723,52 @@ const ReportPage: React.FC = () => {
                 {/* Filters */}
                 <div className="bg-white p-4 rounded-lg shadow-sm border border-[#EBE3D7] mb-6">
                     <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
-                        <DateRangePicker
-                            startDate={startDate}
-                            endDate={endDate}
-                            onStartDateChange={setStartDate}
-                            onEndDateChange={setEndDate}
-                        />
-                        <div className="flex gap-4 items-center">
+                        <div className="flex items-center gap-2 flex-wrap">
                             <FilterBar
                                 period={period}
                                 onPeriodChange={setPeriod}
+                                showDateFilter={false}
+                                onToggleDateFilter={undefined}
                             />
-                            <ExportButton
-                                reportType={activeTab}
-                                dateRange={{ startDate, endDate }}
-                            />
+                            <button
+                                onClick={() =>
+                                    setShowDateFilter(!showDateFilter)
+                                }
+                                className={`px-4 py-2 rounded-md font-medium transition flex items-center gap-2 ${
+                                    showDateFilter
+                                        ? 'bg-[#B8935F] text-white hover:bg-[#9A7A4D]'
+                                        : 'bg-white text-gray-700 border border-[#EBE3D7] hover:bg-[#F5F0EB]'
+                                }`}
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    className="h-4 w-4"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                    />
+                                </svg>
+                                Date Filter
+                            </button>
+                            {showDateFilter && (
+                                <DateRangePicker
+                                    startDate={startDate}
+                                    endDate={endDate}
+                                    onStartDateChange={setStartDate}
+                                    onEndDateChange={setEndDate}
+                                />
+                            )}
                         </div>
+                        <ExportButton
+                            reportType={activeTab}
+                            dateRange={{ startDate, endDate }}
+                        />
                     </div>
                 </div>
 
