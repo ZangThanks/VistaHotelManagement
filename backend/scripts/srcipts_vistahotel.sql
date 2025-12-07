@@ -247,8 +247,8 @@ VALUES ('VOUCHER001', 5, 'PERCENT', NULL, '2024-12-31', b'1', '2024-06-01', 'Gi�
 
 -- CUSTOMER VOUCHERS
 INSERT INTO customer_vouchers (state, vouchers_id, customer_id)
-VALUES (b'1', 'VOUCHER001', 'CUST002'),
-       (b'1', 'VOUCHER002', 'CUST003');
+VALUES (b'1', 'VOUCHER001', 'CUS0412250003'),
+       (b'1', 'VOUCHER002', 'CUS0412250001');
 
 -- REVIEWS (Need to create reviews before booking_details since booking_details references reviews)
 INSERT INTO reviews (review_id, comment, is_anonymous, location, rating, review_date, room_quantity, service_quantity,
@@ -266,18 +266,6 @@ VALUES ('REVIEW001',
        ('REVIEW002', 'https://res.cloudinary.com/dk8gvar3y/image/upload/v1763549643/curtain-1758853_1280_exc0tv.jpg');
 
 -- BOOKINGS
-INSERT INTO bookings (booking_id, booking_date, cancellation_date, check_in_date, check_out_date, duration, hourly_rate,
-                      number_of_guests, package_type, payment_status, special_requests, status, total_amount,
-                      total_cost, customer_id, employee_id)
-VALUES ('BOOK001', '2024-06-01 09:00:00', NULL, '2024-06-10 14:00:00', '2024-06-12 12:00:00', 2, NULL, 2, 'Standard',
-        'COMPLETED', 'Yêu cầu phòng tầng thấp', 'CHECKED_OUT', 1800000, 1800000, 'CUST001', 'EMP001'),
-       ('BOOK002', '2024-06-02 10:00:00', NULL, '2024-06-15 14:00:00', '2024-06-18 12:00:00', 3, NULL, 3, 'Deluxe',
-        'COMPLETED', 'Ban công view biển', 'CHECKED_IN', 4500000, 4500000, 'CUST002', 'EMP001'),
-       ('BOOK003', '2024-06-03 11:00:00', NULL, '2024-06-20 14:00:00', '2024-06-21 12:00:00', 1, NULL, 1, 'Suite',
-        'PENDING', 'Check-in sớm', 'PENDING', 3000000, 3000000, 'CUST003', 'EMP003'),
-       ('BOOK004', '2024-06-04 12:00:00', '2024-06-05 15:00:00', '2024-06-25 14:00:00', '2024-06-27 12:00:00', 2, NULL,
-        2, 'Deluxe', 'REFUNDED', 'Hủy phòng do việc đột xuất', 'CANCELLED', 0, 0, 'CUST004', 'EMP005');
-
 INSERT INTO `bookings` (`booking_id`, `actual_check_in_time`, `actual_check_out_time`, `booking_date`, `cancellation_date`, `check_in_date`, `check_out_date`, `duration`, `hourly_rate`, `invoice_type`, `number_of_guests`, `package_type`, `payment_status`, `special_requests`, `status`, `total_amount`, `total_cost`, `type`, `customer_id`, `employee_id`) VALUES
       ('B0501250001', '2025-05-01 14:05:00.000000', '2025-05-03 12:00:00.000000', '2025-04-25 10:12:00.000000', NULL, '2025-05-01 14:00:00.000000', '2025-05-03 12:00:00.000000', 2, NULL, NULL, 2, 'Standard', 'COMPLETED', 'Near elevator', 'CHECKED_OUT', 240000, 180000, 'DAILY', 'CUS0412250001', 'EMP002'),
       ('B0601250002', '2025-06-12 15:20:00.000000', '2025-06-15 11:30:00.000000', '2025-06-01 09:30:00.000000', NULL, '2025-06-12 14:00:00.000000', '2025-06-15 12:00:00.000000', 3, NULL, NULL, 3, 'Deluxe', 'COMPLETED', 'High floor requested', 'CHECKED_OUT', 540000, 400000, 'DAILY', 'CUS0412250004', 'EMP001'),
@@ -316,31 +304,31 @@ INSERT INTO `bookings` (`booking_id`, `actual_check_in_time`, `actual_check_out_
 
 -- BOOKING DETAILS
 INSERT INTO booking_details (room_price, booking_id, room_number, review_id) VALUES
-(900000, 'BOOK001', 'STD101', 'REVIEW001'),
-(1500000, 'BOOK002', 'DLX201', 'REVIEW002'),
-(3000000, 'BOOK003', 'STE301', NULL),
-(1500000, 'BOOK004', 'DLX202', NULL);
+(900000, 'B2803250026', 'STD101', 'REVIEW001'),
+(1500000, 'B3005250028', 'DLX201', 'REVIEW002'),
+(3000000, 'B2411250022', 'STE301', NULL),
+(1500000, 'B3207250030', 'DLX202', NULL);
 -- BOOKING SERVICES
 INSERT INTO booking_services (quantity, service_price, total_amount, booking_id, service_id)
-VALUES (2, 80000, 160000, 'BOOK001', 'SV001'),
-       (1, 35000, 35000, 'BOOK002', 'SV002'),
-       (3, 50000, 150000, 'BOOK002', 'SV003'),
-       (1, 45000, 45000, 'BOOK003', 'SV004');
+VALUES (2, 80000, 160000, 'B2803250026', 'SV001'),
+       (1, 35000, 35000, 'B3005250028', 'SV002'),
+       (3, 50000, 150000, 'B2411250022', 'SV003'),
+       (1, 45000, 45000, 'B3207250030', 'SV004');
 
 -- EARLY CHECKINS
 INSERT INTO early_checkins (request_id, additional_fee, approval_status, request_date, request_time, booking_id)
-VALUES ('EC001', 450000, 'APPROVED', '2024-06-10 08:00:00', '2024-06-10 08:00:00', 'BOOK002'),
-       ('EC002', 900000, 'PENDING', '2024-06-15 07:30:00', '2024-06-15 07:30:00', 'BOOK001');
+VALUES ('EC001', 450000, 'APPROVED', '2024-06-10 08:00:00', '2024-06-10 08:00:00', 'B3207250030'),
+       ('EC002', 900000, 'PENDING', '2024-06-15 07:30:00', '2024-06-15 07:30:00', 'B2411250022');
 
 -- MAINTENANCE REQUESTS
 INSERT INTO maintenance_requests (request_id, actual_cost, assigned_to, completion_date, description, estimated_time,
                                   prioty, request_date, status, booking_id)
 VALUES ('MR001', 500000, 'EMP002', '2024-06-01 16:00:00', 'Sửa điều hòa phòng DLX201', 2, 'HIGH', '2024-06-01 14:00:00',
-        'COMPLETED', 'BOOK002'),
+        'COMPLETED', 'B3207250030'),
        ('MR002', 200000, 'EMP002', NULL, 'Thay bóng đèn phòng STD103', 1, 'LOW', '2024-06-01 15:00:00', 'PENDING',
         NULL),
        ('MR003', 150000, 'EMP004', NULL, 'Sửa vòi sen phòng STE301', 1, 'MEDIUM', '2024-06-02 10:00:00', 'PENDING',
-        'BOOK003');
+        'B3005250028');
 
 -- REPORTS
 INSERT INTO reports (report_id, generated_date, report_period, report_type, employee_id)
@@ -350,7 +338,7 @@ VALUES ('REP001', '2024-06-01 18:00:00', '2024-06', 'OCCUPANCY', 'EMP003'),
        ('REP004', '2024-06-03 10:00:00', '2024-06', 'SERVICE', 'EMP005');
 
 INSERT INTO cart_beans (cart_bean_id, customer_id)
-                              VALUES ('CA5073', 'CUST004');
+                              VALUES ('CA5073', 'CUS0412250001');
 
 INSERT INTO cart_items (room_number, cart_bean_id)
 VALUES ('STD101', 'CA5073'),
@@ -359,6 +347,6 @@ VALUES ('STD101', 'CA5073'),
 -- ROOM CHANGE REQUESTS
 INSERT INTO room_change_requests (request_id, booking_id, current_room_id, new_room_id, reason, request_date, status, response_note, response_date, processed_by)
 VALUES
-('RC001', 'BOOK002', 'DLX201', 'DLX203', 'Phòng hiện tại ồn ào, muốn chuyển sang phòng yên tĩnh hơn', '2024-06-16 10:30:00', 'COMPLETED', 'Đã chuyển phòng thành công', '2024-06-16 11:00:00', 'EMP001'),
-('RC002', 'BOOK001', 'STD101', 'STD102', 'Muốn chuyển sang phòng có view đẹp hơn', '2024-06-11 09:00:00', 'FAILED', 'Phòng yêu cầu đang được sử dụng', '2024-06-11 09:30:00', 'EMP001'),
-('RC003', 'BOOK003', 'STE301', 'STE302', 'Điều hòa không hoạt động tốt', '2024-06-20 15:00:00', 'PENDING', NULL, NULL, NULL);
+('RC001', 'B2411250022', 'DLX201', 'DLX203', 'Phòng hiện tại ồn ào, muốn chuyển sang phòng yên tĩnh hơn', '2024-06-16 10:30:00', 'COMPLETED', 'Đã chuyển phòng thành công', '2024-06-16 11:00:00', 'EMP001'),
+('RC002', 'B3207250030', 'STD101', 'STD102', 'Muốn chuyển sang phòng có view đẹp hơn', '2024-06-11 09:00:00', 'FAILED', 'Phòng yêu cầu đang được sử dụng', '2024-06-11 09:30:00', 'EMP001'),
+('RC003', 'B3005250028', 'STE301', 'STE302', 'Điều hòa không hoạt động tốt', '2024-06-20 15:00:00', 'PENDING', NULL, NULL, NULL);

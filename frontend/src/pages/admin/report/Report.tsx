@@ -8,7 +8,7 @@ import {
     FaConciergeBell,
 } from 'react-icons/fa';
 import type {
-    RevenueData,
+    // RevenueData,
     OccupancyData,
     LoyaltyData,
     ReviewData,
@@ -16,8 +16,8 @@ import type {
     ReportPeriod,
     ServiceData,
 } from '../../../types/Report';
-import RevenueSummary from '../../../components/report/RevenueSummary';
-import RevenueChart from '../../../components/report/RevenueChart';
+// import RevenueSummary from '../../../components/report/RevenueSummary';
+// import RevenueChart from '../../../components/report/RevenueChart';
 import OccupancyChart from '../../../components/report/OccupancyChart';
 import RoomTypeAnalysis from '../../../components/report/RoomTypeAnalysis';
 import LoyaltyChart from '../../../components/report/LoyaltyChart';
@@ -37,8 +37,9 @@ import ServiceSummary from '../../../components/report/ServiceSummary';
 import ServiceChart from '../../../components/report/ServiceChart';
 import ServiceDistribution from '../../../components/report/ServiceDistribution';
 import PopularServices from '../../../components/report/PopularServices';
-import { getRevenueData } from '../../../services/revenueReport';
-import RevenueTab from './components/RevenueTab';
+// import { getRevenueData } from '../../../services/revenueReport';
+import { reportService } from '../../../services/reportService';
+// import RevenueTab from './components/RevenueTab';
 
 type ReportTab =
     | 'revenue'
@@ -142,103 +143,103 @@ const ReportPage: React.FC = () => {
         }
     };
 
-  //TODO: DATA MẪU!!
+    //TODO: DATA MẪU!!
 
-    useEffect(() => {
-        const fetchRevenue = async () => {
-            setRevenueLoading(true);
-            setRevenueError(null);
-            try {
-                const data = await getRevenueData();
-                setRevenueData(Array.isArray(data) ? data : []);
-            } catch (e: any) {
-                setRevenueError(e?.message || 'Failed to load revenue data');
-                setRevenueData([]);
-            } finally {
-                setRevenueLoading(false);
-            }
-        };
-        fetchRevenue();
-    }, []);
+    // useEffect(() => {
+    //     const fetchRevenue = async () => {
+    //         setRevenueLoading(true);
+    //         setRevenueError(null);
+    //         try {
+    //             const data = await getRevenueData();
+    //             setRevenueData(Array.isArray(data) ? data : []);
+    //         } catch (e: any) {
+    //             setRevenueError(e?.message || 'Failed to load revenue data');
+    //             setRevenueData([]);
+    //         } finally {
+    //             setRevenueLoading(false);
+    //         }
+    //     };
+    //     fetchRevenue();
+    // }, []);
 
-  // Mock data - Occupancy
-  const occupancyData: OccupancyData[] = useMemo(
-    () => [
-      {
-        date: "Jan 2024",
-        totalRooms: 105,
-        occupiedRooms: 78,
-        occupancyRate: 74.3,
-      },
-      {
-        date: "Feb 2024",
-        totalRooms: 105,
-        occupiedRooms: 82,
-        occupancyRate: 78.1,
-      },
-      {
-        date: "Mar 2024",
-        totalRooms: 105,
-        occupiedRooms: 88,
-        occupancyRate: 83.8,
-      },
-      {
-        date: "Apr 2024",
-        totalRooms: 105,
-        occupiedRooms: 84,
-        occupancyRate: 80.0,
-      },
-      {
-        date: "May 2024",
-        totalRooms: 105,
-        occupiedRooms: 86,
-        occupancyRate: 81.9,
-      },
-      {
-        date: "Jun 2024",
-        totalRooms: 105,
-        occupiedRooms: 95,
-        occupancyRate: 90.5,
-      },
-      {
-        date: "Jul 2024",
-        totalRooms: 105,
-        occupiedRooms: 98,
-        occupancyRate: 93.3,
-      },
-      {
-        date: "Aug 2024",
-        totalRooms: 105,
-        occupiedRooms: 96,
-        occupancyRate: 91.4,
-      },
-      {
-        date: "Sep 2024",
-        totalRooms: 105,
-        occupiedRooms: 89,
-        occupancyRate: 84.8,
-      },
-      {
-        date: "Oct 2024",
-        totalRooms: 105,
-        occupiedRooms: 87,
-        occupancyRate: 82.9,
-      },
-      {
-        date: "Nov 2024",
-        totalRooms: 105,
-        occupiedRooms: 85,
-        occupancyRate: 81.0,
-      },
-      {
-        date: "Dec 2024",
-        totalRooms: 105,
-        occupiedRooms: 100,
-        occupancyRate: 95.2,
-      },
-    ],
-    []
-  );
+    // Mock data - Occupancy
+    const occupancyData: OccupancyData[] = useMemo(
+        () => [
+            {
+                date: 'Jan 2024',
+                totalRooms: 105,
+                occupiedRooms: 78,
+                occupancyRate: 74.3,
+            },
+            {
+                date: 'Feb 2024',
+                totalRooms: 105,
+                occupiedRooms: 82,
+                occupancyRate: 78.1,
+            },
+            {
+                date: 'Mar 2024',
+                totalRooms: 105,
+                occupiedRooms: 88,
+                occupancyRate: 83.8,
+            },
+            {
+                date: 'Apr 2024',
+                totalRooms: 105,
+                occupiedRooms: 84,
+                occupancyRate: 80.0,
+            },
+            {
+                date: 'May 2024',
+                totalRooms: 105,
+                occupiedRooms: 86,
+                occupancyRate: 81.9,
+            },
+            {
+                date: 'Jun 2024',
+                totalRooms: 105,
+                occupiedRooms: 95,
+                occupancyRate: 90.5,
+            },
+            {
+                date: 'Jul 2024',
+                totalRooms: 105,
+                occupiedRooms: 98,
+                occupancyRate: 93.3,
+            },
+            {
+                date: 'Aug 2024',
+                totalRooms: 105,
+                occupiedRooms: 96,
+                occupancyRate: 91.4,
+            },
+            {
+                date: 'Sep 2024',
+                totalRooms: 105,
+                occupiedRooms: 89,
+                occupancyRate: 84.8,
+            },
+            {
+                date: 'Oct 2024',
+                totalRooms: 105,
+                occupiedRooms: 87,
+                occupancyRate: 82.9,
+            },
+            {
+                date: 'Nov 2024',
+                totalRooms: 105,
+                occupiedRooms: 85,
+                occupancyRate: 81.0,
+            },
+            {
+                date: 'Dec 2024',
+                totalRooms: 105,
+                occupiedRooms: 100,
+                occupancyRate: 95.2,
+            },
+        ],
+        [],
+    );
 
     // Mock data - Loyalty
     const loyaltyData: LoyaltyData[] = useMemo(
@@ -512,31 +513,31 @@ const ReportPage: React.FC = () => {
 
     const renderTabContent = () => {
         switch (activeTab) {
-            case 'revenue':
-                return (
-                    <div className="space-y-6">
-                        <RevenueSummary data={revenueData} />
-                        <div className="bg-white p-6 rounded-lg shadow-sm border border-[#EBE3D7]">
-                            <div className="flex justify-between items-center mb-4">
-                                <h3 className="text-lg font-semibold">
-                                    Revenue Trends
-                                </h3>
-                                <div className="flex gap-2">
-                                    <button className="px-3 py-1 text-sm border border-[#EBE3D7] rounded hover:bg-[#F5F0EB]">
-                                        Line
-                                    </button>
-                                    <button className="px-3 py-1 text-sm border border-[#EBE3D7] rounded hover:bg-[#F5F0EB]">
-                                        Bar
-                                    </button>
-                                    <button className="px-3 py-1 text-sm bg-[#CCBDA3] text-white rounded">
-                                        Area
-                                    </button>
-                                </div>
-                            </div>
-                            <RevenueChart data={revenueData} chartType="area" />
-                        </div>
-                    </div>
-                );
+            // case 'revenue':
+            //     return (
+            //         <div className="space-y-6">
+            //             <RevenueSummary data={revenueData} />
+            //             <div className="bg-white p-6 rounded-lg shadow-sm border border-[#EBE3D7]">
+            //                 <div className="flex justify-between items-center mb-4">
+            //                     <h3 className="text-lg font-semibold">
+            //                         Revenue Trends
+            //                     </h3>
+            //                     <div className="flex gap-2">
+            //                         <button className="px-3 py-1 text-sm border border-[#EBE3D7] rounded hover:bg-[#F5F0EB]">
+            //                             Line
+            //                         </button>
+            //                         <button className="px-3 py-1 text-sm border border-[#EBE3D7] rounded hover:bg-[#F5F0EB]">
+            //                             Bar
+            //                         </button>
+            //                         <button className="px-3 py-1 text-sm bg-[#CCBDA3] text-white rounded">
+            //                             Area
+            //                         </button>
+            //                     </div>
+            //                 </div>
+            //                 <RevenueChart data={revenueData} chartType="area" />
+            //             </div>
+            //         </div>
+            //     );
 
             case 'occupancy':
                 return (
@@ -728,11 +729,11 @@ const ReportPage: React.FC = () => {
                     </div>
                 </div>
 
-        {/* Tab Content */}
-        <div>{renderTabContent()}</div>
-      </div>
-    </div>
-  );
+                {/* Tab Content */}
+                <div>{renderTabContent()}</div>
+            </div>
+        </div>
+    );
 };
 
 export default ReportPage;
