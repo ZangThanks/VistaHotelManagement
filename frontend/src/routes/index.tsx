@@ -10,7 +10,7 @@ import Login from "../pages/auth/Login";
 import Register from "../pages/auth/Register";
 import ForgotPassword from "../pages/auth/ForgotPassword";
 import ResetPassword from "../pages/auth/ResetPassword";
-import OAuthSuccess from "../pages/auth/OAuthSuccess.tsx";
+import OAuthSuccess from "../pages/auth/OAuthSuccess";
 
 import CustomerList from "../pages/employee/CustomerList";
 import NewsPage from "../pages/employee/NewsPage";
@@ -32,24 +32,26 @@ import NewsList from "../pages/admin/news/NewsList.tsx";
 import ServiceList from "../pages/customer/ServiceList.tsx";
 import IncidentReport from "../pages/customer/IncidentReport.tsx";
 import ServiceManagement from "../pages/admin/ServiceManagement.tsx";
+import BookingDetailPage from "../pages/customer/BookingDetail";
 import Contact from "../pages/customer/Contact.tsx";
 import EmployeeList from "../pages/admin/EmployeeList.tsx";
-import BookingPage from "../pages/customer/booking/BookingPage.tsx";
-import FAQ from "../pages/customer/FAQ.tsx";
-import AIConcierge from "../pages/customer/AIConcierge.tsx";
 import ChatSupport from "../pages/employee/ChatSupport.tsx";
-import PricingManager from "../pages/admin/pricing/PricingManager.tsx";
-import MyBookings from "../pages/customer/MyBooking.tsx";
+import BookingPage from "../pages/customer/booking/BookingPage.tsx";
 import RoomManagement from "../pages/employee/room/RoomManagement.tsx";
-import RoomCart from "../pages/admin/booking/RoomCart.tsx";
-import PaymentPage from "../pages/customer/booking/PaymentPage.tsx";
-import UserProfilePage from "../pages/customer/UserProfile.tsx";
 import RoomTypeManagement from "../pages/employee/room/RoomTypeManagement.tsx";
+import VoucherManagement from "../pages/admin/voucher/VoucherManagement.tsx";
 import PromotionManagement from "../pages/admin/promotion/PromotionManagement.tsx";
 import PromotionTypeManagement from "../pages/admin/promotion/PromotionTypeManagement.tsx";
-import VoucherManagement from "../pages/admin/voucher/VoucherManagement.tsx";
+import FAQ from "../pages/customer/FAQ.tsx";
+import AIConcierge from "../pages/customer/AIConcierge.tsx";
+import ExclusiveOffers from "../pages/customer/ExclusiveOffers.tsx";
+
+import PricingManager from "../pages/admin/pricing/PricingManager.tsx";
+import MyBookings from "../pages/customer/MyBooking.tsx";
+import RoomCart from "../pages/admin/booking/RoomCart.tsx";
+import UserProfilePage from "../pages/customer/UserProfile.tsx";
+import PaymentPage from "../pages/customer/booking/PaymentPage.tsx";
 import ReportPage from "../pages/admin/report/Report.tsx";
-import BookingDetailPage from "../pages/customer/BookingDetail.tsx";
 
 export const router = createBrowserRouter([
   // OAuth
@@ -100,6 +102,11 @@ export const router = createBrowserRouter([
       { path: "services", element: <ServiceManagement /> },
       { path: "room-management", element: <RoomManagement /> },
       { path: "room-type-management", element: <RoomTypeManagement /> },
+      { path: "bookingPage", element: <BookingPage /> },
+      { path: "employees", element: <EmployeeList /> },
+      // { path: 'employees/:id', element: <EmployeeDetail /> },
+      { path: "pricing", element: <PricingManager /> },
+      { path: "voucher-management", element: <VoucherManagement /> },
       { path: "promotion-management", element: <PromotionManagement /> },
       {
         path: "promotion-type-management",
@@ -130,6 +137,7 @@ export const router = createBrowserRouter([
       { path: "room", element: <RoomList /> },
       { path: "room/:id", element: <RoomDetail /> },
       { path: "service", element: <ServiceList /> },
+      { path: "promotion-and-voucher", element: <ExclusiveOffers /> },
       { path: "faq", element: <FAQ /> },
       { path: "chat", element: <AIConcierge /> },
     ],
