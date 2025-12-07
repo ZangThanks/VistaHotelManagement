@@ -79,8 +79,15 @@ public class AuthController {
     @PostMapping("/register")
     public Map<String, Object> register(@RequestBody RegisterRequest req) {
         // Validate
-        if ((req.getEmail() == null && req.getPhone() == null) || req.getPassword() == null) {
-            return Map.of("success", false, "message", "Thiếu thông tin bắt buộc");
+        boolean hasEmail = req.getEmail() != null && !req.getEmail().trim().isEmpty();
+        boolean hasPhone = req.getPhone() != null && !req.getPhone().trim().isEmpty();
+
+        if (!hasEmail) {
+            return Map.of("success", false, "message", "Vui lòng cung cấp Email");
+        }
+
+        if (!hasPhone) {
+            return Map.of("success", false, "message", "Vui lòng cung cấp Số điện thoại");
         }
 
         if (req.getUserName() == null || req.getUserName().trim().isEmpty()) {
@@ -114,8 +121,8 @@ public class AuthController {
         c.setId(service.generateCustomerId());
         c.setUserName(req.getUserName());
         c.setFullName(req.getFullName());
-        c.setEmail(req.getEmail());
-        c.setPhone(req.getPhone());
+        c.setEmail(hasEmail ? req.getEmail() : null);
+        c.setPhone(hasPhone ? req.getPhone() : null);
         c.setAddress(req.getAddress());
         c.setGender(Gender.MALE);
         c.setUserRole(UserRole.CUSTOMER);
