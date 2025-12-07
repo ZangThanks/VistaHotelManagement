@@ -1,13 +1,18 @@
 /* eslint-disable */
+/* eslint-disable */
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Calendar } from "lucide-react";
 import BookingCalendar from "../common/Calendar";
 import HourlyBookingSelector from "./HourlyBookingSelector";
+
 import { TfiUser, TfiMore } from "react-icons/tfi";
 import { MdOutlineRoomService, MdRoomService } from "react-icons/md";
-import { getAll } from "../../services/serviceService";
+import { RiHotelLine } from "react-icons/ri";
+import { TbHotelService } from "react-icons/tb";
 import { CiSquareQuestion } from "react-icons/ci";
+
+import { getAll } from "../../services/serviceService";
 import {
   createBooking,
   generateBookingID,
@@ -21,16 +26,21 @@ import {
   getByCustomerIdAndStateTrue,
   saveCustomerVoucher,
 } from "../../services/customerVoucherService";
+
+import { getRoomById } from "../../services/roomService";
+import { getCartBeanByCustomerId } from "../../services/cartBeanService";
+
+import CustomerVoucherModal from "./CustomerVoucherModal";
+
+// Hourly rate policy
+import { getAllPolicyBaseRates } from "../../services/hourlyRatePolicyService";
+
 import type { Customer } from "../../types/Customer";
 import type { Service } from "../../types/Service";
 import type { CustomerVoucher } from "../../types/CustomerVoucher";
 import type { Room } from "../../types/Room";
-import { getRoomById } from "../../services/roomService";
-import { getCartBeanByCustomerId } from "../../services/cartBeanService";
-import CustomerVoucherModal from "./CustomerVoucherModal";
-import { RiHotelLine } from "react-icons/ri";
-import { TbHotelService } from "react-icons/tb";
-import { getAllPolicyBaseRates } from "../../services/HourlyRatePolicyService";
+import type { HourlyRatePolicy, BaseRateItem } from "../../types/HourlyRatePolicy";
+
 import type {
   HourlyRatePolicy,
   BaseRateItem,

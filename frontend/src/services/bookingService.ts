@@ -27,7 +27,7 @@ export const getBookingById = async (id: string): Promise<Booking> => {
 };
 
 export const getBookingDetailsById = async (
-  id: string
+    id: string
 ): Promise<BookingDetail[]> => {
   try {
     const response = await api.get(`${ENDPOINT}/details/${id}`);
@@ -49,9 +49,9 @@ export const createBooking = async (booking: object): Promise<Booking> => {
 };
 
 export const saveBookingWithDetails = async (
-  booking: object,
-  bookingDetails: object[],
-  bookingServices: object[]
+    booking: object,
+    bookingDetails: object[],
+    bookingServices: object[]
 ): Promise<boolean> => {
   try {
     const response = await api.post(`${ENDPOINT}/save-booking`, {
@@ -67,8 +67,8 @@ export const saveBookingWithDetails = async (
 };
 
 export const updateBooking = async (
-  id: string,
-  booking: object
+    id: string,
+    booking: object
 ): Promise<Booking> => {
   try {
     const response = await api.put(`${ENDPOINT}/edit/${id}`, booking);
@@ -80,7 +80,7 @@ export const updateBooking = async (
 };
 
 export const getBookingsByCustomerId = async (
-  customerId: string
+    customerId: string
 ): Promise<Booking[]> => {
   try {
     const response = await api.get(`${ENDPOINT}/customer/${customerId}`);
@@ -93,7 +93,7 @@ export const getBookingsByCustomerId = async (
 };
 
 export const cancelBookingPayment = async (
-  bookingId: string
+    bookingId: string
 ): Promise<Booking> => {
   try {
     const response = await api.put(`${ENDPOINT}/cancel-payment/${bookingId}`);
@@ -105,11 +105,9 @@ export const cancelBookingPayment = async (
 };
 
 /**
- * Convert API Booking to UI RoomBooking format for calendar view
+ * Convert API Booking → UI RoomBooking format (calendar)
  */
 export const convertToRoomBooking = (booking: Booking): RoomBooking[] => {
-  console.log("Converting booking:", booking);
-  // Mỗi booking có thể có nhiều phòng trong bookingDetails
   return booking.bookingDetails.map((detail) => ({
     id: booking.bookingID,
     roomId: String(detail.room.roomNumber ?? ""),
@@ -118,22 +116,22 @@ export const convertToRoomBooking = (booking: Booking): RoomBooking[] => {
     checkIn: new Date(booking.checkInDate),
     checkOut: new Date(booking.checkOutDate),
     status:
-      booking.status === "CHECKED_IN"
-        ? "checked-in"
-        : booking.status === "CHECKED_OUT"
-        ? "checked-out"
-        : booking.status === "PENDING"
-        ? "pending"
-        : booking.status === "CANCELLED"
-        ? "cancelled"
-        : ("pending" as const),
+        booking.status === "CHECKED_IN"
+            ? "checked-in"
+            : booking.status === "CHECKED_OUT"
+                ? "checked-out"
+                : booking.status === "PENDING"
+                    ? "pending"
+                    : booking.status === "CANCELLED"
+                        ? "cancelled"
+                        : "pending",
     numberOfGuests: booking.numberOfGuests,
     totalAmount: booking.totalAmount,
   }));
 };
 
 /**
- * Get all bookings and convert to RoomBooking format
+ * Get all bookings → convert to RoomBooking[]
  */
 export const getAllRoomBookings = async (): Promise<RoomBooking[]> => {
   try {
@@ -147,8 +145,8 @@ export const getAllRoomBookings = async (): Promise<RoomBooking[]> => {
     return roomBookings;
   } catch (error) {
     console.error("Error fetching room bookings:", error);
+    return [];
   }
-  return [];
 };
 
 export const searchBookings = async (keyword: string) => {
@@ -174,7 +172,7 @@ export const generateBookingID = async () => {
 };
 
 export const simulatePaymentCallback = async (
-  body: unknown
+    body: unknown
 ): Promise<unknown> => {
   try {
     const res = await axiosInstance.post(`${ENDPOINT}/pay-callback`, body);
@@ -186,8 +184,8 @@ export const simulatePaymentCallback = async (
 };
 
 export const generateQRPayment = async (
-  bookingId: string,
-  choice: number = 0
+    bookingId: string,
+    choice: number = 0
 ) => {
   try {
     const response = await api.get(`${ENDPOINT}/payment-qr/${bookingId}`, {
@@ -211,20 +209,10 @@ export const overlapBookingExists = async (roomNumber: string) => {
   }
 };
 
-// export const deleteBooking = async (id) => {
-//   try {
-//     await axios.delete(`${API_URL}/${id}`);
-//     return true;
-//   } catch (error) {
-//     console.error(`Error deleting booking ${id}:`, error);
-//     throw error;
-//   }
-// };
-
 export const checkIn = async (bookingId: string): Promise<Booking> => {
   try {
     const response = await axiosInstance.put(
-      `${ENDPOINT}/${bookingId}/check-in`
+        `${ENDPOINT}/${bookingId}/check-in`
     );
     return response.data;
   } catch (error) {
@@ -232,46 +220,50 @@ export const checkIn = async (bookingId: string): Promise<Booking> => {
     throw error;
   }
 };
+
+// ================= DATE FILTER FUNCTIONS =================
+
 export const getBookingsByCheckInDate = async (
-  date: string
+    date: string
 ): Promise<Booking[]> => {
   const response = await axiosInstance.get(
-    `/bookings/check-in-date?date=${date}`
+      `/bookings/check-in-date?date=${date}`
   );
   return response.data;
 };
 
 export const getBookingsByCheckInDateRange = async (
-  startDate: string,
-  endDate: string
+    startDate: string,
+    endDate: string
 ): Promise<Booking[]> => {
   const response = await axiosInstance.get(
-    `/bookings/check-in-range?startDate=${startDate}&endDate=${endDate}`
+      `/bookings/check-in-range?startDate=${startDate}&endDate=${endDate}`
   );
   return response.data;
 };
+
 export const getBookingsByCheckOutDate = async (
-  date: string
+    date: string
 ): Promise<Booking[]> => {
   const response = await axiosInstance.get(
-    `/bookings/check-out-date?date=${date}`
+      `/bookings/check-out-date?date=${date}`
   );
   return response.data;
 };
 
 export const getBookingsByCheckOutDateRange = async (
-  startDate: string,
-  endDate: string
+    startDate: string,
+    endDate: string
 ): Promise<Booking[]> => {
   const response = await axiosInstance.get(
-    `/bookings/check-out-range?startDate=${startDate}&endDate=${endDate}`
+      `/bookings/check-out-range?startDate=${startDate}&endDate=${endDate}`
   );
   return response.data;
 };
 
 export const processCheckout = async (
-  bookingId: string,
-  paymentMethod: string
+    bookingId: string,
+    paymentMethod: string
 ): Promise<any> => {
   const response = await axiosInstance.post(`/bookings/${bookingId}/checkout`, {
     paymentMethod,
@@ -279,9 +271,8 @@ export const processCheckout = async (
   return response.data;
 };
 
-/**
- * Get today's checkouts
- */
+// ================= CHECKOUT FILTER HELPERS =================
+
 export const getTodayCheckouts = async (): Promise<Booking[]> => {
   try {
     const today = new Date().toISOString().split("T")[0];
@@ -293,9 +284,6 @@ export const getTodayCheckouts = async (): Promise<Booking[]> => {
   }
 };
 
-/**
- * Get tomorrow's checkouts
- */
 export const getTomorrowCheckouts = async (): Promise<Booking[]> => {
   try {
     const tomorrow = new Date();
@@ -309,94 +297,82 @@ export const getTomorrowCheckouts = async (): Promise<Booking[]> => {
   }
 };
 
-/**
- * Get late checkouts
- */
 export const getLateCheckouts = async (): Promise<Booking[]> => {
   try {
     const today = new Date();
-    const startDate = new Date(today);
-    startDate.setDate(startDate.getDate() - 3);
+    const start = new Date(today);
+    start.setDate(start.getDate() - 3);
 
-    const startStr = startDate.toISOString().split("T")[0];
-    const todayStr = today.toISOString().split("T")[0];
+    const bookings = await getBookingsByCheckOutDateRange(
+        start.toISOString().split("T")[0],
+        today.toISOString().split("T")[0]
+    );
 
-    const bookings = await getBookingsByCheckOutDateRange(startStr, todayStr);
-
-    const lateBookings = bookings.filter((b) => {
+    return bookings.filter((b) => {
       const checkoutDate = new Date(b.checkOutDate);
       return b.status === "CHECKED_IN" && checkoutDate < today;
     });
-
-    return lateBookings;
   } catch (error) {
     console.error("Error fetching late checkouts:", error);
     return [];
   }
 };
 
-/**
- * Get completed checkouts (last 7 days)
- */
 export const getCompletedCheckouts = async (): Promise<Booking[]> => {
   try {
     const today = new Date();
-    const lastWeek = new Date(today);
-    lastWeek.setDate(lastWeek.getDate() - 7);
+    const start = new Date(today);
+    start.setDate(start.getDate() - 7);
 
-    const startStr = lastWeek.toISOString().split("T")[0];
-    const todayStr = today.toISOString().split("T")[0];
+    const bookings = await getBookingsByCheckOutDateRange(
+        start.toISOString().split("T")[0],
+        today.toISOString().split("T")[0]
+    );
 
-    const bookings = await getBookingsByCheckOutDateRange(startStr, todayStr);
     return bookings
-      .filter((b) => b.status === "CHECKED_OUT")
-      .sort((a, b) => {
-        return (
-          new Date(b.checkOutDate).getTime() -
-          new Date(a.checkOutDate).getTime()
+        .filter((b) => b.status === "CHECKED_OUT")
+        .sort(
+            (a, b) =>
+                new Date(b.checkOutDate).getTime() -
+                new Date(a.checkOutDate).getTime()
         );
-      });
   } catch (error) {
     console.error("Error fetching completed checkouts:", error);
     return [];
   }
 };
 
-//TODO: ĐỪNG XÓA, pls, OKE EM
-// export const checkOut = async (bookingId: string): Promise<Booking> => {
-//   try {
-//     const response = await axiosInstance.put(
-//       `${ENDPOINT}/${bookingId}/check-out`
-//     );
-//     return response.data;
-//   } catch (error) {
-//     console.error("Check-out error:", error);
-//     throw error;
-//   }
-// };
-// export const approveEarlyCheckin = async (
-//   bookingId: string,
-//   approve: boolean
-// ): Promise<Booking> => {
-//   try {
-//     const response = await axiosInstance.put(
-//       `${ENDPOINT}/${bookingId}/early-checkin/approve`,
-//       null,
-//       {
-//         params: { approve },
-//       }
-//     );
-//     return response.data;
-//   } catch (error) {
-//     console.error("Approve early check-in error:", error);
-//     throw error;
-//   }
-// };
+// ================= ROOM FILTER =================
 
 export const getByRoom = async (roomNumber: string) => {
   const response = await api.get(`/bookings/room/${roomNumber}`);
   return response.data;
 };
+
+// ================= SERVICE ADD =================
+
+export type BookingServiceCreateItem = {
+  serviceID: string;
+  quantity: number;
+};
+
+export const addServicesToBooking = async (
+    bookingId: string,
+    items: BookingServiceCreateItem[]
+) => {
+  const res = await api.post(`${ENDPOINT}/${bookingId}/services/bulk`, items);
+  return res.data;
+};
+
+export const addServiceToBooking = async (
+    bookingId: string,
+    item: BookingServiceCreateItem
+) => {
+  const res = await api.post(`${ENDPOINT}/${bookingId}/services`, item);
+  return res.data;
+};
+
+// ================= FINAL EXPORT DEFAULT =================
 
 export default {
   getAll,
@@ -406,4 +382,6 @@ export default {
   getAllRoomBookings,
   convertToRoomBooking,
   getByRoom,
+  addServicesToBooking,  // giữ từ PPH
+  addServiceToBooking,   // giữ từ PPH
 };

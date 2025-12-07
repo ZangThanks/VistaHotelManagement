@@ -84,7 +84,6 @@ const CustomCalendar: React.FC<CustomCalendarProps> = ({
     const totalDays = daysInMonth(currentMonth);
     const firstDay = firstDayOfMonth(currentMonth);
 
-    // Empty cells for days before month starts
     for (let i = 0; i < firstDay; i++) {
       days.push(<div key={`empty-${i}`} className="p-2"></div>);
     }

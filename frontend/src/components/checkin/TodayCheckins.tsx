@@ -89,11 +89,33 @@ const isToday = (dateString: string | undefined): boolean => {
 interface TodayTabProps {
   onViewDetails: (booking: Booking) => void;
   bookings?: Booking[];
+  onRefresh?: () => void;
+  selectedDate?: Date;
 }
 
-function TodayTab({ onViewDetails, bookings = [] }: TodayTabProps) {
+function TodayTab({
+  onViewDetails,
+  bookings = [],
+  onRefresh,
+  selectedDate = new Date(),
+}: TodayTabProps) {
+  const isSelectedDate = (dateString: string | undefined): boolean => {
+    if (!dateString) return false;
+    const checkInDate = new Date(dateString);
+    checkInDate.setHours(0, 0, 0, 0);
+
+    const selected = new Date(selectedDate);
+    selected.setHours(0, 0, 0, 0);
+
+    return (
+      checkInDate.getDate() === selected.getDate() &&
+      checkInDate.getMonth() === selected.getMonth() &&
+      checkInDate.getFullYear() === selected.getFullYear()
+    );
+  };
+
   const filteredBookings = bookings.filter((booking) =>
-    isToday(booking.checkInDate)
+    isSelectedDate(booking.checkInDate)
   );
 
   const renderStatusBadge = (status: string) => {

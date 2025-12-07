@@ -30,6 +30,7 @@ const CheckInManager: React.FC = () => {
   const [activeTab, setActiveTab] = useState("today");
   const [currentDate, setCurrentDate] = useState(new Date());
   const [bookings, setBookings] = useState<Booking[]>([]);
+  const [bookingToday, setBookingToday] = useState<Booking[]>([]);
   const [filteredBookings, setFilteredBookings] = useState<Booking[]>([]);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [filters, setFilters] = useState<FilterOptions>({});
@@ -53,7 +54,28 @@ const CheckInManager: React.FC = () => {
 
   const [selectedGuest, setSelectedGuest] = useState<Booking | null>(null);
 
-  // Close date picker when clicking outside
+  useEffect(() => {
+    const fetchData = async () => {
+      const today = new Date(currentDate);
+      today.setHours(0, 0, 0, 0);
+
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+
+      const startDate = formatDateForAPI(today);
+      const endDate = formatDateForAPI(tomorrow);
+
+      const data = await getBookingsByCheckInDateRange(startDate, endDate);
+      const activeBookings = data.filter(
+        (booking) => booking.status !== "CANCELLED"
+      );
+
+      setBookingToday(activeBookings);
+    };
+
+    fetchData();
+  }, []);
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -271,7 +293,6 @@ const CheckInManager: React.FC = () => {
   }
 
   const tabBookings = getBookingsForTab();
-
   return (
     <div className="bg-[#F5F0EB] min-h-screen">
       <main className="px-5 py-4 max-w-[1600px] mx-auto">
@@ -348,7 +369,7 @@ const CheckInManager: React.FC = () => {
           </div>
 
           <div className="mb-8">
-            <StatusCards bookings={bookings} />
+            <StatusCards bookings={bookingToday} />
           </div>
 
           <div className="mb-6">
@@ -400,23 +421,19 @@ const CheckInManager: React.FC = () => {
           )}
 
           <div className="bg-white rounded-lg shadow-sm">
-            <CheckinTabs
-              activeTab={activeTab}
-              onTabChange={handleTabChange}
-              counts={tabCounts}
-            />
-
             {activeTab === "today" && (
               <TodayTab
                 onViewDetails={handleOpenDetailsModal}
                 bookings={tabBookings}
                 onRefresh={fetchBookings}
+                selectedDate={currentDate}
               />
             )}
             {activeTab === "tomorrow" && (
               <TomorrowTab
                 onViewDetails={handleOpenDetailsModal}
                 bookings={tabBookings}
+                onRefresh={fetchBookings}
               />
             )}
             {activeTab === "early" && (
@@ -430,6 +447,7 @@ const CheckInManager: React.FC = () => {
               <HourlyTab
                 onViewDetails={handleOpenDetailsModal}
                 bookings={tabBookings}
+                onRefresh={fetchBookings}
               />
             )}
           </div>

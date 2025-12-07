@@ -1,17 +1,36 @@
-/* eslint-disable */
+// ====================== IMPORTS ======================
+import type { Customer } from "./Customer";
+import type { Employee } from "./Employee";
+import type { BookingDetail } from "./BookingDetail";
+import type { EarlyCheckin } from "./EarlyCheckin";
+import type { LateCheckout } from "./LateCheckout";
+
+// ====================== BOOKING ======================
 export interface Booking {
     bookingID: string;
     checkInDate: string;
     checkOutDate: string;
     numberOfGuests: number;
-    status: "PENDING" | "CHECKED_IN" | "CHECKED_OUT" | "CANCELLED";
+
+    // Hợp nhất đầy đủ tình trạng từ 2 bên
+    status:
+        | "PENDING"
+        | "CONFIRMED"       // từ origin/PPH
+        | "CHECKED_IN"
+        | "CHECKED_OUT"
+        | "CANCELLED";
+
     specialRequests?: string;
     bookingDate: string;
     cancellationDate?: string;
+
     hourlyRate?: number | null;
     duration: number;
     packageType: string;
+
     totalAmount: number;
+
+    // Hợp nhất đủ trạng thái thanh toán (giữ BOTH "FAILED" & "CANCELLED")
     paymentStatus:
         | "PENDING"
         | "COMPLETED"
@@ -19,18 +38,23 @@ export interface Booking {
         | "PERCENTAGE_50"
         | "PAID"
         | "REFUNDED"
-        | "FAILED"
+        | "FAILED"         // từ HEAD
         | "CANCELLED";
+
     invoiceType?: string | null;
     totalCost: number;
     type: "HOURLY" | "DAILY";
+
     customer: Customer;
     employee?: Employee;
+
     bookingDetails: BookingDetail[];
+
     earlyCheckin?: EarlyCheckin | null;
-    lateCheckout?: LateCheckout | null;
+    lateCheckout?: LateCheckout | null; // giữ từ HEAD
 }
 
+// ====================== ROOM BOOKING ======================
 export interface RoomBooking {
     id: string;
     roomId: string;
@@ -38,24 +62,21 @@ export interface RoomBooking {
     guestName: string;
     checkIn: Date;
     checkOut: Date;
+
     status:
         | "pending"
         | "confirmed"
         | "checked-in"
         | "checked-out"
         | "cancelled";
+
     numberOfGuests: number;
     totalAmount: number;
+
     specialRequests?: string;
     paymentStatus?: string;
+
     customer?: any;
     bookingDetails?: any[];
     earlyCheckin?: EarlyCheckin | null;
-    lateCheckout?: LateCheckout | null;
 }
-
-import type { Customer } from "./Customer";
-import type { Employee } from "./Employee";
-import type { BookingDetail } from "./BookingDetail";
-import type { EarlyCheckin } from "./EarlyCheckin";
-import type { LateCheckout } from "./LateCheckout";
