@@ -1,9 +1,16 @@
 package com.hotelvista.service;
 
 import com.hotelvista.exception.BadRequestException;
-import com.hotelvista.model.*;
-import com.hotelvista.model.enums.*;
-import com.hotelvista.repository.*;
+import com.hotelvista.model.Booking;
+import com.hotelvista.model.BookingDetail;
+import com.hotelvista.model.Room;
+import com.hotelvista.model.enums.ApprovalStatus;
+import com.hotelvista.model.enums.BookingStatus;
+import com.hotelvista.repository.BookingDetailRepository;
+import com.hotelvista.repository.BookingRepository;
+import com.hotelvista.repository.BookingServiceRepository;
+import com.hotelvista.repository.RoomRepository;
+import com.hotelvista.repository.ServiceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;
@@ -198,7 +205,7 @@ public class BookingService {
     public List<Booking> findAllByCheckOutDateBetween(LocalDateTime startDate, LocalDateTime endDate) {
         return repo.findAllByCheckOutDateBetween(startDate, endDate);
     }
-    
+
     public List<Booking> findConflictingBookings(String roomNumber, LocalDateTime checkIn, LocalDateTime checkOut) {
         return repo.findConflictingBookings(roomNumber, checkIn, checkOut);
     }
@@ -262,17 +269,6 @@ public class BookingService {
             Room room = detail.getRoom();
             room.setStatus(RoomStatus.AVAILABLE);
             roomRepo.save(room);
-        }
-
-        // Nếu hủy dưới 3 ngày -> trừ 3 uy tín của khách
-        if (daysUntilCheckin < 3) {
-            Customer customer = booking.getCustomer();
-            if (customer != null) {
-                Integer rep = customer.getReputationPoint() != null ? customer.getReputationPoint() : 0;
-                rep = Math.max(0, rep - 3);
-                customer.setReputationPoint(rep);
-                customerRepo.save(customer);
-            }
         }
 
         // Tạo bản ghi BookingCancellation

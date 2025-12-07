@@ -8,8 +8,10 @@ import {
   FaCheckCircle,
   FaClock,
   FaTimesCircle,
+  FaEye,
 } from "react-icons/fa";
 import type { Booking } from "../../types/Booking";
+import BookingDetailDialog from "./BookingDetailDialog";
 
 interface BookingHistorySectionProps {
   bookings: Booking[];
@@ -21,13 +23,25 @@ const BookingHistorySection: React.FC<BookingHistorySectionProps> = ({
   loading,
 }) => {
   const [filter, setFilter] = useState<
-    "all" | "PENDING" | "CONFIRMED" | "CHECKED_IN" | "CHECKED_OUT" | "CANCELLED"
+    "all" | "PENDING" | "CHECKED_IN" | "CHECKED_OUT" | "CANCELLED"
   >("all");
+  const [selectedBookingId, setSelectedBookingId] = useState<string | null>(
+    null
+  );
+  const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
+
+  const handleViewDetails = (bookingId: string) => {
+    setSelectedBookingId(bookingId);
+    setIsDetailDialogOpen(true);
+  };
+
+  const handleCloseDialog = () => {
+    setIsDetailDialogOpen(false);
+    setSelectedBookingId(null);
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "CONFIRMED":
-        return "bg-green-100 text-green-800";
       case "PENDING":
         return "bg-yellow-100 text-yellow-800";
       case "CHECKED_IN":
@@ -43,8 +57,6 @@ const BookingHistorySection: React.FC<BookingHistorySectionProps> = ({
 
   const getStatusLabel = (status: string) => {
     switch (status) {
-      case "CONFIRMED":
-        return "Confirmed";
       case "PENDING":
         return "Pending";
       case "CHECKED_IN":
@@ -60,8 +72,6 @@ const BookingHistorySection: React.FC<BookingHistorySectionProps> = ({
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case "CONFIRMED":
-        return <FaCheckCircle />;
       case "PENDING":
         return <FaClock />;
       case "CHECKED_IN":
@@ -105,17 +115,17 @@ const BookingHistorySection: React.FC<BookingHistorySectionProps> = ({
       className="bg-white rounded-xl shadow-md border border-cream p-6"
     >
       <div className="flex items-center gap-3 mb-6">
-        <FaHistory className="text-primary text-2xl" />
-        <h2 className="text-2xl font-bold text-primary">Booking History</h2>
+        <FaHistory className="text-[#ccbda3] text-2xl" />
+        <h2 className="text-2xl font-bold text-[#ccbda3]">Booking History</h2>
       </div>
 
       {/* Filter Tabs */}
       <div className="flex flex-wrap gap-2 mb-6">
         <button
           onClick={() => setFilter("all")}
-          className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+          className={`cursor-pointer px-4 py-2 rounded-lg font-medium transition-colors ${
             filter === "all"
-              ? "bg-primary text-white"
+              ? "bg-[#ccbda3] text-white"
               : "bg-gray-100 text-gray-700 hover:bg-cream"
           }`}
         >
@@ -123,34 +133,46 @@ const BookingHistorySection: React.FC<BookingHistorySectionProps> = ({
         </button>
         <button
           onClick={() => setFilter("PENDING")}
-          className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+          className={`cursor-pointer px-4 py-2 rounded-lg font-medium transition-colors ${
             filter === "PENDING"
-              ? "bg-primary text-white"
+              ? "bg-[#ccbda3] text-white"
               : "bg-gray-100 text-gray-700 hover:bg-cream"
           }`}
         >
           Pending ({bookings.filter((b) => b.status === "PENDING").length})
         </button>
-        <button
-          onClick={() => setFilter("CONFIRMED")}
-          className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-            filter === "CONFIRMED"
-              ? "bg-primary text-white"
-              : "bg-gray-100 text-gray-700 hover:bg-cream"
-          }`}
-        >
-          Confirmed ({bookings.filter((b) => b.status === "CONFIRMED").length})
-        </button>
+
         <button
           onClick={() => setFilter("CHECKED_IN")}
-          className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+          className={`cursor-pointer px-4 py-2 rounded-lg font-medium transition-colors ${
             filter === "CHECKED_IN"
-              ? "bg-primary text-white"
+              ? "bg-[#ccbda3] text-white"
               : "bg-gray-100 text-gray-700 hover:bg-cream"
           }`}
         >
           Checked In ({bookings.filter((b) => b.status === "CHECKED_IN").length}
           )
+        </button>
+        <button
+          onClick={() => setFilter("CHECKED_OUT")}
+          className={`cursor-pointer px-4 py-2 rounded-lg font-medium transition-colors ${
+            filter === "CHECKED_OUT"
+              ? "bg-[#ccbda3] text-white"
+              : "bg-gray-100 text-gray-700 hover:bg-cream"
+          }`}
+        >
+          Checked Out (
+          {bookings.filter((b) => b.status === "CHECKED_OUT").length})
+        </button>
+        <button
+          onClick={() => setFilter("CANCELLED")}
+          className={`cursor-pointer px-4 py-2 rounded-lg font-medium transition-colors ${
+            filter === "CANCELLED"
+              ? "bg-[#ccbda3] text-white"
+              : "bg-gray-100 text-gray-700 hover:bg-cream"
+          }`}
+        >
+          Cancelled ({bookings.filter((b) => b.status === "CANCELLED").length})
         </button>
       </div>
 
@@ -196,7 +218,7 @@ const BookingHistorySection: React.FC<BookingHistorySectionProps> = ({
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div className="flex items-start gap-3">
-                  <FaCalendarAlt className="text-primary text-lg mt-1" />
+                  <FaCalendarAlt className="text-[#6b5e4c] text-lg mt-1" />
                   <div>
                     <p className="text-sm text-gray-600">Duration</p>
                     <p className="font-medium text-gray-900">
@@ -216,7 +238,7 @@ const BookingHistorySection: React.FC<BookingHistorySectionProps> = ({
                 </div>
 
                 <div className="flex items-start gap-3">
-                  <FaDoorOpen className="text-primary text-lg mt-1" />
+                  <FaDoorOpen className="text-[#6b5e4c] text-lg mt-1" />
                   <div>
                     <p className="text-sm text-gray-600">Guests</p>
                     <p className="font-medium text-gray-900">
@@ -228,39 +250,61 @@ const BookingHistorySection: React.FC<BookingHistorySectionProps> = ({
 
               <div className="flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-cream">
                 <div className="flex items-center gap-2">
-                  <FaMoneyBillWave className="text-gold" />
+                  <FaMoneyBillWave className="text-[#6b5e4c]" />
                   <div>
                     <p className="text-sm text-gray-600">Total Amount</p>
-                    <p className="text-xl font-bold text-primary">
+                    <p className="text-xl font-bold text-[#6b5e4c]">
                       {booking.totalAmount.toLocaleString("en-US")}đ
                     </p>
                   </div>
                 </div>
-                <div>
-                  <p className="text-sm text-gray-600">Payment</p>
-                  <p
-                    className={`font-semibold ${
-                      booking.paymentStatus === "PAID"
-                        ? "text-green-600"
-                        : "text-yellow-600"
-                    }`}
-                  >
-                    {getPaymentStatusLabel(booking.paymentStatus)}
-                  </p>
+                <div className="flex items-center gap-3">
+                  <div>
+                    <p className="text-sm text-gray-600">Payment</p>
+                    <p
+                      className={`font-semibold ${
+                        booking.paymentStatus === "PAID"
+                          ? "text-green-600"
+                          : "text-[#6b5e4c]"
+                      }`}
+                    >
+                      {getPaymentStatusLabel(booking.paymentStatus)}
+                    </p>
+                  </div>
                 </div>
               </div>
 
               {booking.specialRequests && (
-                <div className="mt-4 pt-4 border-t border-cream">
-                  <p className="text-sm text-gray-600 mb-1">Special Requests</p>
-                  <p className="text-sm text-gray-900">
-                    {booking.specialRequests}
-                  </p>
+                <div className="flex items-center gap-3 justify-between mt-4 pt-4 border-t border-cream">
+                  <div>
+                    <p className="text-sm text-gray-600 mb-1">
+                      Special Requests
+                    </p>
+                    <p className="text-sm text-gray-900">
+                      {booking.specialRequests}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => handleViewDetails(booking.bookingID)}
+                    className="cursor-pointer flex items-center gap-2 px-4 py-2 bg-[#CCBDA3] hover:bg-[#C3923C] text-white rounded-lg transition-colors font-medium shadow-sm hover:shadow-md"
+                  >
+                    <FaEye />
+                    <span>View Details</span>
+                  </button>
                 </div>
               )}
             </motion.div>
           ))}
         </div>
+      )}
+
+      {/* Booking Detail Dialog */}
+      {selectedBookingId && (
+        <BookingDetailDialog
+          bookingId={selectedBookingId}
+          isOpen={isDetailDialogOpen}
+          onClose={handleCloseDialog}
+        />
       )}
     </motion.div>
   );

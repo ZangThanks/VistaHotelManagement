@@ -27,7 +27,7 @@ export const getBookingById = async (id: string): Promise<Booking> => {
 };
 
 export const getBookingDetailsById = async (
-    id: string,
+    id: string
 ): Promise<BookingDetail[]> => {
     try {
         const response = await api.get(`${ENDPOINT}/details/${id}`);
@@ -68,7 +68,7 @@ export const saveBookingWithDetails = async (
 
 export const updateBooking = async (
     id: string,
-    booking: object,
+    booking: object
 ): Promise<Booking> => {
     try {
         const response = await api.put(`${ENDPOINT}/edit/${id}`, booking);
@@ -80,7 +80,7 @@ export const updateBooking = async (
 };
 
 export const getBookingsByCustomerId = async (
-    customerId: string,
+    customerId: string
 ): Promise<Booking[]> => {
     try {
         const response = await api.get(`${ENDPOINT}/customer/${customerId}`);
@@ -96,7 +96,7 @@ export const getBookingsByCustomerId = async (
 };
 
 export const cancelBookingPayment = async (
-    bookingId: string,
+    bookingId: string
 ): Promise<Booking> => {
     try {
         const response = await api.put(
@@ -180,7 +180,7 @@ export const generateBookingID = async () => {
 };
 
 export const simulatePaymentCallback = async (
-    body: unknown,
+  body: unknown
 ): Promise<unknown> => {
     try {
         const res = await axiosInstance.post(`${ENDPOINT}/pay-callback`, body);
@@ -219,6 +219,15 @@ export const overlapBookingExists = async (roomNumber: string) => {
     }
 };
 
+// export const deleteBooking = async (id) => {
+//   try {
+//     await axios.delete(`${API_URL}/${id}`);
+//     return true;
+//   } catch (error) {
+//     console.error(`Error deleting booking ${id}:`, error);
+//     throw error;
+//   }
+// };
 export const checkIn = async (bookingId: string): Promise<Booking> => {
     try {
         const response = await axiosInstance.put(
@@ -253,27 +262,27 @@ export const getBookingsByCheckInDateRange = async (
 };
 
 export const getBookingsByCheckOutDate = async (
-    date: string,
+  date: string
 ): Promise<Booking[]> => {
-    const response = await axiosInstance.get(
-        `/bookings/check-out-date?date=${date}`,
-    );
-    return response.data;
+  const response = await axiosInstance.get(
+    `/bookings/check-out-date?date=${date}`
+  );
+  return response.data;
 };
 
 export const getBookingsByCheckOutDateRange = async (
-    startDate: string,
-    endDate: string,
+  startDate: string,
+  endDate: string
 ): Promise<Booking[]> => {
-    const response = await axiosInstance.get(
-        `/bookings/check-out-range?startDate=${startDate}&endDate=${endDate}`,
-    );
-    return response.data;
+  const response = await axiosInstance.get(
+    `/bookings/check-out-range?startDate=${startDate}&endDate=${endDate}`
+  );
+  return response.data;
 };
 
 export const processCheckout = async (
-    bookingId: string,
-    paymentMethod: string,
+  bookingId: string,
+  paymentMethod: string
 ): Promise<any> => {
     const response = await axiosInstance.post(
         `/bookings/${bookingId}/checkout`,
@@ -284,8 +293,9 @@ export const processCheckout = async (
     return response.data;
 };
 
-// ================= CHECKOUT FILTER HELPERS =================
-
+/**
+ * Get today's checkouts
+ */
 export const getTodayCheckouts = async (): Promise<Booking[]> => {
     try {
         const today = new Date().toISOString().split('T')[0];
@@ -297,6 +307,9 @@ export const getTodayCheckouts = async (): Promise<Booking[]> => {
     }
 };
 
+/**
+ * Get tomorrow's checkouts
+ */
 export const getTomorrowCheckouts = async (): Promise<Booking[]> => {
     try {
         const tomorrow = new Date();
@@ -310,6 +323,9 @@ export const getTomorrowCheckouts = async (): Promise<Booking[]> => {
     }
 };
 
+/**
+ * Get late checkouts
+ */
 export const getLateCheckouts = async (): Promise<Booking[]> => {
     try {
         const today = new Date();
@@ -331,6 +347,9 @@ export const getLateCheckouts = async (): Promise<Booking[]> => {
     }
 };
 
+/**
+ * Get completed checkouts (last 7 days)
+ */
 export const getCompletedCheckouts = async (): Promise<Booking[]> => {
     try {
         const today = new Date();
@@ -369,6 +388,7 @@ export type BookingServiceCreateItem = {
     quantity: number;
 };
 
+// Thêm nhiều dịch vụ cho 1 booking (nếu backend hỗ trợ bulk)
 export const addServicesToBooking = async (
     bookingId: string,
     items: BookingServiceCreateItem[],
@@ -377,6 +397,7 @@ export const addServicesToBooking = async (
     return res.data;
 };
 
+// Thêm 1 dịch vụ cho 1 booking
 export const addServiceToBooking = async (
     bookingId: string,
     item: BookingServiceCreateItem,

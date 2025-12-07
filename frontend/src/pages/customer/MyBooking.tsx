@@ -47,6 +47,9 @@ export default function MyBookingsPage() {
             return null;
         }
     };
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, []);
 
     // Fetch user's bookings from API
     useEffect(() => {
@@ -101,27 +104,27 @@ export default function MyBookingsPage() {
         PENDING: {
             label: 'Pending',
             color: 'bg-amber-50 text-amber-700 border-amber-200',
-            icon: '⏳',
+            icon: '',
         },
         CONFIRMED: {
             label: 'Confirmed',
             color: 'bg-blue-50 text-blue-700 border-blue-200',
-            icon: '✓',
+            icon: '',
         },
         CHECKED_IN: {
             label: 'Checked In',
             color: 'bg-purple-50 text-purple-700 border-purple-200',
-            icon: '🔑',
+            icon: '',
         },
         CHECKED_OUT: {
             label: 'Checked Out',
             color: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-            icon: '✅',
+            icon: '',
         },
         CANCELLED: {
             label: 'Cancelled',
             color: 'bg-rose-50 text-rose-700 border-rose-200',
-            icon: '❌',
+            icon: '',
         },
     };
 
@@ -165,7 +168,7 @@ export default function MyBookingsPage() {
             config || {
                 label: status || 'Unknown',
                 color: 'bg-gray-100 text-gray-600 border-gray-200',
-                icon: '📋',
+                icon: '',
             }
         );
     };
@@ -300,32 +303,32 @@ export default function MyBookingsPage() {
                                     {
                                         value: 'all',
                                         label: 'All Bookings',
-                                        icon: '📋',
+                                        icon: '',
                                     },
                                     {
                                         value: 'pending',
                                         label: 'Pending',
-                                        icon: '⏳',
+                                        icon: '',
                                     },
                                     {
                                         value: 'confirmed',
                                         label: 'Confirmed',
-                                        icon: '✓',
+                                        icon: '',
                                     },
                                     {
                                         value: 'checked_in',
                                         label: 'Checked In',
-                                        icon: '🔑',
+                                        icon: '',
                                     },
                                     {
                                         value: 'checked_out',
                                         label: 'Checked Out',
-                                        icon: '✅',
+                                        icon: '',
                                     },
                                     {
                                         value: 'cancelled',
                                         label: 'Cancelled',
-                                        icon: '❌',
+                                        icon: '',
                                     },
                                 ].map((filter) => (
                                     <button
@@ -335,8 +338,8 @@ export default function MyBookingsPage() {
                                         }
                                         className={`px-6 py-3 rounded-2xl font-semibold whitespace-nowrap transition-all duration-300 ${
                                             activeFilter === filter.value
-                                                ? 'bg-black text-white shadow-lg'
-                                                : 'bg-white text-black border-2 hover:bg-[#F5F0EB]'
+                                                ? 'bg-[#b9ad96] border border-[#b9ad96] text-white shadow-lg'
+                                                : 'bg-white text-black border hover:bg-[#F5F0EB]'
                                         }`}
                                         style={
                                             activeFilter !== filter.value
@@ -406,7 +409,7 @@ export default function MyBookingsPage() {
                                                     />
                                                     <div className="absolute top-4 left-4 flex flex-col gap-2">
                                                         <span
-                                                            className={`px-4 py-2 rounded-full text-sm font-semibold border-2 backdrop-blur-md ${
+                                                            className={`px-8 py-2 rounded-full text-sm font-semibold border-2 backdrop-blur-md ${
                                                                 getStatusConfig(
                                                                     booking.status,
                                                                 ).color
@@ -423,14 +426,6 @@ export default function MyBookingsPage() {
                                                                 ).label
                                                             }
                                                         </span>
-                                                        {booking.packageType && (
-                                                            <span className="px-4 py-2 rounded-full text-sm font-semibold border-2 backdrop-blur-md bg-white/90 text-black border-black/20">
-                                                                📦{' '}
-                                                                {
-                                                                    booking.packageType
-                                                                }
-                                                            </span>
-                                                        )}
                                                     </div>
                                                 </div>
 
@@ -624,7 +619,7 @@ export default function MyBookingsPage() {
                                                         booking.earlyCheckin) && (
                                                         <div className="mb-6 p-4 rounded-2xl bg-blue-50 border-2 border-blue-100">
                                                             <p className="text-sm font-semibold text-blue-900 mb-2">
-                                                                📝 Additional
+                                                                Additional
                                                                 Information
                                                             </p>
                                                             {booking.specialRequests && (
@@ -690,26 +685,13 @@ export default function MyBookingsPage() {
                                                                     booking.bookingID,
                                                                 )
                                                             }
-                                                            className="flex-1 bg-black hover:bg-black/90 text-white py-3 px-6 rounded-2xl font-semibold transition-all duration-300 hover:shadow-lg flex items-center justify-center gap-2"
+                                                            className=" cursor-pointer flex-1 bg-black hover:bg-black/90 text-white py-3 px-6 rounded-2xl font-semibold transition-all duration-300 hover:shadow-lg flex items-center justify-center gap-2"
                                                         >
                                                             View Details
                                                             <ChevronRight
                                                                 size={18}
                                                             />
                                                         </button>
-                                                        {(booking.status ===
-                                                            'PENDING' ||
-                                                            booking.status ===
-                                                                'CONFIRMED') && (
-                                                            <>
-                                                                <button className="px-6 py-3 border-2 border-black text-black rounded-2xl font-semibold hover:bg-[#F5F0EB] transition-all duration-300">
-                                                                    Modify
-                                                                </button>
-                                                                <button className="px-6 py-3 border-2 border-red-500 text-red-500 rounded-2xl font-semibold hover:bg-red-50 transition-all duration-300">
-                                                                    Cancel
-                                                                </button>
-                                                            </>
-                                                        )}
                                                     </div>
                                                 </div>
                                             </div>

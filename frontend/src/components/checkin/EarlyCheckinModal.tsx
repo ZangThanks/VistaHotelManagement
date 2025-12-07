@@ -98,7 +98,7 @@ export default function EarlyCheckinModal({ onClose, booking }: Props) {
                 currentHour > 13 ||
                 (currentHour === 13 && currentMinute >= 30)
             ) {
-                return '23:59'; // Return a time that's definitely past maxTime
+                return '5:00'; // Return a time that's definitely past maxTime
             }
 
             // Round up to next 15-minute interval
@@ -283,18 +283,18 @@ export default function EarlyCheckinModal({ onClose, booking }: Props) {
                 className="relative bg-white rounded-2xl p-6 w-full max-w-lg shadow-xl animate-fadeIn"
                 onClick={(e) => e.stopPropagation()}
             >
-                <h2 className="text-xl font-bold mb-4 text-black">
-                    Yêu cầu Check-in Sớm
+                <h2 className="text-xl text-center font-bold mb-4 text-black">
+                    Early Check-in Request
                 </h2>
 
                 {/* Date Picker with Dropdown */}
                 <div className="relative calendar-container">
                     <label className="text-sm font-medium text-gray-700 mb-2 block">
-                        Chọn ngày
+                        Choose Date
                     </label>
                     <button
                         onClick={() => setShowCalendar(!showCalendar)}
-                        className="w-full p-4 border-2 border-gray-200 rounded-xl bg-gray-50 text-left hover:bg-gray-100 hover:border-black transition-all duration-200 flex items-center justify-between group"
+                        className="cursor-pointer w-full p-4 border-2 border-gray-200 rounded-xl bg-gray-50 text-left hover:bg-gray-100 hover:border-black transition-all duration-200 flex items-center justify-between group"
                     >
                         <div className="flex items-center gap-3">
                             <svg
@@ -311,7 +311,7 @@ export default function EarlyCheckinModal({ onClose, booking }: Props) {
                                 />
                             </svg>
                             <span className="font-medium text-gray-800">
-                                {selectedDate.toLocaleDateString('vi-VN', {
+                                {selectedDate.toLocaleDateString('en-US', {
                                     weekday: 'long',
                                     year: 'numeric',
                                     month: 'long',
@@ -355,7 +355,7 @@ export default function EarlyCheckinModal({ onClose, booking }: Props) {
                     <TimePicker
                         value={time}
                         onChange={(newTime) => setTime(newTime)}
-                        label="Chọn giờ check-in sớm"
+                        label="Choose Time"
                         minTime={getMinimumTime()}
                         maxTime="13:30"
                     />
@@ -369,8 +369,8 @@ export default function EarlyCheckinModal({ onClose, booking }: Props) {
                 )}
 
                 {/* Fee */}
-                <div className="bg-[#F5F0EB] p-4 rounded-xl mb-4">
-                    <p className="text-black/60 text-sm">Phí check-in sớm</p>
+                <div className="bg-[#F5F0EB] p-4 rounded-xl mb-4 mt-4">
+                    <p className="text-black/60 text-sm">Early Check-in Fee</p>
                     <p className="text-xl font-bold text-black">
                         {additionalFee.toLocaleString()} VNĐ
                     </p>
@@ -379,17 +379,17 @@ export default function EarlyCheckinModal({ onClose, booking }: Props) {
                 {/* Buttons */}
                 <div className="flex justify-end gap-3">
                     <button
-                        className="px-4 py-2 rounded-lg border"
+                        className="px-4 py-2 rounded-lg border hover:text-red-600 transition-all duration-200"
                         onClick={onClose}
                     >
-                        Hủy
+                        Cancel
                     </button>
 
                     <button
-                        className="px-4 py-2 rounded-lg bg-black text-white hover:bg-black/90"
+                        className="px-4 py-2 rounded-lg bg-[#e6dfcb] border border-[#e6dfcb] text-black hover:bg-[#b9ad96] hover:text-white transition-all duration-200"
                         onClick={handleSubmit}
                     >
-                        Gửi yêu cầu
+                        Send Request
                     </button>
                 </div>
             </div>

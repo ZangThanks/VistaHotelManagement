@@ -1,19 +1,10 @@
 import React from 'react';
 import type { IncidentReport, IncidentStatus } from '../../types/Incident';
-import {
-    Calendar,
-    Clock,
-    CheckCircle,
-    XCircle,
-    RefreshCw,
-    AlertTriangle,
-} from 'lucide-react';
+import { Calendar, Clock, CheckCircle, XCircle } from 'lucide-react';
 
 interface IncidentCardProps {
     incident: IncidentReport;
     onClick?: () => void;
-    onRequestRoomChange?: () => void;
-    isOverOneHour?: boolean;
 }
 
 const STATUS_CONFIG: Record<
@@ -50,26 +41,8 @@ const CATEGORY_LABELS: Record<string, string> = {
     OTHER: 'Khác',
 };
 
-const IncidentCard: React.FC<IncidentCardProps> = ({
-    incident,
-    onClick,
-    onRequestRoomChange,
-    isOverOneHour,
-}) => {
+const IncidentCard: React.FC<IncidentCardProps> = ({ incident, onClick }) => {
     const statusConfig = STATUS_CONFIG[incident.status];
-
-    // Calculate time difference
-    const getTimeDifference = () => {
-        if (!isOverOneHour) return null;
-        const now = new Date().getTime();
-        const reportedTime = new Date(incident.reportedDate).getTime();
-        const diffInMinutes = Math.floor((now - reportedTime) / (1000 * 60));
-        const hours = Math.floor(diffInMinutes / 60);
-        const minutes = diffInMinutes % 60;
-        return { hours, minutes, total: diffInMinutes };
-    };
-
-    const timeDiff = getTimeDifference();
 
     const formatDate = (dateString: string) => {
         const date = new Date(dateString);
@@ -91,7 +64,7 @@ const IncidentCard: React.FC<IncidentCardProps> = ({
     return (
         <div
             onClick={onClick}
-            className={`bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer border border-gray-200 hover:border-gray-300 overflow-hidden group hover:scale-[1.01]`}
+            className={`bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer border-l-4 ${statusConfig.borderColor} overflow-hidden group hover:scale-[1.01]`}
         >
             <div className="p-6">
                 {/* Header Row */}
@@ -115,7 +88,7 @@ const IncidentCard: React.FC<IncidentCardProps> = ({
 
                     {/* Status Badge */}
                     <div
-                        className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap ${statusConfig.color} shadow-sm`}
+                        className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-semibold whitespace-nowrap ${statusConfig.color}`}
                     >
                         {statusConfig.icon}
                         <span>{statusConfig.label}</span>
@@ -126,33 +99,6 @@ const IncidentCard: React.FC<IncidentCardProps> = ({
                 <p className="text-gray-600 text-sm leading-relaxed mb-4 line-clamp-2">
                     {incident.description}
                 </p>
-
-                {/* Warning if over 1 hour */}
-                {isOverOneHour && incident.status === 'PENDING' && timeDiff && (
-                    <div className="mb-3 bg-gradient-to-r from-red-50 to-orange-50 border-l-4 border-red-500 rounded-lg p-3">
-                        <div className="flex items-center gap-2 mb-2">
-                            <AlertTriangle className="w-4 h-4 text-red-600" />
-                            <p className="text-sm font-bold text-red-900">
-                                Pending for {timeDiff.hours}h {timeDiff.minutes}
-                                m
-                            </p>
-                        </div>
-                        <p className="text-xs text-red-700 mb-2">
-                            This incident has exceeded 1 hour. You can request a
-                            room change.
-                        </p>
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                onRequestRoomChange?.();
-                            }}
-                            className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 px-4 py-2 rounded-lg font-semibold flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg text-sm"
-                        >
-                            <RefreshCw className="w-4 h-4" />
-                            <span>Request Room Change</span>
-                        </button>
-                    </div>
-                )}
 
                 {/* Footer Info */}
                 <div className="flex items-center justify-between text-sm pt-4 border-t border-gray-100">

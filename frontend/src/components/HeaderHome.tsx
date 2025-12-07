@@ -26,139 +26,123 @@ interface User {
 }
 
 const HeaderHome: React.FC = () => {
-    const navigate = useNavigate();
-    const [user, setUser] = useState<User | null>(null);
-    const [searchOpen, setSearchOpen] = useState(false);
-    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-    const [showLogoutDialog, setShowLogoutDialog] = useState(false);
-    const toast = useToastContext();
+  const navigate = useNavigate();
+  const [user, setUser] = useState<User | null>(null);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+  const toast = useToastContext();
 
-    const handleLogoutClick = () => {
-        setShowLogoutDialog(true);
-    };
+  const handleLogoutClick = () => {
+    setShowLogoutDialog(true);
+  };
 
-    const confirmLogout = () => {
-        const result = handleLogout();
-        if (result.success) {
-            toast.success(result.message || 'Logged out successfully!');
+  const confirmLogout = () => {
+    const result = handleLogout();
+    if (result.success) {
+      toast.success(result.message || "Logged out successfully!");
+    }
+    setShowLogoutDialog(false);
+    navigate("/auth/login");
+  };
+
+  const navItems = [
+    { label: "Overview", path: "/home" },
+    { label: "About Us", path: "/contact" },
+    { label: "Accommodation", path: "/room" },
+    { label: "Services", path: "/service" },
+    { label: "Events", path: "/news" },
+    { label: "Exclusive Offers", path: "/promotion-and-voucher" },
+  ];
+
+  // Menu items based on user role
+  const roleMenuItems = {
+    ADMIN: [
+      { label: "Dashboard", path: "/admin/dashboard", icon: faChartLine },
+      { label: "Management", path: "/admin/room-management", icon: faTasks },
+      { label: "Profile", path: "/customer/profile", icon: faUserCircle },
+    ],
+    EMPLOYEE: [
+      { label: "Dashboard", path: "/employee/dashboard", icon: faChartLine },
+      {
+        label: "Booking Management",
+        path: "/employee/booking-management",
+        icon: faTasks,
+      },
+      { label: "Profile", path: "/customer/profile", icon: faUserCircle },
+    ],
+    CUSTOMER: [
+      { label: "Profile", path: "/customer/profile", icon: faUserCircle },
+      { label: "My Booking", path: "/customer/mybooking", icon: faBookmark },
+    ],
+  };
+
+  const getLastTwoWords = (name: string): string => {
+    if (!name) return '';
+    const parts = name.trim().split(' ');
+    if (parts.length <= 2) return name;
+    return parts.slice(-2).join(' ');
+  };
+
+  // Check user login status
+  useEffect(() => {
+    const checkUserStatus = () => {
+      const userData = localStorage.getItem("user");
+      if (userData) {
+        try {
+          const parsedUser = JSON.parse(userData);
+          setUser(parsedUser);
+        } catch (error) {
+          console.error("Error parsing user data:", error);
+          localStorage.removeItem("user");
         }
-        setShowLogoutDialog(false);
-        navigate('/auth/login');
+      }
     };
 
-    const navItems = [
-        { label: 'Overview', path: '/home' },
-        { label: 'About Us', path: '/contact' },
-        { label: 'Accommodation', path: '/room' },
-        { label: 'Services', path: '/service' },
-        { label: 'Events', path: '/news' },
-        { label: 'Exclusive Offers', path: '/customer/promotion/list' },
-    ];
-
-    // Menu items based on user role
-    const roleMenuItems = {
-        ADMIN: [
-            { label: 'Dashboard', path: '/admin/dashboard', icon: faChartLine },
-            {
-                label: 'Management',
-                path: '/admin/room-management',
-                icon: faTasks,
-            },
-            { label: 'Profile', path: '/customer/profile', icon: faUserCircle },
-        ],
-        EMPLOYEE: [
-            {
-                label: 'Dashboard',
-                path: '/employee/dashboard',
-                icon: faChartLine,
-            },
-            {
-                label: 'Booking Management',
-                path: '/employee/booking-management',
-                icon: faTasks,
-            },
-            { label: 'Profile', path: '/customer/profile', icon: faUserCircle },
-        ],
-        CUSTOMER: [
-            { label: 'Profile', path: '/customer/profile', icon: faUserCircle },
-            {
-                label: 'My Booking',
-                path: '/customer/mybooking',
-                icon: faBookmark,
-            },
-        ],
-    };
-
-    const getLastTwoWords = (name: string): string => {
-        if (!name) return '';
-        const parts = name.trim().split(' ');
-        if (parts.length <= 2) return name;
-        return parts.slice(-2).join(' ');
-    };
-
-    // Check user login status
-    useEffect(() => {
-        const checkUserStatus = () => {
-            const userData = localStorage.getItem('user');
-            if (userData) {
-                try {
-                    const parsedUser = JSON.parse(userData);
-                    setUser(parsedUser);
-                } catch (error) {
-                    console.error('Error parsing user data:', error);
-                    localStorage.removeItem('user');
-                }
-            }
-        };
-
-        checkUserStatus();
+    checkUserStatus();
 
         // Listen for storage changes (when user logs in/out in another tab)
         window.addEventListener('storage', checkUserStatus);
         return () => window.removeEventListener('storage', checkUserStatus);
     }, []);
 
-    return (
-        <header className="fixed top-0 left-0 w-full z-[9999]">
-            {/* Top Section */}
-            <div className="relative flex items-center justify-between px-4 sm:px-6 lg:px-8 py-3 sm:py-4 border-b border-white/20">
-                {/* Left: Search Icon & Mobile Menu */}
-                <div className="flex items-center space-x-3 z-10">
-                    <button
-                        className="hover:opacity-80 transition-opacity"
-                        onClick={() => setSearchOpen(true)}
-                    >
-                        <CiSearch className="text-xl sm:text-2xl text-white cursor-pointer" />
-                    </button>
+  return (
+    <header className="fixed top-0 left-0 w-full z-[9999]">
+      {/* Top Section */}
+      <div className="relative flex items-center justify-between px-4 sm:px-6 lg:px-8 py-3 sm:py-4 border-b border-white/20">
+        {/* Left: Search Icon & Mobile Menu */}
+        <div className="flex items-center space-x-3 z-10">
+          <button
+            className="hover:opacity-80 transition-opacity"
+            onClick={() => setSearchOpen(true)}
+          >
+            <CiSearch className="text-xl sm:text-2xl text-white cursor-pointer" />
+          </button>
 
-                    {/* Mobile Menu Button */}
-                    <button
-                        className="lg:hidden hover:opacity-80 transition-opacity"
-                        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                    >
-                        <div className="flex flex-col space-y-1">
-                            <span
-                                className={`block w-5 h-0.5 bg-white transition-all duration-300 ${
-                                    mobileMenuOpen
-                                        ? 'rotate-45 translate-y-1.5'
-                                        : ''
-                                }`}
-                            ></span>
-                            <span
-                                className={`block w-5 h-0.5 bg-white transition-all duration-300 ${
-                                    mobileMenuOpen ? 'opacity-0' : ''
-                                }`}
-                            ></span>
-                            <span
-                                className={`block w-5 h-0.5 bg-white transition-all duration-300 ${
-                                    mobileMenuOpen
-                                        ? '-rotate-45 -translate-y-1.5'
-                                        : ''
-                                }`}
-                            ></span>
-                        </div>
-                    </button>
-                </div>
+          {/* Mobile Menu Button */}
+          <button
+            className="lg:hidden hover:opacity-80 transition-opacity"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            <div className="flex flex-col space-y-1">
+              <span
+                className={`block w-5 h-0.5 bg-white transition-all duration-300 ${
+                  mobileMenuOpen ? 'rotate-45 translate-y-1.5' : ''
+                }`}
+              ></span>
+              <span
+                className={`block w-5 h-0.5 bg-white transition-all duration-300 ${
+                  mobileMenuOpen ? 'opacity-0' : ''
+                }`}
+              ></span>
+              <span
+                className={`block w-5 h-0.5 bg-white transition-all duration-300 ${
+                  mobileMenuOpen ? '-rotate-45 -translate-y-1.5' : ''
+                }`}
+              ></span>
+            </div>
+          </button>
+        </div>
 
                 {/* Center: Logo */}
                 <div className="absolute left-1/2 transform -translate-x-1/2 text-center">
@@ -252,66 +236,67 @@ const HeaderHome: React.FC = () => {
                                         </div>
                                     </div>
 
-                                    {/* Dynamic menu based on role */}
-                                    {user.userRole &&
-                                        roleMenuItems[
-                                            user.userRole as keyof typeof roleMenuItems
-                                        ]?.map((item, index) => (
-                                            <Link
-                                                key={index}
-                                                to={item.path}
-                                                className="flex items-center px-4 py-2 text-sm text-white hover:bg-white/10 font-serif transition"
-                                            >
-                                                <FontAwesomeIcon
-                                                    icon={item.icon}
-                                                    className="mr-2 w-4"
-                                                />
-                                                {item.label}
-                                            </Link>
-                                        ))}
-
-                                    <button
-                                        onClick={() => handleLogoutClick()}
-                                        className="flex items-center w-full text-left px-4 py-2 text-sm text-white hover:bg-white/10 font-serif transition border-t border-white/10 mt-1"
+                                    <Link
+                                        to="/customer/profile"
+                                        className="flex items-center px-4 py-2 text-sm text-white hover:bg-white/10 font-serif transition"
                                     >
                                         <FontAwesomeIcon
-                                            icon={faSignOutAlt}
+                                            icon={faUserCircle}
                                             className="mr-2 w-4"
                                         />
-                                        Logout
-                                    </button>
-                                </>
-                            ) : (
-                                // Not logged in menu
-                                <>
-                                    <Link
-                                        to="/auth/login"
-                                        className="block px-4 py-2 text-sm text-white hover:bg-white/10 font-serif transition"
-                                    >
-                                        Login
+                                        Profile
                                     </Link>
 
                                     <Link
-                                        to="/auth/register"
-                                        className="block px-4 py-2 text-sm text-white hover:bg-white/10 font-serif transition"
+                                        to="/customer/mybooking"
+                                        className="flex items-center px-4 py-2 text-sm text-white hover:bg-white/10 font-serif transition"
                                     >
-                                        Register
+                                        <FontAwesomeIcon
+                                            icon={faBookmark}
+                                            className="mr-2 w-4"
+                                        />
+                                        My Booking
                                     </Link>
-                                </>
-                            )}
-                        </div>
-                    </div>
 
-                    {/* Reserve Button */}
-                    <Link
-                        to="/customer/bookingPage"
-                        className="bg-white text-black px-3 py-1.5 sm:px-4 sm:py-2 lg:px-6 lg:py-2 rounded font-serif border border-transparent hover:bg-black/40 hover:text-white transition-all duration-300 ease-in-out text-xs sm:text-sm lg:text-base"
-                    >
-                        <span className="hidden sm:inline">Reserve</span>
-                        <span className="sm:hidden">Book</span>
-                    </Link>
-                </div>
+                  <button
+                    onClick={() => handleLogoutClick()}
+                    className="flex items-center w-full text-left px-4 py-2 text-sm text-white hover:bg-white/10 font-serif transition border-t border-white/10 mt-1"
+                  >
+                    <FontAwesomeIcon icon={faSignOutAlt} className="mr-2 w-4" />
+                    Logout
+                  </button>
+                </>
+              ) : (
+                // Not logged in menu
+                <>
+                  <Link
+                    to="/auth/login"
+                    className="block px-4 py-2 text-sm text-white hover:bg-white/10 font-serif transition"
+                  >
+                    Login
+                  </Link>
+
+                  <Link
+                    to="/auth/register"
+                    className="block px-4 py-2 text-sm text-white hover:bg-white/10 font-serif transition"
+                  >
+                    Register
+                  </Link>
+                </>
+              )}
             </div>
+          </div>
+
+          {/* Reserve Button */}
+          <Link
+            to="/customer/bookingPage"
+            className="bg-white text-black px-3 py-1.5 sm:px-4 sm:py-2 lg:px-6 lg:py-2 rounded font-serif border border-transparent hover:bg-black/40 hover:text-white transition-all duration-300 ease-in-out text-xs sm:text-sm lg:text-base"
+          >
+            <span className="hidden sm:inline">Reserve</span>
+            <span className="sm:hidden">Book</span>
+          </Link>
+        </div>
+      </div>
 
             {/* Desktop Navigation Menu */}
             <nav className="hidden lg:flex justify-center space-x-8 xl:space-x-12 px-4 sm:px-6 lg:px-8">

@@ -62,6 +62,7 @@ export interface EarlyCheckin {
     notes?: string;
 }
 
+// ====================== ROOM BOOKING ======================
 export interface RoomBooking {
     id: string;
     roomId: string;
@@ -76,8 +77,10 @@ export interface RoomBooking {
         | 'cancelled';
     numberOfGuests: number;
     totalAmount: number;
+
     specialRequests?: string;
     paymentStatus?: string;
+
     customer?: any;
     bookingDetails?: any[];
     earlyCheckin?: EarlyCheckin | null;

@@ -24,7 +24,6 @@ const EmployeeLayout: React.FC = () => {
     return (
         <div className="flex h-screen bg-light">
             <Sidebar
-                userRole="employee"
                 className={
                     isMobile
                         ? `z-30 transform ${
