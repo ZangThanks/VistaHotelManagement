@@ -39,11 +39,6 @@ const PromotionTypeManagement: React.FC = () => {
 
   const toast = useToastContext();
 
-  // Scroll to top on mount
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
-
   useEffect(() => {
     fetchPromotionTypes();
   }, []);
@@ -147,23 +142,22 @@ const PromotionTypeManagement: React.FC = () => {
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mt-[-30px]"
+          className="flex items-center justify-between mt-[-30px]"
         >
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-[#6b5e4c]">
+            <h1 className="text-3xl font-bold text-gray-900">
               Promotion Type Management
             </h1>
-            <p className="text-sm sm:text-base text-gray-600 mt-1">
+            <p className="text-gray-600 mt-1">
               Manage promotion categories and types
             </p>
           </div>
           <button
             onClick={() => setIsAddModalOpen(true)}
-            className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-[#6b5e4c] hover:bg-[#5a4d3e] text-white rounded-lg font-semibold shadow-md hover:shadow-lg transition-all cursor-pointer text-sm sm:text-base"
+            className="flex items-center gap-2 px-6 py-3 bg-[#6b5e4c] hover:bg-[#5a4d3e] text-white rounded-lg font-semibold shadow-md hover:shadow-lg transition-all cursor-pointer"
           >
             <FaPlus />
-            <span className="hidden sm:inline">Add Promotion Type</span>
-            <span className="sm:hidden">Add Type</span>
+            Add Promotion Type
           </button>
         </motion.div>
 
@@ -172,47 +166,45 @@ const PromotionTypeManagement: React.FC = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6"
+          className="grid grid-cols-1 md:grid-cols-3 gap-6"
         >
           <motion.div
             whileHover={{ y: -5, boxShadow: "0 10px 30px rgba(0,0,0,0.1)" }}
-            className="bg-white rounded-xl shadow-sm border border-[#ebe3d7] p-3 cursor-pointer"
+            className="bg-white rounded-xl shadow-sm border border-[#ebe3d7] p-6 cursor-pointer"
           >
             <div className="flex items-center gap-4">
               <div className="w-14 h-14 rounded-lg bg-[#e3f2fd] flex items-center justify-center flex-shrink-0">
                 <FaChartLine className="text-2xl text-[#1976d2]" />
               </div>
               <div className="flex-1">
-                <h3 className="text-2xl font-bold text-gray-800">
+                <h3 className="text-3xl font-bold text-gray-800">
                   {stats.total}
                 </h3>
-                <p className="text-[14px] text-gray-600 mt-1">Total Types</p>
+                <p className="text-sm text-gray-600 mt-1">Total Types</p>
               </div>
             </div>
           </motion.div>
 
           <motion.div
             whileHover={{ y: -5, boxShadow: "0 10px 30px rgba(0,0,0,0.1)" }}
-            className="bg-white rounded-xl shadow-sm border border-[#ebe3d7] p-3 cursor-pointer"
+            className="bg-white rounded-xl shadow-sm border border-[#ebe3d7] p-6 cursor-pointer"
           >
             <div className="flex items-center gap-4">
               <div className="w-14 h-14 rounded-lg bg-[#fff8e1] flex items-center justify-center flex-shrink-0">
                 <FaTag className="text-2xl text-[#f57c00]" />
               </div>
               <div className="flex-1">
-                <h3 className="text-2xl font-bold text-gray-800">
+                <h3 className="text-3xl font-bold text-gray-800">
                   {filteredPromotionTypes.length}
                 </h3>
-                <p className="text-[14px] text-gray-600 mt-1">
-                  Filtered Results
-                </p>
+                <p className="text-sm text-gray-600 mt-1">Filtered Results</p>
               </div>
             </div>
           </motion.div>
 
           <motion.div
             whileHover={{ y: -5, boxShadow: "0 10px 30px rgba(0,0,0,0.1)" }}
-            className="bg-gold rounded-xl shadow-sm p-3 cursor-pointer text-white"
+            className="bg-gradient-to-br from-[#6b5e4c] to-[#b27c1f] rounded-xl shadow-sm p-6 cursor-pointer text-white"
           >
             <div className="flex items-center gap-4">
               <div className="w-14 h-14 rounded-lg bg-white/20 flex items-center justify-center flex-shrink-0">
@@ -220,7 +212,7 @@ const PromotionTypeManagement: React.FC = () => {
               </div>
               <div className="flex-1">
                 <h3 className="text-2xl font-bold">Categories</h3>
-                <p className="text-[14px] text-white/80 mt-1">
+                <p className="text-sm text-white/80 mt-1">
                   Organize promotions
                 </p>
               </div>
@@ -233,16 +225,16 @@ const PromotionTypeManagement: React.FC = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="bg-white rounded-xl shadow-sm border border-gray-200 p-3"
+          className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
         >
           <div className="relative">
-            <FaSearch className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-gray-400 z-10 text-sm sm:text-base" />
+            <FaSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 z-10" />
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search..."
-              className="w-full pl-9 sm:pl-12 pr-3 sm:pr-4 py-2 border border-gray-300 rounded-lg bg-white hover:border-[#6b5e4c] focus:ring-2 focus:ring-[#6b5e4c] focus:border-transparent outline-none transition-all text-gray-700 font-medium text-sm"
+              placeholder="Search by type name, ID, or description..."
+              className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg bg-white hover:border-[#6b5e4c] focus:ring-2 focus:ring-[#6b5e4c] focus:border-transparent outline-none transition-all text-gray-700 font-medium"
             />
           </div>
         </motion.div>
@@ -327,7 +319,7 @@ const PromotionTypeManagement: React.FC = () => {
                     {/* Header */}
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-lg bg-gold flex items-center justify-center">
+                        <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-[#b27c1f] to-[#eab354] flex items-center justify-center">
                           <FaTag className="text-white text-xl" />
                         </div>
                         <div>

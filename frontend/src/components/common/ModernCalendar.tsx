@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { useState, type JSX } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 

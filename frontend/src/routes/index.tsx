@@ -1,9 +1,11 @@
-import { createBrowserRouter } from 'react-router-dom';
+import { createBrowserRouter } from "react-router-dom";
 
 // Layouts
 import AuthLayout from "../layouts/AuthLayout";
 import EmployeeLayout from "../layouts/EmployeeLayout";
-// import CustomerLayout from "../layouts/CustomerLayout";
+import AdminLayout from "../layouts/AdminLayout";
+import MainLayout from "../layouts/MainLayout";
+import CustomerLayout from "../layouts/CustomerLayout.tsx";
 
 // Auth pages
 import Login from "../pages/auth/Login";
@@ -12,147 +14,154 @@ import ForgotPassword from "../pages/auth/ForgotPassword";
 import ResetPassword from "../pages/auth/ResetPassword";
 import OAuthSuccess from "../pages/auth/OAuthSuccess.tsx";
 
+// Employee pages
 import CustomerList from "../pages/employee/CustomerList";
 import NewsPage from "../pages/employee/NewsPage";
-import AdminLayout from "../layouts/AdminLayout";
-
-import MainLayout from "../layouts/MainLayout";
 import CheckInManager from "../pages/employee/CheckInManager";
 import CheckOutManager from "../pages/employee/CheckOutManager";
 import IncidentManagement from "../pages/employee/IncidentManagement";
+import DailyWorkStatistics from "../pages/employee/DailyWorkStatistics.tsx";
+import ServiceOrderManagement from "../pages/employee/ServiceOrderManagement"; // HEAD có
+import ChatSupport from "../pages/employee/ChatSupport.tsx";
+import RoomManagement from "../pages/employee/room/RoomManagement.tsx"; // dùng tên PPH chung
+import RoomTypeManagement from "../pages/employee/room/RoomTypeManagement.tsx";
 
-import Home from "../pages/customer/Home";
-import RoomList from "../pages/customer/RoomList";
+// Admin pages
 import Dashboard from "../pages/admin/dashboard/Dashboard.tsx";
 import NewsDetail from "../pages/admin/news/NewsDetail.tsx";
-import RoomDetail from "../pages/customer/RoomDetail.tsx";
-import CustomerLayout from "../layouts/CustomerLayout.tsx";
-import DailyWorkStatistics from "../pages/employee/DailyWorkStatistics.tsx";
 import NewsList from "../pages/admin/news/NewsList.tsx";
-import ServiceList from "../pages/customer/ServiceList.tsx";
-import IncidentReport from "../pages/customer/IncidentReport.tsx";
-import ServiceManagement from "../pages/admin/ServiceManagement.tsx";
-import Contact from "../pages/customer/Contact.tsx";
 import EmployeeList from "../pages/admin/EmployeeList.tsx";
-import BookingPage from "../pages/customer/booking/BookingPage.tsx";
-import RoomManagement from "../pages/employee/room/RoomManagement.tsx";
-import RoomTypeManagement from "../pages/employee/room/RoomTypeManagement.tsx";
-import VoucherManagement from "../pages/admin/voucher/VoucherManagement.tsx";
+import PricingManager from "../pages/admin/pricing/PricingManager.tsx";
 import PromotionManagement from "../pages/admin/promotion/PromotionManagement.tsx";
 import PromotionTypeManagement from "../pages/admin/promotion/PromotionTypeManagement.tsx";
-import ExclusiveOffers from "../pages/customer/ExclusiveOffers.tsx";
+import VoucherManagement from "../pages/admin/voucher/VoucherManagement.tsx";
+import ServiceManagement from "../pages/admin/ServiceManagement.tsx";
+import ReportPage from "../pages/admin/report/Report.tsx";
 
+// Customer pages
+import Home from "../pages/customer/Home";
+import RoomList from "../pages/customer/RoomList";
+import RoomDetail from "../pages/customer/RoomDetail.tsx";
+import RoomChange from "../pages/customer/RoomChange.tsx"; // HEAD
+import ServiceList from "../pages/customer/ServiceList.tsx";
+import IncidentReport from "../pages/customer/IncidentReport.tsx";
+import Contact from "../pages/customer/Contact.tsx";
+import BookingPage from "../pages/customer/booking/BookingPage.tsx";
+import PaymentPage from "../pages/customer/booking/PaymentPage.tsx";
+import RoomCart from "../pages/admin/booking/RoomCart.tsx";
 import FAQ from "../pages/customer/FAQ.tsx";
 import AIConcierge from "../pages/customer/AIConcierge.tsx";
-import ChatSupport from "../pages/employee/ChatSupport.tsx";
-import PricingManager from "../pages/admin/pricing/PricingManager.tsx";
-import MyBookings from "../pages/customer/MyBooking.tsx";
-import RoomCart from "../pages/admin/booking/RoomCart.tsx";
-import PaymentPage from "../pages/customer/booking/PaymentPage.tsx";
 import UserProfilePage from "../pages/customer/UserProfile.tsx";
-import ReportPage from "../pages/admin/report/Report.tsx";
-import BookingDetailPage from "../pages/customer/BookingDetail.tsx";
+
+import MyBookings from "../pages/customer/MyBooking.tsx"; // PPH
+import BookingDetailPage from "../pages/customer/BookingDetail.tsx"; // PPH
+import BookingDetail from "../pages/customer/BookingDetail.tsx"; // HEAD booking/:id
 
 export const router = createBrowserRouter([
-  // OAuth
-  {
-    path: "/oauth-success",
-    element: <OAuthSuccess />,
-  },
-  // AUTH
-  {
-    path: "auth",
-    element: <AuthLayout />,
-    children: [
-      { path: "login", element: <Login /> },
-      { path: "register", element: <Register /> },
-      { path: "forgot-password", element: <ForgotPassword /> },
-      { path: "reset-password", element: <ResetPassword /> },
-    ],
-  },
+    // OAuth
+    {
+        path: "/oauth-success",
+        element: <OAuthSuccess />,
+    },
 
-  // EMPLOYEE
-  {
-    path: "employee",
-    element: <EmployeeLayout />,
-    children: [
-      { path: "customer/list", element: <CustomerList /> },
-      { path: "incidents", element: <IncidentManagement /> },
-      { path: "bookingPage", element: <BookingPage /> },
-      { path: "newsPage", element: <NewsPage /> },
-      { path: "daily", element: <DailyWorkStatistics /> },
-      { path: "profile", element: <UserProfilePage /> },
-      { path: "room-management", element: <RoomManagement /> },
-      { path: "room-type-management", element: <RoomTypeManagement /> },
-      { path: "support", element: <ChatSupport /> },
-    ],
-  },
+    // AUTH
+    {
+        path: "auth",
+        element: <AuthLayout />,
+        children: [
+            { path: "login", element: <Login /> },
+            { path: "register", element: <Register /> },
+            { path: "forgot-password", element: <ForgotPassword /> },
+            { path: "reset-password", element: <ResetPassword /> },
+        ],
+    },
 
-  // ADMIN
-  {
-    path: "admin",
-    element: <AdminLayout />,
-    children: [
-      { path: "", element: <Dashboard /> },
-      { path: "checkin", element: <CheckInManager /> },
-      { path: "checkout", element: <CheckOutManager /> },
-      { path: "info", element: <NewsList /> }, // NewsList thay InfoManagement
-      //{ path: 'info/manage', element: <NewsList /> }, // nếu bạn cần InfoManagement
-      { path: "info/:id", element: <NewsDetail /> },
-      { path: "services", element: <ServiceManagement /> },
-      { path: "room-management", element: <RoomManagement /> },
-      { path: "room-type-management", element: <RoomTypeManagement /> },
-      { path: "promotion-management", element: <PromotionManagement /> },
-      {
-        path: "promotion-type-management",
-        element: <PromotionTypeManagement />,
-      },
-      { path: "voucher-management", element: <VoucherManagement /> },
-      { path: "bookingPage", element: <BookingPage /> },
-      { path: "employees", element: <EmployeeList /> },
-      { path: "pricing", element: <PricingManager /> },
-      // { path: 'employees/:id', element: <EmployeeDetail /> },
-      { path: "profile", element: <UserProfilePage /> },
-      { path: "reports", element: <ReportPage /> },
-    ],
-  },
+    // EMPLOYEE
+    {
+        path: "employee",
+        element: <EmployeeLayout />,
+        children: [
+            { path: "customer/list", element: <CustomerList /> },
+            { path: "incidents", element: <IncidentManagement /> },
+            { path: "bookingPage", element: <BookingPage /> },
+            { path: "newsPage", element: <NewsPage /> },
+            { path: "daily", element: <DailyWorkStatistics /> },
+            { path: "service-orders", element: <ServiceOrderManagement /> }, // HEAD
+            { path: "support", element: <ChatSupport /> },
+            { path: "room-management", element: <RoomManagement /> },
+            { path: "room-type-management", element: <RoomTypeManagement /> },
+            { path: "profile", element: <UserProfilePage /> },
+        ],
+    },
 
-  // MAIN USER AREA
-  {
-    path: "",
-    element: <MainLayout />,
-    children: [
-      { path: "/", element: <Home /> },
-      { path: "home", element: <Home /> },
-      { path: "news", element: <NewsPage /> },
-      { path: "news/:id", element: <NewsDetail /> },
-      { path: "incident-report", element: <IncidentReport /> },
-      { path: "/contact", element: <Contact /> },
-      { path: "/bookingPage", element: <BookingPage /> },
-      { path: "room", element: <RoomList /> },
-      { path: "room/:id", element: <RoomDetail /> },
-      { path: "service", element: <ServiceList /> },
-      { path: "promotion-and-voucher", element: <ExclusiveOffers /> },
-      { path: "faq", element: <FAQ /> },
-      { path: "chat", element: <AIConcierge /> },
-    ],
-  },
+    // ADMIN
+    {
+        path: "admin",
+        element: <AdminLayout />,
+        children: [
+            { path: "", element: <Dashboard /> },
+            { path: "checkin", element: <CheckInManager /> },
+            { path: "checkout", element: <CheckOutManager /> },
+            { path: "info", element: <NewsList /> },
+            { path: "info/:id", element: <NewsDetail /> },
+            { path: "services", element: <ServiceManagement /> },
+            { path: "room-management", element: <RoomManagement /> },
+            { path: "room-type-management", element: <RoomTypeManagement /> },
+            { path: "promotion-management", element: <PromotionManagement /> },
+            { path: "promotion-type-management", element: <PromotionTypeManagement /> },
+            { path: "voucher-management", element: <VoucherManagement /> },
+            { path: "bookingPage", element: <BookingPage /> },
+            { path: "employees", element: <EmployeeList /> },
+            { path: "pricing", element: <PricingManager /> },
+            { path: "profile", element: <UserProfilePage /> },
+            { path: "reports", element: <ReportPage /> }, // PPH
+        ],
+    },
 
-  // CUSTOMER
-  {
-    path: "customer",
-    element: <CustomerLayout />,
-    children: [
-      { path: "room", element: <RoomList /> },
-      { path: "room/incident", element: <IncidentReport /> },
-      { path: "room/:id", element: <RoomDetail /> },
-      { path: "service", element: <ServiceList /> },
-      { path: "bookingPage", element: <BookingPage /> },
-      { path: "mybooking", element: <MyBookings /> },
-      { path: "mybooking/:id", element: <BookingDetailPage /> },
-      { path: "payment", element: <PaymentPage /> },
-      { path: "profile", element: <UserProfilePage /> },
-      { path: "cart", element: <RoomCart /> },
-    ],
-  },
+    // MAIN PUBLIC AREA
+    {
+        path: "",
+        element: <MainLayout />,
+        children: [
+            { path: "/", element: <Home /> },
+            { path: "home", element: <Home /> },
+            { path: "news", element: <NewsList /> },
+            { path: "news/:id", element: <NewsDetail /> },
+            { path: "incident-report", element: <IncidentReport /> },
+            { path: "contact", element: <Contact /> },
+            { path: "bookingPage", element: <BookingPage /> },
+            { path: "room", element: <RoomList /> },
+            { path: "room/:id", element: <RoomDetail /> },
+            { path: "service", element: <ServiceList /> },
+            { path: "faq", element: <FAQ /> },
+            { path: "chat", element: <AIConcierge /> },
+        ],
+    },
+
+    // CUSTOMER
+    {
+        path: "customer",
+        element: <CustomerLayout />,
+        children: [
+            { path: "room", element: <RoomList /> },
+            { path: "room/incident", element: <IncidentReport /> },
+            { path: "room/:id", element: <RoomDetail /> },
+
+            { path: "room-change", element: <RoomChange /> }, // HEAD giữ
+
+            { path: "service", element: <ServiceList /> },
+            { path: "bookingPage", element: <BookingPage /> },
+
+            // HEAD route
+            { path: "booking/:id", element: <BookingDetail /> },
+
+            // PPH route
+            { path: "mybooking", element: <MyBookings /> },
+            { path: "mybooking/:id", element: <BookingDetailPage /> },
+
+            { path: "payment", element: <PaymentPage /> },
+            { path: "profile", element: <UserProfilePage /> },
+            { path: "cart", element: <RoomCart /> },
+        ],
+    },
 ]);

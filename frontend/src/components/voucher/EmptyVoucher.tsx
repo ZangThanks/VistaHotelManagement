@@ -8,9 +8,9 @@ const EmptyVoucher: React.FC = () => {
       animate={{ opacity: 1, scale: 1 }}
       className="text-center py-16"
     >
-      <div className="bg-white rounded-2xl shadow-lg p-10 max-w-md mx-auto border-2 border-cream">
-        <div className="w-16 h-16 bg-gradient-to-br from-cream to-gold rounded-full flex items-center justify-center mx-auto mb-4">
-          <FaTicketAlt className="text-3xl text-primary" />
+      <div className="bg-white rounded-2xl shadow-lg p-10 max-w-md mx-auto border-2 border-[#ebe3d7]">
+        <div className="w-16 h-16 bg-gradient-to-br from-[#ebe3d7] to-[#ccbda3] rounded-full flex items-center justify-center mx-auto mb-4">
+          <FaTicketAlt className="text-3xl text-[#c3923c]" />
         </div>
         <h3 className="text-xl font-bold text-gray-800 mb-2">
           No Vouchers Yet

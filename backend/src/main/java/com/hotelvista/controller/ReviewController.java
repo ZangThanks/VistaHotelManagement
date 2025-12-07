@@ -20,6 +20,15 @@ public class ReviewController {
     @Autowired
     private ReviewService reviewService;
 
+    @Autowired
+    private BookingDetailService bookingDetailService;
+
+    @Autowired
+    private BookingService bookingService;
+
+    @Autowired
+    private RoomService roomService;
+
     public ReviewController(ReviewService reviewService) {
         this.reviewService = reviewService;
     }

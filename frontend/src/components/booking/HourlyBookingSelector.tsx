@@ -20,7 +20,7 @@ export default function HourlyBookingSelector({
   duration,
   onDurationChange,
   minHours = 2,
-  maxHours = 9,
+  maxHours = 24,
 }: HourlyBookingSelectorProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
 

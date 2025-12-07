@@ -87,9 +87,7 @@ export default function CheckoutTable({
         };
         return (
             <div
-                className={`rounded-md py-1 px-2 text-center ${
-                    bgColors[level as keyof typeof bgColors]
-                }`}
+                className={`rounded-md py-1 px-2 text-center ${bgColors[level as keyof typeof bgColors]}`}
             >
                 <span className="block font-semibold">{score}</span>
                 <div className="text-xs capitalize">{level}</div>
