@@ -662,11 +662,11 @@ export default function BookingForm({
       checkInDate: formatLocalDateTime(checkInWithTime),
       checkOutDate: formatLocalDateTime(checkOutWithTime),
       numberOfGuests: booking.numberOfGuests || 1,
-      status: booking.status || "PENDING",
+      status: "WAITING",
       specialRequests: specialRequests,
       bookingDate: new Date().toISOString(),
       packageType: booking.packageType || "Standard",
-      totalAmount,
+      totalAmount: totalAmount,
       invoiceType: "ROOM_BOOKING",
       paymentStatus: "PENDING",
       type: bookingType,
@@ -675,7 +675,7 @@ export default function BookingForm({
       customer: {
         id: customer?.id || null,
       },
-      totalCost: totalAmount,
+      totalCost: totalServiceCosts,
     };
 
     const bookingDetails = rooms.map((r: Room) => ({

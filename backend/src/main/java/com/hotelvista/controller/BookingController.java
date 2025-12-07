@@ -132,8 +132,11 @@ public class BookingController {
                 return ResponseEntity.notFound().build();
             }
 
-            booking.setPaymentStatus(PaymentStatus.CANCELLED);
-            booking.setStatus(BookingStatus.CANCELLED);
+            // Chỉ cancel nếu status vẫn là PENDING
+            if (booking.getStatus() == BookingStatus.PENDING) {
+                booking.setPaymentStatus(PaymentStatus.CANCELLED);
+                booking.setStatus(BookingStatus.CANCELLED);
+            }
             boolean saved = service.save(booking);
 
             if (saved) {
@@ -217,6 +220,13 @@ public class BookingController {
 
             // Update booking payment status
             booking.setPaymentStatus(newStatus);
+
+            // Chuyển status sang PENDING khi đã thanh toán (bất kể %)
+            if (booking.getStatus() == BookingStatus.WAITING) {
+                booking.setStatus(BookingStatus.PENDING);
+                System.out.println("Booking status changed from WAITING to PENDING");
+            }
+            
             boolean saved = service.save(booking);
 
             if (saved) {
@@ -260,6 +270,7 @@ public class BookingController {
         LocalDateTime endDateTime = end.atTime(23, 59, 59);
         return service.findAllByCheckInDateBetween(startDateTime, endDateTime);
     }
+
     /**
      * Lấy bookings theo check-out date
      */
@@ -420,29 +431,70 @@ public class BookingController {
      * Kiểm tra phòng có available trong khoảng thời gian không
      * Trả về danh sách các booking bị trùng lịch
      */
-    @GetMapping("check-availability")
+    @GetMapping("/check-availability")
     public ResponseEntity<?> checkRoomAvailability(
             @RequestParam String roomNumber,
-            @RequestParam String checkinDate,
-            @RequestParam String checkoutDate
+            @RequestParam String checkInDate,
+            @RequestParam String checkOutDate
     ) {
         try {
-            LocalDateTime checkIn = LocalDateTime.parse(checkinDate);
-            LocalDateTime checkOut = LocalDateTime.parse(checkoutDate);
+            // Xử lý ISO format: "2025-12-07T14:30:00.000Z"
+            String cleanCheckIn = checkInDate.replace("Z", "");
+            if (cleanCheckIn.contains(".")) {
+                cleanCheckIn = cleanCheckIn.substring(0, cleanCheckIn.indexOf("."));
+            }
 
-            // Validate input
+            String cleanCheckOut = checkOutDate.replace("Z", "");
+            if (cleanCheckOut.contains(".")) {
+                cleanCheckOut = cleanCheckOut.substring(0, cleanCheckOut.indexOf("."));
+            }
+
+            LocalDateTime checkIn = LocalDateTime.parse(cleanCheckIn);
+            LocalDateTime checkOut = LocalDateTime.parse(cleanCheckOut);
+
             if (checkOut.isBefore(checkIn) || checkOut.isEqual(checkIn)) {
                 return ResponseEntity.badRequest().body("Check-out must be after check-in");
             }
 
-            // Tìm các booking bị conflict
             List<Booking> conflicts = service.findConflictingBookings(roomNumber, checkIn, checkOut);
-
             return ResponseEntity.ok(conflicts);
+
         } catch (Exception e) {
+            System.err.println("Error checking room availability: " + e.getMessage());
             e.printStackTrace();
             return ResponseEntity.internalServerError()
                     .body("Error checking room availability: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Xác nhận booking cho pay at checkout
+     */
+    @PutMapping("/{bookingId}/confirm-pay-at-checkout")
+    public ResponseEntity<?> confirmPayAtCheckout(@PathVariable String bookingId) {
+        try {
+            Booking booking = service.findById(bookingId);
+            if (booking == null) {
+                return ResponseEntity.badRequest().body("Booking not found");
+            }
+
+            // Chuyển status sang WAITING to PENDING cho pay at checkout
+            if (booking.getStatus() == BookingStatus.WAITING) {
+                booking.setStatus(BookingStatus.PENDING);
+                boolean saved = service.save(booking);
+                
+                if (saved) {
+                    System.out.println("Booking " + bookingId + " confirmed for pay at checkout. Status: PLACE");
+                    return ResponseEntity.ok(booking);
+                } else {
+                    return ResponseEntity.internalServerError().body("Failed to confirm booking");
+                }
+            }
+            
+            return ResponseEntity.ok(booking);
+        } catch (Exception e) {
+            System.err.println("Error confirming pay at checkout: " + e.getMessage());
+            return ResponseEntity.internalServerError().body("Error: " + e.getMessage());
         }
     }
 

@@ -38,6 +38,7 @@ public class RoomType {
     @Column(name = "base_price")
     private Double basePrice;
 
+    @ToString.Exclude
     @OneToMany(mappedBy = "roomType")
     @JsonIgnore
     private List<Room> rooms;

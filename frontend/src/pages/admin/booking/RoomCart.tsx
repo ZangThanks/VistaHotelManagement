@@ -98,6 +98,8 @@ export default function RoomCart() {
     });
   };
 
+  console.log("Rooms:", rooms);
+
   return (
     <div className="min-h-screen bg-[#f5f1ed] p-8">
       <div className="max-w-7xl mx-auto">
@@ -207,10 +209,8 @@ export default function RoomCart() {
                     key={room.roomNumber}
                     className={`bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300 ${
                       selectedRooms.includes(room.roomNumber?.toString() || "")
-                        ? "ring-2 ring-[#d4c5b9] scale-105"
-                        : room.status === "BOOKED"
-                        ? "opacity-60 cursor-not-allowed"
-                        : "hover:shadow-lg cursor-pointer"
+                        ? "ring-2 ring-[#d4c5b9] scale-105 hover:shadow-lg cursor-pointer"
+                        : ""
                     }`}
                   >
                     {/* Room Image */}
@@ -237,8 +237,9 @@ export default function RoomCart() {
                           <X className="w-5 h-5" />
                         )}
                       </button>
+
                       {/* Status Badge */}
-                      <div
+                      {/* <div
                         className={`absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-semibold ${
                           room.status === "AVAILABLE"
                             ? "bg-green-100 text-green-800"
@@ -246,29 +247,25 @@ export default function RoomCart() {
                         }`}
                       >
                         {room.status === "AVAILABLE" ? "Available" : "Booked"}
-                      </div>
+                      </div> */}
 
                       {/* Checkbox Overlay */}
-                      {room.status === "AVAILABLE" && (
-                        <button
-                          onClick={() =>
-                            toggleRoomSelection(
-                              room.roomNumber?.toString() || ""
-                            )
-                          }
-                          className={`absolute bottom-3 right-3 w-6 h-6 rounded border-2 transition-all ${
-                            selectedRooms.includes(
-                              room.roomNumber?.toString() || ""
-                            )
-                              ? "bg-[#d4c5b9] border-[#d4c5b9]"
-                              : "bg-white border-gray-300 hover:border-[#d4c5b9]"
-                          }`}
-                        >
-                          {selectedRooms.includes(
+                      <button
+                        onClick={() =>
+                          toggleRoomSelection(room.roomNumber?.toString() || "")
+                        }
+                        className={`absolute bottom-3 right-3 w-6 h-6 rounded border-2 transition-all ${
+                          selectedRooms.includes(
                             room.roomNumber?.toString() || ""
-                          ) && <Check className="w-4 h-4 text-white m-auto" />}
-                        </button>
-                      )}
+                          )
+                            ? "bg-[#d4c5b9] border-[#d4c5b9]"
+                            : "bg-white border-gray-300 hover:border-[#d4c5b9]"
+                        }`}
+                      >
+                        {selectedRooms.includes(
+                          room.roomNumber?.toString() || ""
+                        ) && <Check className="w-4 h-4 text-white m-auto" />}
+                      </button>
                     </div>
 
                     {/* Room Details */}
@@ -307,60 +304,51 @@ export default function RoomCart() {
                       </div>
 
                       {/* Amenities */}
-                      <div className="mb-4">
-                        <p className="text-xs font-semibold text-gray-700 mb-2">
-                          Amenities:
-                        </p>
-                        {/* <div className="flex flex-wrap gap-2">
-                        {room.roomType?.amenities
-                          ?.slice(0, 3)
-                          .map((amenity, idx) => (
-                            <span
-                              key={idx}
-                              className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded"
-                            >
-                              {amenity}
-                            </span>
-                          ))}
-                        {room.roomType?.amenities?.length > 3 && (
-                          <span className="text-xs text-gray-500 px-2 py-1">
-                            +{room.roomType?.amenities.length - 3} more
-                          </span>
+                      {room.roomType?.amenties &&
+                        room.roomType.amenties.length > 0 && (
+                          <div className="mb-4">
+                            <p className="text-xs font-semibold text-gray-700 mb-2">
+                              Amenities:
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                              {room.roomType.amenties
+                                .slice(0, 3)
+                                .map((amenity, idx) => (
+                                  <span
+                                    key={idx}
+                                    className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded"
+                                  >
+                                    {amenity}
+                                  </span>
+                                ))}
+                              {room.roomType.amenties.length > 3 && (
+                                <span className="text-xs text-gray-500 px-2 py-1">
+                                  +{room.roomType.amenties.length - 3} more
+                                </span>
+                              )}
+                            </div>
+                          </div>
                         )}
-                      </div> */}
-                      </div>
 
                       {/* Selection Button */}
-                      {room.status === "AVAILABLE" && (
-                        <button
-                          onClick={() =>
-                            toggleRoomSelection(
-                              room.roomNumber?.toString() || ""
-                            )
-                          }
-                          className={`cursor-pointer w-full py-2 rounded font-semibold transition-all ${
-                            selectedRooms.includes(
-                              room.roomNumber?.toString() || ""
-                            )
-                              ? "bg-[#d4c5b9] text-white"
-                              : "bg-gray-100 text-[#2a2a2a] hover:bg-[#d4c5b9] hover:text-white"
-                          }`}
-                        >
-                          {selectedRooms.includes(
+                      <button
+                        onClick={() =>
+                          toggleRoomSelection(room.roomNumber?.toString() || "")
+                        }
+                        className={`cursor-pointer w-full py-2 rounded font-semibold transition-all ${
+                          selectedRooms.includes(
                             room.roomNumber?.toString() || ""
                           )
-                            ? "Selected"
-                            : "Select Room"}
-                        </button>
-                      )}
-                      {room.status === "BOOKED" && (
-                        <button
-                          disabled
-                          className="w-full py-2 rounded font-semibold bg-gray-200 text-gray-500 cursor-not-allowed"
-                        >
-                          Booked
-                        </button>
-                      )}
+                            ? "bg-[#d4c5b9] text-white"
+                            : "bg-gray-100 text-[#2a2a2a] hover:bg-[#d4c5b9] hover:text-white"
+                        }`}
+                      >
+                        {selectedRooms.includes(
+                          room.roomNumber?.toString() || ""
+                        )
+                          ? "Selected"
+                          : "Select Room"}
+                      </button>
                     </div>
                   </div>
                 ))}
