@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { FaDownload, FaFilePdf, FaFileExcel } from 'react-icons/fa';
 import type { DateRange } from '../../types/Report';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 
 interface ExportButtonProps {
@@ -20,7 +20,7 @@ const ExportButton: React.FC<ExportButtonProps> = ({
     const [loading, setLoading] = useState(false);
 
     const exportToPDF = (reportData: any) => {
-        const doc = new jsPDF() as any;
+        const doc = new jsPDF();
 
         // Header
         doc.setFontSize(18);
@@ -47,7 +47,7 @@ const ExportButton: React.FC<ExportButtonProps> = ({
                         item.totalOrders || '0',
                     ]);
 
-                    doc.autoTable({
+                    autoTable(doc, {
                         startY: 35,
                         head: [
                             [
