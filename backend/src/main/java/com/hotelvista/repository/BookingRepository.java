@@ -31,19 +31,22 @@ public interface BookingRepository extends JpaRepository<Booking, String> {
 
     /**
      * Tìm booking theo tiêu chí mã booking, tên khách hàng, hoặc số điện thoại
+     *
      * @param keyword
      * @return
      */
     @Query("""
-        SELECT b FROM Booking b 
-            WHERE b.bookingID = :keyword OR b.customer.phone LIKE %:keyword% OR
-            LOWER(b.customer.fullName) LIKE LOWER(CONCAT('%', :keyword, '%')) 
-        """)
+            SELECT b FROM Booking b 
+                WHERE b.bookingID = :keyword OR b.customer.phone LIKE %:keyword% OR
+                LOWER(b.customer.fullName) LIKE LOWER(CONCAT('%', :keyword, '%')) 
+            """)
     List<Booking> searchBookings(@Param("keyword") String keyword);
 
     //B1109250001
+
     /**
      * Tìm số thứ tự lớn nhất của booking trong ngày hôm nay
+     *
      * @param todayPrefix
      * @return
      */
@@ -57,6 +60,7 @@ public interface BookingRepository extends JpaRepository<Booking, String> {
 
     /**
      * Tìm bookings theo khoảng ngày check-in
+     *
      * @param startDate
      * @param endDate
      * @return
@@ -65,6 +69,7 @@ public interface BookingRepository extends JpaRepository<Booking, String> {
 
     /**
      * Tìm booking theo ngày check-out
+     *
      * @param startDate
      * @param endDate
      * @return
@@ -85,8 +90,8 @@ public interface BookingRepository extends JpaRepository<Booking, String> {
      * - (checkIn < existing.checkOut) AND (checkOut > existing.checkIn)
      *
      * @param roomNumber Số phòng cần check
-     * @param checkIn Thời gian check-in mong muốn
-     * @param checkOut Thời gian check-out mong muốn
+     * @param checkIn    Thời gian check-in mong muốn
+     * @param checkOut   Thời gian check-out mong muốn
      * @return Danh sách booking bị trùng lịch
      */
     @Query("SELECT DISTINCT b FROM Booking b " +
@@ -96,10 +101,12 @@ public interface BookingRepository extends JpaRepository<Booking, String> {
             "   OR b.status = com.hotelvista.model.enums.BookingStatus.CHECKED_IN) " +
             "AND b.checkInDate < :checkOut " +
             "AND b.checkInDate > :checkIn " +
-            "ORDER BY b.checkInDate ASC")
+            "ORDER BY b.checkInDate ASC ")
     List<Booking> findConflictingBookings(
             @Param("roomNumber") String roomNumber,
             @Param("checkIn") LocalDateTime checkIn,
             @Param("checkOut") LocalDateTime checkOut
     );
+
+
 }
