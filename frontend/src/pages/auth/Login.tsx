@@ -10,7 +10,7 @@ import type { CustomCaptchaRef } from "../../components/common/CustomCaptcha";
 import { handleLogin } from "../../services/authService";
 import {
   validateEmailOrPhoneOrUsername,
-  validateLoginPassword,
+  validatePasswordCombined,
   detectInputType,
 } from "../../utils/validators";
 import { useToastContext } from "../../hooks/useToastContext";
@@ -43,11 +43,14 @@ const Login: React.FC = () => {
     }
   };
 
-  // Xử lý thay đổi password (không validate real-time)
+  // Real-time validation for password
   const handlePasswordChange = (value: string) => {
     setPassword(value);
-    // Clear error khi user typing
-    if (passwordError) {
+    if (value.trim()) {
+      const error = validatePasswordCombined(value);
+      setPasswordError(error);
+      setPasswordSuccess(!error);
+    } else {
       setPasswordError("");
       setPasswordSuccess(false);
     }
@@ -62,14 +65,14 @@ const Login: React.FC = () => {
     setIdentifierError(idErr);
     setIdentifierSuccess(!idErr);
 
-    // Validate password (chỉ check không trống)
-    const pwErr = validateLoginPassword(password);
+    // Validate password (check password strength)
+    const pwErr = validatePasswordCombined(password);
     setPasswordError(pwErr);
     setPasswordSuccess(!pwErr);
 
     // Validate captcha
     if (!isCaptchaVerified) {
-      setCaptchaError("Vui lòng nhập đúng mã xác thực");
+      setCaptchaError("Please enter the correct verification code");
       setShakeKey((prev) => prev + 1);
       return;
     }
@@ -108,7 +111,7 @@ const Login: React.FC = () => {
       if (res.token) localStorage.setItem("token", res.token);
       if (res.data) localStorage.setItem("user", JSON.stringify(res.data));
 
-      toast.success("Đăng nhập thành công!", { duration: 2000 });
+      toast.success("Login successful!", { duration: 2000 });
 
       setTimeout(() => {
         navigate("/");
@@ -145,14 +148,12 @@ const Login: React.FC = () => {
     <div className="w-full">
       <form onSubmit={onSubmit} className="flex flex-col space-y-4">
         <div className="flex justify-center mb-2">
-          <img src={logoImage} alt="Logo Vista" className="h-16 w-auto" />
+          <img src={logoImage} alt="Logo Vista" className="h-20 w-auto" />
         </div>
 
         <div className="text-center mb-3">
-          <h1 className="text-2xl font-bold text-yellow-50 mb-2">Đăng nhập</h1>
-          <p className="text-sm text-yellow-50">
-            Chào mừng bạn trở lại với Vista Hotel
-          </p>
+          <h1 className="text-[30px] font-bold text-yellow-50 mb-2">Login</h1>
+          <p className="text-sm text-yellow-50">Welcome back to Vista Hotel</p>
         </div>
 
         {/* Email hoặc Số điện thoại  */}
@@ -163,7 +164,7 @@ const Login: React.FC = () => {
           }`}
         >
           <FloatingInput
-            label="Email, Số điện thoại hoặc Tên đăng nhập"
+            label="Email, Phone or Username"
             type="text"
             value={identifier}
             onChange={handleIdentifierChange}
@@ -208,9 +209,9 @@ const Login: React.FC = () => {
               {detectInputType(identifier) === "email"
                 ? "Email"
                 : detectInputType(identifier) === "phone"
-                ? "Số điện thoại"
-                : "Tên đăng nhập"}{" "}
-              hợp lệ
+                ? "Phone"
+                : "Username"}{" "}
+              is valid
             </p>
           )}
         </div>
@@ -223,7 +224,7 @@ const Login: React.FC = () => {
           }`}
         >
           <FloatingInput
-            label="Mật khẩu"
+            label="Password"
             type="password"
             value={password}
             onChange={handlePasswordChange}
@@ -263,7 +264,7 @@ const Login: React.FC = () => {
             <p className="text-red-500 text-xs mt-1">{passwordError}</p>
           )}
           {passwordSuccess && !passwordError && (
-            <p className="text-green-500 text-xs mt-1">✓ Mật khẩu hợp lệ</p>
+            <p className="text-green-500 text-xs mt-1">✓ Password is valid</p>
           )}
         </div>
 
@@ -295,13 +296,13 @@ const Login: React.FC = () => {
             onClick={handleForgotPassword}
             className="text-[#eab354] hover:text-[#c3923c] text-sm font-medium transition-colors cursor-pointer"
           >
-            Quên mật khẩu?
+            Forgot password?
           </button>
         </div>
 
         {/* Button đăng nhập */}
         <Button
-          text={loading ? "Đang đăng nhập..." : "Đăng nhập"}
+          text={loading ? "Logging in..." : "Login"}
           color="bg-[#c3923c]"
           textColor="text-white"
           size="lg"
@@ -316,7 +317,7 @@ const Login: React.FC = () => {
 
         <div className="flex items-center gap-3 my-2">
           <div className="flex-1 h-px bg-white/30" />
-          <span className="text-white/70 text-xs">Hoặc tiếp tục với</span>
+          <span className="text-white/70 text-xs">Or continue with</span>
           <div className="flex-1 h-px bg-white/30" />
         </div>
         {/* Đăng nhập với mạng xã hội  */}
@@ -346,31 +347,31 @@ const Login: React.FC = () => {
 
         {/* Chuyển đến đăng ký */}
         <p className="text-center text-xs text-white/70 leading-relaxed">
-          Khi đăng ký, bạn đồng ý với{" "}
+          By logging in, you agree to our{" "}
           <a
             href="#"
             className="text-[#eab354] hover:text-[#c3923c] hover:underline font-medium"
           >
-            Điều khoản
+            Terms
           </a>{" "}
-          và{" "}
+          and{" "}
           <a
             href="#"
             className="text-[#eab354] hover:text-[#c3923c] hover:underline font-medium"
           >
-            Chính sách
+            Privacy Policy
           </a>
         </p>
 
         {/* Chuyển đến đăng ký  */}
         <p className="text-center text-sm text-white/80">
-          Chưa phải thành viên?{" "}
+          Not a member yet?{" "}
           <button
             type="button"
             onClick={handleRegister}
             className="text-[#eab354] hover:text-[#c3923c] font-semibold transition-colors cursor-pointer"
           >
-            Đăng ký
+            Register
           </button>
         </p>
       </form>

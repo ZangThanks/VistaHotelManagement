@@ -36,6 +36,7 @@ import PromotionManagement from '../pages/admin/promotion/PromotionManagement.ts
 import PromotionTypeManagement from '../pages/admin/promotion/PromotionTypeManagement.tsx';
 import PricingManager from '../pages/admin/pricing/PricingManager.tsx';
 import RoomCart from '../pages/admin/booking/RoomCart.tsx';
+import ReportPage from '../pages/admin/report/Report.tsx';
 
 // Customer pages
 import Home from '../pages/customer/Home';
@@ -108,6 +109,7 @@ export const router = createBrowserRouter([
             },
 
             { path: 'profile', element: <UserProfilePage /> },
+            { path: 'reports', element: <ReportPage /> },
         ],
     },
 
