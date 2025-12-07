@@ -56,7 +56,7 @@ export default function MyBookingsPage() {
                 setError('');
 
                 const currentUser = getCurrentUser();
-                console.log('Current user:', currentUser);
+                // console.log('Current user:', currentUser);
 
                 if (!currentUser || !currentUser.id) {
                     setError('Vui lòng đăng nhập để xem booking của bạn');
@@ -67,7 +67,7 @@ export default function MyBookingsPage() {
                 const userBookings = await getBookingsByCustomerId(
                     currentUser.id,
                 );
-                console.log('User bookings:', userBookings);
+                // console.log('User bookings:', userBookings);
 
                 // Validate and clean booking data to prevent runtime errors
                 const validatedBookings = userBookings.filter((booking) => {

@@ -5,7 +5,7 @@ import { FaArrowLeft, FaCalendarAlt, FaClock } from 'react-icons/fa';
 import type { NewsItem } from '../../../types/News';
 
 export default function NewsDetail() {
-    const { id } = useParams<{ id: string }>(); // Lấy newsId từ URL
+    const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
 
     const [news, setNews] = useState<NewsItem | null>(null);

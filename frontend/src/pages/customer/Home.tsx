@@ -2,7 +2,6 @@ import React, { useEffect, useState, useRef } from 'react';
 import ServiceButton from '../../components/ServiceButton';
 import HeaderHome from '../../components/HeaderHome';
 import Header from '../../components/Header';
-
 const Home: React.FC = () => {
     const [showSolidHeader, setShowSolidHeader] = useState(false);
     const bannerRef = useRef<HTMLVideoElement | null>(null);
@@ -96,6 +95,8 @@ const Home: React.FC = () => {
                         is crafted to perfection, and every moment becomes an
                         everlasting memory.
                     </p>
+
+                    
                 </div>
             </section>
 

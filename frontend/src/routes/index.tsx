@@ -1,70 +1,73 @@
 import { createBrowserRouter } from "react-router-dom";
 
-// Layouts
+/* ===================== LAYOUTS ===================== */
 import AuthLayout from "../layouts/AuthLayout";
 import EmployeeLayout from "../layouts/EmployeeLayout";
 import AdminLayout from "../layouts/AdminLayout";
 import MainLayout from "../layouts/MainLayout";
-import CustomerLayout from "../layouts/CustomerLayout.tsx";
+import CustomerLayout from "../layouts/CustomerLayout";
 
-// Auth pages
+/* ===================== AUTH ===================== */
 import Login from "../pages/auth/Login";
 import Register from "../pages/auth/Register";
 import ForgotPassword from "../pages/auth/ForgotPassword";
 import ResetPassword from "../pages/auth/ResetPassword";
-import OAuthSuccess from "../pages/auth/OAuthSuccess.tsx";
+import OAuthSuccess from "../pages/auth/OAuthSuccess";
 
-// Employee pages
+/* ===================== EMPLOYEE ===================== */
 import CustomerList from "../pages/employee/CustomerList";
 import NewsPage from "../pages/employee/NewsPage";
 import CheckInManager from "../pages/employee/CheckInManager";
 import CheckOutManager from "../pages/employee/CheckOutManager";
 import IncidentManagement from "../pages/employee/IncidentManagement";
-import DailyWorkStatistics from "../pages/employee/DailyWorkStatistics.tsx";
-import ServiceOrderManagement from "../pages/employee/ServiceOrderManagement"; // HEAD có
-import ChatSupport from "../pages/employee/ChatSupport.tsx";
-import RoomManagement from "../pages/employee/room/RoomManagement.tsx"; // dùng tên PPH chung
-import RoomTypeManagement from "../pages/employee/room/RoomTypeManagement.tsx";
+import DailyWorkStatistics from "../pages/employee/DailyWorkStatistics";
+import ServiceOrderManagement from "../pages/employee/ServiceOrderManagement";
+import ChatSupport from "../pages/employee/ChatSupport";
+import RoomManagement from "../pages/employee/room/RoomManagement";
+import RoomTypeManagement from "../pages/employee/room/RoomTypeManagement";
 
-// Admin pages
-import Dashboard from "../pages/admin/dashboard/Dashboard.tsx";
-import NewsDetail from "../pages/admin/news/NewsDetail.tsx";
-import NewsList from "../pages/admin/news/NewsList.tsx";
-import EmployeeList from "../pages/admin/EmployeeList.tsx";
-import PricingManager from "../pages/admin/pricing/PricingManager.tsx";
-import PromotionManagement from "../pages/admin/promotion/PromotionManagement.tsx";
-import PromotionTypeManagement from "../pages/admin/promotion/PromotionTypeManagement.tsx";
-import VoucherManagement from "../pages/admin/voucher/VoucherManagement.tsx";
-import ServiceManagement from "../pages/admin/ServiceManagement.tsx";
-import ReportPage from "../pages/admin/report/Report.tsx";
+/* ===================== ADMIN ===================== */
+import Dashboard from "../pages/admin/dashboard/Dashboard";
+import NewsDetail from "../pages/admin/news/NewsDetail";
+import NewsList from "../pages/admin/news/NewsList";
+import EmployeeList from "../pages/admin/EmployeeList";
+import PricingManager from "../pages/admin/pricing/PricingManager";
+import PromotionManagement from "../pages/admin/promotion/PromotionManagement";
+import PromotionTypeManagement from "../pages/admin/promotion/PromotionTypeManagement";
+import VoucherManagement from "../pages/admin/voucher/VoucherManagement";
+import ServiceManagement from "../pages/admin/ServiceManagement";
+import ReportPage from "../pages/admin/report/Report";
+import RoomCart from "../pages/admin/booking/RoomCart";
 
-// Customer pages
+/* ===================== CUSTOMER ===================== */
 import Home from "../pages/customer/Home";
 import RoomList from "../pages/customer/RoomList";
-import RoomDetail from "../pages/customer/RoomDetail.tsx";
-import RoomChange from "../pages/customer/RoomChange.tsx"; // HEAD
-import ServiceList from "../pages/customer/ServiceList.tsx";
-import IncidentReport from "../pages/customer/IncidentReport.tsx";
-import Contact from "../pages/customer/Contact.tsx";
-import BookingPage from "../pages/customer/booking/BookingPage.tsx";
-import PaymentPage from "../pages/customer/booking/PaymentPage.tsx";
-import RoomCart from "../pages/admin/booking/RoomCart.tsx";
-import FAQ from "../pages/customer/FAQ.tsx";
-import AIConcierge from "../pages/customer/AIConcierge.tsx";
-import UserProfilePage from "../pages/customer/UserProfile.tsx";
+import RoomDetail from "../pages/customer/RoomDetail";
+import RoomChange from "../pages/customer/RoomChange";
+import ServiceList from "../pages/customer/ServiceList";
+import IncidentReport from "../pages/customer/IncidentReport";
+import Contact from "../pages/customer/Contact";
+import BookingPage from "../pages/customer/booking/BookingPage";
+import PaymentPage from "../pages/customer/booking/PaymentPage";
+import FAQ from "../pages/customer/FAQ";
+import AIConcierge from "../pages/customer/AIConcierge";
+import UserProfilePage from "../pages/customer/UserProfile";
+import MyBookings from "../pages/customer/MyBooking";
+import BookingDetail from "../pages/customer/BookingDetail";      // HEAD
+import BookingDetailPage from "../pages/customer/BookingDetail"; // PPH alias
 
-import MyBookings from "../pages/customer/MyBooking.tsx"; // PPH
-import BookingDetailPage from "../pages/customer/BookingDetail.tsx"; // PPH
-import BookingDetail from "../pages/customer/BookingDetail.tsx"; // HEAD booking/:id
+/* =====================================================
+                     ROUTER FINAL
+===================================================== */
 
 export const router = createBrowserRouter([
-    // OAuth
+    /* ---------- OAuth Callback ---------- */
     {
         path: "/oauth-success",
         element: <OAuthSuccess />,
     },
 
-    // AUTH
+    /* ---------- AUTH ---------- */
     {
         path: "auth",
         element: <AuthLayout />,
@@ -76,7 +79,7 @@ export const router = createBrowserRouter([
         ],
     },
 
-    // EMPLOYEE
+    /* ---------- EMPLOYEE ---------- */
     {
         path: "employee",
         element: <EmployeeLayout />,
@@ -86,7 +89,7 @@ export const router = createBrowserRouter([
             { path: "bookingPage", element: <BookingPage /> },
             { path: "newsPage", element: <NewsPage /> },
             { path: "daily", element: <DailyWorkStatistics /> },
-            { path: "service-orders", element: <ServiceOrderManagement /> }, // HEAD
+            { path: "service-orders", element: <ServiceOrderManagement /> },
             { path: "support", element: <ChatSupport /> },
             { path: "room-management", element: <RoomManagement /> },
             { path: "room-type-management", element: <RoomTypeManagement /> },
@@ -94,7 +97,7 @@ export const router = createBrowserRouter([
         ],
     },
 
-    // ADMIN
+    /* ---------- ADMIN ---------- */
     {
         path: "admin",
         element: <AdminLayout />,
@@ -114,11 +117,11 @@ export const router = createBrowserRouter([
             { path: "employees", element: <EmployeeList /> },
             { path: "pricing", element: <PricingManager /> },
             { path: "profile", element: <UserProfilePage /> },
-            { path: "reports", element: <ReportPage /> }, // PPH
+            { path: "reports", element: <ReportPage /> },
         ],
     },
 
-    // MAIN PUBLIC AREA
+    /* ---------- MAIN PUBLIC AREA ---------- */
     {
         path: "",
         element: <MainLayout />,
@@ -138,27 +141,23 @@ export const router = createBrowserRouter([
         ],
     },
 
-    // CUSTOMER
+    /* ---------- CUSTOMER ---------- */
     {
         path: "customer",
         element: <CustomerLayout />,
         children: [
             { path: "room", element: <RoomList /> },
-            { path: "room/incident", element: <IncidentReport /> },
             { path: "room/:id", element: <RoomDetail /> },
+            { path: "room/incident", element: <IncidentReport /> },
+            { path: "room-change", element: <RoomChange /> },
 
-            { path: "room-change", element: <RoomChange /> }, // HEAD giữ
-
-            { path: "service", element: <ServiceList /> },
+            /* Booking routes (HEAD + PPH unified) */
             { path: "bookingPage", element: <BookingPage /> },
-
-            // HEAD route
             { path: "booking/:id", element: <BookingDetail /> },
-
-            // PPH route
             { path: "mybooking", element: <MyBookings /> },
             { path: "mybooking/:id", element: <BookingDetailPage /> },
 
+            { path: "service", element: <ServiceList /> },
             { path: "payment", element: <PaymentPage /> },
             { path: "profile", element: <UserProfilePage /> },
             { path: "cart", element: <RoomCart /> },
