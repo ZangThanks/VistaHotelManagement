@@ -52,7 +52,8 @@ export interface Booking {
     bookingDetails: BookingDetail[];
 
     earlyCheckin?: EarlyCheckin | null;
-    lateCheckout?: LateCheckout | null; // final merged
+    lateCheckout?: LateCheckout | null;
+
 }
 
 // ====================== ROOM BOOKING ======================

@@ -4,6 +4,9 @@ export interface ServiceReportData {
     date: string;
     foodBeverage: number;
     laundry: number;
+    spa: number;
+    transport: number;
+    tour: number;
     others: number;
     totalOrders: number;
     avgOrderValue: number;

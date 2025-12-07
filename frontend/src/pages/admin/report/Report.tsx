@@ -65,11 +65,17 @@ const ReportPage: React.FC = () => {
     const fetchServiceReport = async () => {
         try {
             setIsLoadingServiceData(true);
+            console.log('Fetching service report with params:', {
+                startDate,
+                endDate,
+                period,
+            });
             const data = await reportService.getServiceReport(
                 startDate,
                 endDate,
                 period,
             );
+            console.log('Service report data received:', data);
             setServiceData(data);
         } catch (error) {
             console.error('Error fetching service report:', error);

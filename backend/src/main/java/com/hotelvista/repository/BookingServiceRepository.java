@@ -20,9 +20,9 @@ public interface BookingServiceRepository extends JpaRepository<BookingService, 
 
     /**
      * Tìm tất cả booking services trong khoảng thời gian
-     * Chỉ lấy booking đã CHECKED_OUT và service đã DELIVERED
+     * Lấy tất cả service đã được đặt trong khoảng thời gian
      */
-    @Query("SELECT bs FROM BookingService bs WHERE DATE(bs.booking.checkInDate) >= :startDate AND DATE(bs.booking.checkInDate) <= :endDate AND bs.booking.status = 'CHECKED_OUT' AND bs.orderStatus = 'DELIVERED'")
+    @Query("SELECT bs FROM BookingService bs WHERE DATE(bs.booking.checkInDate) >= :startDate AND DATE(bs.booking.checkInDate) <= :endDate")
     List<BookingService> findByDateRange(@Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
 
 }
