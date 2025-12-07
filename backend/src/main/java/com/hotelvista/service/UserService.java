@@ -1,9 +1,6 @@
 package com.hotelvista.service;
 
-import com.hotelvista.model.Admin;
-import com.hotelvista.model.Customer;
-import com.hotelvista.model.Employee;
-import com.hotelvista.model.User;
+import com.hotelvista.model.*;
 import com.hotelvista.model.enums.Gender;
 import com.hotelvista.model.enums.MemberShipLevel;
 import com.hotelvista.model.enums.UserRole;
@@ -12,6 +9,7 @@ import com.hotelvista.repository.CustomerRepository;
 import com.hotelvista.repository.EmployeeRepository;
 import com.hotelvista.util.GenerateIDUtil;
 import com.hotelvista.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -21,21 +19,17 @@ import java.util.UUID;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
-    @Autowired
-    private CustomerRepository customerRepo;
+    private final CustomerRepository customerRepo;
+    private final AdminRepository adminRepo;
+    private final EmployeeRepository employeeRepo;
+    private final PasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
+    private final CartBeanService cartBeanService;
 
-    @Autowired
-    private AdminRepository adminRepo;
-
-    @Autowired
-    private EmployeeRepository employeeRepo;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @Autowired
-    private UserRepository userRepository;
+   @Autowired
+    private CustomerService customerService;
 
     /**
      * Tìm user bằng email hoặc phone, áp dụng cho Customer + Admin + Employee
@@ -95,7 +89,7 @@ public class UserService {
 
         // create user mới
         Customer c = new Customer();
-        c.setId(GenerateIDUtil.generateID("CUS", 8));
+        c.setId(customerService.generateCustomerId());
 
         // username tự phát sinh
         c.setUserName(email.split("@")[0] + "_" + provider);
@@ -112,6 +106,14 @@ public class UserService {
 
         // mật khẩu random
         c.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
+
+        customerRepo.save(c);
+
+        CartBean cartBean = new CartBean();
+        cartBean.setCustomer(c);
+        cartBeanService.save(cartBean);
+
+        c.setCartBean(cartBean);
 
         customerRepo.save(c);
         return c;

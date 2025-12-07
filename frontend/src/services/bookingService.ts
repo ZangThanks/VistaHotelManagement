@@ -26,6 +26,18 @@ export const getBookingById = async (id: string): Promise<Booking> => {
   }
 };
 
+export const getBookingDetailsById = async (
+  id: string
+): Promise<BookingDetail[]> => {
+  try {
+    const response = await api.get(`${ENDPOINT}/details/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching booking details ${id}:`, error);
+    throw error;
+  }
+};
+
 export const createBooking = async (booking: object): Promise<Booking> => {
   try {
     const response = await api.post(`${ENDPOINT}/save`, booking);
@@ -208,7 +220,6 @@ export const overlapBookingExists = async (roomNumber: string) => {
 //     throw error;
 //   }
 // };
-
 export const checkIn = async (bookingId: string): Promise<Booking> => {
   try {
     const response = await axiosInstance.put(
@@ -386,6 +397,87 @@ export const getByRoom = async (roomNumber: string) => {
   return response.data;
 };
 
+// ========== ADD SERVICES TO BOOKING ==========
+// Chỉ lưu serviceID và quantity (không lưu room áp dụng)
+export type BookingServiceCreateItem = {
+  serviceID: string;
+  quantity: number;
+};
+
+// Thêm nhiều dịch vụ cho 1 booking (nếu backend hỗ trợ bulk)
+export const addServicesToBooking = async (
+  bookingId: string,
+  items: BookingServiceCreateItem[]
+) => {
+  const res = await api.post(`${ENDPOINT}/${bookingId}/services/bulk`, items);
+  return res.data;
+};
+
+// Thêm 1 dịch vụ cho 1 booking
+export const addServiceToBooking = async (
+  bookingId: string,
+  item: BookingServiceCreateItem
+) => {
+  const res = await api.post(`${ENDPOINT}/${bookingId}/services`, item);
+  return res.data;
+};
+
+// =============================================
+/**
+ * Kiểm tra xem một phòng có các đặt phòng trùng lặp trong một khoảng thời gian cụ thể hay không
+ * @param roomNumber Số phòng cần kiểm tra
+ * @param checkInDate Ngày/giờ nhận phòng (chuỗi ISO)
+ * @param checkOutDate Ngày/giờ trả phòng (chuỗi ISO)
+ * @returns Mảng các đặt phòng trùng lặp
+ */
+export const checkRoomAvailability = async (
+  roomNumber: string,
+  checkInDate: string,
+  checkOutDate: string
+): Promise<Booking[]> => {
+  try {
+    const response = await api.get(`${ENDPOINT}/check-availability`, {
+      params: {
+        roomNumber,
+        checkInDate,
+        checkOutDate,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error checking room availability:", error);
+    throw error;
+  }
+};
+
+export const cancelBooking = async (
+  bookingId: string,
+  cancelReason: string,
+  cancelledBy: string,
+  refundMethod: any | null
+) => {
+  try {
+    const payload: any = {
+      cancelReason,
+      cancelledBy,
+    };
+
+    if (refundMethod) {
+      payload.refundMethod = refundMethod;
+    }
+
+    console.log("=== BOOKING SERVICE DEBUG ===");
+    console.log("Cancel booking payload:", JSON.stringify(payload, null, 2));
+    console.log("API endpoint:", `${ENDPOINT}/${bookingId}/cancel`);
+
+    const response = await api.post(`${ENDPOINT}/${bookingId}/cancel`, payload);
+    return response.data;
+  } catch (error) {
+    console.error(`Error cancelling booking ${bookingId}:`, error);
+    throw error;
+  }
+};
+
 export default {
   getAll,
   getBookingById,
@@ -394,4 +486,7 @@ export default {
   getAllRoomBookings,
   convertToRoomBooking,
   getByRoom,
+  addServicesToBooking,
+  addServiceToBooking,
+  checkRoomAvailability,
 };

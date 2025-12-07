@@ -1,4 +1,3 @@
-/* eslint-disable */
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import Header from '../../components/Header';
@@ -8,13 +7,14 @@ import { getAllEarlyCheckins } from '../../services/earlyCheckinService';
 import { getAllLateCheckouts } from '../../services/lateCheckoutService';
 
 import EarlyCheckinModal from '../../components/checkin/EarlyCheckinModal';
+import IncidentReportModal from '../../components/customer/IncidentReportModal';
+import CancelBookingModal from '../../components/customer/CancelBookingModal';
 
 import type { Booking } from '../../types/Booking';
 import type { BookingDetail } from '../../types/BookingDetail';
 import type { EarlyCheckinResponse } from '../../types/EarlyCheckin';
 import type { LateCheckout } from '../../types/LateCheckout';
 import LateCheckoutModal from '../../components/checkout/LateCheckoutModal';
-
 
 const statusColor = {
     PENDING: 'bg-amber-50 text-amber-700 border-amber-200',
@@ -36,16 +36,33 @@ export default function BookingDetailPage() {
     const [lateCheckoutRequest, setLateCheckoutRequest] =
         useState<LateCheckout | null>(null);
 
-  const [showEarlyModal, setShowEarlyModal] = useState(false);
-  const [showLateModal, setShowLateModal] = useState(false);
+    const [showEarlyModal, setShowEarlyModal] = useState(false);
+    const [showLateModal, setShowLateModal] = useState(false);
+    const [showIncidentModal, setShowIncidentModal] = useState(false);
+    const [showCancelModal, setShowCancelModal] = useState(false);
 
-    const handleLateCheckoutClick = () => {
-        console.log('Late checkout modal chưa làm');
+    const handleIncidentReport = () => {
+        setShowIncidentModal(true);
     };
 
-    // -------------------------------
+    const handleCancelBooking = () => {
+        // Cho phép hủy nếu booking đang ở trạng thái PENDING (chưa check-in)
+        if (booking?.status === 'PENDING') {
+            setShowCancelModal(true);
+        }
+    };
+
+    // Kiểm tra xem có thể hủy booking không
+    const canCancelBooking = () => {
+        if (!booking) return false;
+        return booking.status === 'PENDING'; // Chỉ cho phép hủy khi chưa check-in
+    };
+
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, []);
     // FETCH BOOKING + CHECKINS + LATE CHECKOUT
-    // -------------------------------
+
     useEffect(() => {
         if (!id) return;
 
@@ -55,9 +72,6 @@ export default function BookingDetailPage() {
                 setBooking(bookingRes);
                 setDetails(bookingRes.bookingDetails || []);
 
-                // -----------------------
-                // 🔹 FETCH EARLY CHECKIN
-                // -----------------------
                 let earlyRequest = null;
 
                 if (bookingRes.earlyCheckin) {
@@ -87,9 +101,6 @@ export default function BookingDetailPage() {
 
                 setEarlyCheckinRequest(earlyRequest);
 
-                // -----------------------
-                // 🔹 FETCH LATE CHECKOUT — real API
-                // -----------------------
                 const lateList = await getAllLateCheckouts();
 
                 if (Array.isArray(lateList)) {
@@ -106,9 +117,6 @@ export default function BookingDetailPage() {
         })();
     }, [id]);
 
-    // -------------------------------
-    // BUTTON RENDER LOGIC — EARLY CHECKIN
-    // -------------------------------
     const renderEarlyCheckinButton = () => {
         if (!booking || booking.status !== 'PENDING') return null;
 
@@ -116,7 +124,7 @@ export default function BookingDetailPage() {
             return (
                 <button
                     onClick={() => setShowEarlyModal(true)}
-                    className="w-full bg-black hover:bg-black/90 text-white py-3 rounded-xl"
+                    className="w-full cursor-pointer bg-[#d8d0c1] border border-[#ddd6c3] text-black hover:bg-[#b9ad96] hover:text-white transition-all duration-200 py-3 rounded-xl"
                 >
                     Early Check-in
                 </button>
@@ -140,7 +148,7 @@ export default function BookingDetailPage() {
                 return (
                     <button
                         onClick={() => setShowEarlyModal(true)}
-                        className="w-full bg-black text-white py-3 rounded-xl"
+                        className="cursor-pointer w-full bg-black text-white py-3 rounded-xl"
                     >
                         Gửi lại Early Check-in
                     </button>
@@ -148,9 +156,8 @@ export default function BookingDetailPage() {
         }
     };
 
-    // -------------------------------
-    // BUTTON RENDER LOGIC — LATE CHECKOUT
-    // -------------------------------
+    // LATE CHECKOUT
+
     const renderLateCheckoutButton = () => {
         if (!booking || booking.status !== 'CHECKED_IN') return null;
 
@@ -158,7 +165,7 @@ export default function BookingDetailPage() {
             return (
                 <button
                     onClick={() => setShowLateModal(true)}
-                    className="w-full bg-white border-2 border-black py-3 rounded-xl hover:bg-[#F5F0EB]"
+                    className="w-full cursor-pointer bg-[#d8d0c1] border border-[#ddd6c3] text-black hover:bg-[#b9ad96] hover:text-white transition-all duration-200 py-3 rounded-xl"
                 >
                     Late Check-out
                 </button>
@@ -184,7 +191,7 @@ export default function BookingDetailPage() {
                 return (
                     <button
                         onClick={() => setShowLateModal(true)}
-                        className="w-full bg-white border-2 border-black py-3 rounded-xl"
+                        className="cursor-pointer w-full bg-white border-2 border-black py-3 rounded-xl"
                     >
                         Gửi lại Late Check-out
                     </button>
@@ -192,9 +199,7 @@ export default function BookingDetailPage() {
         }
     };
 
-    // -------------------------------
     // NOTIFICATION BANNER
-    // -------------------------------
     const renderNotification = () => {
         if (!booking) return null;
 
@@ -281,9 +286,8 @@ export default function BookingDetailPage() {
         return null;
     };
 
-    // -------------------------------
     // LOADING
-    // -------------------------------
+
     if (loading)
         return (
             <div className="min-h-screen flex justify-center items-center text-black">
@@ -298,9 +302,8 @@ export default function BookingDetailPage() {
             </div>
         );
 
-    // -------------------------------
     // MAIN UI
-    // -------------------------------
+
     return (
         <div className="bg-white min-h-screen">
             <div className="bg-white sticky top-0 z-50">
@@ -485,14 +488,14 @@ export default function BookingDetailPage() {
                     {/* RIGHT — PAYMENT + ACTIONS */}
                     <div className="space-y-6">
                         {/* PAYMENT CARD */}
-                        <div className="bg-black text-white p-6 rounded-2xl">
+                        <div className="shadow-2xl bg-[#d8d0c1] text-black p-6 rounded-2xl">
                             <h3 className="text-lg font-semibold mb-6 border-b border-white/20 pb-3">
                                 Payment Summary
                             </h3>
 
                             <div className="space-y-4 mb-6">
                                 <div className="flex justify-between">
-                                    <span className="text-white/70">
+                                    <span className="text-black/70  ">
                                         Subtotal
                                     </span>
                                     <span>
@@ -505,7 +508,7 @@ export default function BookingDetailPage() {
                                 {earlyCheckinRequest?.approvalStatus ===
                                     'APPROVED' && (
                                     <div className="flex justify-between">
-                                        <span className="text-white/70">
+                                        <span className="text-black/70">
                                             Early Check-in Fee
                                         </span>
 
@@ -516,11 +519,11 @@ export default function BookingDetailPage() {
                                     </div>
                                 )}
 
-                                {/* ⭐ Late Checkout Fee — THÊM MỚI ⭐ */}
+                                {/* Late Checkout Fee — THÊM MỚI */}
                                 {lateCheckoutRequest?.approvalStatus ===
                                     'APPROVED' && (
                                     <div className="flex justify-between">
-                                        <span className="text-white/70">
+                                        <span className="text-black/70">
                                             Late Check-out Fee
                                         </span>
                                         <span>
@@ -530,34 +533,96 @@ export default function BookingDetailPage() {
                                     </div>
                                 )}
 
-                                <div className="flex justify-between">
-                                    <span className="text-white/70">
-                                        Tax (10%)
-                                    </span>
-                                    <span>
-                                        {(() => {
-                                            const earlyFee =
-                                                earlyCheckinRequest?.approvalStatus ===
-                                                'APPROVED'
-                                                    ? earlyCheckinRequest.additionalFee
-                                                    : 0;
+                                {/* Refund Information - Hiển thị khi booking bị hủy */}
+                                {booking.status === 'CANCELLED' && (
+                                    <div className="flex justify-between text-red-600">
+                                        <span className="font-medium">
+                                            Refund (
+                                            {(() => {
+                                                const checkInDate = new Date(
+                                                    booking.checkInDate,
+                                                );
+                                                const now = new Date();
+                                                const daysUntilCheckin =
+                                                    Math.ceil(
+                                                        (checkInDate.getTime() -
+                                                            now.getTime()) /
+                                                            (1000 *
+                                                                60 *
+                                                                60 *
+                                                                24),
+                                                    );
 
-                                            const lateFee =
-                                                lateCheckoutRequest?.approvalStatus ===
-                                                'APPROVED'
-                                                    ? lateCheckoutRequest.additionalFee
-                                                    : 0;
+                                                if (
+                                                    booking.status ===
+                                                    'CANCELLED'
+                                                ) {
+                                                    if (daysUntilCheckin >= 7)
+                                                        return '100%';
+                                                    else if (
+                                                        daysUntilCheckin >= 3
+                                                    )
+                                                        return '50%';
+                                                    else return '0%';
+                                                }
+                                                return '0%';
+                                            })()}
+                                            )
+                                        </span>
+                                        <span className="font-medium">
+                                            -
+                                            {(() => {
+                                                const checkInDate = new Date(
+                                                    booking.checkInDate,
+                                                );
+                                                const now = new Date();
+                                                const daysUntilCheckin =
+                                                    Math.ceil(
+                                                        (checkInDate.getTime() -
+                                                            now.getTime()) /
+                                                            (1000 *
+                                                                60 *
+                                                                60 *
+                                                                24),
+                                                    );
 
-                                            return (
-                                                (booking.totalAmount +
+                                                const earlyFee =
+                                                    earlyCheckinRequest?.approvalStatus ===
+                                                    'APPROVED'
+                                                        ? earlyCheckinRequest.additionalFee
+                                                        : 0;
+
+                                                const lateFee =
+                                                    lateCheckoutRequest?.approvalStatus ===
+                                                    'APPROVED'
+                                                        ? lateCheckoutRequest.additionalFee
+                                                        : 0;
+
+                                                const totalAmount =
+                                                    booking.totalAmount +
                                                     earlyFee +
-                                                    lateFee) *
-                                                0.1
-                                            ).toLocaleString();
-                                        })()}{' '}
-                                        VNĐ
-                                    </span>
-                                </div>
+                                                    lateFee;
+
+                                                if (
+                                                    booking.status ===
+                                                    'CANCELLED'
+                                                ) {
+                                                    if (daysUntilCheckin >= 7)
+                                                        return totalAmount.toLocaleString();
+                                                    else if (
+                                                        daysUntilCheckin >= 3
+                                                    )
+                                                        return (
+                                                            totalAmount * 0.5
+                                                        ).toLocaleString();
+                                                    else return '0';
+                                                }
+                                                return '0';
+                                            })()}{' '}
+                                            VNĐ
+                                        </span>
+                                    </div>
+                                )}
                             </div>
 
                             {/* TOTAL */}
@@ -579,12 +644,36 @@ export default function BookingDetailPage() {
                                                 ? lateCheckoutRequest.additionalFee
                                                 : 0;
 
-                                        return (
-                                            (booking.totalAmount +
-                                                earlyFee +
-                                                lateFee) *
-                                            1.1
-                                        ).toLocaleString();
+                                        const originalTotal =
+                                            booking.totalAmount +
+                                            earlyFee +
+                                            lateFee;
+
+                                        // Nếu booking bị hủy, trừ đi phần refund
+                                        if (booking.status === 'CANCELLED') {
+                                            const checkInDate = new Date(
+                                                booking.checkInDate,
+                                            );
+                                            const now = new Date();
+                                            const daysUntilCheckin = Math.ceil(
+                                                (checkInDate.getTime() -
+                                                    now.getTime()) /
+                                                    (1000 * 60 * 60 * 24),
+                                            );
+
+                                            if (daysUntilCheckin >= 7)
+                                                return '0'; // Hoàn 100% = còn lại 0
+                                            else if (daysUntilCheckin >= 3)
+                                                return (
+                                                    originalTotal * 0.5
+                                                ).toLocaleString();
+                                            // Hoàn 50% = còn lại 50%
+                                            else
+                                                return originalTotal.toLocaleString(); // Không hoàn = còn lại 100%
+                                        }
+
+                                        // Nếu booking bình thường
+                                        return originalTotal.toLocaleString();
                                     })()}{' '}
                                     VNĐ
                                 </span>
@@ -600,6 +689,27 @@ export default function BookingDetailPage() {
                             <div className="space-y-3">
                                 {renderEarlyCheckinButton()}
                                 {renderLateCheckoutButton()}
+
+                                {/* Báo cáo sự cố - Available for CHECKED_IN bookings */}
+                                {booking?.status === 'CHECKED_IN' && (
+                                    <button
+                                        onClick={handleIncidentReport}
+                                        className="cursor-pointer w-full hover:text-amber-500 text-black border py-3 rounded-xl flex items-center justify-center gap-2 transition-colors"
+                                    >
+                                        <i className="fas fa-exclamation-triangle"></i>
+                                        Report Incident
+                                    </button>
+                                )}
+
+                                {/* Hủy booking - Available only for PENDING bookings */}
+                                {canCancelBooking() && (
+                                    <button
+                                        onClick={handleCancelBooking}
+                                        className="cursor-pointer border border-black w-full text-black hover:bg-white hover:text-red-600 hover:border-red-600 py-3 rounded-xl flex items-center justify-center gap-2 transition-colors"
+                                    >
+                                        Cancel Booking
+                                    </button>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -618,12 +728,33 @@ export default function BookingDetailPage() {
                 />
             )}
 
-            {/* Early Check-in Modal */}
+            {/* Late Checkout Modal */}
             {showLateModal && (
                 <LateCheckoutModal
                     booking={booking}
                     onClose={async () => {
                         setShowLateModal(false);
+                        const updated = await getBookingById(id!);
+                        setBooking(updated);
+                    }}
+                />
+            )}
+
+            {/* Incident Report Modal */}
+            {showIncidentModal && (
+                <IncidentReportModal
+                    booking={booking}
+                    onClose={() => setShowIncidentModal(false)}
+                />
+            )}
+
+            {/* Cancel Booking Modal */}
+            {showCancelModal && (
+                <CancelBookingModal
+                    booking={booking}
+                    onClose={() => setShowCancelModal(false)}
+                    onSuccess={async () => {
+                        setShowCancelModal(false);
                         const updated = await getBookingById(id!);
                         setBooking(updated);
                     }}

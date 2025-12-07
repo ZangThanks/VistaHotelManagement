@@ -78,4 +78,28 @@ public interface BookingRepository extends JpaRepository<Booking, String> {
             "JOIN rt.seasonalPrices sp " +
             "WHERE sp.id = :id")
     boolean existsBookingsBySeasonalPrice(@Param("id") Integer id);
+
+    /**
+     * Tìm các booking bị conflict về thời gian với phòng cụ thể
+     * Logic: Hai khoảng thời gian conflict khi:
+     * - (checkIn < existing.checkOut) AND (checkOut > existing.checkIn)
+     *
+     * @param roomNumber Số phòng cần check
+     * @param checkIn Thời gian check-in mong muốn
+     * @param checkOut Thời gian check-out mong muốn
+     * @return Danh sách booking bị trùng lịch
+     */
+    @Query("SELECT DISTINCT b FROM Booking b " +
+            "JOIN b.bookingDetails bd " +
+            "WHERE bd.room.roomNumber = :roomNumber " +
+            "AND (b.status = com.hotelvista.model.enums.BookingStatus.PENDING " +
+            "   OR b.status = com.hotelvista.model.enums.BookingStatus.CHECKED_IN) " +
+            "AND b.checkInDate < :checkOut " +
+            "AND b.checkInDate > :checkIn " +
+            "ORDER BY b.checkInDate ASC")
+    List<Booking> findConflictingBookings(
+            @Param("roomNumber") String roomNumber,
+            @Param("checkIn") LocalDateTime checkIn,
+            @Param("checkOut") LocalDateTime checkOut
+    );
 }

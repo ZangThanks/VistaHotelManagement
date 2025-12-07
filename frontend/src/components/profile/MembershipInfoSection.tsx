@@ -67,8 +67,8 @@ const MembershipInfoSection: React.FC<MembershipInfoSectionProps> = ({
       className="bg-white rounded-xl shadow-md border border-cream p-6"
     >
       <div className="flex items-center gap-3 mb-6">
-        <FaTrophy className="text-gold text-2xl" />
-        <h2 className="text-2xl font-bold text-primary">
+        <FaTrophy className="text-[#ccbda3] text-2xl" />
+        <h2 className="text-2xl font-bold text-[#ccbda3]">
           Membership Information
         </h2>
       </div>
@@ -120,7 +120,7 @@ const MembershipInfoSection: React.FC<MembershipInfoSectionProps> = ({
           {profile.memberShipLevel === "PLATINUM" && (
             <div className="text-center mt-4">
               <p className="text-lg font-semibold">
-                🎉 You've reached the highest level! 🎉
+                You've reached the highest level!
               </p>
             </div>
           )}
@@ -129,17 +129,17 @@ const MembershipInfoSection: React.FC<MembershipInfoSectionProps> = ({
         {/* Stats Grid */}
         <div className="grid grid-cols-2 gap-4">
           <div className="bg-light rounded-lg p-4 text-center">
-            <FaStar className="text-gold text-3xl mx-auto mb-2" />
+            <FaStar className="text-[#ccbda3] text-3xl mx-auto mb-2" />
             <p className="text-sm text-gray-600 mb-1">Reputation Points</p>
-            <p className="text-2xl font-bold text-primary">
+            <p className="text-2xl font-bold text-[#ccbda3]">
               {profile.reputationPoint || 100}
             </p>
           </div>
 
           <div className="bg-light rounded-lg p-4 text-center">
-            <FaCoins className="text-gold text-3xl mx-auto mb-2" />
+            <FaCoins className="text-[#ccbda3] text-3xl mx-auto mb-2" />
             <p className="text-sm text-gray-600 mb-1">Loyalty Points</p>
-            <p className="text-2xl font-bold text-primary">
+            <p className="text-2xl font-bold text-[#ccbda3]">
               {currentPoints.toLocaleString()}
             </p>
           </div>

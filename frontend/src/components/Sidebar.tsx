@@ -1,35 +1,31 @@
 /* eslint-disable*/
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   FaTachometerAlt,
-  FaBed,
   FaCalendarAlt,
   FaUsers,
   FaChartLine,
   FaCog,
-  FaChevronRight,
 } from "react-icons/fa";
-import { MdMeetingRoom, MdOutlineReviews } from "react-icons/md";
+import { MdMeetingRoom } from "react-icons/md";
 import { RiInfoCardFill, RiDiscountPercentFill } from "react-icons/ri";
 import { IoBagCheckOutline } from "react-icons/io5";
 import { LuMapPinCheckInside } from "react-icons/lu";
 import { cn } from "../utils/cn";
 import { MdRoomService, MdDiscount } from "react-icons/md";
 import { BiSolidCategory, BiSolidDiscount } from "react-icons/bi";
-import { motion } from "framer-motion";
-import { icon } from "@fortawesome/fontawesome-svg-core";
+import { motion, AnimatePresence } from "framer-motion";
+import { createPortal } from "react-dom";
 
 interface SidebarProps {
   className?: string;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ className }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
-  const sidebarRef = useRef<HTMLDivElement>(null);
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
   const location = useLocation();
-  const expandTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const collapseTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const menuItems = [
     {
@@ -67,10 +63,8 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
       label: "Reservations",
       path: "/reservations",
     },
-
     { icon: <FaUsers />, label: "Guests", path: "/guests" },
     { icon: <MdRoomService />, label: "Services", path: "/services" },
-    { icon: <MdOutlineReviews />, label: "Reply Review", path: "/reviews" },
     {
       icon: <RiDiscountPercentFill />,
       label: "Promotions",
@@ -86,190 +80,193 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
       label: "Vouchers",
       path: "/admin/voucher-management",
     },
-    { icon: <FaChartLine />, label: "Reports", path: "/reports" },
+    { icon: <FaChartLine />, label: "Reports", path: "/admin/reports" },
     { icon: <FaCog />, label: "Settings", path: "/settings" },
   ];
 
-  const handleMouseEnter = () => {
-    if (collapseTimeout.current) {
-      clearTimeout(collapseTimeout.current);
-      collapseTimeout.current = null;
-    }
+  const getIconScale = (index: number) => {
+    if (hoveredIndex === null) return 1;
 
-    expandTimeout.current = setTimeout(() => {
-      setIsExpanded(true);
-    }, 200);
+    const distance = Math.abs(index - hoveredIndex);
+
+    if (distance === 0) return 1.3;
+    if (distance === 1) return 1.15;
+    if (distance === 2) return 1.05;
+    return 1;
   };
 
-  const handleMouseLeave = () => {
-    if (expandTimeout.current) {
-      clearTimeout(expandTimeout.current);
-      expandTimeout.current = null;
-    }
-
-    collapseTimeout.current = setTimeout(() => {
-      setIsExpanded(false);
-    }, 300);
+  const handleHoverStart = (index: number, event: React.MouseEvent) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    setTooltipPosition({
+      top: rect.top + rect.height / 2,
+      left: rect.right + 12,
+    });
+    setHoveredIndex(index);
   };
-
-  useEffect(() => {
-    return () => {
-      if (expandTimeout.current) clearTimeout(expandTimeout.current);
-      if (collapseTimeout.current) clearTimeout(collapseTimeout.current);
-    };
-  }, []);
 
   return (
-    <motion.aside
-      ref={sidebarRef}
-      animate={{ width: isExpanded ? 230 : 68 }}
-      transition={{
-        type: "spring",
-        stiffness: 400,
-        damping: 30,
-      }}
-      className={cn(
-        "h-screen bg-gradient-to-br from-[#F8EBD6] via-[#F0E0C0] to-white flex flex-col fixed z-30 shadow-lg pt-6",
-        "border-r border-[#D9C9A8]/30",
-        className
-      )}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-    >
-      <div className="px-5 pb-6 flex items-center justify-center relative mb-2">
-        <motion.div
-          className="h-16 flex items-center justify-center"
-          animate={{ opacity: 1 }}
-          initial={{ opacity: 0 }}
-          transition={{ duration: 0.3 }}
-          key={isExpanded ? "expanded" : "collapsed"}
-        >
-          {isExpanded ? (
-            <div className="flex flex-col items-center">
-              <h2 className="text-3xl font-playfair font-bold text-[#6B4B28]">
-                VISTA
-              </h2>
-              <div className="h-0.5 w-16 bg-gradient-to-r from-transparent via-[#6B4B28]/70 to-transparent mt-1"></div>
-            </div>
-          ) : (
-            <div className="w-10 h-10 rounded-full bg-[#6B4B28]/10 flex items-center justify-center">
-              <img
-                className="w-7 h-7"
-                src="../../src/assets/images/logo.png"
-                alt="Logo"
-              />
-            </div>
-          )}
-        </motion.div>
-      </div>
+    <>
+      <motion.aside
+        className={cn(
+          "h-screen w-16 bg-gradient-to-br from-[#F8EBD6] via-[#F0E0C0] to-white flex flex-col fixed z-30 shadow-lg pt-4",
+          "border-r border-[#D9C9A8]/30",
+          className
+        )}
+      >
+        {/* Logo */}
+        <div className="px-3 pb-4 flex items-center justify-center mb-1">
+          <div className="w-8 h-8 rounded-full bg-[#6B4B28]/10 flex items-center justify-center">
+            <img
+              className="w-5 h-5"
+              src="../../src/assets/images/logo.png"
+              alt="Logo"
+            />
+          </div>
+        </div>
 
-      <nav className="flex-grow px-3 py-2 overflow-y-auto no-scrollbar">
-        <motion.ul
-          className="space-y-1.5"
-          initial="closed"
-          animate="open"
-          variants={{
-            open: {
-              transition: {
-                staggerChildren: 0.05,
-                delayChildren: 0.01,
-              },
-            },
-            closed: {},
-          }}
-        >
-          {menuItems.map((item, index) => {
-            const isActive = location.pathname === item.path;
-            return (
-              <motion.li
-                key={index}
-                variants={{
-                  open: { opacity: 1, y: 0 },
-                  closed: { opacity: 0, y: 20 },
-                }}
-              >
-                <Link
-                  to={item.path}
-                  className={cn(
-                    "flex items-center px-4 py-2.5 rounded-xl transition-all duration-200 relative group",
-                    isActive ? "bg-white shadow-md" : "hover:bg-white/60",
-                    !isExpanded && "justify-center"
-                  )}
+        {/* Navigation */}
+        <nav className="flex-grow px-2 py-1 overflow-y-auto no-scrollbar">
+          <ul className="space-y-1.5 flex flex-col items-center">
+            {menuItems.map((item, index) => {
+              const isActive = location.pathname === item.path;
+              const scale = getIconScale(index);
+
+              return (
+                <motion.li
+                  key={index}
+                  animate={{
+                    scale: scale,
+                    y: hoveredIndex === index ? -5 : 0,
+                  }}
+                  transition={{
+                    type: "spring",
+                    stiffness: 450,
+                    damping: 28,
+                  }}
+                  onMouseEnter={(e) => handleHoverStart(index, e)}
+                  onMouseLeave={() => setHoveredIndex(null)}
+                  className="relative"
                 >
-                  <motion.div
-                    whileHover={{ scale: 1.15 }}
+                  <Link
+                    to={item.path}
                     className={cn(
-                      "flex items-center justify-center w-8 h-8 rounded-lg",
+                      "flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-200 relative",
                       isActive
-                        ? "text-[#6B4B28] "
-                        : "text-[#6B4B28]/70 bg-transparent"
+                        ? "bg-white shadow-md"
+                        : "hover:bg-white/60 bg-white/30"
                     )}
                   >
-                    {item.icon}
-                  </motion.div>
+                    {/* Active Indicator */}
+                    {isActive && (
+                      <motion.div
+                        layoutId="activeIndicator"
+                        className="absolute -left-4 w-0.5 h-6 bg-[#6B4B28] rounded-r-full"
+                        transition={{
+                          type: "spring",
+                          stiffness: 400,
+                          damping: 30,
+                        }}
+                      />
+                    )}
 
-                  {isExpanded ? (
-                    <motion.span
-                      initial={{ opacity: 0, x: -5 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{
-                        duration: 0.3,
-                        delay: 0.1,
-                      }}
-                      className="ml-3 font-medium text-sm text-[#6B4B28] whitespace-nowrap"
-                    >
-                      {item.label}
-                    </motion.span>
-                  ) : (
+                    {/* Icon */}
                     <motion.div
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      whileHover={{
-                        opacity: 1,
-                        scale: 1,
-                      }}
-                      className="absolute left-full ml-3 px-3 py-2 bg-white/95 shadow-lg rounded-lg opacity-0 invisible group-hover:visible whitespace-nowrap z-10 text-xs"
+                      className={cn(
+                        "flex items-center justify-center text-base",
+                        isActive ? "text-[#6B4B28]" : "text-[#6B4B28]/70"
+                      )}
                     >
-                      <div className="absolute -left-1.5 top-1/2 transform -translate-y-1/2 w-3 h-3 bg-white/95 rotate-45"></div>
-                      <span className="text-[#6B4B28] font-medium">
-                        {item.label}
-                      </span>
+                      {item.icon}
                     </motion.div>
+                  </Link>
+
+                  {/* Bounce effect on active */}
+                  {isActive && (
+                    <motion.div
+                      className="absolute -bottom-0.5 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-[#6B4B28] rounded-full"
+                      animate={{
+                        scale: [1, 1.3, 1],
+                        opacity: [0.5, 1, 0.5],
+                      }}
+                      transition={{
+                        duration: 2,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                      }}
+                    />
                   )}
-                </Link>
-              </motion.li>
-            );
-          })}
-        </motion.ul>
-      </nav>
+                </motion.li>
+              );
+            })}
+          </ul>
+        </nav>
 
-      <motion.div
-        initial={false}
-        animate={{
-          opacity: isExpanded ? 1 : 0,
-          height: isExpanded ? "auto" : 0,
-        }}
-        transition={{ duration: 0.2 }}
-        className="p-4 mx-3 my-3 bg-[#F8EBD6]/50 rounded-xl mt-auto text-center overflow-hidden"
-      >
-        <p className="text-xs text-[#6B4B28]/70 font-medium">
-          © 2025 Vista Hotel
-        </p>
-      </motion.div>
+        {/* Footer */}
+        <div className="p-2 text-center mb-2">
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            className="w-8 h-8 mx-auto rounded-full bg-[#6B4B28]/10 flex items-center justify-center cursor-pointer"
+          >
+            <span className="text-[10px] text-[#6B4B28]/70 font-bold">©</span>
+          </motion.div>
+        </div>
+      </motion.aside>
 
-      <motion.button
-        animate={{ rotate: isExpanded ? 180 : 0 }}
-        transition={{ duration: 0.3 }}
-        className="absolute -right-3 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-1.5 shadow-md border border-[#D9C9A8]/30 text-[#6B4B28]"
-        onClick={() => setIsExpanded(!isExpanded)}
-        whileHover={{
-          scale: 1.1,
-          boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
-        }}
-        whileTap={{ scale: 0.95 }}
-      >
-        <FaChevronRight size={10} />
-      </motion.button>
-    </motion.aside>
+      {/* Tooltip Portal - Elegant Design */}
+      {createPortal(
+        <AnimatePresence mode="wait">
+          {hoveredIndex !== null && (
+            <motion.div
+              key="tooltip"
+              initial={{ opacity: 0, x: -8, scale: 0.95 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              exit={{ opacity: 0, x: -8, scale: 0.95 }}
+              transition={{
+                type: "spring",
+                stiffness: 500,
+                damping: 30,
+              }}
+              className="fixed pointer-events-none"
+              style={{
+                top: `${tooltipPosition.top}px`,
+                left: `${tooltipPosition.left}px`,
+                transform: "translateY(-50%)",
+                zIndex: 9999,
+              }}
+            >
+              {/* Glass Background */}
+              <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-br from-white/95 to-[#F8EBD6]/95 backdrop-blur-xl rounded-xl shadow-xl border border-[#D9C9A8]/50"></div>
+
+                {/* Content */}
+                <div className="relative px-4 py-2.5 rounded-xl">
+                  <span className="text-sm font-semibold text-[#6B4B28] tracking-wide whitespace-nowrap">
+                    {menuItems[hoveredIndex].label}
+                  </span>
+
+                  {/* Decorative line */}
+                  <motion.div
+                    className="absolute bottom-0 left-4 right-4 h-0.5 bg-gradient-to-r from-transparent via-[#6B4B28]/30 to-transparent rounded-full"
+                    initial={{ scaleX: 0 }}
+                    animate={{ scaleX: 1 }}
+                    transition={{ delay: 0.1, duration: 0.3 }}
+                  />
+                </div>
+
+                {/* Arrow */}
+                <div className="absolute -left-1.5 top-1/2 transform -translate-y-1/2">
+                  <div className="w-3 h-3 bg-gradient-to-br from-white/95 to-[#F8EBD6]/95 border-l border-b border-[#D9C9A8]/50 rotate-45"></div>
+                </div>
+
+                {/* Glow effect */}
+                <div className="absolute inset-0 bg-[#6B4B28]/5 blur-xl rounded-xl -z-10"></div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
+    </>
   );
 };
 

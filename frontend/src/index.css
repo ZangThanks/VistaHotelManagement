@@ -92,7 +92,7 @@
   --color-info: #2196f3;
   --color-primary: #c3923c;
   --color-secondary: #b4893e;
-  --gradient-cream: linear-gradient(90deg, #f8ebd6 45%, #ffffff 80%);
+  --gradient-cream: linear-gradient(180deg, #f8ebd6 45%, #ffffff 80%);
 
   /* Dark mode support */
   --color-bg: #f9f9f9;

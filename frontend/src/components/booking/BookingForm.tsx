@@ -9,11 +9,11 @@ import { MdOutlineRoomService, MdRoomService } from "react-icons/md";
 import { getAll } from "../../services/serviceService";
 import { CiSquareQuestion } from "react-icons/ci";
 import {
-  createBooking,
   generateBookingID,
   saveBookingWithDetails,
   getBookingById,
   overlapBookingExists,
+  checkRoomAvailability,
 } from "../../services/bookingService";
 import { getById } from "../../services/customerService";
 
@@ -35,6 +35,7 @@ import type {
   HourlyRatePolicy,
   BaseRateItem,
 } from "../../types/HourlyRatePolicy";
+import { useToastContext } from "../../hooks/useToastContext";
 
 interface BookingFormProps {
   currentStep: number;
@@ -69,6 +70,7 @@ export default function BookingForm({
 }: BookingFormProps) {
   const navigate = useNavigate();
   const location = useLocation();
+  const { error: showErrorToast } = useToastContext();
 
   // Get booking type from route state
   const bookingType: BookingType =
@@ -108,8 +110,8 @@ export default function BookingForm({
 
   const [selectedPaymentMethod, setSelectedPaymentMethod] =
     useState<PaymentMethod>(PAYMENT_METHODS[0]);
-  const [selectedRoom, setSelectedRoom] = useState<string[]>([]);
   const [rooms, setRooms] = useState<Room[]>([]);
+  const [selectedRoom, setSelectedRoom] = useState<string[]>([]);
   const [bookingID, setBookingID] = useState<string>("");
   const [isVoucherModalOpen, setIsVoucherModalOpen] = useState(false);
   const [selectedVoucher, setSelectedVoucher] = useState<CustomerVoucher[]>([]);
@@ -176,7 +178,7 @@ export default function BookingForm({
       const roomsData = await Promise.all(roomPromises);
       setRooms(roomsData);
 
-      // Fetch booked dates for all selected rooms
+      // Fetch booked dates for all selected rooms (for daily booking calendar)
       if (roomsToUse.length > 0) {
         try {
           const bookedDatesPromises = roomsToUse.map((roomId) =>
@@ -187,7 +189,7 @@ export default function BookingForm({
           // Flatten and convert to Date objects
           const allBookedDates = bookedDatesArrays
             .flat()
-            .map((dateStr) => new Date(dateStr));
+            .map((dateStr: any) => new Date(dateStr));
 
           setBookedDates(allBookedDates);
           console.log("Booked dates:", allBookedDates);
@@ -241,31 +243,49 @@ export default function BookingForm({
   }, []);
 
   const handleNextStep = () => {
-    if (!checkInDate) {
-      setError("Please select a check-in date.");
-      return;
-    }
-    if (!checkOutDate) {
-      setError("Please select a check-out date.");
-      return;
-    }
-
-    const ci = new Date(checkInDate);
-    ci.setHours(0, 0, 0, 0);
-    const co = new Date(checkOutDate);
-    co.setHours(0, 0, 0, 0);
-
-    if (currentStep === 1) {
-      // Kiểm tra chồng lấn với các ngày đã được đặt
-      if (isDateRangeOverlapping(ci, co, bookedDates)) {
-        setError(
-          "The selected date range overlaps with already booked dates. Please choose different dates."
-        );
+    if (bookingType === "HOURLY") {
+      // Validation for hourly booking
+      if (!hourlyCheckInDate) {
+        showErrorToast("Please select a check-in date.");
         return;
-      } else {
-        setError("");
+      }
+      if (!checkInTime) {
+        showErrorToast("Please select a check-in time.");
+        return;
+      }
+      if (duration < 1) {
+        showErrorToast("Minimum duration is 1 hour.");
+        return;
+      }
+    } else {
+      // Validation for daily booking
+      if (!checkInDate) {
+        showErrorToast("Please select a check-in date.");
+        return;
+      }
+      if (!checkOutDate) {
+        showErrorToast("Please select a check-out date.");
+        return;
+      }
+
+      const ci = new Date(checkInDate);
+      ci.setHours(0, 0, 0, 0);
+      const co = new Date(checkOutDate);
+      co.setHours(0, 0, 0, 0);
+
+      if (currentStep === 1) {
+        // Kiểm tra chồng lấn với các ngày đã được đặt
+        if (isDateRangeOverlapping(ci, co, bookedDates)) {
+          showErrorToast(
+            "The selected date range overlaps with already booked dates. Please choose different dates."
+          );
+          return;
+        } else {
+          setError("");
+        }
       }
     }
+
     if (currentStep < 4) {
       setCurrentStep(currentStep + 1);
     }
@@ -367,28 +387,24 @@ export default function BookingForm({
   };
 
   /**
-   *  * Tính giá theo giờ dựa trên HourlyRatePolicy
+   * Tính phần trăm giá theo giờ dựa trên HourlyRatePolicy
    *
    * CÔNG THỨC:
    * 1. Lấy phần trăm cơ bản từ baseRates theo duration
-   * 2. Áp dụng phụ phí giờ cao điểm (18:00-20:00): +20%
-   * 3. Áp dụng phụ phí cuối tuần: +X% (từ weekendSurcharge)
-   * 4. Tính giá cuối: (basePrice × totalPercentage) / duration
+   * 2. Áp dụng phụ phí cuối tuần: +X% (từ weekendSurcharge)
+   * 3. Trả về tổng phần trăm (base % + weekend %)
    *
-   * Tính giá theo giờ dựa trên HourlyRatePolicy
-   * @param basePrice Giá gốc của phòng
    * @param duration Số giờ đặt
-   * @param checkInDate Ngày check-in
-   * @returns Giá mỗi giờ đã tính phụ phí (nếu có)
+   * @param checkInDate Ngày và giờ check-in
+   * @returns Phần trăm giá theo giờ (%) đã tính phụ phí
    */
   const calculateHourlyRate = (
-    basePrice: number,
     duration: number,
     checkInDate: Date | null
   ): number => {
     // Fallback nếu chưa có policy
     if (!checkInDate || hourlyRatePolicies.length === 0) {
-      return basePrice;
+      return 100;
     }
 
     const policy = hourlyRatePolicies[0]; // Lấy policy đầu tiên
@@ -396,40 +412,86 @@ export default function BookingForm({
     // Lấy phần trăm cơ bản từ baseRates
     let ratePercentage = 100; // default 100% nếu không tìm thấy
 
-    if (policy.baseRates && Array.isArray(policy.baseRates)) {
-      const rates = policy.baseRates as BaseRateItem[];
+    if (policy.baseRates) {
+      // Kiểm tra nếu baseRates là object (Map)
+      if (
+        typeof policy.baseRates === "object" &&
+        !Array.isArray(policy.baseRates)
+      ) {
+        const baseRatesMap = policy.baseRates as Record<string, number>;
 
-      // Sort giảm danaf theo baseHours để tìm rate phù hợp
-      // VD: [9h+100%, 8h+85%...]
-      const sortedRates = [...rates].sort((a, b) => b.baseHours - a.baseHours);
+        // Lấy rate trực tiếp từ map theo duration
+        // VD: duration = 2 => baseRatesMap["2"] = 25
+        let rate = baseRatesMap[duration.toString()];
 
-      // Tìm rate có baseHours <= duration
-      // VD: duration = 2 => lấy rate của 2h = 25%
-      const matchedRate = sortedRates.find((r) => duration >= r.baseHours);
+        // Nếu không tìm thấy (VD: 12h không có trong map), lấy rate cao nhất (9h = 100%)
+        if (rate === undefined) {
+          // Tìm duration cao nhất trong map
+          const maxDuration = Math.max(
+            ...Object.keys(baseRatesMap).map((k) => parseInt(k))
+          );
+          rate = baseRatesMap[maxDuration.toString()];
+          console.log(
+            `Duration ${duration}h not found, using max rate (${maxDuration}h): ${rate}%`
+          );
+        }
 
-      if (matchedRate) {
-        ratePercentage = matchedRate.baseRate; // % : ví dụ 25
-        console.log(
-          `Matched base rate for ${duration} hours: ${ratePercentage}%`
+        if (rate !== undefined) {
+          ratePercentage = rate;
+          console.log(`Base rate for ${duration}h: ${ratePercentage}%`);
+        } else {
+          console.warn(
+            `No base rate found for ${duration}h, using default 100%`
+          );
+        }
+      }
+      // Fallback: nếu là array (cho tương thích)
+      else if (Array.isArray(policy.baseRates)) {
+        const rates = policy.baseRates as BaseRateItem[];
+        const sortedRates = [...rates].sort(
+          (a, b) => b.baseHours - a.baseHours
         );
+        const matchedRate = sortedRates.find((r) => duration >= r.baseHours);
+
+        if (matchedRate) {
+          ratePercentage = matchedRate.baseRate;
+          console.log(`Base rate for ${duration}h: ${ratePercentage}%`);
+        }
       }
     }
 
-    // Áp dụng phụ phí giờ cao điểm (VD: 18:00 - 20:00)
+    // Áp dụng phụ cuối tuần
+    const dayOfWeek = checkInDate.getDay(); // 0 = Sunday, 6 = Saturday
+    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+
+    if (isWeekend && policy.weekendSurcharge) {
+      const beforeSurcharge = ratePercentage;
+      ratePercentage += policy.weekendSurcharge; // Cộng thêm weekend surcharge %
+      console.log(
+        `Weekend surcharge: ${beforeSurcharge}% → ${ratePercentage}% (+${policy.weekendSurcharge}%)`
+      );
+    }
+
+    console.log(`Final hourly rate percentage: ${ratePercentage}%`);
+
+    return ratePercentage;
   };
 
   // Tính tổng chi phí phòng
   const calculateRoomCosts = () => {
     if (bookingType === "HOURLY") {
-      // For hourly booking, calculate rate based on policy
+      // For hourly booking, calculate based on percentage
       return rooms.reduce((sum, room) => {
         const basePrice = room.roomType?.basePrice || 0;
-        const hourlyRate = calculateHourlyRate(
-          basePrice,
-          duration,
-          hourlyCheckInDate
+        const ratePercentage = calculateHourlyRate(duration, hourlyCheckInDate);
+        // Công thức: (Giá phòng/đêm × Tổng %) / 100
+        const totalPrice = (basePrice * ratePercentage) / 100;
+        console.log(
+          `Room ${
+            room.roomNumber
+          }: ${basePrice} × ${ratePercentage}% = ${totalPrice.toFixed(0)} VND`
         );
-        return sum + hourlyRate * duration;
+        return sum + totalPrice;
       }, 0);
     } else {
       // For daily booking
@@ -491,8 +553,8 @@ export default function BookingForm({
         setError("Please select a check-in time.");
         return;
       }
-      if (duration < 2) {
-        setError("Minimum duration is 2 hours.");
+      if (duration < 1) {
+        setError("Minimum duration is 1 hour.");
         return;
       }
 
@@ -500,6 +562,56 @@ export default function BookingForm({
       ci = new Date(hourlyCheckInDate);
       ci.setHours(hours, minutes, 0, 0);
       co = new Date(ci.getTime() + duration * 60 * 60 * 1000);
+
+      // Check if booking time is in the past
+      const now = new Date();
+      if (ci <= now) {
+        showErrorToast("Check-in time must be in the future.");
+        return;
+      }
+
+      // Check room availability for hourly bookings
+      try {
+        setLoading(true);
+        for (const room of rooms) {
+          const conflicts = await checkRoomAvailability(
+            room.roomNumber || "",
+            ci.toISOString(),
+            co.toISOString()
+          );
+
+          if (conflicts && conflicts.length > 0) {
+            const conflictDetails = conflicts
+              .map((b) => {
+                const checkIn = new Date(b.checkInDate);
+                const checkOut = new Date(b.checkOutDate);
+                return `${checkIn.toLocaleString("vi-VN", {
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })} - ${checkOut.toLocaleString("vi-VN", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}`;
+              })
+              .join("; ");
+
+            showErrorToast(
+              `Room ${room.roomNumber} is already booked during this time. Conflicting bookings: ${conflictDetails}`
+            );
+            setLoading(false);
+            return;
+          }
+        }
+        setLoading(false);
+      } catch (err) {
+        console.error("Error checking room availability:", err);
+        showErrorToast("Cannot check room availability. Please try again.");
+        setLoading(false);
+        return;
+      }
     }
 
     let checkInWithTime = new Date(checkInDate);
@@ -536,17 +648,12 @@ export default function BookingForm({
       );
     }
 
-    // Tính hourlyRate cho booking
+    // Tính hourlyRate (%) cho booking
     let calculatedHourlyRate = 0;
-    if (bookingType === "HOURLY" && rooms.length > 0) {
-      const basePrice = rooms[0]?.roomType?.basePrice || 0;
-      calculatedHourlyRate = calculateHourlyRate(
-        basePrice,
-        duration,
-        hourlyCheckInDate
-      );
+    if (bookingType === "HOURLY") {
+      calculatedHourlyRate = calculateHourlyRate(duration, hourlyCheckInDate);
       console.log(
-        `Calculated hourly rate: ${calculatedHourlyRate} VND/hour for ${duration} hours`
+        `Calculated hourly rate: ${calculatedHourlyRate}% for ${duration} hours`
       );
     }
 
@@ -568,6 +675,7 @@ export default function BookingForm({
       customer: {
         id: customer?.id || null,
       },
+      totalCost: totalAmount,
     };
 
     const bookingDetails = rooms.map((r: Room) => ({
@@ -1209,7 +1317,8 @@ export default function BookingForm({
                     </span>
                     <span className="text-[#c9b8a8] font-semibold">
                       {room.roomType?.basePrice?.toLocaleString() || "0"} VND
-                      {bookingType === "HOURLY" && " /hour"}
+                      {/* {bookingType === "HOURLY" && " /hour"} */}
+                      /night
                     </span>
                   </div>
                 ))}

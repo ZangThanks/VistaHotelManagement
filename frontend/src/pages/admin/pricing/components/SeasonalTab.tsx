@@ -21,6 +21,8 @@ import {
 import type { JSX } from 'react/jsx-runtime';
 import { CiEdit } from 'react-icons/ci';
 import Dropdown from '../../../../components/Dropdown';
+import ModernCalendar from '../../../../components/common/ModernCalendar';
+import { Calendar } from 'lucide-react';
 
 type Props = {
     seasonLoading: boolean;
@@ -72,6 +74,18 @@ const SeasonalTab: FC<Props> = (props) => {
     // local modal state
     const [modalOpen, setModalOpen] = useState(false);
     const [editingSeasonId, setEditingSeasonId] = useState<number | null>(null);
+    // calendar states
+    const [showStartCalendar, setShowStartCalendar] = useState(false);
+    const [showEndCalendar, setShowEndCalendar] = useState(false);
+    const [showFilterStartCalendar, setShowFilterStartCalendar] =
+        useState(false);
+    const [showFilterEndCalendar, setShowFilterEndCalendar] = useState(false);
+
+    const startCalendarRef = React.useRef<HTMLDivElement>(null);
+    const endCalendarRef = React.useRef<HTMLDivElement>(null);
+    const filterStartCalendarRef = React.useRef<HTMLDivElement>(null);
+    const filterEndCalendarRef = React.useRef<HTMLDivElement>(null);
+
     // filter states
     const [searchName, setSearchName] = useState('');
     const [filterStartDate, setFilterStartDate] = useState('');
@@ -89,13 +103,70 @@ const SeasonalTab: FC<Props> = (props) => {
             ) {
                 setRoomSelectOpen(false);
             }
+            if (
+                startCalendarRef.current &&
+                !startCalendarRef.current.contains(event.target as Node)
+            ) {
+                setShowStartCalendar(false);
+            }
+            if (
+                endCalendarRef.current &&
+                !endCalendarRef.current.contains(event.target as Node)
+            ) {
+                setShowEndCalendar(false);
+            }
+            if (
+                filterStartCalendarRef.current &&
+                !filterStartCalendarRef.current.contains(event.target as Node)
+            ) {
+                setShowFilterStartCalendar(false);
+            }
+            if (
+                filterEndCalendarRef.current &&
+                !filterEndCalendarRef.current.contains(event.target as Node)
+            ) {
+                setShowFilterEndCalendar(false);
+            }
         }
-        if (roomSelectOpen) {
+        if (
+            roomSelectOpen ||
+            showStartCalendar ||
+            showEndCalendar ||
+            showFilterStartCalendar ||
+            showFilterEndCalendar
+        ) {
             document.addEventListener('mousedown', handleClickOutside);
             return () =>
                 document.removeEventListener('mousedown', handleClickOutside);
         }
-    }, [roomSelectOpen, setRoomSelectOpen]);
+    }, [
+        roomSelectOpen,
+        showStartCalendar,
+        showEndCalendar,
+        showFilterStartCalendar,
+        showFilterEndCalendar,
+        setRoomSelectOpen,
+    ]);
+
+    // Helper: format date for display
+    const formatDisplayDate = (dateStr?: string) => {
+        if (!dateStr) return 'Select date';
+        const d = new Date(dateStr);
+        return d.toLocaleDateString('en-US', {
+            weekday: 'short',
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+        });
+    };
+
+    // Helper: format date to YYYY-MM-DD
+    const formatDateToString = (date: Date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
 
     // filtered & sorted seasonal prices
     const filteredSeasonalPrices = useMemo(() => {
@@ -185,6 +256,8 @@ const SeasonalTab: FC<Props> = (props) => {
         setEditingSeasonId(null);
         setNewSeason({ roomTypes: [] });
         setRoomSelectOpen(false);
+        setShowStartCalendar(false);
+        setShowEndCalendar(false);
     }
 
     // helper used inside modal to submit and close on success
@@ -259,31 +332,93 @@ const SeasonalTab: FC<Props> = (props) => {
                                     className="h-10"
                                 />
                             </div>
-                            <div>
+                            <div
+                                className="relative"
+                                ref={filterStartCalendarRef}
+                            >
                                 <label className="block text-xs font-medium text-gray-700 mb-1.5">
                                     Start date from
                                 </label>
-                                <Input
-                                    type="date"
-                                    value={filterStartDate}
-                                    onChange={(e) =>
-                                        setFilterStartDate(e.target.value)
-                                    }
-                                    className="h-10"
-                                />
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setShowFilterStartCalendar(
+                                            !showFilterStartCalendar,
+                                        );
+                                        setShowFilterEndCalendar(false);
+                                    }}
+                                    className="w-full h-10 px-3 border border-gray-300 rounded-lg bg-white hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 flex items-center justify-between transition-all text-sm"
+                                >
+                                    <span className="text-gray-700">
+                                        {filterStartDate
+                                            ? formatDisplayDate(filterStartDate)
+                                            : 'Select date'}
+                                    </span>
+                                    <Calendar className="w-4 h-4 text-gray-500" />
+                                </button>
+                                {showFilterStartCalendar && (
+                                    <div className="absolute z-[100] mt-2 left-0 drop-shadow-2xl">
+                                        <ModernCalendar
+                                            selected={
+                                                filterStartDate
+                                                    ? new Date(filterStartDate)
+                                                    : new Date()
+                                            }
+                                            onSelect={(date) => {
+                                                setFilterStartDate(
+                                                    formatDateToString(date),
+                                                );
+                                                setShowFilterStartCalendar(
+                                                    false,
+                                                );
+                                            }}
+                                        />
+                                    </div>
+                                )}
                             </div>
-                            <div>
+                            <div
+                                className="relative"
+                                ref={filterEndCalendarRef}
+                            >
                                 <label className="block text-xs font-medium text-gray-700 mb-1.5">
                                     End date until
                                 </label>
-                                <Input
-                                    type="date"
-                                    value={filterEndDate}
-                                    onChange={(e) =>
-                                        setFilterEndDate(e.target.value)
-                                    }
-                                    className="h-10"
-                                />
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setShowFilterEndCalendar(
+                                            !showFilterEndCalendar,
+                                        );
+                                        setShowFilterStartCalendar(false);
+                                    }}
+                                    className="w-full h-10 px-3 border border-gray-300 rounded-lg bg-white hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 flex items-center justify-between transition-all text-sm"
+                                >
+                                    <span className="text-gray-700">
+                                        {filterEndDate
+                                            ? formatDisplayDate(filterEndDate)
+                                            : 'Select date'}
+                                    </span>
+                                    <Calendar className="w-4 h-4 text-gray-500" />
+                                </button>
+                                {showFilterEndCalendar && (
+                                    <div className="absolute z-[100] mt-2 left-0 drop-shadow-2xl">
+                                        <ModernCalendar
+                                            selected={
+                                                filterEndDate
+                                                    ? new Date(filterEndDate)
+                                                    : filterStartDate
+                                                    ? new Date(filterStartDate)
+                                                    : new Date()
+                                            }
+                                            onSelect={(date) => {
+                                                setFilterEndDate(
+                                                    formatDateToString(date),
+                                                );
+                                                setShowFilterEndCalendar(false);
+                                            }}
+                                        />
+                                    </div>
+                                )}
                             </div>
                             <div>
                                 <label className="block text-xs font-medium text-gray-700 mb-1.5">
@@ -548,38 +683,110 @@ const SeasonalTab: FC<Props> = (props) => {
                                         />
                                     </div>
 
-                                    <div>
+                                    <div
+                                        className="relative"
+                                        ref={startCalendarRef}
+                                    >
                                         <label className="block text-sm font-semibold text-gray-800 mb-2">
                                             Start Date
                                         </label>
-                                        <Input
-                                            type="date"
-                                            value={newSeason.startDate ?? ''}
-                                            onChange={(e) =>
-                                                setNewSeason({
-                                                    ...newSeason,
-                                                    startDate: e.target.value,
-                                                })
-                                            }
-                                            className="h-12 text-base rounded-lg border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all"
-                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setShowStartCalendar(
+                                                    !showStartCalendar,
+                                                );
+                                                setShowEndCalendar(false);
+                                            }}
+                                            className="w-full h-12 px-4 border-2 border-gray-300 rounded-lg bg-white hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 flex items-center justify-between transition-all shadow-sm"
+                                        >
+                                            <span className="text-base text-gray-800 font-medium">
+                                                {formatDisplayDate(
+                                                    newSeason.startDate,
+                                                )}
+                                            </span>
+                                            <Calendar className="w-5 h-5 text-gray-500" />
+                                        </button>
+                                        {showStartCalendar && (
+                                            <div className="absolute z-50 mt-2 left-0">
+                                                <ModernCalendar
+                                                    selected={
+                                                        newSeason.startDate
+                                                            ? new Date(
+                                                                  newSeason.startDate,
+                                                              )
+                                                            : new Date()
+                                                    }
+                                                    onSelect={(date) => {
+                                                        setNewSeason({
+                                                            ...newSeason,
+                                                            startDate:
+                                                                formatDateToString(
+                                                                    date,
+                                                                ),
+                                                        });
+                                                        setShowStartCalendar(
+                                                            false,
+                                                        );
+                                                    }}
+                                                />
+                                            </div>
+                                        )}
                                     </div>
 
-                                    <div>
+                                    <div
+                                        className="relative"
+                                        ref={endCalendarRef}
+                                    >
                                         <label className="block text-sm font-semibold text-gray-800 mb-2">
                                             End Date
                                         </label>
-                                        <Input
-                                            type="date"
-                                            value={newSeason.endDate ?? ''}
-                                            onChange={(e) =>
-                                                setNewSeason({
-                                                    ...newSeason,
-                                                    endDate: e.target.value,
-                                                })
-                                            }
-                                            className="h-12 text-base rounded-lg border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all"
-                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setShowEndCalendar(
+                                                    !showEndCalendar,
+                                                );
+                                                setShowStartCalendar(false);
+                                            }}
+                                            className="w-full h-12 px-4 border-2 border-gray-300 rounded-lg bg-white hover:border-blue-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 flex items-center justify-between transition-all shadow-sm"
+                                        >
+                                            <span className="text-base text-gray-800 font-medium">
+                                                {formatDisplayDate(
+                                                    newSeason.endDate,
+                                                )}
+                                            </span>
+                                            <Calendar className="w-5 h-5 text-gray-500" />
+                                        </button>
+                                        {showEndCalendar && (
+                                            <div className="absolute z-50 mt-2 left-0">
+                                                <ModernCalendar
+                                                    selected={
+                                                        newSeason.endDate
+                                                            ? new Date(
+                                                                  newSeason.endDate,
+                                                              )
+                                                            : newSeason.startDate
+                                                            ? new Date(
+                                                                  newSeason.startDate,
+                                                              )
+                                                            : new Date()
+                                                    }
+                                                    onSelect={(date) => {
+                                                        setNewSeason({
+                                                            ...newSeason,
+                                                            endDate:
+                                                                formatDateToString(
+                                                                    date,
+                                                                ),
+                                                        });
+                                                        setShowEndCalendar(
+                                                            false,
+                                                        );
+                                                    }}
+                                                />
+                                            </div>
+                                        )}
                                     </div>
 
                                     <div className="md:col-span-2">

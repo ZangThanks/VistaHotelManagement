@@ -150,7 +150,7 @@ export default function RoomCart() {
           <div className="flex gap-4">
             <button
               onClick={() => setBookingType("DAILY")}
-              className={`flex-1 flex items-center justify-center gap-3 px-6 py-4 rounded-lg border-2 transition-all ${
+              className={`cursor-pointer flex-1 flex items-center justify-center gap-3 px-6 py-4 rounded-lg border-2 transition-all ${
                 bookingType === "DAILY"
                   ? "border-[#d4c5b9] bg-[#d4c5b9] text-white"
                   : "border-gray-300 bg-white text-gray-700 hover:border-[#d4c5b9]"
@@ -167,7 +167,7 @@ export default function RoomCart() {
 
             <button
               onClick={() => setBookingType("HOURLY")}
-              className={`flex-1 flex items-center justify-center gap-3 px-6 py-4 rounded-lg border-2 transition-all ${
+              className={`cursor-pointer flex-1 flex items-center justify-center gap-3 px-6 py-4 rounded-lg border-2 transition-all ${
                 bookingType === "HOURLY"
                   ? "border-[#d4c5b9] bg-[#d4c5b9] text-white"
                   : "border-gray-300 bg-white text-gray-700 hover:border-[#d4c5b9]"
@@ -208,6 +208,8 @@ export default function RoomCart() {
                     className={`bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300 ${
                       selectedRooms.includes(room.roomNumber?.toString() || "")
                         ? "ring-2 ring-[#d4c5b9] scale-105"
+                        : room.status === "BOOKED"
+                        ? "opacity-60 cursor-not-allowed"
                         : "hover:shadow-lg cursor-pointer"
                     }`}
                   >
@@ -247,22 +249,26 @@ export default function RoomCart() {
                       </div>
 
                       {/* Checkbox Overlay */}
-                      <button
-                        onClick={() =>
-                          toggleRoomSelection(room.roomNumber?.toString() || "")
-                        }
-                        className={`absolute bottom-3 right-3 w-6 h-6 rounded border-2 transition-all ${
-                          selectedRooms.includes(
+                      {room.status === "AVAILABLE" && (
+                        <button
+                          onClick={() =>
+                            toggleRoomSelection(
+                              room.roomNumber?.toString() || ""
+                            )
+                          }
+                          className={`absolute bottom-3 right-3 w-6 h-6 rounded border-2 transition-all ${
+                            selectedRooms.includes(
+                              room.roomNumber?.toString() || ""
+                            )
+                              ? "bg-[#d4c5b9] border-[#d4c5b9]"
+                              : "bg-white border-gray-300 hover:border-[#d4c5b9]"
+                          }`}
+                        >
+                          {selectedRooms.includes(
                             room.roomNumber?.toString() || ""
-                          )
-                            ? "bg-[#d4c5b9] border-[#d4c5b9]"
-                            : "bg-white border-gray-300 hover:border-[#d4c5b9]"
-                        }`}
-                      >
-                        {selectedRooms.includes(
-                          room.roomNumber?.toString() || ""
-                        ) && <Check className="w-4 h-4 text-white m-auto" />}
-                      </button>
+                          ) && <Check className="w-4 h-4 text-white m-auto" />}
+                        </button>
+                      )}
                     </div>
 
                     {/* Room Details */}
@@ -325,24 +331,36 @@ export default function RoomCart() {
                       </div>
 
                       {/* Selection Button */}
-                      <button
-                        onClick={() =>
-                          toggleRoomSelection(room.roomNumber?.toString() || "")
-                        }
-                        className={`w-full py-2 rounded font-semibold transition-all ${
-                          selectedRooms.includes(
+                      {room.status === "AVAILABLE" && (
+                        <button
+                          onClick={() =>
+                            toggleRoomSelection(
+                              room.roomNumber?.toString() || ""
+                            )
+                          }
+                          className={`cursor-pointer w-full py-2 rounded font-semibold transition-all ${
+                            selectedRooms.includes(
+                              room.roomNumber?.toString() || ""
+                            )
+                              ? "bg-[#d4c5b9] text-white"
+                              : "bg-gray-100 text-[#2a2a2a] hover:bg-[#d4c5b9] hover:text-white"
+                          }`}
+                        >
+                          {selectedRooms.includes(
                             room.roomNumber?.toString() || ""
                           )
-                            ? "bg-[#d4c5b9] text-white"
-                            : "bg-gray-100 text-[#2a2a2a] hover:bg-[#d4c5b9] hover:text-white"
-                        }`}
-                      >
-                        {selectedRooms.includes(
-                          room.roomNumber?.toString() || ""
-                        )
-                          ? "Selected"
-                          : "Select Room"}
-                      </button>
+                            ? "Selected"
+                            : "Select Room"}
+                        </button>
+                      )}
+                      {room.status === "BOOKED" && (
+                        <button
+                          disabled
+                          className="w-full py-2 rounded font-semibold bg-gray-200 text-gray-500 cursor-not-allowed"
+                        >
+                          Booked
+                        </button>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -426,13 +444,13 @@ export default function RoomCart() {
                   <div className="space-y-3">
                     <button
                       onClick={handleContinueBooking}
-                      className="w-full bg-[#d4c5b9] text-white font-bold py-3 rounded-lg hover:bg-opacity-90 transition-all"
+                      className="cursor-pointer w-full bg-[#d4c5b9] text-white font-bold py-3 rounded-lg hover:bg-opacity-90 transition-all"
                     >
                       Continue Booking
                     </button>
                     <button
                       onClick={() => setSelectedRooms([])}
-                      className="w-full bg-gray-100 text-[#2a2a2a] font-bold py-2 rounded-lg hover:bg-gray-200 transition-all"
+                      className="cursor-pointer w-full bg-gray-100 text-[#2a2a2a] font-bold py-2 rounded-lg hover:bg-gray-200 transition-all"
                     >
                       Clear Selection
                     </button>

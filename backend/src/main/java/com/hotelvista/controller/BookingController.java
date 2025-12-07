@@ -3,6 +3,7 @@ package com.hotelvista.controller;
 import com.hotelvista.dto.BookingRequestDTO;
 import com.hotelvista.dto.PaymentWebhookDTO;
 import com.hotelvista.model.Booking;
+import com.hotelvista.model.BookingCancellation;
 import com.hotelvista.model.BookingDetail;
 import com.hotelvista.model.Customer;
 import com.hotelvista.model.enums.BookingStatus;
@@ -70,7 +71,7 @@ public class BookingController {
     public List<Booking> findAllByCustomer_Id(@PathVariable("id") String customerId) {
         return service.findAllByCustomer_Id(customerId);
     }
-    
+
     @GetMapping("/search")
     public List<Booking> searchBookings(@RequestParam(required = false) String keyword) {
         return service.searchBookings(keyword);
@@ -413,5 +414,47 @@ public class BookingController {
     @GetMapping("/overlapping-bookings/{roomNumber}")
     public List<LocalDateTime> findOverlappingBookings(@PathVariable("roomNumber") String roomNumber) {
         return bookingDetailService.findOverlappingBookings(roomNumber);
+    }
+
+    /**
+     * Kiểm tra phòng có available trong khoảng thời gian không
+     * Trả về danh sách các booking bị trùng lịch
+     */
+    @GetMapping("check-availability")
+    public ResponseEntity<?> checkRoomAvailability(
+            @RequestParam String roomNumber,
+            @RequestParam String checkinDate,
+            @RequestParam String checkoutDate
+    ) {
+        try {
+            LocalDateTime checkIn = LocalDateTime.parse(checkinDate);
+            LocalDateTime checkOut = LocalDateTime.parse(checkoutDate);
+
+            // Validate input
+            if (checkOut.isBefore(checkIn) || checkOut.isEqual(checkIn)) {
+                return ResponseEntity.badRequest().body("Check-out must be after check-in");
+            }
+
+            // Tìm các booking bị conflict
+            List<Booking> conflicts = service.findConflictingBookings(roomNumber, checkIn, checkOut);
+
+            return ResponseEntity.ok(conflicts);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError()
+                    .body("Error checking room availability: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Hủy booking
+     */
+    @PostMapping("/{id}/cancel")
+    public ResponseEntity<?> cancelBooking(
+            @PathVariable String id,
+            @RequestBody Map<String, Object> body
+    ) {
+        BookingCancellation cancellation = service.cancelBooking(id, body);
+        return ResponseEntity.ok(cancellation);
     }
 }

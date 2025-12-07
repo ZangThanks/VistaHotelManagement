@@ -1,3 +1,4 @@
+/*eslint-disable*/
 import { api } from './apiClient';
 import axios from 'axios';
 
