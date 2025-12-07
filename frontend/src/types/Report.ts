@@ -53,11 +53,11 @@ export interface DateRange {
 
 // ====================== ReportPeriod (PPH version) ======================
 export type ReportPeriod =
-    | "daily"
-    | "weekly"
-    | "monthly"
-    | "quarterly"
-    | "yearly";
+    | 'daily'
+    | 'weekly'
+    | 'monthly'
+    | 'quarterly'
+    | 'yearly';
 
 // ====================== ServiceData (HEAD version) ======================
 export interface ServiceData {
@@ -74,9 +74,9 @@ export interface ServiceData {
 
 // ====================== ReportTab (HEAD version) ======================
 export type ReportTab =
-    | "revenue"
-    | "occupancy"
-    | "loyalty"
-    | "reviews"
-    | "bookings"
-    | "services";
+    | 'revenue'
+    | 'occupancy'
+    | 'loyalty'
+    | 'reviews'
+    | 'bookings'
+    | 'services';

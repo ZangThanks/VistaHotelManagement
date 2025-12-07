@@ -13,7 +13,7 @@ import {
   Area,
   AreaChart,
 } from "recharts";
-import type { RevenueData } from "../../../types/Report";
+import type { RevenueData } from "../../types/Report";
 
 interface RevenueChartProps {
   data: RevenueData[];
@@ -32,7 +32,7 @@ const RevenueChart: React.FC<RevenueChartProps> = ({
     if (active && payload && payload.length) {
       return (
         <div className="bg-white p-4 border border-[#EBE3D7] rounded-lg shadow-lg">
-          <p className="font-semibold mb-2">{payload[0].payload.date}</p>
+          <p className="font-semibold mb-2">{payload[0].payload.label}</p>
           {payload.map((entry: any, index: number) => (
             <p key={index} style={{ color: entry.color }} className="text-sm">
               {entry.name}: {entry.value.toLocaleString("vi-VN")} VND
@@ -49,7 +49,7 @@ const RevenueChart: React.FC<RevenueChartProps> = ({
       <ResponsiveContainer width="100%" height={400}>
         <LineChart data={data}>
           <CartesianGrid strokeDasharray="3 3" stroke="#EBE3D7" />
-          <XAxis dataKey="date" stroke="#666" />
+          <XAxis dataKey="label" stroke="#666" />
           <YAxis tickFormatter={formatCurrency} stroke="#666" />
           <Tooltip content={<CustomTooltip />} />
           <Legend />
@@ -87,7 +87,7 @@ const RevenueChart: React.FC<RevenueChartProps> = ({
       <ResponsiveContainer width="100%" height={400}>
         <BarChart data={data}>
           <CartesianGrid strokeDasharray="3 3" stroke="#EBE3D7" />
-          <XAxis dataKey="date" stroke="#666" />
+          <XAxis dataKey="label" stroke="#666" />
           <YAxis tickFormatter={formatCurrency} stroke="#666" />
           <Tooltip content={<CustomTooltip />} />
           <Legend />
@@ -112,7 +112,7 @@ const RevenueChart: React.FC<RevenueChartProps> = ({
           </linearGradient>
         </defs>
         <CartesianGrid strokeDasharray="3 3" stroke="#EBE3D7" />
-        <XAxis dataKey="date" stroke="#666" />
+        <XAxis dataKey="label" stroke="#666" />
         <YAxis tickFormatter={formatCurrency} stroke="#666" />
         <Tooltip content={<CustomTooltip />} />
         <Legend />

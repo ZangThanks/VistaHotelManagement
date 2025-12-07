@@ -1,7 +1,8 @@
 package com.hotelvista.service;
 
 import com.hotelvista.dto.RevenueReportDTO;
-import com.hotelvista.repository.ReportRepository;
+import com.hotelvista.dto.RevenueReportProjection;
+import com.hotelvista.repository.RevenueReportRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,25 +16,59 @@ import java.util.Locale;
 public class RevenueReportService {
 
     @Autowired
-    private ReportRepository reportRepository;
+    private RevenueReportRepository reportRepository;
 
-    public List<RevenueReportDTO> getMonthlyRevenue() {
+//    public List<RevenueReportProjection> getRevenueByType(
+//            String type, LocalDate fromDate, LocalDate toDate) {
+//
+//        return switch (type.toUpperCase()) {
+//            case "DAILY" -> reportRepository.getDaily(fromDate, toDate);
+//            case "WEEKLY" -> reportRepository.getWeeklyByDay(fromDate, toDate);
+//            case "MONTHLY" -> reportRepository.getMonthly(fromDate, toDate);
+//            case "QUARTERLY" -> reportRepository.getQuarterly(fromDate, toDate);
+//            case "YEARLY" -> reportRepository.getYearly(fromDate, toDate);
+//            default -> throw new IllegalArgumentException("Invalid report type");
+//        };
+//    }
 
-        return reportRepository.getAll().stream().map(item -> {
+    public List<RevenueReportProjection> getDailyCurrentMonth() {
 
-            String date = Month.of(item.getMonth())
-                    .getDisplayName(TextStyle.SHORT, Locale.ENGLISH)
-                    + " " + item.getYear();
+        LocalDate now = LocalDate.now();
 
-            return new RevenueReportDTO(
-                    date,
-                    item.getRoomRevenue(),
-                    item.getServiceRevenue(),
-                    item.getTotalRevenue(),
-                    item.getBookingCount()
-            );
-        }).toList();
+        LocalDate firstDayOfMonth = now.withDayOfMonth(1);
+        LocalDate lastDayOfMonth = now.withDayOfMonth(now.lengthOfMonth());
+
+        return reportRepository.getDaily(firstDayOfMonth, lastDayOfMonth);
     }
+
+    public List<RevenueReportProjection> getWeeklyCurrentMonth() {
+
+        LocalDate now = LocalDate.now();
+
+        LocalDate firstDayOfMonth = now.withDayOfMonth(1);
+        LocalDate lastDayOfMonth = now.withDayOfMonth(now.lengthOfMonth());
+
+        return reportRepository.getWeeklyOfMonth(firstDayOfMonth, lastDayOfMonth);
+    }
+
+    public List<RevenueReportProjection> getMonthlyInYear(int year) {
+        return reportRepository.getMonthlyByYear(year);
+    }
+
+    public List<RevenueReportProjection> getQuarterlyInYear(int year) {
+        return reportRepository.getQuarterlyByYear(year);
+    }
+
+    public List<RevenueReportProjection> getYearlyRevenue() {
+        return reportRepository.getYearly();
+    }
+    public List<RevenueReportProjection> getRevenueByDateRange(
+            LocalDate fromDate,
+            LocalDate toDate
+    ) {
+        return reportRepository.getRevenueByDateRange(fromDate, toDate);
+    }
+
 
 
 }
