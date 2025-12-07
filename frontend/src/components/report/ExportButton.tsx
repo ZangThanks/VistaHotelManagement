@@ -1,40 +1,136 @@
 import React, { useState } from "react";
 import { FaDownload, FaFilePdf, FaFileExcel } from "react-icons/fa";
 import type { DateRange } from "../../types/Report";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
+import * as XLSX from "xlsx";
 
 interface ExportButtonProps {
   reportType: string;
   dateRange: DateRange;
+  data?: any; // Data từ trang hiện tại
 }
 
 const ExportButton: React.FC<ExportButtonProps> = ({
   reportType,
   dateRange,
+  data,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const exportToPDF = (reportData: any) => {
+    const doc = new jsPDF() as any;
+    
+    // Header
+    doc.setFontSize(18);
+    doc.text(`${reportType.toUpperCase()} REPORT`, 14, 22);
+    doc.setFontSize(11);
+    doc.text(`Period: ${dateRange.startDate} to ${dateRange.endDate}`, 14, 30);
+
+    // Phân nhánh theo loại báo cáo
+    switch (reportType) {
+      case "services":
+        if (data && Array.isArray(data)) {
+          const tableData = data.map((item: any) => [
+            item.date || "",
+            item.foodBeverage?.toLocaleString() || "0",
+            item.laundry?.toLocaleString() || "0",
+            item.spa?.toLocaleString() || "0",
+            item.transport?.toLocaleString() || "0",
+            item.tour?.toLocaleString() || "0",
+            item.others?.toLocaleString() || "0",
+            item.totalOrders || "0",
+          ]);
+
+          doc.autoTable({
+            startY: 35,
+            head: [["Date", "Food & Beverage", "Laundry", "Spa", "Transport", "Tour", "Others", "Total Orders"]],
+            body: tableData,
+          });
+        }
+        break;
+
+      case "revenue":
+      case "occupancy":
+      case "loyalty":
+      case "reviews":
+      case "bookings":
+        // TODO: Implement cho các loại báo cáo khác
+        doc.text("Data not available", 14, 40);
+        break;
+
+      default:
+        doc.text("Unknown report type", 14, 40);
+    }
+
+    doc.save(`${reportType}_report_${dateRange.startDate}_${dateRange.endDate}.pdf`);
+  };
+
+  const exportToExcel = (reportData: any) => {
+    let worksheetData: any[] = [];
+
+    // Phân nhánh theo loại báo cáo
+    switch (reportType) {
+      case "services":
+        if (data && Array.isArray(data)) {
+          worksheetData = data.map((item: any) => ({
+            Date: item.date || "",
+            "Food & Beverage": item.foodBeverage || 0,
+            Laundry: item.laundry || 0,
+            Spa: item.spa || 0,
+            Transport: item.transport || 0,
+            Tour: item.tour || 0,
+            Others: item.others || 0,
+            "Total Orders": item.totalOrders || 0,
+            "Avg Order Value": item.avgOrderValue || 0,
+          }));
+        }
+        break;
+
+      case "revenue":
+      case "occupancy":
+      case "loyalty":
+      case "reviews":
+      case "bookings":
+        // TODO: Implement cho các loại báo cáo khác
+        worksheetData = [{ Message: "Data not available" }];
+        break;
+
+      default:
+        worksheetData = [{ Message: "Unknown report type" }];
+    }
+
+    const worksheet = XLSX.utils.json_to_sheet(worksheetData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, reportType);
+    XLSX.writeFile(
+      workbook,
+      `${reportType}_report_${dateRange.startDate}_${dateRange.endDate}.xlsx`
+    );
+  };
+
   const handleExport = async (format: "pdf" | "excel") => {
-    // setLoading(true);
-    // try {
-    //   //   const blob = await exportReport(reportType, dateRange, format);
-    //   //   const url = window.URL.createObjectURL(blob);
-    //   const link = document.createElement("a");
-    //   link.href = url;
-    //   link.download = `${reportType}_report_${dateRange.startDate}_${
-    //     dateRange.endDate
-    //   }.${format === "pdf" ? "pdf" : "xlsx"}`;
-    //   document.body.appendChild(link);
-    //   link.click();
-    //   document.body.removeChild(link);
-    //   window.URL.revokeObjectURL(url);
-    //   setIsOpen(false);
-    // } catch (error) {
-    //   console.error("Export failed:", error);
-    //   alert("Failed to export report");
-    // } finally {
-    //   setLoading(false);
-    // }
+    setLoading(true);
+    try {
+      if (!data || (Array.isArray(data) && data.length === 0)) {
+        alert("No data available to export");
+        return;
+      }
+
+      if (format === "pdf") {
+        exportToPDF(data);
+      } else {
+        exportToExcel(data);
+      }
+
+      setIsOpen(false);
+    } catch (error) {
+      console.error("Export failed:", error);
+      alert("Failed to export report. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
