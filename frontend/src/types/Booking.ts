@@ -12,10 +12,10 @@ export interface Booking {
     checkOutDate: string;
     numberOfGuests: number;
 
-    // Hợp nhất đầy đủ tình trạng từ 2 bên
+    // Full merged booking status
     status:
         | "PENDING"
-        | "CONFIRMED"       // từ origin/PPH
+        | "CONFIRMED"
         | "CHECKED_IN"
         | "CHECKED_OUT"
         | "CANCELLED";
@@ -30,7 +30,7 @@ export interface Booking {
 
     totalAmount: number;
 
-    // Hợp nhất đủ trạng thái thanh toán (giữ BOTH "FAILED" & "CANCELLED")
+    // Full merged payment status (HEAD + origin/PPH)
     paymentStatus:
         | "PENDING"
         | "COMPLETED"
@@ -38,8 +38,9 @@ export interface Booking {
         | "PERCENTAGE_50"
         | "PAID"
         | "REFUNDED"
-        | "FAILED"         // từ HEAD
-        | "CANCELLED";
+        | "FAILED"       // from HEAD
+        | "CANCELLED"
+        | "PARTIAL";     // from origin/PPH
 
     invoiceType?: string | null;
     totalCost: number;
@@ -51,7 +52,7 @@ export interface Booking {
     bookingDetails: BookingDetail[];
 
     earlyCheckin?: EarlyCheckin | null;
-    lateCheckout?: LateCheckout | null; // giữ từ HEAD
+    lateCheckout?: LateCheckout | null; // final merged
 }
 
 // ====================== ROOM BOOKING ======================
@@ -60,6 +61,7 @@ export interface RoomBooking {
     roomId: string;
     roomNumber: string;
     guestName: string;
+
     checkIn: Date;
     checkOut: Date;
 
@@ -78,5 +80,7 @@ export interface RoomBooking {
 
     customer?: any;
     bookingDetails?: any[];
+
     earlyCheckin?: EarlyCheckin | null;
+    lateCheckout?: LateCheckout | null;
 }

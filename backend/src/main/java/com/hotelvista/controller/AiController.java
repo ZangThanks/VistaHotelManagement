@@ -27,16 +27,10 @@ public class AiController {
     @PostMapping("/chat")
     public ResponseEntity<AiChatResponse> chat(@RequestBody AiChatRequest request) {
         try {
-            log.info("Received chat request from user: {}", request.getUserId());
-            log.info("Message: {}", request.getMessage());
-
             String response = aiConciergeService.getChatResponse(
                     request.getUserId(),
                     request.getMessage()
             );
-
-            log.info("AI Response generated successfully");
-
             boolean showCards = aiConciergeService.shouldShowRoomCards(request.getMessage());
 
             return ResponseEntity.ok(new AiChatResponse(response, showCards));

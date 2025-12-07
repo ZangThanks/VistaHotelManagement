@@ -1,3 +1,5 @@
+// ====================== INTERFACES ======================
+
 export interface RevenueData {
     date: string;
     roomRevenue: number;
@@ -49,12 +51,15 @@ export interface DateRange {
     endDate: string;
 }
 
+// ====================== ReportPeriod (PPH version) ======================
 export type ReportPeriod =
-    | 'daily'
-    | 'weekly'
-    | 'monthly'
-    | 'quarterly'
-    | 'yearly';
+    | "daily"
+    | "weekly"
+    | "monthly"
+    | "quarterly"
+    | "yearly";
+
+// ====================== ServiceData (HEAD version) ======================
 export interface ServiceData {
     date: string;
     foodBeverage: number;
@@ -67,10 +72,11 @@ export interface ServiceData {
     avgOrderValue: number;
 }
 
+// ====================== ReportTab (HEAD version) ======================
 export type ReportTab =
-    | 'revenue'
-    | 'occupancy'
-    | 'loyalty'
-    | 'reviews'
-    | 'bookings'
-    | 'services';
+    | "revenue"
+    | "occupancy"
+    | "loyalty"
+    | "reviews"
+    | "bookings"
+    | "services";
