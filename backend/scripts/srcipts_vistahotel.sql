@@ -328,7 +328,8 @@ INSERT INTO cart_items (room_number, cart_bean_id)
 VALUES ('STD101', 'CA5073'),
        ('DLX201', 'CA5073');
 
-select * from booking_services
-select * from bookings
+SELECT * FROM bookings b
+JOIN booking_services bs on bs.booking_id = b.booking_id
+join bo
 
 

@@ -658,24 +658,24 @@ export default function BookingForm({
     }
 
     const payload: any = {
-      bookingID: bookingID,
-      checkInDate: formatLocalDateTime(checkInWithTime),
-      checkOutDate: formatLocalDateTime(checkOutWithTime),
-      numberOfGuests: booking.numberOfGuests || 1,
-      status: booking.status || "PENDING",
-      specialRequests: specialRequests,
-      bookingDate: new Date().toISOString(),
-      packageType: booking.packageType || "Standard",
-      totalAmount,
-      invoiceType: "ROOM_BOOKING",
-      paymentStatus: "PENDING",
-      type: bookingType,
-      duration: bookingType === "HOURLY" ? duration : 0,
-      hourlyRate: bookingType === "HOURLY" ? calculatedHourlyRate : null,
-      customer: {
-        id: customer?.id || null,
-      },
-      totalCost: totalAmount,
+        bookingID: bookingID,
+        checkInDate: formatLocalDateTime(checkInWithTime),
+        checkOutDate: formatLocalDateTime(checkOutWithTime),
+        numberOfGuests: booking.numberOfGuests || 1,
+        status: 'PENDING', // Mặc định PENDING, sẽ chuyển PLACE sau khi thanh toán
+        specialRequests: specialRequests,
+        bookingDate: new Date().toISOString(),
+        packageType: booking.packageType || 'Standard',
+        totalAmount: totalAmount,
+        invoiceType: 'ROOM_BOOKING',
+        paymentStatus: 'PENDING',
+        type: bookingType,
+        duration: bookingType === 'HOURLY' ? duration : 0,
+        hourlyRate: bookingType === 'HOURLY' ? calculatedHourlyRate : null,
+        customer: {
+            id: customer?.id || null,
+        },
+        totalCost: totalServiceCosts,
     };
 
     const bookingDetails = rooms.map((r: Room) => ({
