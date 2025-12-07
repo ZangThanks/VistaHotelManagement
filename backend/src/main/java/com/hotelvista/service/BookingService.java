@@ -2,15 +2,11 @@ package com.hotelvista.service;
 
 import com.hotelvista.exception.BadRequestException;
 import com.hotelvista.model.Booking;
+import com.hotelvista.model.BookingCancellation;
 import com.hotelvista.model.BookingDetail;
 import com.hotelvista.model.Room;
-import com.hotelvista.model.enums.ApprovalStatus;
-import com.hotelvista.model.enums.BookingStatus;
-import com.hotelvista.repository.BookingDetailRepository;
-import com.hotelvista.repository.BookingRepository;
-import com.hotelvista.repository.BookingServiceRepository;
-import com.hotelvista.repository.RoomRepository;
-import com.hotelvista.repository.ServiceRepository;
+import com.hotelvista.model.enums.*;
+import com.hotelvista.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;

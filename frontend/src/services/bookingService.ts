@@ -27,7 +27,7 @@ export const getBookingById = async (id: string): Promise<Booking> => {
 };
 
 export const getBookingDetailsById = async (
-    id: string
+    id: string,
 ): Promise<BookingDetail[]> => {
     try {
         const response = await api.get(`${ENDPOINT}/details/${id}`);
@@ -68,7 +68,7 @@ export const saveBookingWithDetails = async (
 
 export const updateBooking = async (
     id: string,
-    booking: object
+    booking: object,
 ): Promise<Booking> => {
     try {
         const response = await api.put(`${ENDPOINT}/edit/${id}`, booking);
@@ -80,7 +80,7 @@ export const updateBooking = async (
 };
 
 export const getBookingsByCustomerId = async (
-    customerId: string
+    customerId: string,
 ): Promise<Booking[]> => {
     try {
         const response = await api.get(`${ENDPOINT}/customer/${customerId}`);
@@ -96,7 +96,7 @@ export const getBookingsByCustomerId = async (
 };
 
 export const cancelBookingPayment = async (
-    bookingId: string
+    bookingId: string,
 ): Promise<Booking> => {
     try {
         const response = await api.put(
@@ -180,7 +180,7 @@ export const generateBookingID = async () => {
 };
 
 export const simulatePaymentCallback = async (
-  body: unknown
+    body: unknown,
 ): Promise<unknown> => {
     try {
         const res = await axiosInstance.post(`${ENDPOINT}/pay-callback`, body);
@@ -262,27 +262,27 @@ export const getBookingsByCheckInDateRange = async (
 };
 
 export const getBookingsByCheckOutDate = async (
-  date: string
+    date: string,
 ): Promise<Booking[]> => {
-  const response = await axiosInstance.get(
-    `/bookings/check-out-date?date=${date}`
-  );
-  return response.data;
+    const response = await axiosInstance.get(
+        `/bookings/check-out-date?date=${date}`,
+    );
+    return response.data;
 };
 
 export const getBookingsByCheckOutDateRange = async (
-  startDate: string,
-  endDate: string
+    startDate: string,
+    endDate: string,
 ): Promise<Booking[]> => {
-  const response = await axiosInstance.get(
-    `/bookings/check-out-range?startDate=${startDate}&endDate=${endDate}`
-  );
-  return response.data;
+    const response = await axiosInstance.get(
+        `/bookings/check-out-range?startDate=${startDate}&endDate=${endDate}`,
+    );
+    return response.data;
 };
 
 export const processCheckout = async (
-  bookingId: string,
-  paymentMethod: string
+    bookingId: string,
+    paymentMethod: string,
 ): Promise<any> => {
     const response = await axiosInstance.post(
         `/bookings/${bookingId}/checkout`,
@@ -432,6 +432,39 @@ export const checkRoomAvailability = async (
         throw error;
     }
 };
+export const cancelBooking = async (
+    bookingId: string,
+    cancelReason: string,
+    cancelledBy: string,
+    refundMethod: any | null,
+) => {
+    try {
+        const payload: any = {
+            cancelReason,
+            cancelledBy,
+        };
+
+        if (refundMethod) {
+            payload.refundMethod = refundMethod;
+        }
+
+        console.log('=== BOOKING SERVICE DEBUG ===');
+        console.log(
+            'Cancel booking payload:',
+            JSON.stringify(payload, null, 2),
+        );
+        console.log('API endpoint:', `${ENDPOINT}/${bookingId}/cancel`);
+
+        const response = await api.post(
+            `${ENDPOINT}/${bookingId}/cancel`,
+            payload,
+        );
+        return response.data;
+    } catch (error) {
+        console.error(`Error cancelling booking ${bookingId}:`, error);
+        throw error;
+    }
+};
 
 // ================= FINAL EXPORT DEFAULT =================
 
@@ -443,6 +476,7 @@ export default {
     getAllRoomBookings,
     convertToRoomBooking,
     getByRoom,
+    cancelBooking,
     checkRoomAvailability,
     addServicesToBooking, // giữ từ PPH
     addServiceToBooking, // giữ từ PPH
