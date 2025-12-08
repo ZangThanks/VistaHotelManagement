@@ -9,10 +9,10 @@ const ENDPOINT = "/bookings";
 export const getAll = async (): Promise<Booking[]> => {
   try {
     const response = await axiosInstance.get(ENDPOINT);
-    return response.data;
+    return Array.isArray(response.data) ? response.data : [];
   } catch (error) {
     console.error("Error fetching booking:", error);
-    throw error;
+    return []; // Return empty array instead of throwing
   }
 };
 
@@ -109,10 +109,12 @@ export const cancelBookingPayment = async (
  */
 export const convertToRoomBooking = (booking: Booking): RoomBooking[] => {
   console.log("Converting booking:", booking);
+  console.log("Booking details:", booking.bookingDetails);
+  
   // Mỗi booking có thể có nhiều phòng trong bookingDetails
-  return booking.bookingDetails.map((detail) => ({
+  const roomBookings = booking.bookingDetails.map((detail) => ({
     id: booking.bookingID,
-    roomId: String(detail.room.roomNumber ?? ""),
+    roomId: String(detail.room.roomNumber ?? ""), // Use roomNumber as roomId for matching
     roomNumber: String(detail.room.roomNumber ?? ""),
     guestName: booking.customer?.fullName ?? "",
     checkIn: new Date(booking.checkInDate),
@@ -124,12 +126,17 @@ export const convertToRoomBooking = (booking: Booking): RoomBooking[] => {
         ? "checked-out"
         : booking.status === "PENDING"
         ? "pending"
+        : booking.status === "WAITING"
+        ? "waiting"
         : booking.status === "CANCELLED"
         ? "cancelled"
         : ("pending" as const),
     numberOfGuests: booking.numberOfGuests,
     totalAmount: booking.totalAmount,
   }));
+  
+  console.log("Converted room bookings:", roomBookings);
+  return roomBookings;
 };
 
 /**
@@ -140,9 +147,12 @@ export const getAllRoomBookings = async (): Promise<RoomBooking[]> => {
     const bookings = await getAll();
     const roomBookings: RoomBooking[] = [];
 
-    bookings.forEach((booking) => {
-      roomBookings.push(...convertToRoomBooking(booking));
-    });
+    // Check if bookings is an array before iterating
+    if (Array.isArray(bookings)) {
+      bookings.forEach((booking) => {
+        roomBookings.push(...convertToRoomBooking(booking));
+      });
+    }
 
     return roomBookings;
   } catch (error) {
