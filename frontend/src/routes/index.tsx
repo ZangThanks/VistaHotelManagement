@@ -163,17 +163,17 @@ export const router = createBrowserRouter([
       { path: "reviews/:id", element: <ReviewsPage /> },
     ],
   },
-    // ERROR PAGES
-    {
-      path: '/403',
-      element: <AccessDenied403 />,
-    },
-    {
-      path: '/500',
-      element: <ServerError500 />,
-    },
-    {
-      path: '*',
-      element: <NotFound404 />,
-    },
+  // ERROR PAGES
+  {
+    path: "/403",
+    element: <AccessDenied403 />,
+  },
+  {
+    path: "/500",
+    element: <ServerError500 />,
+  },
+  {
+    path: "*",
+    element: <NotFound404 />,
+  },
 ]);
