@@ -111,7 +111,29 @@ public interface BookingRepository extends JpaRepository<Booking, String> {
      * @param bookingDate
      * @return
      */
-    @Query("SELECT b FROM Booking b " +
-            "WHERE b.status = :status AND b.bookingDate = :bookingDate")
+    @Query("SELECT b " +
+            "FROM Booking b " +
+            "WHERE b.status = :status " +
+            "   AND b.bookingDate = :bookingDate")
     List<Booking> findAllByStatusAndBookingDate(@Param("status") BookingStatus status, @Param("bookingDate") LocalDateTime bookingDate);
+
+    @Query(value = """
+        SELECT
+            CASE
+                WHEN rp BETWEEN 0 AND 40 THEN
+                    SEC_TO_TIME(GREATEST(0, 6*3600 - TIMESTAMPDIFF(SECOND, created_at, NOW())))
+                WHEN rp BETWEEN 41 AND 80 THEN
+                    SEC_TO_TIME(GREATEST(0, 8*3600 - TIMESTAMPDIFF(SECOND, created_at, NOW())))
+                ELSE
+                    'UNLIMITED'
+            END AS remaining_time
+        FROM (
+            SELECT b.created_at, c.reputation_point AS rp
+            FROM bookings b
+            JOIN customers c ON c.customer_id = b.customer_id
+            WHERE b.booking_id = :bookingId
+        ) AS t
+        """, nativeQuery = true)
+    String getRemainingPaymentTime(@Param("bookingId") String bookingId);
+
 }

@@ -89,8 +89,6 @@ export default function BookingForm({
   // Special requests text (was missing — required by booking payload)
   const [specialRequests, setSpecialRequests] = useState<string>("");
 
-  const [promotionCode, setPromotionCode] = useState("");
-
   // Services and vouchers state
   const [services, setServices] = useState<Service[]>([]);
   const [customerVouchers, setCustomerVouchers] = useState<CustomerVoucher[]>(
@@ -1010,7 +1008,7 @@ export default function BookingForm({
                     />
                   </div>
 
-                  <div className="bg-[#c9b8a8] text-white px-4 py-3 rounded-lg mt-6 flex items-center gap-2">
+                  {/* <div className="bg-[#c9b8a8] text-white px-4 py-3 rounded-lg mt-6 flex items-center gap-2">
                     <span className="text-lg">
                       <TfiMore className="text-white" />
                     </span>
@@ -1028,7 +1026,7 @@ export default function BookingForm({
                       onChange={(e) => setPromotionCode(e.target.value)}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#c9b8a8]"
                     />
-                  </div>
+                  </div> */}
                 </div>
               </div>
             </div>

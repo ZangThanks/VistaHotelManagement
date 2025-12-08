@@ -82,6 +82,7 @@ const PaymentPage: React.FC = () => {
           () => navigate(`/customer/mybooking/${booking.bookingID}`),
           3000
         );
+        handleSendEmailReceipt();
       } catch (error) {
         console.error("Error confirming booking:", error);
         setLoading(false);
@@ -98,7 +99,7 @@ const PaymentPage: React.FC = () => {
       setImageUrl(url);
 
       // Bắt đầu đếm ngược thời gian thanh toán
-      setShowTimer(true);
+      //setShowTimer(true);
 
       //Bắt đầu polling kiểm tra trạng thái thanh toán
       startPaymentPolling();
@@ -128,7 +129,7 @@ const PaymentPage: React.FC = () => {
           refreshed?.paymentStatus === "COMPLETED"
         ) {
           setPaymentCompleted(true);
-          hadnleSendEmailReceipt();
+          handleSendEmailReceipt();
           setTimeout(
             () => navigate(`/customer/mybooking/${booking.bookingID}`),
             5000
@@ -141,7 +142,7 @@ const PaymentPage: React.FC = () => {
     }
   };
 
-  const hadnleSendEmailReceipt = async () => {
+  const handleSendEmailReceipt = async () => {
     const userDataStr = localStorage.getItem("user");
     const userData = userDataStr ? JSON.parse(userDataStr) : null;
     const user = userData?.data || userData;
@@ -304,10 +305,10 @@ const PaymentPage: React.FC = () => {
         {/* Countdown Timer */}
         {showTimer && !paymentCompleted && !paymentExpired && (
           <div className="mb-6">
-            <CountdownTimer
+            {/* <CountdownTimer
               durationInMinutes={15}
               onExpire={handlePaymentExpiry}
-            />
+            /> */}
           </div>
         )}
 

@@ -335,4 +335,18 @@ FROM reviews r
          LEFT JOIN customers c ON c.customer_id = b.customer_id
          LEFT JOIN rooms ro ON ro.room_number = bd.room_number;
 
+SELECT
+    CASE
+        WHEN rp BETWEEN 0 AND 40 THEN
+            SEC_TO_TIME(GREATEST(0, 6*3600 - TIMESTAMPDIFF(SECOND, booking_date, NOW())))
+        WHEN rp BETWEEN 41 AND 80 THEN
+            SEC_TO_TIME(GREATEST(0, 8*3600 - TIMESTAMPDIFF(SECOND, booking_date, NOW())))
+        ELSE
+            'UNLIMITED'
+        END AS remaining_time
+FROM (SELECT b.booking_date, c.reputation_point AS rp
+      FROM bookings b
+          JOIN customers c ON c.customer_id = b.customer_id
+      WHERE b.booking_id = 'B0812250005' AND b.status = 'WAITING' ) AS t
+
 

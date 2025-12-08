@@ -108,7 +108,7 @@ public class BookingController {
             } else if (choice == 2) {
                 amount = booking.getTotalAmount() * 50 / 100; // 50%
             } else {
-                amount = 0; // 0% - pay at checkout
+                amount = 0; // 0% - pay at checkout,
             }
         }
 
@@ -200,7 +200,8 @@ public class BookingController {
             }
 
             // Check nếu đã paid
-            if (booking.getPaymentStatus() == PaymentStatus.PAID) {
+            if (booking.getPaymentStatus() == PaymentStatus.PAID && booking.getStatus() != BookingStatus.CHECKED_OUT
+            ) {
                 System.out.println("Warning: Booking " + bookingId + " is already paid");
                 return ResponseEntity.ok("Booking already marked as paid");
             }

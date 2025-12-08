@@ -8,7 +8,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Component
@@ -21,14 +20,32 @@ public class BookingAutoCancelTask {
     public void autoCancelExpiredBookings() {
         LocalDateTime now = LocalDateTime.now();
 
-        // lấy booking WAITING quá 8 giờ
-        List<Booking> expiredBookings = bookingRepository.findAllByStatusAndBookingDate(BookingStatus.WAITING, now.minusHours(8));;
+        // Hủy booking WAITING quá 8 giờ
+        List<Booking> expiredBookings_8Hours = bookingRepository.findAllByStatusAndBookingDate(BookingStatus.WAITING,
+                //now.minusHours(8)
+                now.minusMinutes(8)
+        );
+        expiredBookings_8Hours.forEach(b -> {
+            if (b.getCustomer().getReputationPoint() > 40 && b.getCustomer().getReputationPoint() <= 70) {
+                b.setStatus(BookingStatus.CANCELLED);
+            }
+        });
 
+        // Hủy booking WAITING quá 6 giờ
+        List<Booking> expiredBookings_6Hours = bookingRepository.findAllByStatusAndBookingDate(BookingStatus.WAITING,
+                //now.minusHours(6)
+                now.minusMinutes(1)
+        );
+        expiredBookings_6Hours.forEach(b -> {
+            if (b.getCustomer().getReputationPoint() >= 0 && b.getCustomer().getReputationPoint() <= 40) {
+                b.setStatus(BookingStatus.CANCELLED);
+            }
+        });
 
-        expiredBookings.forEach(b -> b.setStatus(BookingStatus.CANCELLED));
+        bookingRepository.saveAll(expiredBookings_8Hours);
+        bookingRepository.saveAll(expiredBookings_6Hours);
 
-        bookingRepository.saveAll(expiredBookings);
-
-        System.out.println("Auto canceled bookings: " + expiredBookings.size());
+        System.out.println("Auto canceled bookings: " + expiredBookings_6Hours.size());
+        System.out.println("Auto canceled bookings: " + expiredBookings_8Hours.size());
     }
 }
