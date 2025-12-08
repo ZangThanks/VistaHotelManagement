@@ -77,28 +77,23 @@ const ReportPage: React.FC = () => {
 
             switch (period) {
                 case 'daily':
-                    // Today only
                     start = today;
                     end = today;
                     break;
                 case 'weekly':
-                    // Last 7 days
                     start.setDate(today.getDate() - 6);
                     end = today;
                     break;
                 case 'monthly':
-                    // Current month
                     start = new Date(today.getFullYear(), today.getMonth(), 1);
                     end = today;
                     break;
                 case 'quarterly':
-                    // Current quarter
                     const quarter = Math.floor(today.getMonth() / 3);
                     start = new Date(today.getFullYear(), quarter * 3, 1);
                     end = today;
                     break;
                 case 'yearly':
-                    // Current year
                     start = new Date(today.getFullYear(), 0, 1);
                     end = today;
                     break;
@@ -126,17 +121,11 @@ const ReportPage: React.FC = () => {
     const fetchServiceReport = async () => {
         try {
             setIsLoadingServiceData(true);
-            console.log('Fetching service report with params:', {
-                startDate,
-                endDate,
-                period,
-            });
             const data = await reportService.getServiceReport(
                 startDate,
                 endDate,
                 period,
             );
-            console.log('Service report data received:', data);
             setServiceData(data);
         } catch (error) {
             console.error('Error fetching service report:', error);
@@ -144,8 +133,6 @@ const ReportPage: React.FC = () => {
             setIsLoadingServiceData(false);
         }
     };
-
-    //TODO: DATA MẪU!!
 
     useEffect(() => {
         const fetchRevenue = async () => {
@@ -516,8 +503,7 @@ const ReportPage: React.FC = () => {
     const renderTabContent = () => {
         switch (activeTab) {
             case 'revenue':
-            return (
-
+                return (
                     <RevenueTab
                         startDate={startDate}
                         endDate={endDate}
@@ -526,9 +512,6 @@ const ReportPage: React.FC = () => {
                         onEndDateChange={setEndDate}
                         onPeriodChange={setPeriod}
                         activeTab={activeTab}
-                        revenueData={revenueData}
-                        revenueLoading={revenueLoading}
-                        revenueError={revenueError}
                     />
                 );
 
@@ -591,111 +574,104 @@ const ReportPage: React.FC = () => {
                         <ChannelAnalysis />
                     </div>
                 );
+
             case 'services':
                 return (
-                    <div className="space-y-6">
-                        {isLoadingServiceData ? (
-                            <div className="flex justify-center items-center py-12">
-                                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#CCBDA3]"></div>
-                            </div>
-                        ) : serviceData.length > 0 ? (
-                            <>
-                                <ServiceSummary data={serviceData} />
-                                <div className="bg-white p-6 rounded-lg shadow-sm border border-[#EBE3D7]">
-                                    <h3 className="text-lg font-semibold mb-4">
-                                        Service Revenue Trends
-                                    </h3>
-                                    <ServiceChart data={serviceData} />
-                                </div>
-                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                    <ServiceDistribution data={serviceData} />
-                                    <PopularServices data={serviceData} />
-                                </div>
-                            </>
-                        ) : (
-                            <div className="bg-white p-12 rounded-lg shadow-sm border border-[#EBE3D7] text-center">
-                                <p className="text-gray-500">
-                                    No service data available for the selected
-                                    period
-                                </p>
-                            </div>
-                        )}
-                    </div>
-                );
-
-            default:
-                return null;
-        }
-    };
-
-    return (
-        <div className="min-h-screen bg-[#F5F0EB] p-6">
-            <div className="max-w-7xl mx-auto">
-                {/* Header */}
-                <div className="mb-6">
-                    <h1 className="text-3xl font-playfair font-bold mb-2">
-                        Reports & Analytics
-                    </h1>
-                    <p className="text-gray-600">
-                        Comprehensive insights into hotel performance
-                    </p>
-                </div>
-
-                {/* Filters */}
-                <div className="bg-white p-4 rounded-lg shadow-sm border border-[#EBE3D7] mb-6">
-                    <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
-                        <div className="flex items-center gap-2 flex-wrap">
-                            <FilterBar
-                                period={period}
-                                onPeriodChange={setPeriod}
-                                showDateFilter={false}
-                                onToggleDateFilter={undefined}
-                            />
-                            <button
-                                onClick={() =>
-                                    setShowDateFilter(!showDateFilter)
-                                }
-                                className={`px-4 py-2 rounded-md font-medium transition flex items-center gap-2 ${
-                                    showDateFilter
-                                        ? 'bg-[#B8935F] text-white hover:bg-[#9A7A4D]'
-                                        : 'bg-white text-gray-700 border border-[#EBE3D7] hover:bg-[#F5F0EB]'
-                                }`}
-                            >
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    className="h-4 w-4"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                    <>
+                        {/* Filters */}
+                        <div className="bg-white p-4 rounded-lg shadow-sm border border-[#EBE3D7] mb-6">
+                            <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                    <FilterBar
+                                        period={period}
+                                        onPeriodChange={setPeriod}
+                                        showDateFilter={false}
+                                        onToggleDateFilter={undefined}
                                     />
-                                </svg>
-                                Date Filter
-                            </button>
-                            {showDateFilter && (
-                                <DateRangePicker
-                                    startDate={startDate}
-                                    endDate={endDate}
-                                    onStartDateChange={setStartDate}
-                                    onEndDateChange={setEndDate}
+
+                                    <button
+                                        onClick={() =>
+                                            setShowDateFilter(!showDateFilter)
+                                        }
+                                        className={`px-4 py-2 rounded-md font-medium transition flex items-center gap-2 ${
+                                            showDateFilter
+                                                ? 'bg-[#B8935F] text-white hover:bg-[#9A7A4D]'
+                                                : 'bg-white text-gray-700 border border-[#EBE3D7] hover:bg-[#F5F0EB]'
+                                        }`}
+                                    >
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            className="h-4 w-4"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                            />
+                                        </svg>
+                                        Date Filter
+                                    </button>
+
+                                    {showDateFilter && (
+                                        <DateRangePicker
+                                            startDate={startDate}
+                                            endDate={endDate}
+                                            onStartDateChange={setStartDate}
+                                            onEndDateChange={setEndDate}
+                                        />
+                                    )}
+                                </div>
+
+                                <ExportButton
+                                    reportType={activeTab}
+                                    dateRange={{ startDate, endDate }}
+                                    data={
+                                        activeTab === 'services'
+                                            ? serviceData
+                                            : undefined
+                                    }
                                 />
+                            </div>
+                        </div>
+
+                        {/* Service Content */}
+                        <div className="space-y-6">
+                            {isLoadingServiceData ? (
+                                <div className="flex justify-center items-center py-12">
+                                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#CCBDA3]"></div>
+                                </div>
+                            ) : serviceData.length > 0 ? (
+                                <>
+                                    <ServiceSummary data={serviceData} />
+
+                                    <div className="bg-white p-6 rounded-lg shadow-sm border border-[#EBE3D7]">
+                                        <h3 className="text-lg font-semibold mb-4">
+                                            Service Revenue Trends
+                                        </h3>
+                                        <ServiceChart data={serviceData} />
+                                    </div>
+
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                        <ServiceDistribution
+                                            data={serviceData}
+                                        />
+                                        <PopularServices data={serviceData} />
+                                    </div>
+                                </>
+                            ) : (
+                                <div className="bg-white p-12 rounded-lg shadow-sm border border-[#EBE3D7] text-center">
+                                    <p className="text-gray-500">
+                                        No service data available for the
+                                        selected period
+                                    </p>
+                                </div>
                             )}
                         </div>
-                        <ExportButton
-                            reportType={activeTab}
-                            dateRange={{ startDate, endDate }}
-                            data={
-                                activeTab === 'services'
-                                    ? serviceData
-                                    : undefined
-                            }
-                        />
-                    </div>
+                    </>
                 );
 
             default:
