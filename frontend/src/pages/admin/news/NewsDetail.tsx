@@ -6,7 +6,7 @@ import type { NewsItem } from '../../../types/News';
 import Header from '../../../components/Header';
 
 export default function NewsDetail() {
-    const { id } = useParams<{ id: string }>(); // Lấy newsId từ URL
+    const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const location = useLocation();
 

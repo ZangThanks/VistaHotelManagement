@@ -14,10 +14,10 @@ public class RegisterRequest {
     /** Họ và tên đầy đủ (bắt buộc) */
     private String fullName;
     
-    /** Địa chỉ email (tùy chọn, duy nhất nếu có) */
+    /** Địa chỉ email */
     private String email;
     
-    /** Số điện thoại (tùy chọn, duy nhất nếu có) */
+    /** Số điện thoại */
     private String phone;
     
     /** Mật khẩu (bắt buộc) */

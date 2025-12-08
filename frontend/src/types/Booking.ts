@@ -39,6 +39,7 @@ export interface EarlyCheckin {
   notes?: string;
 }
 
+// ====================== ROOM BOOKING ======================
 export interface RoomBooking {
   id: string;
   roomId: string;
@@ -55,13 +56,12 @@ export interface RoomBooking {
   bookingDetails?: unknown[];
   earlyCheckin?: EarlyCheckin | null;
 }
-
 export type RefundMethod =
-  | "BANK_TRANSFER"
-  | "MOMO"
-  | "ZALOPAL"
-  | "VNPAY"
-  | string;
+    | "BANK_TRANSFER"
+    | "MOMO"
+    | "ZALOPAL"
+    | "VNPAY"
+    | string;
 
 export interface BookingCancellation {
   id: string;

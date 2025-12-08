@@ -49,6 +49,9 @@ export const getAllVouchers = async (): Promise<Voucher[]> => {
     }
 };
 
+// Alias for consistency
+export const getVouchers = getAllVouchers;
+
 /**
  * Lấy voucher theo ID
  */

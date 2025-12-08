@@ -13,7 +13,7 @@ import {
   Area,
   AreaChart,
 } from "recharts";
-import type { RevenueData } from "../../../types/Report";
+import type { RevenueData } from "../../types/Report";
 
 interface RevenueChartProps {
   data: RevenueData[];

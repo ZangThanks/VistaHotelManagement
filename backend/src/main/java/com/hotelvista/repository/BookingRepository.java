@@ -36,11 +36,12 @@ public interface BookingRepository extends JpaRepository<Booking, String> {
      * @return
      */
     @Query("""
-        SELECT b FROM Booking b 
-            WHERE b.bookingID = :keyword OR b.customer.phone LIKE %:keyword% OR
-            LOWER(b.customer.fullName) LIKE LOWER(CONCAT('%', :keyword, '%')) 
-        """)
+            SELECT b FROM Booking b 
+                WHERE b.bookingID = :keyword OR b.customer.phone LIKE %:keyword% OR
+                LOWER(b.customer.fullName) LIKE LOWER(CONCAT('%', :keyword, '%')) 
+            """)
     List<Booking> searchBookings(@Param("keyword") String keyword);
+
 
     //B1109250001
     /**
