@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.hotelvista.dto.report.BookingReportDTO;
 import com.hotelvista.dto.report.LoyaltyReportDTO;
 import com.hotelvista.model.enums.ReportPeriod;
 import com.hotelvista.service.ReportService;
@@ -29,6 +30,16 @@ public class ReportController {
             @RequestParam(defaultValue = "MONTHLY") ReportPeriod period
     ) {
         List<LoyaltyReportDTO> report = reportService.getLoyaltyReport(startDate, endDate, period);
+        return ResponseEntity.ok(report);
+    }
+
+    @GetMapping("/booking")
+    public ResponseEntity<List<BookingReportDTO>> getBookingReport(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(defaultValue = "MONTHLY") ReportPeriod period
+    ) {
+        List<BookingReportDTO> report = reportService.getBookingReport(startDate, endDate, period);
         return ResponseEntity.ok(report);
     }
 }

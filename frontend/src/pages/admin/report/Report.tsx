@@ -34,7 +34,6 @@ import RatingBreakdown from "../../../components/report/RatingBreakdown";
 import SentimentAnalysis from "../../../components/report/SentimentAnalysis";
 import BookingTrends from "../../../components/report/BookingTrends";
 import BookingChart from "../../../components/report/BookingChart";
-import ChannelAnalysis from "../../../components/report/ChannelAnalysis";
 import DateRangePicker from "../../../components/report/DateRangePicker";
 import FilterBar from "../../../components/report/FilterBar";
 import ExportButton from "../../../components/report/ExportButton";
@@ -60,6 +59,7 @@ const ReportPage: React.FC = () => {
 
   // State for API data
   const [loyaltyData, setLoyaltyData] = useState<LoyaltyData[]>([]);
+  const [bookingData, setBookingData] = useState<BookingData[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -258,6 +258,31 @@ const ReportPage: React.FC = () => {
     fetchLoyaltyData();
   }, [activeTab, startDate, endDate, period]);
 
+  // Fetch Booking Data from API
+  useEffect(() => {
+    const fetchBookingData = async () => {
+      if (activeTab !== "bookings") return;
+
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await reportService.getBookingReport(
+          startDate,
+          endDate,
+          period.toUpperCase()
+        );
+        setBookingData(data);
+      } catch (err) {
+        console.error("Failed to fetch booking report:", err);
+        setError("Failed to load booking data.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBookingData();
+  }, [activeTab, startDate, endDate, period]);
+
   // Handle export
   const handleExport = (format: "pdf" | "excel") => {
     const dateRangeText = `${startDate} to ${endDate}`;
@@ -339,109 +364,7 @@ const ReportPage: React.FC = () => {
     []
   );
 
-  // Mock data - Bookings
-  const bookingData: BookingData[] = useMemo(
-    () => [
-      {
-        date: "Jan 2024",
-        website: 180,
-        phone: 75,
-        walkin: 30,
-        totalBookings: 285,
-        cancellationRate: 8.5,
-      },
-      {
-        date: "Feb 2024",
-        website: 195,
-        phone: 82,
-        walkin: 33,
-        totalBookings: 310,
-        cancellationRate: 7.8,
-      },
-      {
-        date: "Mar 2024",
-        website: 215,
-        phone: 88,
-        walkin: 32,
-        totalBookings: 335,
-        cancellationRate: 6.9,
-      },
-      {
-        date: "Apr 2024",
-        website: 205,
-        phone: 80,
-        walkin: 33,
-        totalBookings: 318,
-        cancellationRate: 7.2,
-      },
-      {
-        date: "May 2024",
-        website: 210,
-        phone: 85,
-        walkin: 33,
-        totalBookings: 328,
-        cancellationRate: 6.8,
-      },
-      {
-        date: "Jun 2024",
-        website: 242,
-        phone: 95,
-        walkin: 38,
-        totalBookings: 375,
-        cancellationRate: 5.5,
-      },
-      {
-        date: "Jul 2024",
-        website: 258,
-        phone: 102,
-        walkin: 42,
-        totalBookings: 402,
-        cancellationRate: 5.2,
-      },
-      {
-        date: "Aug 2024",
-        website: 248,
-        phone: 98,
-        walkin: 42,
-        totalBookings: 388,
-        cancellationRate: 5.8,
-      },
-      {
-        date: "Sep 2024",
-        website: 225,
-        phone: 90,
-        walkin: 37,
-        totalBookings: 352,
-        cancellationRate: 6.5,
-      },
-      {
-        date: "Oct 2024",
-        website: 218,
-        phone: 87,
-        walkin: 35,
-        totalBookings: 340,
-        cancellationRate: 6.8,
-      },
-      {
-        date: "Nov 2024",
-        website: 208,
-        phone: 83,
-        walkin: 34,
-        totalBookings: 325,
-        cancellationRate: 7.1,
-      },
-      {
-        date: "Dec 2024",
-        website: 268,
-        phone: 105,
-        walkin: 42,
-        totalBookings: 415,
-        cancellationRate: 4.8,
-      },
-    ],
-    []
-  );
-  // Mock data - Services
+  // Service data - now includes all service types
   const serviceData: ServiceData[] = useMemo(
     () => [
       {
@@ -680,8 +603,8 @@ const ReportPage: React.FC = () => {
               <ReviewChart data={reviewData} />
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <RatingBreakdown />
-              <SentimentAnalysis />
+              <RatingBreakdown data={reviewData} />
+              <SentimentAnalysis data={reviewData} />
             </div>
           </div>
         );
@@ -692,11 +615,10 @@ const ReportPage: React.FC = () => {
             <BookingTrends data={bookingData} />
             <div className="bg-white p-6 rounded-lg shadow-sm border border-[#EBE3D7]">
               <h3 className="text-lg font-semibold mb-4">
-                Bookings by Channel Over Time
+                Booking Trends Over Time
               </h3>
               <BookingChart data={bookingData} />
             </div>
-            <ChannelAnalysis />
           </div>
         );
       case "services":

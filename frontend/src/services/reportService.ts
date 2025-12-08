@@ -78,11 +78,12 @@ export const reportService = {
   // Booking Report
   getBookingReport: async (
     startDate: string,
-    endDate: string
+    endDate: string,
+    period: string = "MONTHLY"
   ): Promise<BookingData[]> => {
     try {
-      const response = await api.get("/reports/bookings", {
-        params: { startDate, endDate },
+      const response = await api.get("/reports/booking", {
+        params: { startDate, endDate, period },
       });
       return response.data;
     } catch (error) {
