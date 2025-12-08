@@ -48,7 +48,6 @@ public class RoomType {
     @JsonIgnore
     private List<RoomTypePromotion> roomTypePromotions;
 
-    @ToString.Exclude
     @ManyToMany
     @JoinTable(
             name = "room_type_seasonal_price",

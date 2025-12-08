@@ -2,6 +2,7 @@ package com.hotelvista.repository;
 
 import com.hotelvista.model.Booking;
 import com.hotelvista.model.BookingDetail;
+import com.hotelvista.model.enums.BookingStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -102,4 +103,15 @@ public interface BookingRepository extends JpaRepository<Booking, String> {
             @Param("checkIn") LocalDateTime checkIn,
             @Param("checkOut") LocalDateTime checkOut
     );
+
+    /**
+     * Tìm tất cả booking theo trạng thái và ngày đặt phòng
+     *
+     * @param status
+     * @param bookingDate
+     * @return
+     */
+    @Query("SELECT b FROM Booking b " +
+            "WHERE b.status = :status AND b.bookingDate = :bookingDate")
+    List<Booking> findAllByStatusAndBookingDate(@Param("status") BookingStatus status, @Param("bookingDate") LocalDateTime bookingDate);
 }

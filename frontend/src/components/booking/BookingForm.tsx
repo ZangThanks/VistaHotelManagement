@@ -36,6 +36,7 @@ import type {
   BaseRateItem,
 } from "../../types/HourlyRatePolicy";
 import { useToastContext } from "../../hooks/useToastContext";
+import { calculateDiscountedPrice } from "../../services/roomTypeService";
 
 interface BookingFormProps {
   currentStep: number;
@@ -77,12 +78,8 @@ export default function BookingForm({
     (location.state as any)?.bookingType || "DAILY";
 
   // Daily booking states
-  const [checkInDate, setCheckInDate] = useState<Date | null>(
-    new Date(2025, 8, 18)
-  );
-  const [checkOutDate, setCheckOutDate] = useState<Date | null>(
-    new Date(2025, 8, 19)
-  );
+  const [checkInDate, setCheckInDate] = useState<Date | null>(null);
+  const [checkOutDate, setCheckOutDate] = useState<Date | null>(null);
 
   // Hourly booking states
   const [hourlyCheckInDate, setHourlyCheckInDate] = useState<Date | null>(null);
@@ -93,6 +90,7 @@ export default function BookingForm({
   const [specialRequests, setSpecialRequests] = useState<string>("");
 
   const [promotionCode, setPromotionCode] = useState("");
+
   // Services and vouchers state
   const [services, setServices] = useState<Service[]>([]);
   const [customerVouchers, setCustomerVouchers] = useState<CustomerVoucher[]>(
@@ -115,11 +113,20 @@ export default function BookingForm({
   const [bookingID, setBookingID] = useState<string>("");
   const [isVoucherModalOpen, setIsVoucherModalOpen] = useState(false);
   const [selectedVoucher, setSelectedVoucher] = useState<CustomerVoucher[]>([]);
+
   // Lưu danh sách policies từ DB, dùng lấy baseRates, weekendSurcharge, weekkendDays
   const [hourlyRatePolicies, setHourlyRatePolicies] = useState<
     HourlyRatePolicy[]
   >([]);
   const [bookedDates, setBookedDates] = useState<Date[]>([]);
+
+  // State để lưu các giá trị đã tính toán
+  const [roomCosts, setRoomCosts] = useState<number>(0);
+  const [serviceCosts, setServiceCosts] = useState<number>(0);
+  const [subTotal, setSubTotal] = useState<number>(0);
+  const [discount, setDiscount] = useState<number>(0);
+  const [totalAmount, setTotalAmount] = useState<number>(0);
+  const [roomPrices, setRoomPrices] = useState<Record<string, number>>({});
 
   const fetchedData = async () => {
     try {
@@ -242,6 +249,47 @@ export default function BookingForm({
     fetchedData();
   }, []);
 
+  // Effect để tính toán lại giá khi có thay đổi
+  useEffect(() => {
+    const updateCosts = async () => {
+      const roomCost = await calculateRoomCosts();
+      const serviceCost = calculateServiceCosts();
+      const sub = await calculateSubTotal();
+      const disc = await calculateDiscount();
+      const total = await calculatedTotalAmount();
+
+      setRoomCosts(roomCost);
+      setServiceCosts(serviceCost);
+      setSubTotal(sub);
+      setDiscount(disc);
+      setTotalAmount(total);
+
+      // Tính giá từng phòng
+      const prices: Record<string, number> = {};
+      for (const room of rooms) {
+        const roomTypeId = room.roomType?.roomTypeID;
+        if (roomTypeId) {
+          const price = await calculateRoomPriceAfterApplyPromotion(roomTypeId);
+          prices[room.roomNumber!] = price;
+        }
+      }
+      setRoomPrices(prices);
+    };
+
+    if (rooms.length > 0) {
+      updateCosts();
+    }
+  }, [
+    rooms,
+    selectedServices,
+    selectedVoucher,
+    checkInDate,
+    checkOutDate,
+    hourlyCheckInDate,
+    duration,
+    bookingType,
+  ]);
+
   const handleNextStep = () => {
     if (bookingType === "HOURLY") {
       // Validation for hourly booking
@@ -258,13 +306,15 @@ export default function BookingForm({
         return;
       }
     } else {
-      // Validation for daily booking
+      // Check-in validation
       if (!checkInDate) {
-        showErrorToast("Please select a check-in date.");
+        showErrorToast("Please select a valid check-in date.");
         return;
       }
-      if (!checkOutDate) {
-        showErrorToast("Please select a check-out date.");
+
+      // Check-out validation
+      if (!checkOutDate || checkOutDate < checkInDate) {
+        showErrorToast("Please select a valid check-out date.");
         return;
       }
 
@@ -478,28 +528,51 @@ export default function BookingForm({
   };
 
   // Tính tổng chi phí phòng
-  const calculateRoomCosts = () => {
+  const calculateRoomCosts = async () => {
+    // HOURLY
     if (bookingType === "HOURLY") {
-      // For hourly booking, calculate based on percentage
-      return rooms.reduce((sum, room) => {
+      return await rooms.reduce(async (sumPromise, room) => {
+        const sum = await sumPromise;
+
         const basePrice = room.roomType?.basePrice || 0;
         const ratePercentage = calculateHourlyRate(duration, hourlyCheckInDate);
-        // Công thức: (Giá phòng/đêm × Tổng %) / 100
-        const totalPrice = (basePrice * ratePercentage) / 100;
+
+        const roomTypeId = room.roomType?.roomTypeID;
+        if (!roomTypeId) return sum;
+
+        const price = await calculateRoomPriceAfterApplyPromotion(roomTypeId);
+
+        const totalPrice = (price * ratePercentage) / 100;
+
         console.log(
           `Room ${
             room.roomNumber
           }: ${basePrice} × ${ratePercentage}% = ${totalPrice.toFixed(0)} VND`
         );
+
         return sum + totalPrice;
-      }, 0);
+      }, Promise.resolve(0));
     } else {
-      // For daily booking
-      return rooms.reduce(
-        (sum, room) => sum + (room.roomType?.basePrice || 0),
-        0
-      );
+      // DAILY
+      return await rooms.reduce(async (sumPromise, room) => {
+        const sum = await sumPromise;
+
+        const roomTypeId = room.roomType?.roomTypeID;
+        if (!roomTypeId) return sum;
+
+        const price = await calculateRoomPriceAfterApplyPromotion(roomTypeId);
+        console.log("Price: " + price);
+
+        return sum + price;
+      }, Promise.resolve(0));
     }
+  };
+
+  //Lấy giá phòng sau khi áp dụng khuyến mãi
+  const calculateRoomPriceAfterApplyPromotion = async (roomTypeId: string) => {
+    const today = new Date().toISOString().split("T")[0];
+
+    return await calculateDiscountedPrice(roomTypeId, today);
   };
 
   const handleSaveBooking = async () => {
@@ -666,7 +739,7 @@ export default function BookingForm({
       specialRequests: specialRequests,
       bookingDate: new Date().toISOString(),
       packageType: booking.packageType || "Standard",
-      totalAmount: totalAmount,
+      totalAmount: await calculatedTotalAmount(),
       invoiceType: "ROOM_BOOKING",
       paymentStatus: "PENDING",
       type: bookingType,
@@ -675,7 +748,7 @@ export default function BookingForm({
       customer: {
         id: customer?.id || null,
       },
-      totalCost: totalServiceCosts,
+      totalCost: await calculateServiceCosts(),
     };
 
     const bookingDetails = rooms.map((r: Room) => ({
@@ -774,16 +847,27 @@ export default function BookingForm({
     return diffDays > 0 ? diffDays : 1;
   };
 
-  const numberOfNights = calculateNights();
-  const totalRoomCosts =
-    bookingType === "HOURLY"
-      ? calculateRoomCosts() // Hourly booking
-      : calculateRoomCosts() * numberOfNights; // Daily booking
-  const totalServiceCosts = calculateServiceCosts();
-  const subtotal = totalRoomCosts + totalServiceCosts;
+  //Tính tổng tiền trước giảm giá (rooms + services)
+  const calculateSubTotal = async () => {
+    const numberOfNights = calculateNights();
+    const roomCost = await calculateRoomCosts();
+
+    const totalRoomCosts = roomCost * numberOfNights;
+
+    // Không cần dòng này nữa vì đã có state discount
+    // const discountValue = calculateDiscount();roomCost * numberOfNights;
+
+    const totalServiceCosts = calculateServiceCosts();
+
+    const subtotal = totalRoomCosts + totalServiceCosts;
+
+    return subtotal;
+  };
 
   // Tính tổng tiền giảm giá từ vouchers
-  const calculateDiscount = () => {
+  const calculateDiscount = async () => {
+    const subtotal = await calculateSubTotal();
+
     if (!selectedVoucher || selectedVoucher.length === 0) return 0;
     let discount = 0;
 
@@ -802,7 +886,10 @@ export default function BookingForm({
   };
 
   const discountValue = calculateDiscount();
-  const totalAmount = subtotal - discountValue;
+
+  const calculatedTotalAmount = async () => {
+    return (await calculateSubTotal()) - (await calculateDiscount());
+  };
 
   if (currentStep === 1) {
     return (
@@ -1316,9 +1403,20 @@ export default function BookingForm({
                       {room.roomNumber}
                     </span>
                     <span className="text-[#c9b8a8] font-semibold">
-                      {room.roomType?.basePrice?.toLocaleString() || "0"} VND
-                      {/* {bookingType === "HOURLY" && " /hour"} */}
-                      /night
+                      {(() => {
+                        const roomPrice = roomPrices[room.roomNumber!] || 0;
+                        const basePrice = room.roomType?.basePrice || 0;
+                        return (
+                          <>
+                            {basePrice > roomPrice && (
+                              <span className="line-through text-gray-500 mr-2">
+                                {basePrice.toLocaleString()} VND
+                              </span>
+                            )}
+                            {roomPrice.toLocaleString()} VND /night
+                          </>
+                        );
+                      })()}
                     </span>
                   </div>
                 ))}
@@ -1350,7 +1448,8 @@ export default function BookingForm({
                     Number of Nights:
                   </label>
                   <span className="text-gray-900 font-medium">
-                    {numberOfNights} {numberOfNights === 1 ? "night" : "nights"}
+                    {calculateNights()}{" "}
+                    {calculateNights() === 1 ? "night" : "nights"}
                   </span>
                 </div>
               </>
@@ -1401,13 +1500,12 @@ export default function BookingForm({
                 </div>
               </>
             )}
-
             <div className="flex justify-between items-center py-2 border-t border-gray-200 mt-4">
               <label className="text-sm font-semibold text-gray-600">
                 Total room costs:
               </label>
               <span className="text-[#c9b8a8] font-semibold">
-                {totalRoomCosts.toLocaleString()} VND
+                {roomCosts.toLocaleString()} VND
               </span>
             </div>
           </div>
@@ -1443,13 +1541,12 @@ export default function BookingForm({
               </p>
             )}
           </div>
-
           <div className="flex justify-between items-center py-3 border-t border-gray-200 mt-4">
             <label className="text-sm font-semibold text-gray-600">
               Total service costs:
             </label>
             <span className="text-[#c9b8a8] font-semibold">
-              {totalServiceCosts.toLocaleString()} VND
+              {serviceCosts.toLocaleString()} VND
             </span>
           </div>
         </div>
@@ -1503,25 +1600,22 @@ export default function BookingForm({
                   : "No vouchers available"}
               </span>
             </div>
-
             <div className="flex justify-between items-center py-2 border-t border-gray-200 mt-4">
               <label className="text-sm font-semibold text-gray-900">
                 Total costs:
               </label>
               <span className="text-gray-900 font-semibold">
-                {subtotal.toLocaleString()} VND
+                {subTotal.toLocaleString()} VND
               </span>
             </div>
-
             <div className="flex justify-between items-center py-2">
               <label className="text-sm font-semibold text-gray-900">
                 Discount value:
               </label>
               <span className="text-red-600 font-semibold">
-                -{discountValue.toLocaleString()} VND
+                -{discount.toLocaleString()} VND
               </span>
             </div>
-
             <div className="flex justify-between items-center py-3 border-t border-gray-200 mt-4">
               <label className="text-sm font-semibold text-gray-900">
                 Total amount:
@@ -1552,42 +1646,44 @@ export default function BookingForm({
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Navigation Buttons */}
-        <div className="flex justify-between mt-8">
-          <button
-            onClick={handlePreviousStep}
-            className="px-8 py-3 border border-gray-300 text-gray-900 font-semibold rounded-lg hover:bg-gray-50 transition"
-          >
-            Back
-          </button>
-          <div className="flex flex-col items-end">
-            {error && <div className="text-sm text-red-600 mb-3">{error}</div>}
+          {/* Navigation Buttons */}
+          <div className="flex justify-between mt-8">
             <button
-              onClick={handleSaveBooking}
-              disabled={loading}
-              className={`px-8 py-3 text-white font-semibold rounded-lg transition ${
-                loading
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-[#c9b8a8] hover:bg-[#b8a896]"
-              }`}
+              onClick={handlePreviousStep}
+              className="px-8 py-3 border border-gray-300 text-gray-900 font-semibold rounded-lg hover:bg-gray-50 transition"
             >
-              {loading ? "Saving..." : "Reserve"}
+              Back
             </button>
+            <div className="flex flex-col items-end">
+              {error && (
+                <div className="text-sm text-red-600 mb-3">{error}</div>
+              )}
+              <button
+                onClick={handleSaveBooking}
+                disabled={loading}
+                className={`px-8 py-3 text-white font-semibold rounded-lg transition ${
+                  loading
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-[#c9b8a8] hover:bg-[#b8a896]"
+                }`}
+              >
+                {loading ? "Saving..." : "Reserve"}
+              </button>
+            </div>
           </div>
-        </div>
 
-        {/* Voucher Selection Modal */}
-        <CustomerVoucherModal
-          isOpen={isVoucherModalOpen}
-          onClose={() => setIsVoucherModalOpen(false)}
-          availableVouchers={customerVouchers}
-          onSelectVoucher={(vouchers) => {
-            setSelectedVoucher(vouchers);
-            setIsVoucherModalOpen(false);
-          }}
-        />
+          {/* Voucher Selection Modal */}
+          <CustomerVoucherModal
+            isOpen={isVoucherModalOpen}
+            onClose={() => setIsVoucherModalOpen(false)}
+            availableVouchers={customerVouchers}
+            onSelectVoucher={(vouchers) => {
+              setSelectedVoucher(vouchers);
+              setIsVoucherModalOpen(false);
+            }}
+          />
+        </div>
       </div>
     );
   }

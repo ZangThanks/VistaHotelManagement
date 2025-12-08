@@ -11,6 +11,7 @@ import CountdownTimer from "../../../components/common/CountdownTimer";
 import Header from "../../../components/Header";
 import { sendEmail } from "../../../services/emailService";
 import { confirmBookingEmail } from "../../../utils/emailTemplates/authEmails";
+import { formatNumber } from "../../../utils/formatters";
 
 const PaymentPage: React.FC = () => {
   const location = useLocation();
@@ -285,8 +286,8 @@ const PaymentPage: React.FC = () => {
               {booking.customer?.fullName}
             </p>
             <p>
-              <span className="font-medium">Total Amount:</span> $
-              {totalAmount.toFixed(2)}
+              <span className="font-medium">Total Amount:</span>{" "}
+              {formatNumber(totalAmount)} VND
             </p>
             <p>
               <span className="font-medium">Reputation Points:</span>{" "}
@@ -336,7 +337,7 @@ const PaymentPage: React.FC = () => {
                 <div className="flex-1">
                   <span className="font-medium">Pay 100% now</span>
                   <span className="ml-2 text-gray-600">
-                    (${totalAmount.toFixed(2)})
+                    ({formatNumber(totalAmount)} VND)
                   </span>
                 </div>
               </label>
@@ -353,7 +354,7 @@ const PaymentPage: React.FC = () => {
                 <div className="flex-1">
                   <span className="font-medium">Pay 50% now</span>
                   <span className="ml-2 text-gray-600">
-                    (${(totalAmount * 0.5).toFixed(2)})
+                    ({formatNumber(totalAmount * 0.5)} VND)
                   </span>
                   <p className="text-xs text-gray-500 mt-1">
                     Remaining 50% at check-out
@@ -400,12 +401,12 @@ const PaymentPage: React.FC = () => {
           <div className="text-center">
             <h3 className="font-semibold mb-4">
               {paymentInfo.hasChoice
-                ? `Payment Amount: $${getAmountByChoice(selectedChoice).toFixed(
+                ? `Payment Amount: ${getAmountByChoice(selectedChoice).toFixed(
                     2
-                  )}`
-                : `Payment Required: $${paymentInfo.required.toFixed(2)} (${
-                    paymentInfo.percentage
-                  }%)`}
+                  )} VND`
+                : `Payment Required: ${formatNumber(
+                    paymentInfo.required
+                  )} VND (${paymentInfo.percentage}%)`}
             </h3>
             <img
               src={imageUrl}
