@@ -4,6 +4,7 @@ import type { DateRange } from '../../types/Report';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 
 interface ExportButtonProps {
     reportType: string;
@@ -363,47 +364,525 @@ const ExportButton: React.FC<ExportButtonProps> = ({
         );
     };
 
-    const exportToExcel = (reportData: any) => {
-        let worksheetData: any[] = [];
+    const exportToExcel = async (reportData: any) => {
+        // Lấy thông tin user
+        const userStr = localStorage.getItem('user');
+        const user = userStr ? JSON.parse(userStr) : null;
+        const currentDate = new Date().toLocaleString('vi-VN', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+        });
 
-        // Phân nhánh theo loại báo cáo
+        // Tạo workbook và worksheet với ExcelJS
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet(reportType.toUpperCase());
+
+        let currentRow = 1;
+
+        // ============ HEADER - Thông tin công ty ============
+        const headerStyle = {
+            font: { bold: true, size: 16 },
+            alignment: {
+                horizontal: 'left' as const,
+                vertical: 'middle' as const,
+            },
+        };
+
+        worksheet.mergeCells(`A${currentRow}:H${currentRow}`);
+        const titleCell = worksheet.getCell(`A${currentRow}`);
+        titleCell.value = 'VISTA HOTEL';
+        titleCell.font = { bold: true, size: 16 };
+        titleCell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FFCCBDA3' },
+        };
+        currentRow++;
+
+        worksheet.mergeCells(`A${currentRow}:H${currentRow}`);
+        worksheet.getCell(`A${currentRow}`).value =
+            'Premium Hospitality Services';
+        worksheet.getCell(`A${currentRow}`).font = { size: 10 };
+        currentRow++;
+
+        worksheet.mergeCells(`A${currentRow}:H${currentRow}`);
+        worksheet.getCell(`A${currentRow}`).value =
+            'Phone: +84 123 456 789 | Email: info@vistahotel.com';
+        worksheet.getCell(`A${currentRow}`).font = { size: 9 };
+        currentRow++;
+
+        worksheet.mergeCells(`A${currentRow}:H${currentRow}`);
+        worksheet.getCell(`A${currentRow}`).value =
+            'Address: 123 Luxury Street, District 1, Ho Chi Minh City';
+        worksheet.getCell(`A${currentRow}`).font = { size: 9 };
+        currentRow += 2;
+
+        // ============ TIÊU ĐỀ BÁO CÁO ============
+        worksheet.mergeCells(`A${currentRow}:H${currentRow}`);
+        const reportTitleCell = worksheet.getCell(`A${currentRow}`);
+        reportTitleCell.value = `${reportType.toUpperCase()} REPORT`;
+        reportTitleCell.font = { bold: true, size: 14 };
+        reportTitleCell.alignment = {
+            horizontal: 'center',
+            vertical: 'middle',
+        };
+        currentRow += 2;
+
+        // ============ THÔNG TIN BÁO CÁO ============
+        const infoStartRow = currentRow;
+
+        // Box background cho info section
+        for (let row = currentRow; row < currentRow + 4; row++) {
+            for (let col = 1; col <= 8; col++) {
+                const cell = worksheet.getCell(row, col);
+                cell.fill = {
+                    type: 'pattern',
+                    pattern: 'solid',
+                    fgColor: { argb: 'FFF5F0EB' },
+                };
+                cell.border = {
+                    top: { style: 'thin' },
+                    left: { style: 'thin' },
+                    bottom: { style: 'thin' },
+                    right: { style: 'thin' },
+                };
+            }
+        }
+
+        worksheet.getCell(`A${currentRow}`).value = 'Reporting Period:';
+        worksheet.getCell(`A${currentRow}`).font = { bold: true };
+        worksheet.getCell(
+            `B${currentRow}`,
+        ).value = `${dateRange.startDate} to ${dateRange.endDate}`;
+        worksheet.mergeCells(`B${currentRow}:H${currentRow}`);
+        currentRow++;
+
+        worksheet.getCell(`A${currentRow}`).value = 'Generated Date:';
+        worksheet.getCell(`A${currentRow}`).font = { bold: true };
+        worksheet.getCell(`B${currentRow}`).value = currentDate;
+        worksheet.mergeCells(`B${currentRow}:H${currentRow}`);
+        currentRow++;
+
+        worksheet.getCell(`A${currentRow}`).value = 'Prepared By:';
+        worksheet.getCell(`A${currentRow}`).font = { bold: true };
+        worksheet.getCell(`B${currentRow}`).value = removeVietnameseTones(
+            user?.fullName || 'N/A',
+        );
+        worksheet.mergeCells(`B${currentRow}:C${currentRow}`);
+        currentRow++;
+
+        worksheet.getCell(`A${currentRow}`).value = 'Department:';
+        worksheet.getCell(`A${currentRow}`).font = { bold: true };
+        worksheet.getCell(`B${currentRow}`).value = removeVietnameseTones(
+            user?.department || 'N/A',
+        );
+        worksheet.mergeCells(`B${currentRow}:C${currentRow}`);
+        worksheet.getCell(`D${currentRow}`).value = 'Position:';
+        worksheet.getCell(`D${currentRow}`).font = { bold: true };
+        worksheet.getCell(`E${currentRow}`).value = removeVietnameseTones(
+            user?.position || 'N/A',
+        );
+        worksheet.mergeCells(`E${currentRow}:H${currentRow}`);
+        currentRow += 2;
+
+        // ============ DỮ LIỆU BẢNG ============
+        const tableStartRow = currentRow;
+
         switch (reportType) {
             case 'services':
                 if (data && Array.isArray(data)) {
-                    worksheetData = data.map((item: any) => ({
-                        Date: item.date || '',
-                        'Food & Beverage': item.foodBeverage || 0,
-                        Laundry: item.laundry || 0,
-                        Spa: item.spa || 0,
-                        Transport: item.transport || 0,
-                        Tour: item.tour || 0,
-                        Others: item.others || 0,
-                        'Total Orders': item.totalOrders || 0,
-                        'Avg Order Value': item.avgOrderValue || 0,
-                    }));
+                    // Header bảng
+                    const headerRow = worksheet.getRow(currentRow);
+                    const headers = [
+                        'Date',
+                        'Food & Beverage',
+                        'Laundry',
+                        'Spa',
+                        'Transport',
+                        'Tour',
+                        'Others',
+                        'Total Orders',
+                    ];
+                    headers.forEach((header, index) => {
+                        const cell = headerRow.getCell(index + 1);
+                        cell.value = header;
+                        cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+                        cell.fill = {
+                            type: 'pattern',
+                            pattern: 'solid',
+                            fgColor: { argb: 'FFCCBDA3' },
+                        };
+                        cell.alignment = {
+                            horizontal: 'center',
+                            vertical: 'middle',
+                        };
+                        cell.border = {
+                            top: { style: 'thin' },
+                            left: { style: 'thin' },
+                            bottom: { style: 'thin' },
+                            right: { style: 'thin' },
+                        };
+                    });
+                    currentRow++;
+
+                    // Dữ liệu
+                    data.forEach((item: any) => {
+                        const dataRow = worksheet.getRow(currentRow);
+                        const values = [
+                            item.date || '',
+                            item.foodBeverage || 0,
+                            item.laundry || 0,
+                            item.spa || 0,
+                            item.transport || 0,
+                            item.tour || 0,
+                            item.others || 0,
+                            item.totalOrders || 0,
+                        ];
+
+                        values.forEach((value, index) => {
+                            const cell = dataRow.getCell(index + 1);
+                            cell.value = value;
+                            cell.alignment = {
+                                horizontal: 'center',
+                                vertical: 'middle',
+                            };
+                            cell.border = {
+                                top: { style: 'thin' },
+                                left: { style: 'thin' },
+                                bottom: { style: 'thin' },
+                                right: { style: 'thin' },
+                            };
+                        });
+                        currentRow++;
+                    });
+
+                    // Dòng tổng
+                    const totals = data.reduce(
+                        (acc: any, item: any) => ({
+                            foodBeverage:
+                                (acc.foodBeverage || 0) +
+                                (item.foodBeverage || 0),
+                            laundry: (acc.laundry || 0) + (item.laundry || 0),
+                            spa: (acc.spa || 0) + (item.spa || 0),
+                            transport:
+                                (acc.transport || 0) + (item.transport || 0),
+                            tour: (acc.tour || 0) + (item.tour || 0),
+                            others: (acc.others || 0) + (item.others || 0),
+                            totalOrders:
+                                (acc.totalOrders || 0) +
+                                (item.totalOrders || 0),
+                        }),
+                        {},
+                    );
+
+                    const totalRow = worksheet.getRow(currentRow);
+                    const totalValues = [
+                        'TOTAL',
+                        totals.foodBeverage,
+                        totals.laundry,
+                        totals.spa,
+                        totals.transport,
+                        totals.tour,
+                        totals.others,
+                        totals.totalOrders,
+                    ];
+
+                    totalValues.forEach((value, index) => {
+                        const cell = totalRow.getCell(index + 1);
+                        cell.value = value;
+                        cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+                        cell.fill = {
+                            type: 'pattern',
+                            pattern: 'solid',
+                            fgColor: { argb: 'FFCCBDA3' },
+                        };
+                        cell.alignment = {
+                            horizontal: 'center',
+                            vertical: 'middle',
+                        };
+                        cell.border = {
+                            top: { style: 'thin' },
+                            left: { style: 'thin' },
+                            bottom: { style: 'thin' },
+                            right: { style: 'thin' },
+                        };
+                    });
+                    currentRow++;
                 }
                 break;
 
-            case 'revenue':
-            case 'occupancy':
-            case 'loyalty':
-            case 'reviews':
-            case 'bookings':
-                // TODO: Implement cho các loại báo cáo khác
-                worksheetData = [{ Message: 'Data not available' }];
-                break;
-
             default:
-                worksheetData = [{ Message: 'Unknown report type' }];
+                worksheet.getCell(`A${currentRow}`).value =
+                    'Data not available for this report type';
+                currentRow++;
         }
 
-        const worksheet = XLSX.utils.json_to_sheet(worksheetData);
-        const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, reportType);
-        XLSX.writeFile(
-            workbook,
-            `${reportType}_report_${dateRange.startDate}_${dateRange.endDate}.xlsx`,
-        );
+        currentRow += 2;
+
+        // ============ CHỮ KÝ ============
+        // Box cho chữ ký
+        const sigStartRow = currentRow;
+
+        // PREPARED BY section
+        worksheet.mergeCells(`A${currentRow}:C${currentRow}`);
+        const preparedCell = worksheet.getCell(`A${currentRow}`);
+        preparedCell.value = 'PREPARED BY';
+        preparedCell.font = { bold: true, size: 11 };
+        preparedCell.alignment = { horizontal: 'center', vertical: 'middle' };
+        preparedCell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FFEEEEEE' },
+        };
+        preparedCell.border = {
+            top: { style: 'thin' },
+            left: { style: 'thin' },
+            bottom: { style: 'thin' },
+            right: { style: 'thin' },
+        };
+
+        // APPROVED BY section
+        worksheet.mergeCells(`D${currentRow}:F${currentRow}`);
+        const approvedCell = worksheet.getCell(`D${currentRow}`);
+        approvedCell.value = 'APPROVED BY';
+        approvedCell.font = { bold: true, size: 11 };
+        approvedCell.alignment = { horizontal: 'center', vertical: 'middle' };
+        approvedCell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FFEEEEEE' },
+        };
+        approvedCell.border = {
+            top: { style: 'thin' },
+            left: { style: 'thin' },
+            bottom: { style: 'thin' },
+            right: { style: 'thin' },
+        };
+
+        // AUTHORIZED BY section
+        worksheet.mergeCells(`G${currentRow}:H${currentRow}`);
+        const authorizedCell = worksheet.getCell(`G${currentRow}`);
+        authorizedCell.value = 'AUTHORIZED BY';
+        authorizedCell.font = { bold: true, size: 11 };
+        authorizedCell.alignment = { horizontal: 'center', vertical: 'middle' };
+        authorizedCell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FFEEEEEE' },
+        };
+        authorizedCell.border = {
+            top: { style: 'thin' },
+            left: { style: 'thin' },
+            bottom: { style: 'thin' },
+            right: { style: 'thin' },
+        };
+        currentRow++;
+
+        // Subtitle row
+        worksheet.mergeCells(`A${currentRow}:C${currentRow}`);
+        const prepSubCell = worksheet.getCell(`A${currentRow}`);
+        prepSubCell.value = '(Report Preparer)';
+        prepSubCell.alignment = { horizontal: 'center', vertical: 'middle' };
+        prepSubCell.border = {
+            top: { style: 'thin' },
+            left: { style: 'thin' },
+            bottom: { style: 'thin' },
+            right: { style: 'thin' },
+        };
+
+        worksheet.mergeCells(`D${currentRow}:F${currentRow}`);
+        const appSubCell = worksheet.getCell(`D${currentRow}`);
+        appSubCell.value = '(Approver)';
+        appSubCell.alignment = { horizontal: 'center', vertical: 'middle' };
+        appSubCell.border = {
+            top: { style: 'thin' },
+            left: { style: 'thin' },
+            bottom: { style: 'thin' },
+            right: { style: 'thin' },
+        };
+
+        worksheet.mergeCells(`G${currentRow}:H${currentRow}`);
+        const authSubCell = worksheet.getCell(`G${currentRow}`);
+        authSubCell.value = '(Director)';
+        authSubCell.alignment = { horizontal: 'center', vertical: 'middle' };
+        authSubCell.border = {
+            top: { style: 'thin' },
+            left: { style: 'thin' },
+            bottom: { style: 'thin' },
+            right: { style: 'thin' },
+        };
+        currentRow++;
+
+        // Empty space for signature
+        worksheet.mergeCells(`A${currentRow}:C${currentRow}`);
+        worksheet.mergeCells(`D${currentRow}:F${currentRow}`);
+        worksheet.mergeCells(`G${currentRow}:H${currentRow}`);
+        worksheet.getCell(`A${currentRow}`).border = {
+            top: { style: 'thin' },
+            left: { style: 'thin' },
+            bottom: { style: 'thin' },
+            right: { style: 'thin' },
+        };
+        worksheet.getCell(`D${currentRow}`).border = {
+            top: { style: 'thin' },
+            left: { style: 'thin' },
+            bottom: { style: 'thin' },
+            right: { style: 'thin' },
+        };
+        worksheet.getCell(`G${currentRow}`).border = {
+            top: { style: 'thin' },
+            left: { style: 'thin' },
+            bottom: { style: 'thin' },
+            right: { style: 'thin' },
+        };
+        worksheet.getRow(currentRow).height = 30;
+        currentRow++;
+
+        // Signature line row
+        worksheet.mergeCells(`A${currentRow}:C${currentRow}`);
+        const sigLineCell1 = worksheet.getCell(`A${currentRow}`);
+        sigLineCell1.value = 'Signature: _______________';
+        sigLineCell1.alignment = { horizontal: 'center', vertical: 'middle' };
+        sigLineCell1.border = {
+            top: { style: 'thin' },
+            left: { style: 'thin' },
+            bottom: { style: 'thin' },
+            right: { style: 'thin' },
+        };
+
+        worksheet.mergeCells(`D${currentRow}:F${currentRow}`);
+        const sigLineCell2 = worksheet.getCell(`D${currentRow}`);
+        sigLineCell2.value = 'Signature: _______________';
+        sigLineCell2.alignment = { horizontal: 'center', vertical: 'middle' };
+        sigLineCell2.border = {
+            top: { style: 'thin' },
+            left: { style: 'thin' },
+            bottom: { style: 'thin' },
+            right: { style: 'thin' },
+        };
+
+        worksheet.mergeCells(`G${currentRow}:H${currentRow}`);
+        const sigLineCell3 = worksheet.getCell(`G${currentRow}`);
+        sigLineCell3.value = 'Signature: _______________';
+        sigLineCell3.alignment = { horizontal: 'center', vertical: 'middle' };
+        sigLineCell3.border = {
+            top: { style: 'thin' },
+            left: { style: 'thin' },
+            bottom: { style: 'thin' },
+            right: { style: 'thin' },
+        };
+        currentRow++;
+
+        // Name row
+        worksheet.mergeCells(`A${currentRow}:C${currentRow}`);
+        const nameCell1 = worksheet.getCell(`A${currentRow}`);
+        nameCell1.value = removeVietnameseTones(user?.fullName || 'N/A');
+        nameCell1.font = { bold: true };
+        nameCell1.alignment = { horizontal: 'center', vertical: 'middle' };
+        nameCell1.border = {
+            top: { style: 'thin' },
+            left: { style: 'thin' },
+            bottom: { style: 'thin' },
+            right: { style: 'thin' },
+        };
+
+        worksheet.mergeCells(`D${currentRow}:F${currentRow}`);
+        const nameCell2 = worksheet.getCell(`D${currentRow}`);
+        nameCell2.value = 'Manager';
+        nameCell2.alignment = { horizontal: 'center', vertical: 'middle' };
+        nameCell2.border = {
+            top: { style: 'thin' },
+            left: { style: 'thin' },
+            bottom: { style: 'thin' },
+            right: { style: 'thin' },
+        };
+
+        worksheet.mergeCells(`G${currentRow}:H${currentRow}`);
+        const nameCell3 = worksheet.getCell(`G${currentRow}`);
+        nameCell3.value = 'Director';
+        nameCell3.alignment = { horizontal: 'center', vertical: 'middle' };
+        nameCell3.border = {
+            top: { style: 'thin' },
+            left: { style: 'thin' },
+            bottom: { style: 'thin' },
+            right: { style: 'thin' },
+        };
+        currentRow++;
+
+        // Position row
+        worksheet.mergeCells(`A${currentRow}:C${currentRow}`);
+        const posCell = worksheet.getCell(`A${currentRow}`);
+        posCell.value = removeVietnameseTones(user?.position || '');
+        posCell.alignment = { horizontal: 'center', vertical: 'middle' };
+        posCell.border = {
+            top: { style: 'thin' },
+            left: { style: 'thin' },
+            bottom: { style: 'thin' },
+            right: { style: 'thin' },
+        };
+
+        worksheet.mergeCells(`D${currentRow}:F${currentRow}`);
+        worksheet.getCell(`D${currentRow}`).border = {
+            top: { style: 'thin' },
+            left: { style: 'thin' },
+            bottom: { style: 'thin' },
+            right: { style: 'thin' },
+        };
+
+        worksheet.mergeCells(`G${currentRow}:H${currentRow}`);
+        worksheet.getCell(`G${currentRow}`).border = {
+            top: { style: 'thin' },
+            left: { style: 'thin' },
+            bottom: { style: 'thin' },
+            right: { style: 'thin' },
+        };
+        currentRow += 2;
+
+        // ============ FOOTER ============
+        worksheet.mergeCells(`A${currentRow}:H${currentRow}`);
+        worksheet.getCell(`A${currentRow}`).value =
+            'This is a computer-generated report - Vista Hotel Management System';
+        worksheet.getCell(`A${currentRow}`).font = { italic: true, size: 9 };
+        currentRow++;
+
+        worksheet.mergeCells(`A${currentRow}:H${currentRow}`);
+        worksheet.getCell(
+            `A${currentRow}`,
+        ).value = `Page 1 | Generated on ${currentDate}`;
+        worksheet.getCell(`A${currentRow}`).font = { size: 8 };
+        currentRow++;
+
+        worksheet.mergeCells(`A${currentRow}:H${currentRow}`);
+        worksheet.getCell(`A${currentRow}`).value =
+            'Confidential Document - For Internal Use Only';
+        worksheet.getCell(`A${currentRow}`).font = { size: 8 };
+
+        // Định dạng cột
+        worksheet.columns = [
+            { width: 15 },
+            { width: 18 },
+            { width: 12 },
+            { width: 12 },
+            { width: 12 },
+            { width: 12 },
+            { width: 12 },
+            { width: 15 },
+        ];
+
+        // Xuất file
+        const buffer = await workbook.xlsx.writeBuffer();
+        const blob = new Blob([buffer], {
+            type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${reportType}_report_${dateRange.startDate}_${dateRange.endDate}.xlsx`;
+        link.click();
+        window.URL.revokeObjectURL(url);
     };
 
     const handleExport = async (format: 'pdf' | 'excel') => {
