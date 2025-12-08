@@ -91,30 +91,30 @@ public class RoomChangeRequestService {
 
         if (response.isApprove()) {
             request.setStatus(RequestStatus.COMPLETED);
-            
+
             // Update booking to change room
             try {
                 Booking booking = request.getBooking();
                 Room currentRoom = request.getCurrentRoom();
                 Room newRoom = request.getNewRoom();
-                
+
                 // Get booking details for this booking
-                List<BookingDetail> bookingDetails = 
-                    bookingDetailRepository.findAllByBooking_BookingID(booking.getBookingID());
-                
+                List<BookingDetail> bookingDetails =
+                        bookingDetailRepository.findAllByBooking_BookingID(booking.getBookingID());
+
                 // Find and update the booking detail for the current room
                 for (BookingDetail detail : bookingDetails) {
                     if (detail.getRoom().getRoomNumber().equals(currentRoom.getRoomNumber())) {
                         // Delete old booking detail
                         bookingDetailRepository.delete(detail);
-                        
+
                         // Create new booking detail with new room
                         BookingDetail newDetail = new BookingDetail();
                         newDetail.setBooking(booking);
                         newDetail.setRoom(newRoom);
                         newDetail.setRoomPrice(detail.getRoomPrice()); // Keep the same price
                         newDetail.setReview(detail.getReview()); // Keep the review if any
-                        
+
                         bookingDetailRepository.save(newDetail);
                         break;
                     }

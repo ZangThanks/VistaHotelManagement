@@ -4,7 +4,6 @@ export type BaseRateItem = {
     baseRate: number;
 };
 
-
 export type BaseRateMap = Record<string, number>;
 
 export interface HourlyRatePolicy {

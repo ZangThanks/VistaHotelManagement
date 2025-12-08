@@ -7,13 +7,12 @@ import {
   otpEmailTemplate,
   passwordChangedTemplate,
 } from "../utils/emailTemplates/authEmails";
-import type {
-  PasswordChangeRequest
-} from "../types/UserProfile";
+import type { PasswordChangeRequest } from "../types/UserProfile";
 
 export interface LoginData {
   email?: string;
   phone?: string;
+  userName?: string;
   password: string;
 }
 
@@ -64,12 +63,14 @@ export const handleLogin = async (
     // Gửi email chào mừng khi đăng nhập thành công
     const user = data.data;
     if (user?.email) {
-      const html = loginWelcomeBackEmail(user.fullName || user.userName || "Khách hàng");
+      const html = loginWelcomeBackEmail(
+        user.fullName || user.userName || "Khách hàng"
+      );
       sendEmail({
         to: user.email,
         subject: "Chào mừng bạn trở lại Vista Hotel",
         htmlContent: html,
-      })
+      });
     }
 
     return {
@@ -84,8 +85,7 @@ export const handleLogin = async (
     return {
       success: false,
       message:
-        error.response?.data?.message ||
-        "Login failed. Please try again.",
+        error.response?.data?.message || "Login failed. Please try again.",
     };
   }
 };
@@ -107,7 +107,9 @@ export const handleRegister = async (
     // Gửi email chào mừng sau khi đăng ký thành công
     const user = data.data;
     if (user?.email) {
-      const html = registerSuccessEmail(user.fullName || user.userName || "Khách hàng");
+      const html = registerSuccessEmail(
+        user.fullName || user.userName || "Khách hàng"
+      );
       sendEmail({
         to: user.email,
         subject: "Đăng ký Vista Hotel thành công",
@@ -125,7 +127,8 @@ export const handleRegister = async (
     return {
       success: false,
       message:
-        error.response?.data?.message || "Registration failed. Please try again.",
+        error.response?.data?.message ||
+        "Registration failed. Please try again.",
     };
   }
 };
@@ -265,17 +268,19 @@ export const resetPassword = async (
   }
 };
 
-
-export const sendOtpEmail = async (identifier: string):
-  Promise<{success: boolean; message: string}> => {
+export const sendOtpEmail = async (
+  identifier: string
+): Promise<{ success: boolean; message: string }> => {
   try {
-    const { data } = await api.post("/auth/send-otp", { email: identifier });
+    const { data } = await api.post("/auth/send-otp", {
+      email: identifier,
+    });
 
     if (!data.success) {
       return {
         success: false,
         message: data.message || "Failed to send OTP email.",
-      }
+      };
     }
 
     const otp = data.otp;
@@ -289,15 +294,15 @@ export const sendOtpEmail = async (identifier: string):
     return {
       success: true,
       message: "OTP email sent successfully.",
-    }
+    };
   } catch (error) {
     console.error("Error sending OTP email:", error);
     return {
       success: false,
       message: "Failed to send OTP email. Please try again.",
-    }
+    };
   }
-}
+};
 
 export const handleOAuthSuccess = (
   token: string,

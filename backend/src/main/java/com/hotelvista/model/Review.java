@@ -29,7 +29,6 @@ public class Review {
     @Column(name = "service_quantity")
     private int serviceQuality;
 
-    //cấp độ của comment
     private int location;
 
     @Column(name = "value_for_money")
@@ -54,4 +53,11 @@ public class Review {
     @JsonIgnore
     @OneToOne(mappedBy = "review")
     private BookingDetail bookingDetail;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_review_id")
+    private Review parentReview;
+
+    @OneToMany(mappedBy = "parentReview", cascade = CascadeType.ALL)
+    private List<Review> replies;
 }

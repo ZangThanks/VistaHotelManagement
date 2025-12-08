@@ -45,6 +45,11 @@ const VoucherManagement: React.FC = () => {
 
   const toast = useContext(ToastContext);
 
+  // Scroll to top on mount
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   useEffect(() => {
     loadVouchers();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -187,14 +192,14 @@ const VoucherManagement: React.FC = () => {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="px-6 space-y-4">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-[#6b5e4c]">
+          <h1 className="text-2xl sm:text-3xl font-bold text-[#6b5e4c]">
             Voucher Management
           </h1>
-          <p className="text-gray-600 mt-1">
+          <p className="text-sm sm:text-base text-gray-600 mt-1">
             Manage vouchers, distribution, and automated events
           </p>
         </div>
@@ -204,10 +209,11 @@ const VoucherManagement: React.FC = () => {
               setSelectedVoucher(null);
               setIsAddModalOpen(true);
             }}
-            className="bg-[#6b5e4c] text-white px-6 py-3 rounded-lg hover:bg-[#5a4d3d] transition-colors flex items-center gap-2 font-semibold cursor-pointer"
+            className="w-full sm:w-auto bg-[#6b5e4c] text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg hover:bg-[#5a4d3d] transition-colors flex items-center justify-center gap-2 font-semibold cursor-pointer text-sm sm:text-base"
           >
             <FaPlus />
-            Add Voucher
+            <span className="hidden sm:inline">Add Voucher</span>
+            <span className="sm:hidden">Add</span>
           </button>
         )}
       </div>
@@ -216,7 +222,7 @@ const VoucherManagement: React.FC = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="grid grid-cols-1 md:grid-cols-3 gap-4"
+        className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4"
       >
         <motion.div
           className="bg-white p-2 px-4 rounded-xl shadow-sm border border-[#ebe3d7] flex items-center gap-4"
@@ -270,10 +276,10 @@ const VoucherManagement: React.FC = () => {
         transition={{ delay: 0.2 }}
         className="bg-white rounded-lg shadow-sm border border-[#ebe3d7] p-2"
       >
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-2">
           <button
             onClick={() => setActiveTab("management")}
-            className={`flex-1 px-6 py-3 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2 cursor-pointer ${
+            className={`flex-1 px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2 cursor-pointer text-sm sm:text-base ${
               activeTab === "management"
                 ? "bg-[#6b5e4c] text-white"
                 : "text-gray-600 hover:bg-gray-100"
@@ -284,7 +290,7 @@ const VoucherManagement: React.FC = () => {
           </button>
           <button
             onClick={() => setActiveTab("distribution")}
-            className={`flex-1 px-6 py-3 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2 cursor-pointer ${
+            className={`flex-1 px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2 cursor-pointer text-sm sm:text-base ${
               activeTab === "distribution"
                 ? "bg-[#6b5e4c] text-white"
                 : "text-gray-600 hover:bg-gray-100"
@@ -295,14 +301,15 @@ const VoucherManagement: React.FC = () => {
           </button>
           <button
             onClick={() => setActiveTab("events")}
-            className={`flex-1 px-6 py-3 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2 cursor-pointer ${
+            className={`flex-1 px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2 cursor-pointer text-sm sm:text-base ${
               activeTab === "events"
                 ? "bg-[#6b5e4c] text-white"
                 : "text-gray-600 hover:bg-gray-100"
             }`}
           >
             <FaCalendarAlt />
-            <span>Auto Events</span>
+            <span className="hidden xs:inline">Auto Events</span>
+            <span className="xs:hidden">Events</span>
           </button>
         </div>
       </motion.div>

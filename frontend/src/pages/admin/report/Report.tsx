@@ -8,7 +8,7 @@ import {
     FaConciergeBell,
 } from 'react-icons/fa';
 import type {
-    RevenueData,
+    // RevenueData,
     OccupancyData,
     LoyaltyData,
     ReviewData,
@@ -16,8 +16,8 @@ import type {
     ReportPeriod,
     ServiceData,
 } from '../../../types/Report';
-import RevenueSummary from '../../../components/report/RevenueSummary';
-import RevenueChart from '../../../components/report/RevenueChart';
+// import RevenueSummary from '../../../components/report/RevenueSummary';
+// import RevenueChart from '../../../components/report/RevenueChart';
 import OccupancyChart from '../../../components/report/OccupancyChart';
 import RoomTypeAnalysis from '../../../components/report/RoomTypeAnalysis';
 import LoyaltyChart from '../../../components/report/LoyaltyChart';
@@ -37,7 +37,9 @@ import ServiceSummary from '../../../components/report/ServiceSummary';
 import ServiceChart from '../../../components/report/ServiceChart';
 import ServiceDistribution from '../../../components/report/ServiceDistribution';
 import PopularServices from '../../../components/report/PopularServices';
+// import { getRevenueData } from '../../../services/revenueReport';
 import { reportService } from '../../../services/reportService';
+// import RevenueTab from './components/RevenueTab';
 
 type ReportTab =
     | 'revenue'
@@ -143,96 +145,22 @@ const ReportPage: React.FC = () => {
 
     //TODO: DATA MẪU!!
 
-    // Mock data - Revenue
-    const revenueData: RevenueData[] = useMemo(
-        () => [
-            {
-                date: 'Jan 2024',
-                roomRevenue: 450000000,
-                serviceRevenue: 120000000,
-                totalRevenue: 570000000,
-                bookingCount: 285,
-            },
-            {
-                date: 'Feb 2024',
-                roomRevenue: 480000000,
-                serviceRevenue: 135000000,
-                totalRevenue: 615000000,
-                bookingCount: 310,
-            },
-            {
-                date: 'Mar 2024',
-                roomRevenue: 520000000,
-                serviceRevenue: 148000000,
-                totalRevenue: 668000000,
-                bookingCount: 335,
-            },
-            {
-                date: 'Apr 2024',
-                roomRevenue: 495000000,
-                serviceRevenue: 142000000,
-                totalRevenue: 637000000,
-                bookingCount: 318,
-            },
-            {
-                date: 'May 2024',
-                roomRevenue: 510000000,
-                serviceRevenue: 155000000,
-                totalRevenue: 665000000,
-                bookingCount: 328,
-            },
-            {
-                date: 'Jun 2024',
-                roomRevenue: 580000000,
-                serviceRevenue: 168000000,
-                totalRevenue: 748000000,
-                bookingCount: 375,
-            },
-            {
-                date: 'Jul 2024',
-                roomRevenue: 620000000,
-                serviceRevenue: 182000000,
-                totalRevenue: 802000000,
-                bookingCount: 402,
-            },
-            {
-                date: 'Aug 2024',
-                roomRevenue: 595000000,
-                serviceRevenue: 175000000,
-                totalRevenue: 770000000,
-                bookingCount: 388,
-            },
-            {
-                date: 'Sep 2024',
-                roomRevenue: 540000000,
-                serviceRevenue: 160000000,
-                totalRevenue: 700000000,
-                bookingCount: 352,
-            },
-            {
-                date: 'Oct 2024',
-                roomRevenue: 525000000,
-                serviceRevenue: 152000000,
-                totalRevenue: 677000000,
-                bookingCount: 340,
-            },
-            {
-                date: 'Nov 2024',
-                roomRevenue: 505000000,
-                serviceRevenue: 145000000,
-                totalRevenue: 650000000,
-                bookingCount: 325,
-            },
-            {
-                date: 'Dec 2024',
-                roomRevenue: 630000000,
-                serviceRevenue: 195000000,
-                totalRevenue: 825000000,
-                bookingCount: 415,
-            },
-        ],
-        [],
-    );
+    // useEffect(() => {
+    //     const fetchRevenue = async () => {
+    //         setRevenueLoading(true);
+    //         setRevenueError(null);
+    //         try {
+    //             const data = await getRevenueData();
+    //             setRevenueData(Array.isArray(data) ? data : []);
+    //         } catch (e: any) {
+    //             setRevenueError(e?.message || 'Failed to load revenue data');
+    //             setRevenueData([]);
+    //         } finally {
+    //             setRevenueLoading(false);
+    //         }
+    //     };
+    //     fetchRevenue();
+    // }, []);
 
     // Mock data - Occupancy
     const occupancyData: OccupancyData[] = useMemo(
@@ -585,31 +513,31 @@ const ReportPage: React.FC = () => {
 
     const renderTabContent = () => {
         switch (activeTab) {
-            case 'revenue':
-                return (
-                    <div className="space-y-6">
-                        <RevenueSummary data={revenueData} />
-                        <div className="bg-white p-6 rounded-lg shadow-sm border border-[#EBE3D7]">
-                            <div className="flex justify-between items-center mb-4">
-                                <h3 className="text-lg font-semibold">
-                                    Revenue Trends
-                                </h3>
-                                <div className="flex gap-2">
-                                    <button className="px-3 py-1 text-sm border border-[#EBE3D7] rounded hover:bg-[#F5F0EB]">
-                                        Line
-                                    </button>
-                                    <button className="px-3 py-1 text-sm border border-[#EBE3D7] rounded hover:bg-[#F5F0EB]">
-                                        Bar
-                                    </button>
-                                    <button className="px-3 py-1 text-sm bg-[#CCBDA3] text-white rounded">
-                                        Area
-                                    </button>
-                                </div>
-                            </div>
-                            <RevenueChart data={revenueData} chartType="area" />
-                        </div>
-                    </div>
-                );
+            // case 'revenue':
+            //     return (
+            //         <div className="space-y-6">
+            //             <RevenueSummary data={revenueData} />
+            //             <div className="bg-white p-6 rounded-lg shadow-sm border border-[#EBE3D7]">
+            //                 <div className="flex justify-between items-center mb-4">
+            //                     <h3 className="text-lg font-semibold">
+            //                         Revenue Trends
+            //                     </h3>
+            //                     <div className="flex gap-2">
+            //                         <button className="px-3 py-1 text-sm border border-[#EBE3D7] rounded hover:bg-[#F5F0EB]">
+            //                             Line
+            //                         </button>
+            //                         <button className="px-3 py-1 text-sm border border-[#EBE3D7] rounded hover:bg-[#F5F0EB]">
+            //                             Bar
+            //                         </button>
+            //                         <button className="px-3 py-1 text-sm bg-[#CCBDA3] text-white rounded">
+            //                             Area
+            //                         </button>
+            //                     </div>
+            //                 </div>
+            //                 <RevenueChart data={revenueData} chartType="area" />
+            //             </div>
+            //         </div>
+            //     );
 
             case 'occupancy':
                 return (

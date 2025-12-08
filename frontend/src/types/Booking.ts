@@ -1,4 +1,4 @@
-// ====================== IMPORTS ======================
+
 import type { Customer } from "./Customer";
 import type { Employee } from "./Employee";
 import type { BookingDetail } from "./BookingDetail";
@@ -15,7 +15,6 @@ export interface Booking {
     // Full merged booking status
     status:
         | "PENDING"
-        | "CONFIRMED"
         | "CHECKED_IN"
         | "CHECKED_OUT"
         | "CANCELLED";
@@ -53,7 +52,14 @@ export interface Booking {
 
     earlyCheckin?: EarlyCheckin | null;
     lateCheckout?: LateCheckout | null;
-
+}
+export interface EarlyCheckin {
+    id?: string;
+    requestTime: string;
+    earlyCheckInTime: string;
+    approvalStatus: 'PENDING' | 'APPROVED' | 'REJECTED';
+    additionalFee: number;
+    notes?: string;
 }
 
 // ====================== ROOM BOOKING ======================
@@ -62,17 +68,13 @@ export interface RoomBooking {
     roomId: string;
     roomNumber: string;
     guestName: string;
-
     checkIn: Date;
     checkOut: Date;
-
     status:
-        | "pending"
-        | "confirmed"
-        | "checked-in"
-        | "checked-out"
-        | "cancelled";
-
+        | 'pending'
+        | 'checked-in'
+        | 'checked-out'
+        | 'cancelled';
     numberOfGuests: number;
     totalAmount: number;
 
@@ -81,7 +83,7 @@ export interface RoomBooking {
 
     customer?: any;
     bookingDetails?: any[];
-
     earlyCheckin?: EarlyCheckin | null;
+
     lateCheckout?: LateCheckout | null;
 }

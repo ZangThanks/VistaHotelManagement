@@ -1,19 +1,18 @@
 import { useState, useEffect } from 'react';
 import type { Booking } from '../../types/Booking';
 import { cancelBooking } from '../../services/bookingService';
+import { useToastContext } from '../../hooks/useToastContext';
 
 interface Props {
     booking: Booking | null;
     onClose: () => void;
     onSuccess: () => void;
-    onError?: (message: string) => void;
 }
 
 export default function CancelBookingModal({
     booking,
     onClose,
     onSuccess,
-    onError,
 }: Props) {
     const [reason, setReason] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -25,6 +24,8 @@ export default function CancelBookingModal({
         bankName: '',
         mobileNumber: '',
     });
+
+    const toast = useToastContext();
 
     // Chặn scroll body khi modal mở và thêm ESC key
     useEffect(() => {
@@ -55,16 +56,6 @@ export default function CancelBookingModal({
         if (!reason.trim()) {
             alert('Vui lòng nhập lý do hủy');
             return;
-        }
-
-        // Extra confirmation for reputation penalty
-        if (willLoseReputation) {
-            const confirmWithPenalty = window.confirm(
-                'WARNING: Cancelling this booking will reduce your reputation by 3 points. This may affect your future booking privileges. Are you sure you want to proceed?',
-            );
-            if (!confirmWithPenalty) {
-                return;
-            }
         }
 
         setIsSubmitting(true);
@@ -165,7 +156,9 @@ export default function CancelBookingModal({
             // Kiểm tra xem dữ liệu có được lưu không
             if (refundAmount > 0) {
                 if (!result?.refundAccountInfo && !result?.refundMethod) {
-                    console.warn('WARNING: Refund data not saved to backend!');
+                    console.warn(
+                        '⚠️  WARNING: Refund data not saved to backend!',
+                    );
                     console.warn(
                         'This might be due to PaymentStatus condition in backend',
                     );
@@ -176,21 +169,15 @@ export default function CancelBookingModal({
                         'But actual status might be PERCENTAGE_50 or PERCENTAGE_100',
                     );
                 } else {
-                    console.log('SUCCESS: Refund data saved successfully');
+                    console.log('✅ SUCCESS: Refund data saved successfully');
                 }
             }
 
-            // Thông báo thành công
-            alert('Booking is cancelled successfully!!!');
+            toast.success('Booking is cancelled successfully!!!');
             onSuccess();
         } catch (error) {
             console.error('Error cancelling booking:', error);
-            // Thông báo lỗi
-            if (onError) {
-                onError('Có lỗi xảy ra khi hủy booking');
-            } else {
-                alert('Có lỗi xảy ra khi hủy booking');
-            }
+            toast.error('Có lỗi xảy ra khi hủy booking');
         } finally {
             setIsSubmitting(false);
         }
@@ -286,18 +273,6 @@ export default function CancelBookingModal({
             : 0;
     const cancelCheck = canCancelBooking();
 
-    // Check if reputation will be affected
-    const checkReputationPenalty = () => {
-        const checkInDate = new Date(booking.checkInDate);
-        const now = new Date();
-        const daysUntilCheckin = Math.ceil(
-            (checkInDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
-        );
-        return daysUntilCheckin < 3;
-    };
-
-    const willLoseReputation = checkReputationPenalty();
-
     // Nếu không thể hủy, hiển thị thông báo
     if (!cancelCheck.canCancel) {
         return (
@@ -381,15 +356,15 @@ export default function CancelBookingModal({
                                     Refund half of the amount
                                 </div>
                             </div>
-                            <div className="bg-white p-4 rounded-lg border border-gray-300 shadow-sm">
+                            <div className="bg-white p-4 rounded-lg border border-black/20 shadow-sm">
                                 <div className="text-black font-semibold mb-2">
                                     <i className="fas fa-calendar-times mr-2"></i>
                                     Cancel less than 3 days in advance
                                 </div>
-                                <div className="text-gray-800 font-bold text-xl">
+                                <div className="text-black font-bold text-xl">
                                     0%
                                 </div>
-                                <div className="text-gray-600 text-xs mb-2">
+                                <div className="text-gray-600 text-xs">
                                     Refund not available
                                 </div>
                             </div>
@@ -420,43 +395,6 @@ export default function CancelBookingModal({
                                     </p>
                                 </div>
                             </div>
-
-                            {/* Dynamic Reputation Warning */}
-                            {willLoseReputation && (
-                                <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-                                    <div className="flex items-start gap-3">
-                                        <i className="fas fa-exclamation-triangle text-red-500 mt-0.5"></i>
-                                        <div>
-                                            <h4 className="font-semibold text-red-700 mb-1">
-                                                Reputation Warning
-                                            </h4>
-                                            <p className="text-red-600 text-sm mb-2">
-                                                You are cancelling{' '}
-                                                <strong>
-                                                    {Math.ceil(
-                                                        (new Date(
-                                                            booking.checkInDate,
-                                                        ).getTime() -
-                                                            new Date().getTime()) /
-                                                            (1000 *
-                                                                60 *
-                                                                60 *
-                                                                24),
-                                                    )}{' '}
-                                                    day(s)
-                                                </strong>{' '}
-                                                before check-in. This will
-                                                reduce your reputation by{' '}
-                                                <strong>3 points</strong>.
-                                            </p>
-                                            <p className="text-red-600 text-xs">
-                                                This may affect your future
-                                                booking privileges and priority.
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
 
                             <div className="grid grid-cols-2 gap-4 mb-4">
                                 <div className="bg-white p-4 rounded-lg">
