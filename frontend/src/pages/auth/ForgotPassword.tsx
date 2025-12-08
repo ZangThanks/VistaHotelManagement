@@ -59,7 +59,7 @@ const ForgotPassword: React.FC = () => {
   // Handle captcha verification
   const handleCaptchaVerify = async () => {
     if (!isCaptchaVerified) {
-      alert("Vui lòng nhập đúng mã xác thực");
+      alert("Please enter the correct verification code");
       return;
     }
 
@@ -233,10 +233,10 @@ const ForgotPassword: React.FC = () => {
             >
               <div className="text-center mb-6">
                 <h1 className="text-2xl font-bold text-yellow-50 mb-2">
-                  Quên mật khẩu?
+                  Forgot Password?
                 </h1>
                 <p className="text-sm text-yellow-50/80">
-                  Nhập email của bạn để nhận mã xác thực
+                  Enter your email to receive verification code
                 </p>
               </div>
 
@@ -291,8 +291,8 @@ const ForgotPassword: React.FC = () => {
                     ✓{" "}
                     {detectInputType(identifier) === "email"
                       ? "Email"
-                      : "Số điện thoại"}{" "}
-                    hợp lệ
+                      : "Phone"}{" "}
+                    is valid
                   </p>
                 )}
               </div>
@@ -311,13 +311,13 @@ const ForgotPassword: React.FC = () => {
                   className="p-3 bg-[#00c853]/20 border border-[#00c853]/50 rounded-lg flex items-center gap-2 text-[#00c853] text-sm"
                 >
                   <FontAwesomeIcon icon={faCheckCircle} />
-                  <span>Xác thực thành công!</span>
+                  <span>Verification successful!</span>
                 </motion.div>
               )}
 
               <div className="flex gap-3">
                 <Button
-                  text="Quay lại"
+                  text="Back"
                   color="bg-white/10"
                   textColor="text-white"
                   size="lg"
@@ -326,7 +326,7 @@ const ForgotPassword: React.FC = () => {
                   className="flex-1 font-semibold hover:bg-white/20 transition-colors border-2 border-white/30"
                 />
                 <Button
-                  text="Tiếp tục"
+                  text="Continue"
                   color="bg-[#c3923c]"
                   textColor="text-white"
                   size="lg"
@@ -360,16 +360,16 @@ const ForgotPassword: React.FC = () => {
                   </div>
                 </div>
                 <h1 className="text-2xl font-bold text-yellow-50 mb-2">
-                  Xác thực bảo mật
+                  Security Verification
                 </h1>
                 <p className="text-sm text-yellow-50/80">
-                  Vui lòng xác nhận bạn không phải là robot
+                  Please confirm you are not a robot
                 </p>
               </div>
 
               <div className="flex gap-3">
                 <Button
-                  text="Quay lại"
+                  text="Back"
                   color="bg-white/10"
                   textColor="text-white"
                   size="lg"
@@ -378,7 +378,7 @@ const ForgotPassword: React.FC = () => {
                   className="flex-1 font-semibold hover:bg-white/20 transition-colors border-2 border-white/30"
                 />
                 <Button
-                  text={loading ? "Đang gửi mã..." : "Gửi mã xác thực"}
+                  text={loading ? "Sending code..." : "Send code"}
                   color="bg-[#c3923c]"
                   textColor="text-white"
                   size="lg"
@@ -413,10 +413,10 @@ const ForgotPassword: React.FC = () => {
                   </div>
                 </div>
                 <h1 className="text-2xl font-bold text-yellow-50 mb-2">
-                  Nhập mã xác thực
+                  Enter Verification Code
                 </h1>
                 <p className="text-sm text-yellow-50/80">
-                  Mã xác thực đã được gửi đến{" "}
+                  Verification code has been sent to{" "}
                   <span className="font-semibold text-[#c3923c]">
                     {identifier}
                   </span>
@@ -449,7 +449,7 @@ const ForgotPassword: React.FC = () => {
               <div className="text-center">
                 {resendTimer > 0 ? (
                   <p className="text-white/60 text-sm">
-                    Gửi lại mã sau{" "}
+                    Resend code in{" "}
                     <span className="font-bold text-[#c3923c]">
                       {resendTimer}s
                     </span>
@@ -459,14 +459,14 @@ const ForgotPassword: React.FC = () => {
                     onClick={handleResendOtp}
                     className="text-[#c3923c] hover:text-[#b4893e] text-sm font-medium transition-colors cursor-pointer"
                   >
-                    Không nhận được mã? Gửi lại
+                    Didn't receive code? Resend
                   </button>
                 )}
               </div>
 
               <div className="flex gap-3">
                 <Button
-                  text="Quay lại"
+                  text="Back"
                   color="bg-white/10"
                   textColor="text-white"
                   size="lg"
@@ -475,7 +475,7 @@ const ForgotPassword: React.FC = () => {
                   className="flex-1 font-semibold hover:bg-white/20 transition-colors border-2 border-white/30"
                 />
                 <Button
-                  text={loading ? "Đang xác thực..." : "Xác thực"}
+                  text={loading ? "Verifying..." : "Verify"}
                   color="bg-[#c3923c]"
                   textColor="text-white"
                   size="lg"

@@ -64,8 +64,8 @@ const BookingInfoPopup: React.FC<BookingInfoPopupProps> = ({
 
     // Tính toán vị trí popup để không bị tràn ra ngoài màn hình
     const popupWidth = 280;
-    const popupHeight = 300; // Ước tính chiều cao popup
-    const offset = 20;
+    const popupHeight = 320; // Ước tính chiều cao popup (tăng lên do có thêm giờ)
+    const offset = 16;
 
     let finalX = position.x;
     let finalY = position.y;
@@ -73,20 +73,24 @@ const BookingInfoPopup: React.FC<BookingInfoPopupProps> = ({
     let transformY = '-100%'; // Đặt phía trên mặc định
 
     // Kiểm tra tràn bên phải
-    if (finalX + popupWidth / 2 > window.innerWidth) {
-        finalX = window.innerWidth - offset;
-        transformX = '-100%'; // Căn phải
+    if (finalX + popupWidth / 2 + offset > window.innerWidth) {
+        // Đặt popup căn phải
+        finalX = window.innerWidth - popupWidth - offset;
+        transformX = '0%';
     }
     // Kiểm tra tràn bên trái
-    else if (finalX - popupWidth / 2 < 0) {
+    else if (finalX - popupWidth / 2 < offset) {
+        // Đặt popup căn trái
         finalX = offset;
-        transformX = '0%'; // Căn trái
+        transformX = '0%';
     }
 
     // Kiểm tra tràn phía trên
-    if (finalY - popupHeight < 0) {
+    if (finalY - popupHeight - 20 < 0) {
         transformY = '0%'; // Đặt phía dưới chuột
         finalY = position.y + 20;
+    } else {
+        finalY = finalY - 20; // Offset phía trên
     }
 
     return (
@@ -98,7 +102,6 @@ const BookingInfoPopup: React.FC<BookingInfoPopupProps> = ({
                     left: `${finalX}px`,
                     top: `${finalY}px`,
                     transform: `translate(${transformX}, ${transformY})`,
-                    marginTop: transformY === '-100%' ? '-20px' : '0px',
                 }}
                 initial={{ opacity: 0, scale: 0.9, y: 10 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -151,8 +154,15 @@ const BookingInfoPopup: React.FC<BookingInfoPopupProps> = ({
                         <div className="min-w-0">
                             <p className="text-xs text-gray-500">Check-in</p>
                             <p className="font-semibold text-sm text-gray-800">
-                                {new Date(booking.checkIn).toLocaleDateString(
+                                {new Date(booking.checkIn).toLocaleString(
                                     'vi-VN',
+                                    {
+                                        year: 'numeric',
+                                        month: '2-digit',
+                                        day: '2-digit',
+                                        hour: '2-digit',
+                                        minute: '2-digit',
+                                    }
                                 )}
                             </p>
                         </div>
@@ -164,8 +174,15 @@ const BookingInfoPopup: React.FC<BookingInfoPopupProps> = ({
                         <div className="min-w-0">
                             <p className="text-xs text-gray-500">Check-out</p>
                             <p className="font-semibold text-sm text-gray-800">
-                                {new Date(booking.checkOut).toLocaleDateString(
+                                {new Date(booking.checkOut).toLocaleString(
                                     'vi-VN',
+                                    {
+                                        year: 'numeric',
+                                        month: '2-digit',
+                                        day: '2-digit',
+                                        hour: '2-digit',
+                                        minute: '2-digit',
+                                    }
                                 )}
                             </p>
                         </div>

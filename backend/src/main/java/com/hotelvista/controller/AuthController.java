@@ -1,8 +1,22 @@
 package com.hotelvista.controller;
 
-import com.hotelvista.dto.*;
+import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.hotelvista.dto.ChangePasswordRequest;
 import com.hotelvista.dto.LoginRequest;
 import com.hotelvista.dto.RegisterRequest;
+import com.hotelvista.dto.ResetPasswordRequest;
 import com.hotelvista.model.CartBean;
 import com.hotelvista.model.Customer;
 import com.hotelvista.model.User;
@@ -14,16 +28,9 @@ import com.hotelvista.service.CartBeanService;
 import com.hotelvista.service.CustomerService;
 import com.hotelvista.service.OtpService;
 import com.hotelvista.service.UserService;
-import com.hotelvista.util.GenerateIDUtil;
 import com.hotelvista.util.ValidatorsUtil;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.Map;
+import lombok.RequiredArgsConstructor;
 
 /**
  * Controller xử lý các API liên quan đến xác thực và ủy quyền.
@@ -83,32 +90,32 @@ public class AuthController {
         boolean hasPhone = req.getPhone() != null && !req.getPhone().trim().isEmpty();
 
         if (!hasEmail) {
-            return Map.of("success", false, "message", "Vui lòng cung cấp Email");
+            return Map.of("success", false, "message", "Please provide Email");
         }
 
         if (!hasPhone) {
-            return Map.of("success", false, "message", "Vui lòng cung cấp Số điện thoại");
+            return Map.of("success", false, "message", "Please provide Phone number");
         }
 
         if (req.getUserName() == null || req.getUserName().trim().isEmpty()) {
-            return Map.of("success", false, "message", "Tên đăng nhập không được để trống");
+            return Map.of("success", false, "message", "Username cannot be empty");
         }
 
         if (req.getFullName() == null || req.getFullName().trim().isEmpty()) {
-            return Map.of("success", false, "message", "Họ và tên không được để trống");
+            return Map.of("success", false, "message", "Full name cannot be empty");
         }
 
-        // Kiểm tra trùng lặp
+        // Check for duplicates
         if (req.getEmail() != null && service.findByEmail(req.getEmail()) != null) {
-            return Map.of("success", false, "message", "Email đã được sử dụng");
+            return Map.of("success", false, "message", "Email is already in use");
         }
 
         if (req.getPhone() != null && service.findByPhone(req.getPhone()) != null) {
-            return Map.of("success", false, "message", "Số điện thoại đã được sử dụng");
+            return Map.of("success", false, "message", "Phone number is already in use");
         }
 
         if (service.findByUserName(req.getUserName()) != null) {
-            return Map.of("success", false, "message", "Tên đăng nhập đã được sử dụng");
+            return Map.of("success", false, "message", "Username is already in use");
         }
 
         String passwordError = ValidatorsUtil.validatePassword(req.getPassword());
@@ -145,10 +152,10 @@ public class AuthController {
         c.setCartBean(cartBean);
         service.save(c);
 
-        // Trả về Response với đầy đủ thông tin
+        // Return Response with full information
         return Map.of(
                 "success", true,
-                "message", "Đăng ký thành công!",
+                "message", "Registration successful!",
                 "data", buildUserDataResponse(c)
         );
     }
@@ -170,14 +177,14 @@ public class AuthController {
         if (!hasEmail && !hasPhone && !hasUserName) {
             return Map.of(
                     "success", false,
-                    "message", "Vui lòng cung cấp Email, Số điện thoại hoặc Tên đăng nhập"
+                    "message", "Please provide Email, Phone number or Username"
             );
         }
 
         if (req.getPassword() == null || req.getPassword().trim().isEmpty()) {
             return Map.of(
                     "success", false,
-                    "message", "Mật khẩu không được để trống"
+                    "message", "Password cannot be empty"
             );
         }
 
@@ -191,7 +198,7 @@ public class AuthController {
         if (user == null) {
             return Map.of(
                     "success", false,
-                    "message", "Tài khoản không tồn tại"
+                    "message", "Account does not exist"
             );
         }
 
@@ -201,9 +208,9 @@ public class AuthController {
             return Map.of("success", false, "message", passwordError);
         }
 
-        // Kiểm tra mật khẩu
+        // Check password
         if (!passwordEncoder.matches(req.getPassword(), user.getPassword())) {
-            return Map.of("success", false, "message", "Mật khẩu không đúng");
+            return Map.of("success", false, "message", "Incorrect password");
         }
 
         // Tạo JWT token
@@ -215,10 +222,10 @@ public class AuthController {
 
         String refreshToken = jwtTokenProvider.generateRefreshToken(user.getId());
 
-        // Trả về đầy đủ thông tin user
+        // Return full user information
         return Map.of(
                 "success", true,
-                "message", "Đăng nhập thành công",
+                "message", "Login successful",
                 "data", buildUserDataResponse(user),
                 "token", accessToken,
                 "refreshToken", refreshToken
@@ -236,20 +243,20 @@ public class AuthController {
     public Map<String, Object> refreshToken(@RequestHeader("Authorization") String authHeader) {
         try {
             if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-                return Map.of("success", false, "message", "Token không hợp lệ");
+                return Map.of("success", false, "message", "Invalid token");
             }
 
             String refreshToken = authHeader.substring(7);
 
             if (!jwtTokenProvider.validateToken(refreshToken)) {
-                return Map.of("success", false, "message", "Refresh token không hợp lệ");
+                return Map.of("success", false, "message", "Invalid refresh token");
             }
 
             String userId = jwtTokenProvider.getUserIdFromToken(refreshToken);
             Customer user = service.findById(userId);
 
             if (user == null) {
-                return Map.of("success", false, "message", "Người dùng không tồn tại");
+                return Map.of("success", false, "message", "User does not exist");
             }
 
             // Tạo access token mới
@@ -261,12 +268,12 @@ public class AuthController {
 
             return Map.of(
                     "success", true,
-                    "message", "Token đã được làm mới",
+                    "message", "Token has been refreshed",
                     "token", newAccessToken
             );
 
         } catch (Exception e) {
-            return Map.of("success", false, "message", "Không thể làm mới token");
+            return Map.of("success", false, "message", "Unable to refresh token");
         }
     }
 
@@ -281,7 +288,7 @@ public class AuthController {
     public Map<String, Object> validateToken(@RequestHeader("Authorization") String authHeader) {
         try {
             if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-                return Map.of("success", false, "message", "Token không hợp lệ");
+                return Map.of("success", false, "message", "Invalid token");
             }
 
             String token = authHeader.substring(7);
@@ -291,16 +298,16 @@ public class AuthController {
                 Customer user = service.findById(userId);
 
                 if (user == null) {
-                    return Map.of("success", false, "message", "Người dùng không tồn tại");
+                    return Map.of("success", false, "message", "User does not exist");
                 }
 
-                // Trả về đầy đủ thông tin user
+                // Return full user information
                 return Map.of("success", true, "message", buildUserDataResponse(user));
             } else {
-                return Map.of("success", false, "message", "Token đã hết hạn");
+                return Map.of("success", false, "message", "Token has expired");
             }
         } catch (Exception e) {
-            return Map.of("success", false, "message", "Token không hợp lệ");
+            return Map.of("success", false, "message", "Invalid token");
         }
     }
 

@@ -85,7 +85,7 @@ const RoomTypeCard: React.FC<RoomTypeCardProps> = ({
             <FaEdit className="text-sm" />{" "}
             <span className="hidden sm:inline">Edit</span>
           </button>
-          <button
+          {/* <button
             onClick={(e) => {
               e.stopPropagation();
               onDelete(roomType);
@@ -93,7 +93,7 @@ const RoomTypeCard: React.FC<RoomTypeCardProps> = ({
             className="px-2 sm:px-3 py-1.5 sm:py-2 bg-[#ffebee] text-[#c62828] rounded-lg hover:bg-[#ffcdd2] transition-colors text-xs sm:text-sm font-medium cursor-pointer"
           >
             <FaTrash className="text-sm" />
-          </button>
+          </button> */}
         </div>
       </div>
     </motion.div>

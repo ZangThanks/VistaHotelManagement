@@ -1,14 +1,17 @@
 package com.hotelvista.service;
 
 import com.hotelvista.dto.DistributionCriteriaDTO;
+import com.hotelvista.dto.DistributionHistoryDTO;
 import com.hotelvista.dto.DistributionResultDTO;
 import com.hotelvista.model.Customer;
 import com.hotelvista.model.CustomerVoucher;
+import com.hotelvista.model.DistributionHistory;
 import com.hotelvista.model.Voucher;
 import com.hotelvista.model.enums.Gender;
 import com.hotelvista.model.enums.MemberShipLevel;
 import com.hotelvista.repository.CustomerRepository;
 import com.hotelvista.repository.CustomerVoucherRepository;
+import com.hotelvista.repository.DistributionHistoryRepository;
 import com.hotelvista.repository.VoucherRepository;
 import com.hotelvista.util.CriteriaUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +32,9 @@ public class VoucherService {
 
     @Autowired
     private CustomerVoucherRepository customerVoucherRepo;
+
+    @Autowired
+    private DistributionHistoryRepository distributionHistoryRepo;
 
     /**
      * Tìm tất cả voucher
@@ -202,6 +208,8 @@ public class VoucherService {
             );
 
             if (customers.isEmpty()) {
+                // Save failed distribution history
+                saveDistributionHistory(voucher, criteria, 0, "failed");
                 return new DistributionResultDTO(false, "No suitable customers found", 0);
             }
 
@@ -219,6 +227,9 @@ public class VoucherService {
                     count++;
                 }
             }
+
+            // Save successful distribution history
+            saveDistributionHistory(voucher, criteria, count, "success");
 
             String message = String.format("Vouchers distributed to %d customers", count);
             return new DistributionResultDTO(true, message, count);
@@ -245,5 +256,65 @@ public class VoucherService {
                 birthMonths,
                 minLoyaltyPoints
         );
+    }
+
+    /**
+     * Lưu lịch sử phân phối
+     */
+    private void saveDistributionHistory(Voucher voucher, DistributionCriteriaDTO criteria, int count, String status) {
+        DistributionHistory history = new DistributionHistory();
+        history.setVoucher(voucher);
+        history.setCriteria(formatCriteria(criteria));
+        history.setRecipientCount(count);
+        history.setStatus(status);
+        distributionHistoryRepo.save(history);
+    }
+
+    /**
+     * Format criteria thành string để hiển thị
+     */
+    private String formatCriteria(DistributionCriteriaDTO criteria) {
+        StringBuilder sb = new StringBuilder();
+        
+        if (criteria.getMembershipLevel() != null && !criteria.getMembershipLevel().isEmpty()) {
+            sb.append("Membership: ").append(String.join(", ", criteria.getMembershipLevel()));
+        }
+        
+        if (criteria.getGender() != null && !criteria.getGender().isEmpty()) {
+            if (sb.length() > 0) sb.append(", ");
+            sb.append("Gender: ").append(String.join(", ", criteria.getGender()));
+        }
+        
+        if (criteria.getBirthMonth() != null && !criteria.getBirthMonth().isEmpty()) {
+            if (sb.length() > 0) sb.append(", ");
+            sb.append("Birth Month: ").append(criteria.getBirthMonth().stream()
+                    .map(String::valueOf)
+                    .collect(Collectors.joining(", ")));
+        }
+        
+        if (criteria.getMinLoyaltyPoints() != null && criteria.getMinLoyaltyPoints() > 0) {
+            if (sb.length() > 0) sb.append(", ");
+            sb.append("Min Points: ").append(criteria.getMinLoyaltyPoints());
+        }
+        
+        return sb.length() > 0 ? sb.toString() : "All customers";
+    }
+
+    /**
+     * Lấy lịch sử phân phối
+     */
+    public List<DistributionHistoryDTO> getDistributionHistory() {
+        return distributionHistoryRepo.findAllByOrderByDistributedAtDesc()
+                .stream()
+                .map(h -> new DistributionHistoryDTO(
+                        h.getId(),
+                        h.getVoucher().getVoucherID(),
+                        h.getVoucher().getVoucherName(),
+                        h.getCriteria(),
+                        h.getRecipientCount(),
+                        h.getDistributedAt(),
+                        h.getStatus()
+                ))
+                .collect(Collectors.toList());
     }
 }

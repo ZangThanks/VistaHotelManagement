@@ -69,32 +69,61 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
         };
     };
 
-    // Load notifications from API
+    // Load notifications from API cho customer và employee
     const refreshNotifications = useCallback(async () => {
         try {
-            // First try to get all notifications (with pagination)
+            const token = localStorage.getItem('token');
+            if (!token) {
+                console.warn('⚠️ [Context] No token, user not logged in');
+                setNotifications([]);
+                return;
+            }
+
+            console.log('🔄 [Context] Refreshing notifications...');
+
+            // Lấy tất cả notifications (customer hoặc employee)
             const response = await notificationApiService.getMyNotifications(
                 0,
                 50,
             );
 
-            if (response.success && response.data?.content) {
+            console.log('📥 [Context] API Response:', {
+                success: response.success,
+                hasData: !!response.data,
+                hasContent: !!response.data?.content,
+                contentLength: response.data?.content?.length,
+            });
+
+            if (
+                response.success &&
+                response.data?.content &&
+                Array.isArray(response.data.content)
+            ) {
                 const frontendNotifications = response.data.content.map(
                     convertBackendToFrontend,
                 );
 
+                console.log(
+                    '✅ [Context] Loaded',
+                    frontendNotifications.length,
+                    'notifications',
+                );
                 setNotifications(frontendNotifications);
                 return;
             }
 
             console.log(
-                '[Context] No content in main response, trying unread...',
+                '⚠️ [Context] No content in response, trying unread...',
             );
 
-            // Fallback: try unread notifications only
+            // Fallback: lấy unread notifications
             const unreadResponse =
                 await notificationApiService.getUnreadNotifications();
-            if (unreadResponse.success && unreadResponse.data) {
+            if (
+                unreadResponse.success &&
+                unreadResponse.data &&
+                Array.isArray(unreadResponse.data)
+            ) {
                 console.log(
                     '📭 [Context] Got',
                     unreadResponse.data.length,
@@ -105,25 +134,14 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
                     convertBackendToFrontend,
                 );
                 setNotifications(frontendNotifications);
+                return;
             }
+
+            console.log('ℹ️ [Context] No notifications available');
+            setNotifications([]);
         } catch (error) {
-            console.error(
-                '[Context] Error loading notifications from API:',
-                error,
-            );
-            // Show fallback welcome message when backend is not available
-            setNotifications([
-                {
-                    id: 'welcome',
-                    title: 'Chào mừng đến với Vista Hotel',
-                    message:
-                        'Hệ thống thông báo sẵn sàng! Backend API sẽ được kết nối khi khả dụng.',
-                    type: 'info',
-                    timestamp: new Date().toISOString(),
-                    isRead: false,
-                    priority: 'NORMAL',
-                },
-            ]);
+            console.error('❌ [Context] Error loading notifications:', error);
+            setNotifications([]);
         }
     }, []);
 
@@ -132,12 +150,12 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
         refreshNotifications();
     }, [refreshNotifications]);
 
-    // ✅ POLLING ENABLED - Backend fixed!
-    // Polling for new notifications every 5 seconds
-    useEffect(() => {
-        const interval = setInterval(refreshNotifications, 5000);
-        return () => clearInterval(interval);
-    }, [refreshNotifications]);
+    // ⚠️ POLLING DISABLED - Waiting for backend endpoint
+    // TODO: Enable after backend /api/notifications endpoint is ready
+    // useEffect(() => {
+    //     const interval = setInterval(refreshNotifications, 5000);
+    //     return () => clearInterval(interval);
+    // }, [refreshNotifications]);
 
     const addNotification = useCallback(
         (

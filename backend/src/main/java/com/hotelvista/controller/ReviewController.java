@@ -10,6 +10,7 @@ import com.hotelvista.service.BookingService;
 import com.hotelvista.service.ReviewService;
 import com.hotelvista.service.RoomService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -42,5 +43,23 @@ public class ReviewController {
     @PostMapping("/save/{bookingId}/{roomNumber}")
     public boolean saveReview(@RequestBody Review review, @PathVariable String bookingId, @PathVariable String roomNumber) {
         return reviewService.addReview(review, bookingId, roomNumber);
+    }
+
+    // 1. Biểu đồ đường
+    @GetMapping("/ratings/trend")
+    public ResponseEntity<?> getRatingTrend() {
+        return ResponseEntity.ok(reviewService.getRatingTrend());
+    }
+
+    // 2. Biểu đồ cột
+    @GetMapping("/ratings/category")
+    public ResponseEntity<?> getCategoryRatings() {
+        return ResponseEntity.ok(reviewService.getCategoryRatings());
+    }
+
+    // 3. Biểu đồ tròn
+    @GetMapping("/ratings/sentiment")
+    public ResponseEntity<?> getSentiment() {
+        return ResponseEntity.ok(reviewService.getSentiment());
     }
 }

@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React, { useState, useMemo, useEffect } from 'react';
 import {
     FaChartLine,
@@ -20,13 +21,11 @@ import OccupancyChart from '../../../components/report/OccupancyChart';
 import RoomTypeAnalysis from '../../../components/report/RoomTypeAnalysis';
 import LoyaltyChart from '../../../components/report/LoyaltyChart';
 import MembershipDistribution from '../../../components/report/MembershipDistribution';
-import PointsRedemption from '../../../components/report/PointsRedemption';
 import ReviewChart from '../../../components/report/ReviewChart';
 import RatingBreakdown from '../../../components/report/RatingBreakdown';
 import SentimentAnalysis from '../../../components/report/SentimentAnalysis';
 import BookingTrends from '../../../components/report/BookingTrends';
 import BookingChart from '../../../components/report/BookingChart';
-import ChannelAnalysis from '../../../components/report/ChannelAnalysis';
 import DateRangePicker from '../../../components/report/DateRangePicker';
 import FilterBar from '../../../components/report/FilterBar';
 import ExportButton from '../../../components/report/ExportButton';
@@ -38,6 +37,11 @@ import PopularServices from '../../../components/report/PopularServices';
 import { reportService } from '../../../services/reportService';
 import RevenueTab from './components/RevenueTab';
 import { getRevenueData } from '../../../services/revenueReportService';
+import LoyaltySummary from "../../../components/report/LoyaltySummary";
+import {
+  exportLoyaltyToPDF,
+  exportLoyaltyToExcel,
+} from "../../../utils/exportUtils";
 
 type ReportTab =
     | 'revenue'
@@ -50,6 +54,8 @@ type ReportTab =
 const ReportPage: React.FC = () => {
     const [activeTab, setActiveTab] = useState<ReportTab>('revenue');
     const [period, setPeriod] = useState<ReportPeriod>('monthly');
+    // const [startDate, setStartDate] = useState("2024-01-01");
+    // const [endDate, setEndDate] = useState("2024-12-31");
 
     // Get current date
     const today = new Date();
@@ -111,6 +117,11 @@ const ReportPage: React.FC = () => {
         }
     }, [period, showDateFilter]);
 
+    // State for API data
+    const [loyaltyData, setLoyaltyData] = useState<LoyaltyData[]>([]);
+    const [bookingData, setBookingData] = useState<BookingData[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
     // Fetch service report data from API
     useEffect(() => {
         if (activeTab === 'services') {
@@ -230,66 +241,69 @@ const ReportPage: React.FC = () => {
         [],
     );
 
-    // Mock data - Loyalty
-    const loyaltyData: LoyaltyData[] = useMemo(
-        () => [
-            {
-                month: 'Jan',
-                bronze: 420,
-                silver: 250,
-                gold: 130,
-                platinum: 38,
-                totalPoints: 125000,
-                redemptions: 45000,
-            },
-            {
-                month: 'Feb',
-                bronze: 425,
-                silver: 255,
-                gold: 135,
-                platinum: 40,
-                totalPoints: 132000,
-                redemptions: 48000,
-            },
-            {
-                month: 'Mar',
-                bronze: 430,
-                silver: 260,
-                gold: 138,
-                platinum: 42,
-                totalPoints: 138000,
-                redemptions: 52000,
-            },
-            {
-                month: 'Apr',
-                bronze: 435,
-                silver: 265,
-                gold: 142,
-                platinum: 43,
-                totalPoints: 142000,
-                redemptions: 55000,
-            },
-            {
-                month: 'May',
-                bronze: 440,
-                silver: 270,
-                gold: 145,
-                platinum: 44,
-                totalPoints: 148000,
-                redemptions: 58000,
-            },
-            {
-                month: 'Jun',
-                bronze: 445,
-                silver: 275,
-                gold: 148,
-                platinum: 45,
-                totalPoints: 155000,
-                redemptions: 62000,
-            },
-        ],
-        [],
-    );
+    // Fetch Loyalty Data from API
+    useEffect(() => {
+        const fetchLoyaltyData = async () => {
+            if (activeTab !== 'loyalty') return;
+
+            setLoading(true);
+            setError(null);
+            try {
+                const data = await reportService.getLoyaltyReport(
+                    startDate,
+                    endDate,
+                    period.toUpperCase(),
+                );
+                setLoyaltyData(data);
+            } catch (err) {
+                console.error('Failed to fetch loyalty report:', err);
+                setError('Failed to load loyalty data. Using sample data.');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchLoyaltyData();
+    }, [activeTab, startDate, endDate, period]);
+
+    // Fetch Booking Data from API
+    useEffect(() => {
+        const fetchBookingData = async () => {
+            if (activeTab !== 'bookings') return;
+
+            setLoading(true);
+            setError(null);
+            try {
+                const data = await reportService.getBookingReport(
+                    startDate,
+                    endDate,
+                    period.toUpperCase(),
+                );
+                setBookingData(data);
+            } catch (err) {
+                console.error('Failed to fetch booking report:', err);
+                setError('Failed to load booking data.');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchBookingData();
+    }, [activeTab, startDate, endDate, period]);
+
+    // Handle export
+    const handleExport = (format: 'pdf' | 'excel') => {
+        const dateRangeText = `${startDate} to ${endDate}`;
+
+        if (activeTab === 'loyalty') {
+            if (format === 'pdf') {
+                exportLoyaltyToPDF(loyaltyData, dateRangeText);
+            } else {
+                exportLoyaltyToExcel(loyaltyData, dateRangeText);
+            }
+        }
+        // Add other report types here in the future
+    };
 
     // Mock data - Reviews
     const reviewData: ReviewData[] = useMemo(
@@ -353,109 +367,6 @@ const ReportPage: React.FC = () => {
                 location: 4.5,
                 value: 4.4,
                 sentimentScore: 0.87,
-            },
-        ],
-        [],
-    );
-
-    // Mock data - Bookings
-    const bookingData: BookingData[] = useMemo(
-        () => [
-            {
-                date: 'Jan 2024',
-                website: 180,
-                phone: 75,
-                walkin: 30,
-                totalBookings: 285,
-                cancellationRate: 8.5,
-            },
-            {
-                date: 'Feb 2024',
-                website: 195,
-                phone: 82,
-                walkin: 33,
-                totalBookings: 310,
-                cancellationRate: 7.8,
-            },
-            {
-                date: 'Mar 2024',
-                website: 215,
-                phone: 88,
-                walkin: 32,
-                totalBookings: 335,
-                cancellationRate: 6.9,
-            },
-            {
-                date: 'Apr 2024',
-                website: 205,
-                phone: 80,
-                walkin: 33,
-                totalBookings: 318,
-                cancellationRate: 7.2,
-            },
-            {
-                date: 'May 2024',
-                website: 210,
-                phone: 85,
-                walkin: 33,
-                totalBookings: 328,
-                cancellationRate: 6.8,
-            },
-            {
-                date: 'Jun 2024',
-                website: 242,
-                phone: 95,
-                walkin: 38,
-                totalBookings: 375,
-                cancellationRate: 5.5,
-            },
-            {
-                date: 'Jul 2024',
-                website: 258,
-                phone: 102,
-                walkin: 42,
-                totalBookings: 402,
-                cancellationRate: 5.2,
-            },
-            {
-                date: 'Aug 2024',
-                website: 248,
-                phone: 98,
-                walkin: 42,
-                totalBookings: 388,
-                cancellationRate: 5.8,
-            },
-            {
-                date: 'Sep 2024',
-                website: 225,
-                phone: 90,
-                walkin: 37,
-                totalBookings: 352,
-                cancellationRate: 6.5,
-            },
-            {
-                date: 'Oct 2024',
-                website: 218,
-                phone: 87,
-                walkin: 35,
-                totalBookings: 340,
-                cancellationRate: 6.8,
-            },
-            {
-                date: 'Nov 2024',
-                website: 208,
-                phone: 83,
-                walkin: 34,
-                totalBookings: 325,
-                cancellationRate: 7.1,
-            },
-            {
-                date: 'Dec 2024',
-                website: 268,
-                phone: 105,
-                walkin: 42,
-                totalBookings: 415,
-                cancellationRate: 4.8,
             },
         ],
         [],
@@ -532,19 +443,56 @@ const ReportPage: React.FC = () => {
             case 'loyalty':
                 return (
                     <div className="space-y-6">
-                        <div className="bg-white p-6 rounded-lg shadow-sm border border-[#EBE3D7]">
-                            <h3 className="text-lg font-semibold mb-4">
-                                Membership Growth Over Time
-                            </h3>
-                            <LoyaltyChart data={loyaltyData} />
-                        </div>
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            <MembershipDistribution />
-                            <PointsRedemption data={loyaltyData} />
-                        </div>
+                        {/* Loading State */}
+                        {loading && (
+                            <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-lg">
+                                <p className="text-blue-700 font-medium">
+                                    Loading loyalty data...
+                                </p>
+                            </div>
+                        )}
+
+                        {/* Error State */}
+                        {error && (
+                            <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-lg">
+                                <p className="text-yellow-700 font-medium">
+                                    {error}
+                                </p>
+                            </div>
+                        )}
+
+                        {/* Data Display */}
+                        {!loading && loyaltyData.length > 0 && (
+                            <>
+                                {/* Summary Statistics */}
+                                <LoyaltySummary data={loyaltyData} />
+
+                                {/* Charts Grid */}
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                    <div className="bg-white p-6 rounded-lg shadow-sm border border-[#EBE3D7]">
+                                        <h3 className="text-lg font-semibold mb-4">
+                                            Membership Growth Trend
+                                        </h3>
+                                        <LoyaltyChart data={loyaltyData} />
+                                    </div>
+                                    <MembershipDistribution
+                                        data={loyaltyData}
+                                    />
+                                </div>
+                            </>
+                        )}
+
+                        {/* No Data State */}
+                        {!loading && loyaltyData.length === 0 && !error && (
+                            <div className="bg-gray-50 border border-gray-200 p-8 rounded-lg text-center">
+                                <p className="text-gray-600">
+                                    No loyalty data available for the selected
+                                    period.
+                                </p>
+                            </div>
+                        )}
                     </div>
                 );
-
             case 'reviews':
                 return (
                     <div className="space-y-6">
@@ -555,8 +503,8 @@ const ReportPage: React.FC = () => {
                             <ReviewChart data={reviewData} />
                         </div>
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            <RatingBreakdown />
-                            <SentimentAnalysis />
+                            <RatingBreakdown data={reviewData} />
+                            <SentimentAnalysis data={reviewData} />
                         </div>
                     </div>
                 );
@@ -567,11 +515,10 @@ const ReportPage: React.FC = () => {
                         <BookingTrends data={bookingData} />
                         <div className="bg-white p-6 rounded-lg shadow-sm border border-[#EBE3D7]">
                             <h3 className="text-lg font-semibold mb-4">
-                                Bookings by Channel Over Time
+                                Booking Trends Over Time
                             </h3>
                             <BookingChart data={bookingData} />
                         </div>
-                        <ChannelAnalysis />
                     </div>
                 );
 
