@@ -5,21 +5,6 @@ import type { Room } from '../view/RoomTableView';
 import BookingInfoPopup from '../modal/BookingInfoPopup';
 import type { RoomBooking } from '../../../types/Booking';
 
-// export interface RoomBooking {
-//     id: string;
-//     roomId: string;
-//     roomNumber: string;
-//     guestName: string;
-//     checkIn: Date;
-//     checkOut: Date;
-//     status:
-//         | 'pending'
-//         | 'confirmed'
-//         | 'checked-in'
-//         | 'checked-out'
-//         | 'cancelled';
-// }
-
 interface RoomCalendarViewProps {
     rooms: Room[];
     bookings: RoomBooking[];
@@ -40,7 +25,7 @@ interface CalendarDay {
 }
 
 /**
- * Calendar dạng tháng với các booking hiển thị như thanh kéo dài
+ * Calendar dạng tháng với các booking 
  */
 const RoomCalendarView: React.FC<RoomCalendarViewProps> = ({
     rooms,
@@ -56,8 +41,6 @@ const RoomCalendarView: React.FC<RoomCalendarViewProps> = ({
     const [hoveredBookingId, setHoveredBookingId] = useState<string | null>(
         null,
     );
-
-    // Không cần closeTimeoutRef nữa vì dùng click
 
     const weekDays = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
 

@@ -211,15 +211,29 @@ export const previewDistribution = async (
     }
 };
 
+/**
+ * Lấy lịch sử phân phối voucher
+ */
+export const getDistributionHistory = async (): Promise<any[]> => {
+  try {
+    const response = await api.get(`${ENDPOINT}/distribution-history`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching distribution history:", error);
+    throw error;
+  }
+};
+
 const voucherService = {
-    getAllVouchers,
-    getVoucherById,
-    saveVoucher,
-    updateVoucher,
-    toggleVoucherStatus,
-    deleteVoucher,
-    distributeVoucher,
-    previewDistribution,
+  getAllVouchers,
+  getVoucherById,
+  saveVoucher,
+  updateVoucher,
+  toggleVoucherStatus,
+  deleteVoucher,
+  distributeVoucher,
+  previewDistribution,
+  getDistributionHistory,
 };
 
 export default voucherService;

@@ -5,36 +5,28 @@ import type { DateRange } from "../../types/Report";
 interface ExportButtonProps {
   reportType: string;
   dateRange: DateRange;
+  onExport: (format: "pdf" | "excel") => void;
 }
 
 const ExportButton: React.FC<ExportButtonProps> = ({
   reportType,
   dateRange,
+  onExport,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleExport = async (format: "pdf" | "excel") => {
-    // setLoading(true);
-    // try {
-    //   //   const blob = await exportReport(reportType, dateRange, format);
-    //   //   const url = window.URL.createObjectURL(blob);
-    //   const link = document.createElement("a");
-    //   link.href = url;
-    //   link.download = `${reportType}_report_${dateRange.startDate}_${
-    //     dateRange.endDate
-    //   }.${format === "pdf" ? "pdf" : "xlsx"}`;
-    //   document.body.appendChild(link);
-    //   link.click();
-    //   document.body.removeChild(link);
-    //   window.URL.revokeObjectURL(url);
-    //   setIsOpen(false);
-    // } catch (error) {
-    //   console.error("Export failed:", error);
-    //   alert("Failed to export report");
-    // } finally {
-    //   setLoading(false);
-    // }
+    setLoading(true);
+    try {
+      onExport(format);
+      setIsOpen(false);
+    } catch (error) {
+      console.error("Export failed:", error);
+      alert("Failed to export report");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

@@ -8,7 +8,6 @@ import {
   FaUser,
   FaEnvelope,
   FaPhone,
-  FaIdCard,
   FaBed,
   FaClock,
   FaReceipt,
@@ -91,12 +90,18 @@ const BookingDetailDialog: React.FC<BookingDetailDialogProps> = ({
     switch (status) {
       case "PAID":
         return "Paid";
+      case "COMPLETED":
+        return "Completed";
       case "PENDING":
         return "Pending Payment";
+      case "PERCENTAGE_30":
+        return "30% Paid";
+      case "PERCENTAGE_50":
+        return "50% Paid";
       case "REFUNDED":
         return "Refunded";
-      case "PARTIAL":
-        return "Partially Paid";
+      case "CANCELLED":
+        return "Cancelled";
       default:
         return status;
     }
@@ -247,28 +252,27 @@ const BookingDetailDialog: React.FC<BookingDetailDialogProps> = ({
                         <FaUser className="text-[#C3923C] mt-1" />
                         <div>
                           <p className="text-gray-600">Full Name</p>
-                          <p className="font-medium">{booking.fullName}</p>
+                          <p className="font-medium">
+                            {booking.customer.fullName}
+                          </p>
                         </div>
                       </div>
                       <div className="flex items-start gap-3">
                         <FaEnvelope className="text-[#C3923C] mt-1" />
                         <div>
                           <p className="text-gray-600">Email</p>
-                          <p className="font-medium">{booking.email}</p>
+                          <p className="font-medium">
+                            {booking.customer.email}
+                          </p>
                         </div>
                       </div>
                       <div className="flex items-start gap-3">
                         <FaPhone className="text-[#C3923C] mt-1" />
                         <div>
                           <p className="text-gray-600">Phone Number</p>
-                          <p className="font-medium">{booking.phoneNumber}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-start gap-3">
-                        <FaIdCard className="text-[#C3923C] mt-1" />
-                        <div>
-                          <p className="text-gray-600">ID Card</p>
-                          <p className="font-medium">{booking.idCard}</p>
+                          <p className="font-medium">
+                            {booking.customer.phone}
+                          </p>
                         </div>
                       </div>
                       <div className="flex items-start gap-3">
@@ -298,52 +302,28 @@ const BookingDetailDialog: React.FC<BookingDetailDialogProps> = ({
                             key={index}
                             className="bg-white rounded-lg p-4 border border-[#CCBDA3]/30"
                           >
-                            <div className="flex justify-between items-start mb-2">
+                            <div className="flex justify-between items-start">
                               <div>
                                 <h4 className="font-semibold text-gray-800">
-                                  Room {detail.roomNumber}
+                                  Room {detail.room.roomNumber}
                                 </h4>
                                 <p className="text-sm text-gray-600">
-                                  {detail.roomTypeName}
+                                  {detail.room.roomType?.typeName}
+                                </p>
+                                <p className="text-xs text-gray-500 mt-1">
+                                  Floor: {detail.room.floor || "N/A"}
                                 </p>
                               </div>
                               <div className="text-right">
                                 <p className="font-bold text-[#C3923C]">
-                                  {detail.totalAmount?.toLocaleString("en-US")}đ
+                                  {detail.roomPrice?.toLocaleString("en-US")}đ
                                 </p>
                                 <p className="text-xs text-gray-600">
-                                  {detail.duration}{" "}
-                                  {booking.type === "HOURLY"
-                                    ? "hours"
-                                    : "nights"}
+                                  per{" "}
+                                  {booking.type === "HOURLY" ? "hour" : "night"}
                                 </p>
                               </div>
                             </div>
-                            {detail.servicesUsed &&
-                              detail.servicesUsed.length > 0 && (
-                                <div className="mt-3 pt-3 border-t border-[#CCBDA3]/30">
-                                  <p className="text-xs text-gray-600 mb-2">
-                                    Services Used:
-                                  </p>
-                                  <div className="space-y-1">
-                                    {detail.servicesUsed.map((service, idx) => (
-                                      <div
-                                        key={idx}
-                                        className="flex justify-between text-sm"
-                                      >
-                                        <span>{service.serviceName}</span>
-                                        <span className="text-gray-600">
-                                          {service.quantity} x{" "}
-                                          {service.price?.toLocaleString(
-                                            "en-US"
-                                          )}
-                                          đ
-                                        </span>
-                                      </div>
-                                    ))}
-                                  </div>
-                                </div>
-                              )}
                           </div>
                         ))}
                       </div>
@@ -360,19 +340,24 @@ const BookingDetailDialog: React.FC<BookingDetailDialogProps> = ({
                     </div>
                     <div className="space-y-3">
                       <div className="flex justify-between items-center text-sm">
-                        <span className="text-gray-600">Subtotal</span>
+                        <span className="text-gray-600">Booking Type</span>
                         <span className="font-medium">
-                          {booking.totalAmount?.toLocaleString("en-US")}đ
+                          {booking.type === "HOURLY" ? "Hourly" : "Daily"}
                         </span>
                       </div>
-                      {booking.discountAmount > 0 && (
-                        <div className="flex justify-between items-center text-sm text-green-600">
-                          <span>Discount</span>
-                          <span>
-                            -{booking.discountAmount?.toLocaleString("en-US")}đ
-                          </span>
-                        </div>
-                      )}
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="text-gray-600">Duration</span>
+                        <span className="font-medium">
+                          {booking.duration}{" "}
+                          {booking.type === "HOURLY" ? "hours" : "nights"}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="text-gray-600">Package Type</span>
+                        <span className="font-medium">
+                          {booking.packageType}
+                        </span>
+                      </div>
                       <div className="pt-3 border-t border-[#CCBDA3]/30 flex justify-between items-center">
                         <span className="font-semibold text-gray-800">
                           Total Amount
@@ -385,22 +370,18 @@ const BookingDetailDialog: React.FC<BookingDetailDialogProps> = ({
                         <span className="text-gray-600">Payment Status</span>
                         <span
                           className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                            booking.paymentStatus === "PAID"
+                            booking.paymentStatus === "PAID" ||
+                            booking.paymentStatus === "COMPLETED"
                               ? "bg-green-100 text-green-800"
+                              : booking.paymentStatus === "PERCENTAGE_30" ||
+                                booking.paymentStatus === "PERCENTAGE_50"
+                              ? "bg-blue-100 text-blue-800"
                               : "bg-yellow-100 text-yellow-800"
                           }`}
                         >
                           {getPaymentStatusLabel(booking.paymentStatus)}
                         </span>
                       </div>
-                      {booking.paymentMethod && (
-                        <div className="flex justify-between items-center text-sm">
-                          <span className="text-gray-600">Payment Method</span>
-                          <span className="font-medium">
-                            {booking.paymentMethod}
-                          </span>
-                        </div>
-                      )}
                     </div>
                   </div>
 

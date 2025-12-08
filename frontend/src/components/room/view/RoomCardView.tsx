@@ -175,7 +175,7 @@ const RoomCardView: React.FC<RoomCardViewProps> = ({
                                 <FaEdit />
                                 Edit
                             </button>
-                            <button
+                            {/* <button
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     onDelete(room);
@@ -184,7 +184,7 @@ const RoomCardView: React.FC<RoomCardViewProps> = ({
                                 title="Delete"
                             >
                                 <FaTrashAlt />
-                            </button>
+                            </button> */}
                         </div>
                     </div>
                 </motion.div>

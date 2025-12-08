@@ -1,9 +1,8 @@
 package com.hotelvista.model.enums;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import lombok.*;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -17,5 +16,23 @@ public enum NotificationStatus {
     DISMISSED("DISMISSED"),
     SENT("SENT"),
     FAILED("FAILED");
+
     private String notificationStatus;
+
+    @JsonCreator
+    public static NotificationStatus fromString(String value) {
+        if (value == null) return PENDING;
+        for (NotificationStatus s : values()) {
+            if (s.name().equalsIgnoreCase(value) ||
+                    s.notificationStatus.equalsIgnoreCase(value)) {
+                return s;
+            }
+        }
+        return PENDING;
+    }
+
+    @JsonValue
+    public String toValue() {
+        return this.name();
+    }
 }

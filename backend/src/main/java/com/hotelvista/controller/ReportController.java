@@ -1,29 +1,25 @@
 package com.hotelvista.controller;
 
 import com.hotelvista.dto.ServiceReportDTO;
+import com.hotelvista.dto.report.BookingReportDTO;
 import com.hotelvista.dto.report.DashboardStatsDTO;
+import com.hotelvista.dto.report.LoyaltyReportDTO;
+import com.hotelvista.model.enums.ReportPeriod;
 import com.hotelvista.service.ReportService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
 
-/**
- * Controller xử lý các API liên quan đến báo cáo và thống kê
- */
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/report")
 @CrossOrigin(origins = "http://localhost:5173")
 public class ReportController {
-
     @Autowired
     private  ReportService reportService;
 
@@ -48,4 +44,23 @@ public class ReportController {
         return ResponseEntity.ok(reportService.getDashboardStats());
     }
 
+    @GetMapping("/loyalty")
+    public ResponseEntity<List<LoyaltyReportDTO>> getLoyaltyReport(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(defaultValue = "MONTHLY") ReportPeriod period
+    ) {
+        List<LoyaltyReportDTO> report = reportService.getLoyaltyReport(startDate, endDate, period);
+        return ResponseEntity.ok(report);
+    }
+
+    @GetMapping("/booking")
+    public ResponseEntity<List<BookingReportDTO>> getBookingReport(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(defaultValue = "MONTHLY") ReportPeriod period
+    ) {
+        List<BookingReportDTO> report = reportService.getBookingReport(startDate, endDate, period);
+        return ResponseEntity.ok(report);
+    }
 }
