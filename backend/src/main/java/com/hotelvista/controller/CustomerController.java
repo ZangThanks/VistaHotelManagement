@@ -150,4 +150,29 @@ public class CustomerController {
         }
         return cust;
     }
+
+    /**
+     * Tìm khách hàng theo số điện thoại
+     */
+    @GetMapping("/by-phone/{phone}")
+    public ResponseEntity<Customer> getCustomerByPhone(@PathVariable String phone) {
+        Customer customer = service.findByPhone(phone);
+        if (customer != null) {
+            return ResponseEntity.ok(customer);
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    /**
+     * Tìm khách hàng theo email
+     */
+    @GetMapping("/by-email/{email}")
+    public ResponseEntity<Customer> getCustomerByEmail(@PathVariable String email) {
+        Customer customer = service.findByEmail(email);
+        if (customer != null) {
+            return ResponseEntity.ok(customer);
+        }
+        return ResponseEntity.notFound().build();
+    }
+
 }

@@ -1,10 +1,15 @@
 package com.hotelvista.controller;
 
 import com.hotelvista.dto.ServiceReportDTO;
+import com.hotelvista.dto.report.DashboardStatsDTO;
 import com.hotelvista.service.ReportService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -14,11 +19,11 @@ import java.util.List;
  */
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/reports")
+@RequestMapping("/report")
 @CrossOrigin(origins = "http://localhost:5173")
 public class ReportController {
 
-    private final ReportService reportService;
+    private  ReportService reportService;
 
     /**
      * API lấy báo cáo dịch vụ
@@ -35,4 +40,10 @@ public class ReportController {
     ) {
         return reportService.getServiceReport(startDate, endDate, period);
     }
+
+    @GetMapping("/dashboard")
+    public ResponseEntity<DashboardStatsDTO> getDashboardStats() {
+        return ResponseEntity.ok(reportService.getDashboardStats());
+    }
+
 }

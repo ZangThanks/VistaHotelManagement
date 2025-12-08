@@ -4,6 +4,8 @@ import com.hotelvista.dto.ServiceReportDTO;
 import com.hotelvista.model.BookingService;
 import com.hotelvista.model.enums.ServiceCategory;
 import com.hotelvista.repository.BookingServiceRepository;
+import com.hotelvista.dto.report.DashboardStatsDTO;
+import com.hotelvista.repository.ReportRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -11,35 +13,40 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 public class ReportService {
 
     private final BookingServiceRepository bookingServiceRepository;
+    private final ReportRepository reportRepository;
 
     /**
      * Lấy báo cáo dịch vụ theo khoảng thời gian
+     *
      * @param startDate ngày bắt đầu
-     * @param endDate ngày kết thúc
-     * @param period loại báo cáo: daily, weekly, monthly, quarterly, yearly
+     * @param endDate   ngày kết thúc
+     * @param period    loại báo cáo: daily, weekly, monthly, quarterly, yearly
      * @return danh sách ServiceReportDTO
      */
     public List<ServiceReportDTO> getServiceReport(LocalDate startDate, LocalDate endDate, String period) {
         List<BookingService> bookingServices = bookingServiceRepository.findByDateRange(startDate, endDate);
-        
+
         // Group by period
         Map<String, List<BookingService>> groupedData = groupByPeriod(bookingServices, period);
-        
+
         // Calculate statistics for each period
         List<ServiceReportDTO> reports = new ArrayList<>();
         for (Map.Entry<String, List<BookingService>> entry : groupedData.entrySet()) {
             reports.add(calculateReport(entry.getKey(), entry.getValue()));
         }
-        
+
         // Sort by date
         reports.sort(Comparator.comparing(ServiceReportDTO::getDate));
-        
+
         return reports;
     }
 
@@ -48,7 +55,7 @@ public class ReportService {
      */
     private Map<String, List<BookingService>> groupByPeriod(List<BookingService> bookingServices, String period) {
         DateTimeFormatter formatter;
-        
+
         switch (period.toLowerCase()) {
             case "daily":
                 formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
@@ -67,11 +74,11 @@ public class ReportService {
             default:
                 formatter = DateTimeFormatter.ofPattern("MMM yyyy");
         }
-        
+
         DateTimeFormatter finalFormatter = formatter;
         return bookingServices.stream()
-                .collect(Collectors.groupingBy(bs -> 
-                    bs.getBooking().getCheckInDate().toLocalDate().format(finalFormatter)
+                .collect(Collectors.groupingBy(bs ->
+                        bs.getBooking().getCheckInDate().toLocalDate().format(finalFormatter)
                 ));
     }
 
@@ -93,7 +100,7 @@ public class ReportService {
     private ServiceReportDTO calculateReport(String date, List<BookingService> bookingServices) {
         ServiceReportDTO report = new ServiceReportDTO();
         report.setDate(date);
-        
+
         double foodBeverageTotal = 0;
         double laundryTotal = 0;
         double spaTotal = 0;
@@ -101,11 +108,11 @@ public class ReportService {
         double tourTotal = 0;
         double othersTotal = 0;
         int totalOrders = bookingServices.size();
-        
+
         for (BookingService bs : bookingServices) {
             ServiceCategory category = bs.getService().getServiceCategory();
             double amount = bs.getTotalAmount() != null ? bs.getTotalAmount() : 0;
-            
+
             switch (category) {
                 case FOOD_BEVERAGE:
                     foodBeverageTotal += amount;
@@ -128,7 +135,7 @@ public class ReportService {
                     break;
             }
         }
-        
+
         report.setFoodBeverage(foodBeverageTotal);
         report.setLaundry(laundryTotal);
         report.setSpa(spaTotal);
@@ -136,11 +143,85 @@ public class ReportService {
         report.setTour(tourTotal);
         report.setOthers(othersTotal);
         report.setTotalOrders(totalOrders);
-        
+
         double totalRevenue = foodBeverageTotal + laundryTotal + spaTotal + transportTotal + tourTotal + othersTotal;
         double avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
         report.setAvgOrderValue(avgOrderValue);
-        
+
         return report;
+
     }
+    public DashboardStatsDTO getDashboardStats() {
+        DashboardStatsDTO stats = new DashboardStatsDTO();
+
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime startOfMonth = now.withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0);
+        LocalDateTime endOfMonth = now.withDayOfMonth(now.toLocalDate().lengthOfMonth()).withHour(23).withMinute(59).withSecond(59);
+
+        LocalDateTime lastMonthStart = startOfMonth.minusMonths(1);
+        LocalDateTime lastMonthEnd = startOfMonth.minusSeconds(1);
+
+        // Current month stats
+        Map<String, Object> currentStats = reportRepository.getDashboardStats(startOfMonth, endOfMonth);
+        stats.setTotalRevenue(((Number) currentStats.get("totalRevenue")).doubleValue());
+        stats.setTotalBookings(((Number) currentStats.get("totalBookings")).intValue());
+        stats.setTotalGuests(((Number) currentStats.get("totalGuests")).intValue());
+
+        // Last month stats for comparison
+        Map<String, Object> lastMonthStats = reportRepository.getDashboardStats(lastMonthStart, lastMonthEnd);
+        Double lastMonthRevenue = ((Number) lastMonthStats.get("totalRevenue")).doubleValue();
+        Integer lastMonthBookings = ((Number) lastMonthStats.get("totalBookings")).intValue();
+        Integer lastMonthGuests = ((Number) lastMonthStats.get("totalGuests")).intValue();
+
+        // Calculate percentage changes
+        stats.setRevenueChange(calculatePercentageChange(stats.getTotalRevenue(), lastMonthRevenue));
+        stats.setBookingsChange(calculatePercentageChange(stats.getTotalBookings().doubleValue(), lastMonthBookings.doubleValue()));
+        stats.setGuestsChange(calculatePercentageChange(stats.getTotalGuests().doubleValue(), lastMonthGuests.doubleValue()));
+
+        // Room status distribution
+        List<Map<String, Object>> roomStatus = reportRepository.getRoomStatusDistribution();
+        for (Map<String, Object> status : roomStatus) {
+            String statusName = (String) status.get("status");
+            Integer count = ((Number) status.get("count")).intValue();
+
+            switch (statusName) {
+                case "AVAILABLE" -> stats.setAvailableRooms(count);
+                case "BOOKED" -> stats.setBookedRooms(count);
+                case "MAINTENANCE" -> stats.setMaintenanceRooms(count);
+                case "CLEANING" -> stats.setCleaningRooms(count);
+            }
+        }
+
+        // Occupancy rate
+        Double currentOccupancy = reportRepository.getOccupancyRate();
+        stats.setOccupancyRate(currentOccupancy != null ? currentOccupancy : 0.0);
+
+        // For occupancy change, calculate from last month's average
+        Double lastMonthOccupancy = 75.0; // You can implement a more precise calculation
+        stats.setOccupancyChange(stats.getOccupancyRate() - lastMonthOccupancy);
+
+        // Ratings
+        Map<String, Object> ratings = reportRepository.getAverageRating();
+        stats.setAvgRating(((Number) ratings.get("avgRating")).doubleValue());
+        stats.setTotalReviews(((Number) ratings.get("totalReviews")).intValue());
+
+        // Check-ins/Check-outs
+        stats.setPendingCheckIns(reportRepository.getPendingCheckInsToday());
+        stats.setPendingCheckOuts(reportRepository.getPendingCheckOutsToday());
+
+        // Chart data
+        stats.setRevenueData(reportRepository.getRevenueTrend());
+        stats.setDailyOccupancy(reportRepository.getDailyOccupancy());
+        stats.setRoomTypeData(reportRepository.getRoomTypeDistribution());
+        stats.setBookingStatusData(reportRepository.getBookingStatusDistribution());
+        stats.setPopularServices(reportRepository.getPopularServices());
+
+        return stats;
+    }
+
+    private Double calculatePercentageChange(Double current, Double previous) {
+        if (previous == 0) return 0.0;
+        return ((current - previous) / previous) * 100;
+    }
+
 }

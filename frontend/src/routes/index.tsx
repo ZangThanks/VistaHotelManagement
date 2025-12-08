@@ -1,4 +1,4 @@
-import { createBrowserRouter } from 'react-router-dom';
+import { createBrowserRouter } from "react-router-dom";
 
 // Layouts
 import AuthLayout from "../layouts/AuthLayout";
@@ -114,6 +114,7 @@ export const router = createBrowserRouter([
       // { path: 'employees/:id', element: <EmployeeDetail /> },
       { path: "profile", element: <UserProfilePage /> },
       { path: "reports", element: <ReportPage /> },
+      { path: "", element: <Dashboard /> },
     ],
   },
 
