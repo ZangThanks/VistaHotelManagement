@@ -6,6 +6,7 @@ public interface RevenueReportProjection {
     String getDate();
     Integer getMonth();
     Integer getWeek();
+    Integer getQuarter();
     Integer getDay();
     Double getBookingCount();
     Double getRoomRevenue();

@@ -425,3 +425,5 @@ VALUES
 ('RC001', 'B2411250022', 'DLX201', 'DLX203', 'Phòng hiện tại ồn ào, muốn chuyển sang phòng yên tĩnh hơn', '2024-06-16 10:30:00', 'COMPLETED', 'Đã chuyển phòng thành công', '2024-06-16 11:00:00', 'EMP001'),
 ('RC002', 'B3207250030', 'STD101', 'STD102', 'Muốn chuyển sang phòng có view đẹp hơn', '2024-06-11 09:00:00', 'FAILED', 'Phòng yêu cầu đang được sử dụng', '2024-06-11 09:30:00', 'EMP001'),
 ('RC003', 'B3005250028', 'STE301', 'STE302', 'Điều hòa không hoạt động tốt', '2024-06-20 15:00:00', 'PENDING', NULL, NULL, NULL);
+
+
