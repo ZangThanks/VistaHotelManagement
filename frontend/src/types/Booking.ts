@@ -20,7 +20,8 @@ export interface Booking {
         | 'PAID'
         | 'FAILED'
         | 'REFUNDED'
-        | 'CANCELLED';
+        | 'CANCELLED'
+        | 'PARTIAL';
     invoiceType?: string | null;
     totalCost: number;
     type: 'HOURLY' | 'DAILY';

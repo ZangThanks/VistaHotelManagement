@@ -1,9 +1,8 @@
 package com.hotelvista.model.enums;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import lombok.*;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -14,5 +13,23 @@ public enum NotificationPriority {
     NORMAL("NORMAL"),
     HIGH("HIGH"),
     URGENT("URGENT");
+
     private String notificationPriority;
+
+    @JsonCreator
+    public static NotificationPriority fromString(String value) {
+        if (value == null) return NORMAL;
+        for (NotificationPriority p : values()) {
+            if (p.name().equalsIgnoreCase(value) ||
+                    p.notificationPriority.equalsIgnoreCase(value)) {
+                return p;
+            }
+        }
+        return NORMAL;
+    }
+
+    @JsonValue
+    public String toValue() {
+        return this.name();
+    }
 }

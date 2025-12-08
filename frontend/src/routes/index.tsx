@@ -50,6 +50,7 @@ import MyBookings from '../pages/customer/MyBooking.tsx';
 import UserProfilePage from '../pages/customer/UserProfile.tsx';
 
 import PaymentPage from '../pages/customer/booking/PaymentPage.tsx';
+import ReportPage from '../pages/admin/report/Report.tsx';
 
 export const router = createBrowserRouter([
     // OAuth
@@ -108,6 +109,7 @@ export const router = createBrowserRouter([
             },
 
             { path: 'profile', element: <UserProfilePage /> },
+            { path: 'report', element: <ReportPage /> },
         ],
     },
 
