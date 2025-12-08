@@ -41,6 +41,9 @@ public class BookingService {
     @Autowired
     private BookingCancellationRepository cancellationRepo;
 
+    @Autowired
+    private CustomerRepository customerRepo;
+
     @Transactional(readOnly = true)
     public List<Booking> findAll() {
         return repo.findAll();

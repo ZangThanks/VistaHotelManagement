@@ -40,7 +40,10 @@ export async function saveSeasonalPriceWithRoomTypes(priceDTO: {
     roomTypeIDs?: string[];
 }): Promise<SeasonPrice> {
     try {
-        const res = await api.post(`${ENDPOINT}/seasonal-price`, priceDTO);
+        const res = await api.post(
+            `${ENDPOINT}/save-with-room-types`,
+            priceDTO,
+        );
         return res.data;
     } catch (err: Error | unknown) {
         const action = priceDTO.seasonalPrice.id ? 'updating' : 'creating';

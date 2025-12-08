@@ -8,16 +8,15 @@ import {
     FaConciergeBell,
 } from 'react-icons/fa';
 import type {
-    RevenueData,
+    // RevenueData,
     OccupancyData,
     LoyaltyData,
     ReviewData,
     BookingData,
     ReportPeriod,
     ServiceData,
+    RevenueData,
 } from '../../../types/Report';
-import RevenueSummary from '../../../components/report/RevenueSummary';
-import RevenueChart from '../../../components/report/RevenueChart';
 import OccupancyChart from '../../../components/report/OccupancyChart';
 import RoomTypeAnalysis from '../../../components/report/RoomTypeAnalysis';
 import LoyaltyChart from '../../../components/report/LoyaltyChart';
@@ -37,8 +36,9 @@ import ServiceSummary from '../../../components/report/ServiceSummary';
 import ServiceChart from '../../../components/report/ServiceChart';
 import ServiceDistribution from '../../../components/report/ServiceDistribution';
 import PopularServices from '../../../components/report/PopularServices';
-import { getRevenueData } from '../../../services/revenueReport';
+import { reportService } from '../../../services/reportService';
 import RevenueTab from './components/RevenueTab';
+import { getRevenueData } from '../../../services/revenueReportService';
 
 type ReportTab =
     | 'revenue'
@@ -51,13 +51,102 @@ type ReportTab =
 const ReportPage: React.FC = () => {
     const [activeTab, setActiveTab] = useState<ReportTab>('revenue');
     const [period, setPeriod] = useState<ReportPeriod>('monthly');
-    const [startDate, setStartDate] = useState('2024-01-01');
-    const [endDate, setEndDate] = useState('2024-12-31');
 
-    // Replace mock revenue data with API-driven data
+    // Get current date
+    const today = new Date();
+    const currentYear = today.getFullYear();
+    const currentMonth = String(today.getMonth() + 1).padStart(2, '0');
+    const currentDay = String(today.getDate()).padStart(2, '0');
+    const todayStr = `${currentYear}-${currentMonth}-${currentDay}`;
+
+    const [startDate, setStartDate] = useState(todayStr);
+    const [endDate, setEndDate] = useState(todayStr);
+    const [serviceData, setServiceData] = useState<ServiceData[]>([]);
+    const [isLoadingServiceData, setIsLoadingServiceData] = useState(false);
+    const [showDateFilter, setShowDateFilter] = useState(false);
+
     const [revenueData, setRevenueData] = useState<RevenueData[]>([]);
     const [revenueLoading, setRevenueLoading] = useState<boolean>(false);
     const [revenueError, setRevenueError] = useState<string | null>(null);
+
+    // Auto update date range when period changes
+    useEffect(() => {
+        if (!showDateFilter) {
+            const today = new Date();
+            let start = new Date();
+            let end = new Date();
+
+            switch (period) {
+                case 'daily':
+                    // Today only
+                    start = today;
+                    end = today;
+                    break;
+                case 'weekly':
+                    // Last 7 days
+                    start.setDate(today.getDate() - 6);
+                    end = today;
+                    break;
+                case 'monthly':
+                    // Current month
+                    start = new Date(today.getFullYear(), today.getMonth(), 1);
+                    end = today;
+                    break;
+                case 'quarterly':
+                    // Current quarter
+                    const quarter = Math.floor(today.getMonth() / 3);
+                    start = new Date(today.getFullYear(), quarter * 3, 1);
+                    end = today;
+                    break;
+                case 'yearly':
+                    // Current year
+                    start = new Date(today.getFullYear(), 0, 1);
+                    end = today;
+                    break;
+            }
+
+            const formatDate = (date: Date) => {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            };
+
+            setStartDate(formatDate(start));
+            setEndDate(formatDate(end));
+        }
+    }, [period, showDateFilter]);
+
+    // Fetch service report data from API
+    useEffect(() => {
+        if (activeTab === 'services') {
+            fetchServiceReport();
+        }
+    }, [activeTab, startDate, endDate, period]);
+
+    const fetchServiceReport = async () => {
+        try {
+            setIsLoadingServiceData(true);
+            console.log('Fetching service report with params:', {
+                startDate,
+                endDate,
+                period,
+            });
+            const data = await reportService.getServiceReport(
+                startDate,
+                endDate,
+                period,
+            );
+            console.log('Service report data received:', data);
+            setServiceData(data);
+        } catch (error) {
+            console.error('Error fetching service report:', error);
+        } finally {
+            setIsLoadingServiceData(false);
+        }
+    };
+
+    //TODO: DATA MẪU!!
 
     useEffect(() => {
         const fetchRevenue = async () => {
@@ -385,108 +474,6 @@ const ReportPage: React.FC = () => {
         ],
         [],
     );
-    // Mock data - Services
-    const serviceData: ServiceData[] = useMemo(
-        () => [
-            {
-                date: 'Jan 2024',
-                foodBeverage: 85000000,
-                laundry: 28000000,
-                others: 18000000,
-                totalOrders: 420,
-                avgOrderValue: 311904,
-            },
-            {
-                date: 'Feb 2024',
-                foodBeverage: 92000000,
-                laundry: 31000000,
-                others: 20000000,
-                totalOrders: 455,
-                avgOrderValue: 314285,
-            },
-            {
-                date: 'Mar 2024',
-                foodBeverage: 98000000,
-                laundry: 35000000,
-                others: 22000000,
-                totalOrders: 485,
-                avgOrderValue: 319587,
-            },
-            {
-                date: 'Apr 2024',
-                foodBeverage: 95000000,
-                laundry: 33000000,
-                others: 21000000,
-                totalOrders: 470,
-                avgOrderValue: 317021,
-            },
-            {
-                date: 'May 2024',
-                foodBeverage: 102000000,
-                laundry: 37000000,
-                others: 24000000,
-                totalOrders: 495,
-                avgOrderValue: 329292,
-            },
-            {
-                date: 'Jun 2024',
-                foodBeverage: 115000000,
-                laundry: 42000000,
-                others: 28000000,
-                totalOrders: 550,
-                avgOrderValue: 336363,
-            },
-            {
-                date: 'Jul 2024',
-                foodBeverage: 125000000,
-                laundry: 45000000,
-                others: 30000000,
-                totalOrders: 580,
-                avgOrderValue: 344827,
-            },
-            {
-                date: 'Aug 2024',
-                foodBeverage: 120000000,
-                laundry: 43000000,
-                others: 29000000,
-                totalOrders: 565,
-                avgOrderValue: 339823,
-            },
-            {
-                date: 'Sep 2024',
-                foodBeverage: 108000000,
-                laundry: 38000000,
-                others: 25000000,
-                totalOrders: 515,
-                avgOrderValue: 332038,
-            },
-            {
-                date: 'Oct 2024',
-                foodBeverage: 105000000,
-                laundry: 36000000,
-                others: 23000000,
-                totalOrders: 500,
-                avgOrderValue: 328000,
-            },
-            {
-                date: 'Nov 2024',
-                foodBeverage: 100000000,
-                laundry: 34000000,
-                others: 22000000,
-                totalOrders: 485,
-                avgOrderValue: 321649,
-            },
-            {
-                date: 'Dec 2024',
-                foodBeverage: 130000000,
-                laundry: 48000000,
-                others: 32000000,
-                totalOrders: 600,
-                avgOrderValue: 350000,
-            },
-        ],
-        [],
-    );
 
     const tabs = [
         {
@@ -530,7 +517,8 @@ const ReportPage: React.FC = () => {
     const renderTabContent = () => {
         switch (activeTab) {
             case 'revenue':
-                return (
+            return (
+                  
                     <RevenueTab
                         startDate={startDate}
                         endDate={endDate}
@@ -607,17 +595,83 @@ const ReportPage: React.FC = () => {
             case 'services':
                 return (
                     <div className="space-y-6">
-                        <ServiceSummary data={serviceData} />
-                        <div className="bg-white p-6 rounded-lg shadow-sm border border-[#EBE3D7]">
-                            <h3 className="text-lg font-semibold mb-4">
-                                Service Revenue Trends
-                            </h3>
-                            <ServiceChart data={serviceData} />
+                        {/* Filters */}
+                        <div className="bg-white p-4 rounded-lg shadow-sm border border-[#EBE3D7] mb-6">
+                            <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                    <FilterBar
+                                        period={period}
+                                        onPeriodChange={setPeriod}
+                                        showDateFilter={false}
+                                        onToggleDateFilter={undefined}
+                                    />
+                                    <button
+                                        onClick={() =>
+                                            setShowDateFilter(!showDateFilter)
+                                        }
+                                        className={`px-4 py-2 rounded-md font-medium transition flex items-center gap-2 ${
+                                            showDateFilter
+                                                ? 'bg-[#B8935F] text-white hover:bg-[#9A7A4D]'
+                                                : 'bg-white text-gray-700 border border-[#EBE3D7] hover:bg-[#F5F0EB]'
+                                        }`}
+                                    >
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            className="h-4 w-4"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                            />
+                                        </svg>
+                                        Date Filter
+                                    </button>
+                                    {showDateFilter && (
+                                        <DateRangePicker
+                                            startDate={startDate}
+                                            endDate={endDate}
+                                            onStartDateChange={setStartDate}
+                                            onEndDateChange={setEndDate}
+                                        />
+                                    )}
+                                </div>
+                                <ExportButton
+                                    reportType={activeTab}
+                                    dateRange={{ startDate, endDate }}
+                                />
+                            </div>
                         </div>
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            <ServiceDistribution />
-                            <PopularServices />
-                        </div>
+                        {isLoadingServiceData ? (
+                            <div className="flex justify-center items-center py-12">
+                                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#CCBDA3]"></div>
+                            </div>
+                        ) : serviceData.length > 0 ? (
+                            <>
+                                <ServiceSummary data={serviceData} />
+                                <div className="bg-white p-6 rounded-lg shadow-sm border border-[#EBE3D7]">
+                                    <h3 className="text-lg font-semibold mb-4">
+                                        Service Revenue Trends
+                                    </h3>
+                                    <ServiceChart data={serviceData} />
+                                </div>
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                    <ServiceDistribution data={serviceData} />
+                                    <PopularServices data={serviceData} />
+                                </div>
+                            </>
+                        ) : (
+                            <div className="bg-white p-12 rounded-lg shadow-sm border border-[#EBE3D7] text-center">
+                                <p className="text-gray-500">
+                                    No service data available for the selected
+                                    period
+                                </p>
+                            </div>
+                        )}
                     </div>
                 );
 
@@ -638,6 +692,9 @@ const ReportPage: React.FC = () => {
                         Comprehensive insights into hotel performance
                     </p>
                 </div>
+
+                
+
                 {/* Tabs */}
                 <div className="bg-white rounded-lg shadow-sm border border-[#EBE3D7] mb-6">
                     <div className="flex overflow-x-auto">

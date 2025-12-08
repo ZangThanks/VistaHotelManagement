@@ -54,7 +54,7 @@ public class SeasonalPriceController {
         return service.getSeasonalPrice_RoomTypeById(id);
     }
 
-    @PostMapping("/seasonal-price")
+    @PostMapping("/save-with-room-types")
     public ResponseEntity<?> create(@RequestBody PriceDTO req) {
         try {
             SeasonalPrice sp = service.createOrUpdateSeasonPrice(req);

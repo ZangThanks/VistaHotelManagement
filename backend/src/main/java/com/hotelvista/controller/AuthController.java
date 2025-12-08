@@ -79,8 +79,15 @@ public class AuthController {
     @PostMapping("/register")
     public Map<String, Object> register(@RequestBody RegisterRequest req) {
         // Validate
-        if ((req.getEmail() == null && req.getPhone() == null) || req.getPassword() == null) {
-            return Map.of("success", false, "message", "Thiếu thông tin bắt buộc");
+        boolean hasEmail = req.getEmail() != null && !req.getEmail().trim().isEmpty();
+        boolean hasPhone = req.getPhone() != null && !req.getPhone().trim().isEmpty();
+
+        if (!hasEmail) {
+            return Map.of("success", false, "message", "Vui lòng cung cấp Email");
+        }
+
+        if (!hasPhone) {
+            return Map.of("success", false, "message", "Vui lòng cung cấp Số điện thoại");
         }
 
         if (req.getUserName() == null || req.getUserName().trim().isEmpty()) {
@@ -114,8 +121,8 @@ public class AuthController {
         c.setId(service.generateCustomerId());
         c.setUserName(req.getUserName());
         c.setFullName(req.getFullName());
-        c.setEmail(req.getEmail());
-        c.setPhone(req.getPhone());
+        c.setEmail(hasEmail ? req.getEmail() : null);
+        c.setPhone(hasPhone ? req.getPhone() : null);
         c.setAddress(req.getAddress());
         c.setGender(Gender.MALE);
         c.setUserRole(UserRole.CUSTOMER);
@@ -150,13 +157,36 @@ public class AuthController {
      * API đăng nhập vào hệ thống.
      * Xác thực thông tin đăng nhập và tạo JWT tokens (access token và refresh token).
      *
-     * @param req đối tượng LoginRequest chứa email/phone và mật khẩu
+     * @param req đối tượng LoginRequest chứa email/phone/userName và mật khẩu
      * @return Map chứa trạng thái, thông báo, dữ liệu người dùng và tokens (nếu thành công)
      */
     @PostMapping("/login")
     public Map<String, Object> login(@RequestBody LoginRequest req) {
-        // Tìm user bằng email hoặc phone
-        User user = userService.findByEmailOrPhone(req.getEmail(), req.getPhone());
+        // Validate: Phải có ít nhất một trong ba (email, phone, userName)
+        boolean hasEmail = req.getEmail() != null && !req.getEmail().trim().isEmpty();
+        boolean hasPhone = req.getPhone() != null && !req.getPhone().trim().isEmpty();
+        boolean hasUserName = req.getUserName() != null && !req.getUserName().trim().isEmpty();
+
+        if (!hasEmail && !hasPhone && !hasUserName) {
+            return Map.of(
+                    "success", false,
+                    "message", "Vui lòng cung cấp Email, Số điện thoại hoặc Tên đăng nhập"
+            );
+        }
+
+        if (req.getPassword() == null || req.getPassword().trim().isEmpty()) {
+            return Map.of(
+                    "success", false,
+                    "message", "Mật khẩu không được để trống"
+            );
+        }
+
+        // Tìm user bằng email, phone hoặc userName
+        User user = userService.findByEmailOrPhoneOrUsername(
+                req.getEmail(),
+                req.getPhone(),
+                req.getUserName()
+        );
 
         if (user == null) {
             return Map.of(
@@ -165,6 +195,7 @@ public class AuthController {
             );
         }
 
+        // Validate password format
         String passwordError = ValidatorsUtil.validatePassword(req.getPassword());
         if (passwordError != null) {
             return Map.of("success", false, "message", passwordError);
