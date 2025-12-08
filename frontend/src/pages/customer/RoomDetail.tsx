@@ -385,9 +385,7 @@ export default function RoomDetail() {
                 {/* REVIEWS - enhanced layout */}
                 <section className="max-w-5xl mx-auto mt-8">
                     <div className="flex items-center justify-between mb-6">
-                        <h3 className="text-xl font-semibold">
-                            Customer reviews
-                        </h3>
+                        <h3 className="text-xl font-semibold">Customer reviews</h3>
                         <div className="flex items-center gap-4">
                             <div className="flex items-baseline gap-2">
                                 <div className="text-2xl font-bold">

@@ -1,3 +1,4 @@
+
 USE vistalhoteldbs;
 INSERT INTO hourly_rate_policy (id, policy_name, weekend_surcharge)
 VALUES (1, 'Chính sách tiêu chuẩn 2025-2026', 15.0);
@@ -165,28 +166,28 @@ VALUES ('STE', 3),
 -- CUSTOMERS
 INSERT INTO customers (customer_id, address, email, full_name, PASSWORD, joined_date, phone, user_name, user_role,
                        birth_date, gender, loyalty_points, membership_level)
-VALUES ('CUS0412250001', 'TP.HCM', 'nguyenvana@gmail.com', 'Nguyễn Văn A', 'hashedpw1', '2025-10-20', '0901234567',
+VALUES ('CUST001', 'TP.HCM', 'nguyenvana@gmail.com', 'Nguyễn Văn A', 'hashedpw1', '2025-10-20', '0901234567',
         'nguyenvana', 'CUSTOMER', '1990-05-20', 'MALE', 12000, 'SILVER'),
-       ('CUS0412250002', 'TP.HCM', 'tranthib@gmail.com', 'Trần Thị B', 'hashedpw2', '2025-10-20', '0912345678', 'tranthib',
+       ('CUST002', 'TP.HCM', 'tranthib@gmail.com', 'Trần Thị B', 'hashedpw2', '2025-10-20', '0912345678', 'tranthib',
         'CUSTOMER', '1988-08-15', 'FEMALE', 55000, 'GOLD'),
-       ('CUS0412250003', 'TP.HCM', 'lequocd@gmail.com', 'Lê Quốc D', 'hashedpw3', '2025-10-20', '0923456789', 'lequocd',
+       ('CUST003', 'TP.HCM', 'lequocd@gmail.com', 'Lê Quốc D', 'hashedpw3', '2025-10-20', '0923456789', 'lequocd',
         'CUSTOMER', '1995-12-01', 'MALE', 2500, 'BRONZE'),
-       ('CUS0412250004', 'TP.HCM', 'phamthic@gmail.com', 'Phạm Thị C', 'hashedpw4', '2025-10-20', '0934567890', 'phamthic',
+       ('CUST004', 'TP.HCM', 'phamthic@gmail.com', 'Phạm Thị C', 'hashedpw4', '2025-10-20', '0934567890', 'phamthic',
         'CUSTOMER', '1992-03-10', 'FEMALE', 105000, 'PLATINUM');
 
 -- EMPLOYEES (Using the specified names)
 INSERT INTO employees (employee_id, address, email, full_name, password, phone, user_name, user_role, department,
-                       hire_date, position, salary, status)
+                       hire_date, position, salary)
 VALUES ('EMP001', 'TP.HCM', 'duyen@vista.com', 'Nguyễn Thị Mỹ Duyên', 'hashedpw5', '0987654321', 'duyen', 'EMPLOYEE',
-        'Lễ tân', '2022-01-10', 'Receptionist', 9000000, 'ACTIVE'),
+        'Lễ tân', '2022-01-10', 'Receptionist', 9000000),
        ('EMP002', 'TP.HCM', 'hiep@vista.com', 'Phan Phước Hiệp', 'hashedpw6', '0976543210', 'hiep', 'EMPLOYEE',
-        'Kỹ thuật', '2021-05-15', 'Technician', 12000000, 'ACTIVE'),
+        'Kỹ thuật', '2021-05-15', 'Technician', 12000000),
        ('EMP003', 'TP.HCM', 'nhan@vista.com', 'Hồ Quang Nhân', 'hashedpw7', '0965432109', 'nhan', 'EMPLOYEE', 'Quản lý',
-        '2020-09-20', 'Manager', 18000000, 'ACTIVE'),
+        '2020-09-20', 'Manager', 18000000),
        ('EMP004', 'TP.HCM', 'khoe@vista.com', 'Trần Đoàn Khỏe', 'hashedpw8', '0954321098', 'khoe', 'EMPLOYEE', 'Bảo vệ',
-        '2021-03-15', 'Security', 8500000, 'ACTIVE'),
+        '2021-03-15', 'Security', 8500000),
        ('EMP005', 'TP.HCM', 'vu@vista.com', 'Trần Long Vũ', 'hashedpw9', '0943210987', 'vu', 'EMPLOYEE', 'Nhà hàng',
-        '2022-02-01', 'F&B Manager', 15000000, 'ACTIVE');
+        '2022-02-01', 'F&B Manager', 15000000);
 
 -- ADMINS
 INSERT INTO admins (admin_id, address, email, full_name, password, phone, user_name, user_role, admin_level)
@@ -247,8 +248,8 @@ VALUES ('VOUCHER001', 5, 'PERCENT', NULL, '2024-12-31', b'1', '2024-06-01', 'Gi�
 
 -- CUSTOMER VOUCHERS
 INSERT INTO customer_vouchers (state, vouchers_id, customer_id)
-VALUES (b'1', 'VOUCHER001', 'CUS0412250003'),
-       (b'1', 'VOUCHER002', 'CUS0412250001');
+VALUES (b'1', 'VOUCHER001', 'CUST002'),
+       (b'1', 'VOUCHER002', 'CUST003');
 
 -- REVIEWS (Need to create reviews before booking_details since booking_details references reviews)
 INSERT INTO reviews (review_id, comment, is_anonymous, location, rating, review_date, room_quantity, service_quantity,
@@ -266,69 +267,45 @@ VALUES ('REVIEW001',
        ('REVIEW002', 'https://res.cloudinary.com/dk8gvar3y/image/upload/v1763549643/curtain-1758853_1280_exc0tv.jpg');
 
 -- BOOKINGS
-INSERT INTO `bookings` (`booking_id`, `actual_check_in_time`, `actual_check_out_time`, `booking_date`, `cancellation_date`, `check_in_date`, `check_out_date`, `duration`, `hourly_rate`, `invoice_type`, `number_of_guests`, `package_type`, `payment_status`, `special_requests`, `status`, `total_amount`, `total_cost`, `type`, `customer_id`, `employee_id`) VALUES
-      ('B0501250001', '2025-05-01 14:05:00.000000', '2025-05-03 12:00:00.000000', '2025-04-25 10:12:00.000000', NULL, '2025-05-01 14:00:00.000000', '2025-05-03 12:00:00.000000', 2, NULL, NULL, 2, 'Standard', 'COMPLETED', 'Near elevator', 'CHECKED_OUT', 240000, 180000, 'DAILY', 'CUS0412250001', 'EMP002'),
-      ('B0601250002', '2025-06-12 15:20:00.000000', '2025-06-15 11:30:00.000000', '2025-06-01 09:30:00.000000', NULL, '2025-06-12 14:00:00.000000', '2025-06-15 12:00:00.000000', 3, NULL, NULL, 3, 'Deluxe', 'COMPLETED', 'High floor requested', 'CHECKED_OUT', 540000, 400000, 'DAILY', 'CUS0412250004', 'EMP001'),
-      ('B0701250003', '2025-07-04 13:55:00.000000', '2025-07-06 12:10:00.000000', '2025-07-01 11:45:00.000000', NULL, '2025-07-04 14:00:00.000000', '2025-07-06 12:00:00.000000', 2, NULL, NULL, 1, 'Suite', 'COMPLETED', '', 'CHECKED_OUT', 600000, 420000, 'DAILY', 'CUS0412250002', 'EMP003'),
-      ('B0801250004', '2025-08-20 16:10:00.000000', '2025-08-21 11:50:00.000000', '2025-08-05 08:20:00.000000', NULL, '2025-08-20 14:00:00.000000', '2025-08-21 12:00:00.000000', 1, NULL, NULL, 1, 'Standard', 'COMPLETED', 'Early check-in', 'CHECKED_OUT', 120000, 90000, 'DAILY', 'CUS0412250003', 'EMP004'),
-      ('B0901250005', '2025-09-10 14:40:00.000000', '2025-09-14 12:15:00.000000', '2025-09-01 10:00:00.000000', NULL, '2025-09-10 14:00:00.000000', '2025-09-14 12:00:00.000000', 4, NULL, NULL, 2, 'Deluxe', 'COMPLETED', 'Extra towels', 'CHECKED_OUT', 800000, 600000, 'DAILY', 'CUS0412250002', 'EMP001'),
-      ('B1001250006', '2025-10-02 15:05:00.000000', '2025-10-05 11:45:00.000000', '2025-09-28 12:00:00.000000', NULL, '2025-10-02 14:00:00.000000', '2025-10-05 12:00:00.000000', 3, NULL, NULL, 2, 'Standard', 'COMPLETED', '', 'CHECKED_OUT', 360000, 270000, 'DAILY', 'CUS0412250001', 'EMP002'),
-      ('B1101250007', '2025-11-18 13:30:00.000000', '2025-11-19 12:00:00.000000', '2025-11-10 09:45:00.000000', NULL, '2025-11-18 14:00:00.000000', '2025-11-19 12:00:00.000000', 1, NULL, NULL, 1, 'Suite', 'COMPLETED', 'Anniversary setup', 'CHECKED_OUT', 320000, 250000, 'DAILY', 'CUS0412250004', 'EMP005'),
-      ('B1201250008', '2025-12-24 14:10:00.000000', '2025-12-27 11:55:00.000000', '2025-12-01 16:20:00.000000', NULL, '2025-12-24 14:00:00.000000', '2025-12-27 12:00:00.000000', 3, NULL, NULL, 2, 'Deluxe', 'COMPLETED', 'Christmas decoration', 'CHECKED_OUT', 950000, 700000, 'DAILY', 'CUS0412250002', 'EMP001'),
-      ('B0201250009', '2025-02-14 14:00:00.000000', '2025-02-15 12:05:00.000000', '2025-02-01 08:00:00.000000', NULL, '2025-02-14 14:00:00.000000', '2025-02-15 12:00:00.000000', 1, NULL, NULL, 2, 'Standard', 'COMPLETED', 'Late arrival', 'CHECKED_OUT', 150000, 110000, 'DAILY', 'CUS0412250001', 'EMP003'),
-      ('B0301250010', '2025-03-08 15:45:00.000000', '2025-03-10 11:40:00.000000', '2025-03-01 10:10:00.000000', NULL, '2025-03-08 14:00:00.000000', '2025-03-10 12:00:00.000000', 2, NULL, NULL, 1, 'Suite', 'COMPLETED', 'Extra pillows', 'CHECKED_OUT', 420000, 300000, 'DAILY', 'CUS0412250004', 'EMP002');
-
-
-INSERT INTO `bookings` (`booking_id`, `actual_check_in_time`, `actual_check_out_time`, `booking_date`, `cancellation_date`, `check_in_date`, `check_out_date`, `duration`, `hourly_rate`, `invoice_type`, `number_of_guests`, `package_type`, `payment_status`, `special_requests`, `status`, `total_amount`, `total_cost`, `type`, `customer_id`, `employee_id`) VALUES
-      ('B1301250011', '2025-01-20 14:10:00.000000', '2025-01-22 11:50:00.000000', '2025-01-13 09:00:00.000000', NULL, '2025-01-20 14:00:00.000000', '2025-01-22 12:00:00.000000', 2, NULL, NULL, 2, 'Standard', 'COMPLETED', 'Late arrival', 'CHECKED_OUT', 500000, 400000, 'DAILY', 'CUS0412250001', 'EMP001'),
-      ('B1401250012', '2025-01-30 15:05:00.000000', '2025-02-02 12:10:00.000000', '2025-01-25 10:20:00.000000', NULL, '2025-01-30 14:00:00.000000', '2025-02-02 12:00:00.000000', 3, NULL, NULL, 3, 'Deluxe', 'COMPLETED', 'High floor', 'CHECKED_OUT', 900000, 700000, 'DAILY', 'CUS0412250002', 'EMP002'),
-      ('B1502250013', '2025-02-14 14:25:00.000000', '2025-02-15 11:55:00.000000', '2025-02-01 08:30:00.000000', NULL, '2025-02-14 14:00:00.000000', '2025-02-15 12:00:00.000000', 1, NULL, NULL, 1, 'Suite', 'COMPLETED', 'Anniversary', 'CHECKED_OUT', 350000, 250000, 'DAILY', 'CUS0412250003', 'EMP003'),
-      ('B1603250014', '2025-03-12 13:45:00.000000', '2025-03-15 12:00:00.000000', '2025-03-01 11:00:00.000000', NULL, '2025-03-12 14:00:00.000000', '2025-03-15 12:00:00.000000', 3, NULL, NULL, 2, 'Standard', 'COMPLETED', '', 'CHECKED_OUT', 720000, 540000, 'DAILY', 'CUS0412250004', 'EMP004'),
-      ('B1704250015', '2025-04-05 14:00:00.000000', '2025-04-07 11:40:00.000000', '2025-03-28 09:15:00.000000', NULL, '2025-04-05 14:00:00.000000', '2025-04-07 12:00:00.000000', 2, NULL, NULL, 1, 'Suite', 'COMPLETED', 'Extra pillows', 'CHECKED_OUT', 640000, 480000, 'DAILY', 'CUS0412250001', 'EMP005'),
-      ('B1805250016', '2025-05-10 14:20:00.000000', '2025-05-12 12:05:00.000000', '2025-05-01 16:45:00.000000', NULL, '2025-05-10 14:00:00.000000', '2025-05-12 12:00:00.000000', 2, NULL, NULL, 2, 'Deluxe', 'COMPLETED', 'Near elevator', 'CHECKED_OUT', 760000, 580000, 'DAILY', 'CUS0412250002', 'EMP001'),
-      ('B1906250017', '2025-06-20 15:10:00.000000', '2025-06-23 12:00:00.000000', '2025-06-05 10:00:00.000000', NULL, '2025-06-20 14:00:00.000000', '2025-06-23 12:00:00.000000', 3, NULL, NULL, 3, 'Deluxe', 'COMPLETED', 'Birthday setup', 'CHECKED_OUT', 1100000, 850000, 'DAILY', 'CUS0412250003', 'EMP002'),
-      ('B2007250018', '2025-07-08 13:50:00.000000', '2025-07-10 11:30:00.000000', '2025-07-01 12:10:00.000000', NULL, '2025-07-08 14:00:00.000000', '2025-07-10 12:00:00.000000', 2, NULL, NULL, 1, 'Standard', 'COMPLETED', 'Quiet room', 'CHECKED_OUT', 260000, 200000, 'DAILY', 'CUS0412250004', 'EMP003'),
-      ('B2108250019', '2025-08-15 14:05:00.000000', '2025-08-18 12:00:00.000000', '2025-08-01 09:00:00.000000', NULL, '2025-08-15 14:00:00.000000', '2025-08-18 12:00:00.000000', 3, NULL, NULL, 2, 'Suite', 'COMPLETED', 'Late checkout', 'CHECKED_OUT', 980000, 760000, 'DAILY', 'CUS0412250001', 'EMP004'),
-      ('B2209250020', '2025-09-02 15:30:00.000000', '2025-09-04 11:55:00.000000', '2025-08-20 08:50:00.000000', NULL, '2025-09-02 14:00:00.000000', '2025-09-04 12:00:00.000000', 2, NULL, NULL, 2, 'Deluxe', 'COMPLETED', 'Sea view', 'CHECKED_OUT', 820000, 650000, 'DAILY', 'CUS0412250002', 'EMP001'),
-      ('B2310250021', '2025-10-10 14:00:00.000000', '2025-10-13 12:00:00.000000', '2025-09-28 11:20:00.000000', NULL, '2025-10-10 14:00:00.000000', '2025-10-13 12:00:00.000000', 3, NULL, NULL, 3, 'Suite', 'COMPLETED', 'Complimentary wine', 'CHECKED_OUT', 1300000, 980000, 'DAILY', 'CUS0412250003', 'EMP005'),
-      ('B2411250022', '2025-11-20 14:18:00.000000', '2025-11-22 11:40:00.000000', '2025-11-05 10:10:00.000000', NULL, '2025-11-20 14:00:00.000000', '2025-11-22 12:00:00.000000', 2, NULL, NULL, 2, 'Standard', 'COMPLETED', '', 'CHECKED_OUT', 340000, 260000, 'DAILY', 'CUS0412250004', 'EMP002'),
-      ('B2512250023', '2025-12-24 14:05:00.000000', '2025-12-27 12:00:00.000000', '2025-12-01 09:30:00.000000', NULL, '2025-12-24 14:00:00.000000', '2025-12-27 12:00:00.000000', 3, NULL, NULL, 2, 'Deluxe', 'COMPLETED', 'Christmas package', 'CHECKED_OUT', 1250000, 900000, 'DAILY', 'CUS0412250001', 'EMP001'),
-      ('B2601250024', '2025-01-05 14:12:00.000000', '2025-01-07 12:00:00.000000', '2025-01-02 07:45:00.000000', NULL, '2025-01-05 14:00:00.000000', '2025-01-07 12:00:00.000000', 2, NULL, NULL, 1, 'Standard', 'COMPLETED', 'Early check-in', 'CHECKED_OUT', 280000, 210000, 'DAILY', 'CUS0412250002', 'EMP003'),
-      ('B2702250025', '2025-02-20 15:00:00.000000', '2025-02-22 12:10:00.000000', '2025-02-10 09:00:00.000000', NULL, '2025-02-20 14:00:00.000000', '2025-02-22 12:00:00.000000', 2, NULL, NULL, 2, 'Deluxe', 'COMPLETED', 'Extra towels', 'CHECKED_OUT', 640000, 480000, 'DAILY', 'CUS0412250003', 'EMP004'),
-      ('B2803250026', '2025-03-18 14:30:00.000000', '2025-03-19 11:50:00.000000', '2025-03-05 12:30:00.000000', NULL, '2025-03-18 14:00:00.000000', '2025-03-19 12:00:00.000000', 1, NULL, NULL, 1, 'Suite', 'COMPLETED', 'Quiet floor', 'CHECKED_OUT', 420000, 300000, 'DAILY', 'CUS0412250004', 'EMP005'),
-      ('B2904250027', '2025-04-25 14:22:00.000000', '2025-04-28 11:45:00.000000', '2025-04-10 11:00:00.000000', NULL, '2025-04-25 14:00:00.000000', '2025-04-28 12:00:00.000000', 3, NULL, NULL, 3, 'Deluxe', 'COMPLETED', 'Airport pickup', 'CHECKED_OUT', 1020000, 770000, 'DAILY', 'CUS0412250001', 'EMP001'),
-      ('B3005250028', '2025-05-30 13:55:00.000000', '2025-06-01 12:00:00.000000', '2025-05-15 10:05:00.000000', NULL, '2025-05-30 14:00:00.000000', '2025-06-01 12:00:00.000000', 2, NULL, NULL, 2, 'Standard', 'COMPLETED', '', 'CHECKED_OUT', 460000, 350000, 'DAILY', 'CUS0412250002', 'EMP002'),
-      ('B3106250029', '2025-06-21 14:40:00.000000', '2025-06-23 11:55:00.000000', '2025-06-10 09:40:00.000000', NULL, '2025-06-21 14:00:00.000000', '2025-06-23 12:00:00.000000', 2, NULL, NULL, 1, 'Suite', 'COMPLETED', 'Complimentary breakfast', 'CHECKED_OUT', 700000, 520000, 'DAILY', 'CUS0412250003', 'EMP003'),
-      ('B3207250030', '2025-07-28 15:15:00.000000', '2025-07-31 12:00:00.000000', '2025-07-01 08:20:00.000000', NULL, '2025-07-28 14:00:00.000000', '2025-07-31 12:00:00.000000', 3, NULL, NULL, 2, 'Deluxe', 'COMPLETED', 'Ocean view', 'CHECKED_OUT', 1500000, 1120000, 'DAILY', 'CUS0412250004', 'EMP004');
-
+INSERT INTO bookings (booking_id, booking_date, cancellation_date, check_in_date, check_out_date, duration, hourly_rate,
+                      number_of_guests, package_type, payment_status, special_requests, status, total_amount,
+                      total_cost, customer_id, employee_id)
+VALUES ('BOOK001', '2024-06-01 09:00:00', NULL, '2024-06-10 14:00:00', '2024-06-12 12:00:00', 2, NULL, 2, 'Standard',
+        'COMPLETED', 'Yêu cầu phòng tầng thấp', 'CHECKED_OUT', 1800000, 1800000, 'CUST001', 'EMP001'),
+       ('BOOK002', '2024-06-02 10:00:00', NULL, '2024-06-15 14:00:00', '2024-06-18 12:00:00', 3, NULL, 3, 'Deluxe',
+        'COMPLETED', 'Ban công view biển', 'CHECKED_IN', 4500000, 4500000, 'CUST002', 'EMP001'),
+       ('BOOK003', '2024-06-03 11:00:00', NULL, '2024-06-20 14:00:00', '2024-06-21 12:00:00', 1, NULL, 1, 'Suite',
+        'PENDING', 'Check-in sớm', 'PENDING', 3000000, 3000000, 'CUST003', 'EMP003'),
+       ('BOOK004', '2024-06-04 12:00:00', '2024-06-05 15:00:00', '2024-06-25 14:00:00', '2024-06-27 12:00:00', 2, NULL,
+        2, 'Deluxe', 'REFUNDED', 'Hủy phòng do việc đột xuất', 'CANCELLED', 0, 0, 'CUST004', 'EMP005');
 
 -- BOOKING DETAILS
 INSERT INTO booking_details (room_price, booking_id, room_number, review_id) VALUES
-(900000, 'B2803250026', 'STD101', 'REVIEW001'),
-(1500000, 'B3005250028', 'DLX201', 'REVIEW002'),
-(3000000, 'B2411250022', 'STE301', NULL),
-(1500000, 'B3207250030', 'DLX202', NULL);
+(900000, 'BOOK001', 'STD101', 'REVIEW001'),
+(1500000, 'BOOK002', 'DLX201', 'REVIEW002'),
+(3000000, 'BOOK003', 'STE301', NULL),
+(1500000, 'BOOK004', 'DLX202', NULL);
 -- BOOKING SERVICES
 INSERT INTO booking_services (quantity, service_price, total_amount, booking_id, service_id)
-VALUES (2, 80000, 160000, 'B2803250026', 'SV001'),
-       (1, 35000, 35000, 'B3005250028', 'SV002'),
-       (3, 50000, 150000, 'B2411250022', 'SV003'),
-       (1, 45000, 45000, 'B3207250030', 'SV004');
+VALUES (2, 80000, 160000, 'BOOK001', 'SV001'),
+       (1, 35000, 35000, 'BOOK002', 'SV002'),
+       (3, 50000, 150000, 'BOOK002', 'SV003'),
+       (1, 45000, 45000, 'BOOK003', 'SV004');
 
 -- EARLY CHECKINS
 INSERT INTO early_checkins (request_id, additional_fee, approval_status, request_date, request_time, booking_id)
-VALUES ('EC001', 450000, 'APPROVED', '2024-06-10 08:00:00', '2024-06-10 08:00:00', 'B3207250030'),
-       ('EC002', 900000, 'PENDING', '2024-06-15 07:30:00', '2024-06-15 07:30:00', 'B2411250022');
+VALUES ('EC001', 450000, 'APPROVED', '2024-06-10 08:00:00', '2024-06-10 08:00:00', 'BOOK002'),
+       ('EC002', 900000, 'PENDING', '2024-06-15 07:30:00', '2024-06-15 07:30:00', 'BOOK001');
 
 -- MAINTENANCE REQUESTS
 INSERT INTO maintenance_requests (request_id, actual_cost, assigned_to, completion_date, description, estimated_time,
                                   prioty, request_date, status, booking_id)
 VALUES ('MR001', 500000, 'EMP002', '2024-06-01 16:00:00', 'Sửa điều hòa phòng DLX201', 2, 'HIGH', '2024-06-01 14:00:00',
-        'COMPLETED', 'B3207250030'),
+        'COMPLETED', 'BOOK002'),
        ('MR002', 200000, 'EMP002', NULL, 'Thay bóng đèn phòng STD103', 1, 'LOW', '2024-06-01 15:00:00', 'PENDING',
         NULL),
        ('MR003', 150000, 'EMP004', NULL, 'Sửa vòi sen phòng STE301', 1, 'MEDIUM', '2024-06-02 10:00:00', 'PENDING',
-        'B3005250028');
+        'BOOK003');
 
 -- REPORTS
 INSERT INTO reports (report_id, generated_date, report_period, report_type, employee_id)
@@ -338,7 +315,7 @@ VALUES ('REP001', '2024-06-01 18:00:00', '2024-06', 'OCCUPANCY', 'EMP003'),
        ('REP004', '2024-06-03 10:00:00', '2024-06', 'SERVICE', 'EMP005');
 
 INSERT INTO cart_beans (cart_bean_id, customer_id)
-                              VALUES ('CA5073', 'CUS0412250001');
+                              VALUES ('CA5073', 'CUST004');
 
 INSERT INTO cart_items (room_number, cart_bean_id)
 VALUES ('STD101', 'CA5073'),
@@ -346,7 +323,7 @@ VALUES ('STD101', 'CA5073'),
 
 -- ROOM CHANGE REQUESTS
 INSERT INTO room_change_requests (request_id, booking_id, current_room_id, new_room_id, reason, request_date, status, response_note, response_date, processed_by)
-VALUES
-('RC001', 'B2411250022', 'DLX201', 'DLX203', 'Phòng hiện tại ồn ào, muốn chuyển sang phòng yên tĩnh hơn', '2024-06-16 10:30:00', 'COMPLETED', 'Đã chuyển phòng thành công', '2024-06-16 11:00:00', 'EMP001'),
-('RC002', 'B3207250030', 'STD101', 'STD102', 'Muốn chuyển sang phòng có view đẹp hơn', '2024-06-11 09:00:00', 'FAILED', 'Phòng yêu cầu đang được sử dụng', '2024-06-11 09:30:00', 'EMP001'),
-('RC003', 'B3005250028', 'STE301', 'STE302', 'Điều hòa không hoạt động tốt', '2024-06-20 15:00:00', 'PENDING', NULL, NULL, NULL);
+VALUES 
+('RC001', 'BOOK002', 'DLX201', 'DLX203', 'Phòng hiện tại ồn ào, muốn chuyển sang phòng yên tĩnh hơn', '2024-06-16 10:30:00', 'COMPLETED', 'Đã chuyển phòng thành công', '2024-06-16 11:00:00', 'EMP001'),
+('RC002', 'BOOK001', 'STD101', 'STD102', 'Muốn chuyển sang phòng có view đẹp hơn', '2024-06-11 09:00:00', 'FAILED', 'Phòng yêu cầu đang được sử dụng', '2024-06-11 09:30:00', 'EMP001'),
+('RC003', 'BOOK003', 'STE301', 'STE302', 'Điều hòa không hoạt động tốt', '2024-06-20 15:00:00', 'PENDING', NULL, NULL, NULL);

@@ -42,34 +42,6 @@ public class AuthController {
     private final JwtTokenProvider jwtTokenProvider;
 
     /**
-     * Helper method để tạo user data response đầy đủ (không bao gồm password)
-     */
-    private Map<String, Object> buildUserDataResponse(User user) {
-        Map<String, Object> userData = new HashMap<>();
-        userData.put("id", user.getId());
-        userData.put("userName", user.getUserName());
-        userData.put("fullName", user.getFullName());
-        userData.put("email", user.getEmail());
-        userData.put("phone", user.getPhone());
-        userData.put("address", user.getAddress());
-        userData.put("userRole", user.getUserRole());
-        userData.put("avatarUrl", user.getAvatarUrl());
-
-        // Thêm thông tin Customer nếu là CUSTOMER
-        if (user instanceof Customer) {
-            Customer customer = (Customer) user;
-            userData.put("birthDate", customer.getBirthDate());
-            userData.put("gender", customer.getGender());
-            userData.put("joinedDate", customer.getJoinedDate());
-            userData.put("loyaltyPoints", customer.getLoyaltyPoints());
-            userData.put("reputationPoint", customer.getReputationPoint());
-            userData.put("memberShipLevel", customer.getMemberShipLevel());
-        }
-
-        return userData;
-    }
-
-    /**
      * API đăng ký tài khoản khách hàng mới.
      * Thực hiện validate thông tin, kiểm tra trùng lặp và tạo tài khoản mới.
      *
@@ -79,15 +51,8 @@ public class AuthController {
     @PostMapping("/register")
     public Map<String, Object> register(@RequestBody RegisterRequest req) {
         // Validate
-        boolean hasEmail = req.getEmail() != null && !req.getEmail().trim().isEmpty();
-        boolean hasPhone = req.getPhone() != null && !req.getPhone().trim().isEmpty();
-
-        if (!hasEmail) {
-            return Map.of("success", false, "message", "Vui lòng cung cấp Email");
-        }
-
-        if (!hasPhone) {
-            return Map.of("success", false, "message", "Vui lòng cung cấp Số điện thoại");
+        if ((req.getEmail() == null && req.getPhone() == null) || req.getPassword() == null) {
+            return Map.of("success", false, "message", "Thiếu thông tin bắt buộc");
         }
 
         if (req.getUserName() == null || req.getUserName().trim().isEmpty()) {
@@ -118,11 +83,11 @@ public class AuthController {
 
         // Tạo customer
         Customer c = new Customer();
-        c.setId(service.generateCustomerId());
+        c.setId(GenerateIDUtil.generateID("CU", 8));
         c.setUserName(req.getUserName());
         c.setFullName(req.getFullName());
-        c.setEmail(hasEmail ? req.getEmail() : null);
-        c.setPhone(hasPhone ? req.getPhone() : null);
+        c.setEmail(req.getEmail());
+        c.setPhone(req.getPhone());
         c.setAddress(req.getAddress());
         c.setGender(Gender.MALE);
         c.setUserRole(UserRole.CUSTOMER);
@@ -130,7 +95,6 @@ public class AuthController {
         c.setLoyaltyPoints(0);
         c.setReputationPoint(100);
         c.setMemberShipLevel(MemberShipLevel.BRONZE);
-        c.setAvatarUrl(null); // Mặc định chưa có avatar
 
         String encodedPassword = passwordEncoder.encode(req.getPassword());
         c.setPassword(encodedPassword);
@@ -145,11 +109,18 @@ public class AuthController {
         c.setCartBean(cartBean);
         service.save(c);
 
-        // Trả về Response với đầy đủ thông tin
+        // Trả về Response
+        Map<String, Object> userData = new HashMap<>();
+        userData.put("id", c.getId());
+        userData.put("userName", c.getUserName());
+        userData.put("fullName", c.getFullName());
+        userData.put("email", c.getEmail());
+        userData.put("phone", c.getPhone());
+
         return Map.of(
                 "success", true,
                 "message", "Đăng ký thành công!",
-                "data", buildUserDataResponse(c)
+                "data", userData
         );
     }
 
@@ -157,45 +128,27 @@ public class AuthController {
      * API đăng nhập vào hệ thống.
      * Xác thực thông tin đăng nhập và tạo JWT tokens (access token và refresh token).
      *
-     * @param req đối tượng LoginRequest chứa email/phone/userName và mật khẩu
+     * @param req đối tượng LoginRequest chứa email/phone và mật khẩu
      * @return Map chứa trạng thái, thông báo, dữ liệu người dùng và tokens (nếu thành công)
      */
     @PostMapping("/login")
     public Map<String, Object> login(@RequestBody LoginRequest req) {
-        // Validate: Phải có ít nhất một trong ba (email, phone, userName)
-        boolean hasEmail = req.getEmail() != null && !req.getEmail().trim().isEmpty();
-        boolean hasPhone = req.getPhone() != null && !req.getPhone().trim().isEmpty();
-        boolean hasUserName = req.getUserName() != null && !req.getUserName().trim().isEmpty();
-
-        if (!hasEmail && !hasPhone && !hasUserName) {
-            return Map.of(
-                    "success", false,
-                    "message", "Vui lòng cung cấp Email, Số điện thoại hoặc Tên đăng nhập"
-            );
-        }
-
-        if (req.getPassword() == null || req.getPassword().trim().isEmpty()) {
-            return Map.of(
-                    "success", false,
-                    "message", "Mật khẩu không được để trống"
-            );
-        }
-
+        // Log để debug
+        System.out.println("Login request - Email: " + req.getEmail() + ", Phone: " + req.getPhone() + ", UserName: " + req.getUserName());
+        
         // Tìm user bằng email, phone hoặc userName
-        User user = userService.findByEmailOrPhoneOrUsername(
-                req.getEmail(),
-                req.getPhone(),
-                req.getUserName()
-        );
+        User user = userService.findByEmailOrPhoneOrUserName(req.getEmail(), req.getPhone(), req.getUserName());
 
         if (user == null) {
+            System.out.println("User not found!");
             return Map.of(
                     "success", false,
                     "message", "Tài khoản không tồn tại"
             );
         }
+        
+        System.out.println("User found: " + user.getUserName());
 
-        // Validate password format
         String passwordError = ValidatorsUtil.validatePassword(req.getPassword());
         if (passwordError != null) {
             return Map.of("success", false, "message", passwordError);
@@ -215,11 +168,19 @@ public class AuthController {
 
         String refreshToken = jwtTokenProvider.generateRefreshToken(user.getId());
 
-        // Trả về đầy đủ thông tin user
+        // Tạo user data response (không bao gồm password)
+        Map<String, Object> userData = new HashMap<>();
+        userData.put("id", user.getId());
+        userData.put("userName", user.getUserName());
+        userData.put("fullName", user.getFullName());
+        userData.put("email", user.getEmail());
+        userData.put("phone", user.getPhone());
+        userData.put("userRole", user.getUserRole());
+
         return Map.of(
                 "success", true,
                 "message", "Đăng nhập thành công",
-                "data", buildUserDataResponse(user),
+                "data", userData,
                 "token", accessToken,
                 "refreshToken", refreshToken
         );
@@ -294,8 +255,15 @@ public class AuthController {
                     return Map.of("success", false, "message", "Người dùng không tồn tại");
                 }
 
-                // Trả về đầy đủ thông tin user
-                return Map.of("success", true, "message", buildUserDataResponse(user));
+                Map<String, Object> userData = new HashMap<>();
+                userData.put("id", user.getId());
+                userData.put("userName", user.getUserName());
+                userData.put("fullName", user.getFullName());
+                userData.put("email", user.getEmail());
+                userData.put("phone", user.getPhone());
+                userData.put("userRole", user.getUserRole());
+
+                return Map.of("success", true, "message", userData);
             } else {
                 return Map.of("success", false, "message", "Token đã hết hạn");
             }

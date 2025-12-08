@@ -37,4 +37,3 @@ export const reportService = {
         return response.data;
     },
 };
-

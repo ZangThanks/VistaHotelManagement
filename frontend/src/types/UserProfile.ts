@@ -8,7 +8,6 @@ export interface UserProfile {
   fullName: string;
   address: string | null;
   userRole: UserRole;
-  avatarUrl?: string | null;
 
   // Customer specific fields
   birthDate?: string;

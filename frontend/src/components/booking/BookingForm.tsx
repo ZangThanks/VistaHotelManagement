@@ -4,16 +4,19 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Calendar } from 'lucide-react';
 import BookingCalendar from '../common/Calendar';
 import HourlyBookingSelector from './HourlyBookingSelector';
+
 import { TfiUser, TfiMore } from 'react-icons/tfi';
 import { MdOutlineRoomService, MdRoomService } from 'react-icons/md';
-import { getAll } from '../../services/serviceService';
+import { RiHotelLine } from 'react-icons/ri';
+import { TbHotelService } from 'react-icons/tb';
 import { CiSquareQuestion } from 'react-icons/ci';
+
+import { getAll } from '../../services/serviceService';
 import {
     generateBookingID,
     saveBookingWithDetails,
     getBookingById,
     overlapBookingExists,
-    checkRoomAvailability,
 } from '../../services/bookingService';
 import { getById } from '../../services/customerService';
 
@@ -21,21 +24,23 @@ import {
     getByCustomerIdAndStateTrue,
     saveCustomerVoucher,
 } from '../../services/customerVoucherService';
+
+import { getRoomById } from '../../services/roomService';
+import { getCartBeanByCustomerId } from '../../services/cartBeanService';
+
+import CustomerVoucherModal from './CustomerVoucherModal';
+
+// Hourly rate policy
+import { getAllPolicyBaseRates } from '../../services/hourlyRatePolicyService';
+
 import type { Customer } from '../../types/Customer';
 import type { Service } from '../../types/Service';
 import type { CustomerVoucher } from '../../types/CustomerVoucher';
 import type { Room } from '../../types/Room';
-import { getRoomById } from '../../services/roomService';
-import { getCartBeanByCustomerId } from '../../services/cartBeanService';
-import CustomerVoucherModal from './CustomerVoucherModal';
-import { RiHotelLine } from 'react-icons/ri';
-import { TbHotelService } from 'react-icons/tb';
-import { getAllPolicyBaseRates } from '../../services/HourlyRatePolicyService';
 import type {
     HourlyRatePolicy,
     BaseRateItem,
 } from '../../types/HourlyRatePolicy';
-import { useToastContext } from '../../hooks/useToastContext';
 
 interface BookingFormProps {
     currentStep: number;
@@ -70,7 +75,6 @@ export default function BookingForm({
 }: BookingFormProps) {
     const navigate = useNavigate();
     const location = useLocation();
-    const { error: showErrorToast } = useToastContext();
 
     // Get booking type from route state
     const bookingType: BookingType =
@@ -112,8 +116,8 @@ export default function BookingForm({
 
     const [selectedPaymentMethod, setSelectedPaymentMethod] =
         useState<PaymentMethod>(PAYMENT_METHODS[0]);
-    const [rooms, setRooms] = useState<Room[]>([]);
     const [selectedRoom, setSelectedRoom] = useState<string[]>([]);
+    const [rooms, setRooms] = useState<Room[]>([]);
     const [bookingID, setBookingID] = useState<string>('');
     const [isVoucherModalOpen, setIsVoucherModalOpen] = useState(false);
     const [selectedVoucher, setSelectedVoucher] = useState<CustomerVoucher[]>(
@@ -187,7 +191,7 @@ export default function BookingForm({
             const roomsData = await Promise.all(roomPromises);
             setRooms(roomsData);
 
-            // Fetch booked dates for all selected rooms (for daily booking calendar)
+            // Fetch booked dates for all selected rooms
             if (roomsToUse.length > 0) {
                 try {
                     const bookedDatesPromises = roomsToUse.map((roomId) =>
@@ -200,7 +204,7 @@ export default function BookingForm({
                     // Flatten and convert to Date objects
                     const allBookedDates = bookedDatesArrays
                         .flat()
-                        .map((dateStr: any) => new Date(dateStr));
+                        .map((dateStr) => new Date(dateStr));
 
                     setBookedDates(allBookedDates);
                     console.log('Booked dates:', allBookedDates);
@@ -256,49 +260,31 @@ export default function BookingForm({
     }, []);
 
     const handleNextStep = () => {
-        if (bookingType === 'HOURLY') {
-            // Validation for hourly booking
-            if (!hourlyCheckInDate) {
-                showErrorToast('Please select a check-in date.');
-                return;
-            }
-            if (!checkInTime) {
-                showErrorToast('Please select a check-in time.');
-                return;
-            }
-            if (duration < 1) {
-                showErrorToast('Minimum duration is 1 hour.');
-                return;
-            }
-        } else {
-            // Validation for daily booking
-            if (!checkInDate) {
-                showErrorToast('Please select a check-in date.');
-                return;
-            }
-            if (!checkOutDate) {
-                showErrorToast('Please select a check-out date.');
-                return;
-            }
-
-            const ci = new Date(checkInDate);
-            ci.setHours(0, 0, 0, 0);
-            const co = new Date(checkOutDate);
-            co.setHours(0, 0, 0, 0);
-
-            if (currentStep === 1) {
-                // Kiểm tra chồng lấn với các ngày đã được đặt
-                if (isDateRangeOverlapping(ci, co, bookedDates)) {
-                    showErrorToast(
-                        'The selected date range overlaps with already booked dates. Please choose different dates.',
-                    );
-                    return;
-                } else {
-                    setError('');
-                }
-            }
+        if (!checkInDate) {
+            setError('Please select a check-in date.');
+            return;
+        }
+        if (!checkOutDate) {
+            setError('Please select a check-out date.');
+            return;
         }
 
+        const ci = new Date(checkInDate);
+        ci.setHours(0, 0, 0, 0);
+        const co = new Date(checkOutDate);
+        co.setHours(0, 0, 0, 0);
+
+        if (currentStep === 1) {
+            // Kiểm tra chồng lấn với các ngày đã được đặt
+            if (isDateRangeOverlapping(ci, co, bookedDates)) {
+                setError(
+                    'The selected date range overlaps with already booked dates. Please choose different dates.',
+                );
+                return;
+            } else {
+                setError('');
+            }
+        }
         if (currentStep < 4) {
             setCurrentStep(currentStep + 1);
         }
@@ -591,59 +577,13 @@ export default function BookingForm({
             ci = new Date(hourlyCheckInDate);
             ci.setHours(hours, minutes, 0, 0);
             co = new Date(ci.getTime() + duration * 60 * 60 * 1000);
-
-            // Check if booking time is in the past
-            const now = new Date();
-            if (ci <= now) {
-                showErrorToast('Check-in time must be in the future.');
-                return;
-            }
-
-            // Check room availability for hourly bookings
-            try {
-                setLoading(true);
-                for (const room of rooms) {
-                    const conflicts = await checkRoomAvailability(
-                        room.roomNumber || '',
-                        ci.toISOString(),
-                        co.toISOString(),
-                    );
-
-                    if (conflicts && conflicts.length > 0) {
-                        const conflictDetails = conflicts
-                            .map((b) => {
-                                const checkIn = new Date(b.checkInDate);
-                                const checkOut = new Date(b.checkOutDate);
-                                return `${checkIn.toLocaleString('vi-VN', {
-                                    day: '2-digit',
-                                    month: '2-digit',
-                                    year: 'numeric',
-                                    hour: '2-digit',
-                                    minute: '2-digit',
-                                })} - ${checkOut.toLocaleString('vi-VN', {
-                                    hour: '2-digit',
-                                    minute: '2-digit',
-                                })}`;
-                            })
-                            .join('; ');
-
-                        showErrorToast(
-                            `Room ${room.roomNumber} is already booked during this time. Conflicting bookings: ${conflictDetails}`,
-                        );
-                        setLoading(false);
-                        return;
-                    }
-                }
-                setLoading(false);
-            } catch (err) {
-                console.error('Error checking room availability:', err);
-                showErrorToast(
-                    'Cannot check room availability. Please try again.',
-                );
-                setLoading(false);
-                return;
-            }
         }
+
+        let checkInWithTime = new Date(checkInDate!);
+        checkInWithTime.setHours(14, 0, 0, 0);
+
+        let checkOutWithTime = new Date(checkOutDate!);
+        checkOutWithTime.setHours(12, 0, 0, 0);
 
         const formatLocalDateTime = (date: Date) => {
             const year = date.getFullYear();
@@ -655,20 +595,12 @@ export default function BookingForm({
             return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
         };
 
-        let checkInWithTime: Date;
-        let checkOutWithTime: Date;
-
         // Daily booking
         if (bookingType === 'DAILY') {
-            if (!checkInDate || !checkOutDate) {
-                setError('Please select check-in and check-out dates.');
-                return;
-            }
-
-            checkInWithTime = new Date(checkInDate);
+            checkInWithTime = new Date(checkInDate!);
             checkInWithTime.setHours(14, 0, 0, 0);
 
-            checkOutWithTime = new Date(checkOutDate);
+            checkOutWithTime = new Date(checkOutDate!);
             checkOutWithTime.setHours(12, 0, 0, 0);
         } else {
             // Hourly booking
@@ -1211,8 +1143,7 @@ export default function BookingForm({
                                                             const roomNumber =
                                                                 room.roomNumber;
                                                             if (!roomNumber)
-                                                                return null; // Skip if roomNumber is undefined
-
+                                                                return null;
                                                             const targets =
                                                                 selectedServiceTargets[
                                                                     service
