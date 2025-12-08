@@ -59,24 +59,14 @@ class NotificationApiService {
         };
     }
 
-    // Lấy danh sách notifications cho customer và employee
+    // Lấy danh sách notifications
     async getMyNotifications(
         page = 0,
         size = 20,
     ): Promise<ApiResponse<{ content: BackendNotification[] }>> {
         try {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                console.error('❌ [API] No token found');
-                return {
-                    success: false,
-                    message: 'No authentication token',
-                    data: { content: [] },
-                };
-            }
-
             const response = await fetch(
-                `${API_BASE_URL}/notifications?page=${page}&size=${size}`,
+                `${API_BASE_URL}/api/notifications?page=${page}&size=${size}`,
                 {
                     method: 'GET',
                     headers: this.getAuthHeaders(),
@@ -84,116 +74,45 @@ class NotificationApiService {
             );
 
             console.log(
-                '📡 [API] GET /notifications - Status:',
+                '📡 [API] Response status:',
                 response.status,
                 response.statusText,
             );
 
             if (!response.ok) {
-                const errorText = await response.text();
-                console.error('❌ [API] Error response:', {
-                    status: response.status,
-                    statusText: response.statusText,
-                    body: errorText,
-                });
-
-                // Return empty data instead of throwing
-                return {
-                    success: false,
-                    message: `Error: ${response.status}`,
-                    data: { content: [] },
-                };
+                throw new Error('Failed to fetch notifications');
             }
 
             const data = await response.json();
 
-            console.log('📦 [API] Response data:', {
-                success: data.success,
-                message: data.message,
-                hasData: !!data.data,
-                dataType: typeof data.data,
-                dataKeys: data.data ? Object.keys(data.data) : [],
-                hasContent: data.data?.content ? true : false,
-                contentLength: data.data?.content?.length,
-                sampleNotification: data.data?.content?.[0],
-            });
-
-            // Ensure we always return proper structure
-            if (data.success && data.data) {
-                return data;
-            }
-
-            console.warn('⚠️ [API] Unexpected response structure:', data);
-            return {
-                success: false,
-                message: 'Invalid response structure',
-                data: { content: [] },
-            };
+            return data;
         } catch (error) {
-            console.error('❌ [API] Error fetching notifications:', error);
-            return {
-                success: false,
-                message:
-                    error instanceof Error ? error.message : 'Unknown error',
-                data: { content: [] },
-            };
+            console.error('[API] Error fetching notifications:', error);
+            throw error;
         }
     }
 
-    // Lấy notifications chưa đọc cho customer và employee
+    // Lấy notifications chưa đọc
     async getUnreadNotifications(): Promise<
         ApiResponse<BackendNotification[]>
     > {
         try {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                console.error('❌ [API] No token for unread notifications');
-                return {
-                    success: false,
-                    message: 'No authentication token',
-                    data: [],
-                };
-            }
-
             const response = await fetch(
-                `${API_BASE_URL}/notifications/unread`,
+                `${API_BASE_URL}/api/notifications/unread`,
                 {
                     method: 'GET',
                     headers: this.getAuthHeaders(),
                 },
             );
 
-            console.log(
-                '📡 [API] GET /notifications/unread - Status:',
-                response.status,
-            );
-
             if (!response.ok) {
-                console.error('❌ [API] Failed to fetch unread notifications');
-                return {
-                    success: false,
-                    message: `Error: ${response.status}`,
-                    data: [],
-                };
+                throw new Error('Failed to fetch unread notifications');
             }
 
-            const data = await response.json();
-            console.log(
-                '📭 [API] Unread notifications:',
-                data.data?.length || 0,
-            );
-            return data;
+            return await response.json();
         } catch (error) {
-            console.error(
-                '❌ [API] Error fetching unread notifications:',
-                error,
-            );
-            return {
-                success: false,
-                message:
-                    error instanceof Error ? error.message : 'Unknown error',
-                data: [],
-            };
+            console.error('Error fetching unread notifications:', error);
+            throw error;
         }
     }
 
@@ -201,7 +120,7 @@ class NotificationApiService {
     async getUnreadCount(): Promise<ApiResponse<number>> {
         try {
             const response = await fetch(
-                `${API_BASE_URL}/notifications/unread/count`,
+                `${API_BASE_URL}/api/notifications/unread/count`,
                 {
                     method: 'GET',
                     headers: this.getAuthHeaders(),
@@ -225,7 +144,7 @@ class NotificationApiService {
     ): Promise<ApiResponse<BackendNotification>> {
         try {
             const response = await fetch(
-                `${API_BASE_URL}/notifications/${notificationId}/read`,
+                `${API_BASE_URL}/api/notifications/${notificationId}/read`,
                 {
                     method: 'PUT',
                     headers: this.getAuthHeaders(),
@@ -247,7 +166,7 @@ class NotificationApiService {
     async markAllAsRead(): Promise<ApiResponse> {
         try {
             const response = await fetch(
-                `${API_BASE_URL}/notifications/read-all`,
+                `${API_BASE_URL}/api/notifications/read-all`,
                 {
                     method: 'PUT',
                     headers: this.getAuthHeaders(),
@@ -269,7 +188,7 @@ class NotificationApiService {
     async deleteNotification(notificationId: string): Promise<ApiResponse> {
         try {
             const response = await fetch(
-                `${API_BASE_URL}/notifications/${notificationId}`,
+                `${API_BASE_URL}/api/notifications/${notificationId}`,
                 {
                     method: 'DELETE',
                     headers: this.getAuthHeaders(),
@@ -292,7 +211,7 @@ class NotificationApiService {
         notification: Partial<BackendNotification>,
     ): Promise<ApiResponse<BackendNotification>> {
         try {
-            const response = await fetch(`${API_BASE_URL}/notifications`, {
+            const response = await fetch(`${API_BASE_URL}/api/notifications`, {
                 method: 'POST',
                 headers: this.getAuthHeaders(),
                 body: JSON.stringify(notification),

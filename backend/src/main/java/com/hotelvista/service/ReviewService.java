@@ -18,10 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 @Service
 public class ReviewService {
@@ -89,86 +86,4 @@ public class ReviewService {
 
         return prefix + String.format("%04d", nextSequence); // R1109250001
     }
-
-
-    /**
-     * 1. Average Rating Over Time (Line Chart)
-     */
-    public List<Map<String, Object>> getRatingTrend() {
-        List<Object[]> raw = repo.getAverageRatingByMonth();
-
-        return raw.stream().map(row -> {
-            Map<String, Object> map = new HashMap<>();
-            map.put("month", row[0]);
-            map.put("avgRating", row[1]);
-            return map;
-        }).toList();
-    }
-
-    /**
-     * 2. Rating Breakdown by Category (Bar Chart)
-     */
-    public Map<String, Double> getCategoryRatings() {
-
-        List<Object[]> raw = repo.getCategoryRatingsRaw();
-
-        if (raw == null || raw.isEmpty()) {
-            throw new RuntimeException("No review data found!");
-        }
-
-        Object[] row = raw.get(0);  // JPQL sẽ trả về 1 dòng duy nhất
-
-        return Map.of(
-                "location",      roundNumber(row[0]),
-                "service",       roundNumber(row[1]),
-                "roomQuality",   roundNumber(row[2]),
-                "value",         roundNumber(row[3])
-        );
-    }
-
-
-
-    private double roundNumber(Object obj) {
-        if (obj == null) return 0;
-
-        if (obj instanceof Number number) {
-            return Math.round(number.doubleValue() * 10.0) / 10.0;
-        }
-
-        throw new IllegalArgumentException("Expected Number but got: " + obj.getClass());
-    }
-
-
-
-    /**
-     * 3. Sentiment Analysis (Pie Chart)
-     */
-    public Map<String, Object> getSentiment() {
-
-        List<Object[]> rawList = repo.getSentimentStats();
-
-        if (rawList == null || rawList.isEmpty()) {
-            throw new RuntimeException("No sentiment data found!");
-        }
-
-        Object[] raw = rawList.get(0);  // lấy dòng duy nhất
-
-        long positive = ((Number) raw[0]).longValue();
-        long neutral  = ((Number) raw[1]).longValue();
-        long negative = ((Number) raw[2]).longValue();
-
-        long total = positive + neutral + negative;
-
-        Map<String, Object> map = new HashMap<>();
-        map.put("positive", positive);
-        map.put("neutral", neutral);
-        map.put("negative", negative);
-
-        map.put("positivePercent", total == 0 ? 0 : (positive * 100.0 / total));
-        map.put("neutralPercent",  total == 0 ? 0 : (neutral  * 100.0 / total));
-        map.put("negativePercent", total == 0 ? 0 : (negative * 100.0 / total));
-
-        return map;
-    }
-
 }

@@ -65,21 +65,13 @@ public class LateCheckoutController {
     @PutMapping("/approve/{id}")
     public Map<String, Object> approveLateCheckout(
             @PathVariable("id") String requestId,
-            @RequestParam("status") String status,
-            @RequestParam(value = "staffId", required = false) String staffId,
-            @RequestParam(value = "staff", required = false) String staffName
+            @RequestParam("status") String status
     ) {
         try {
             ApprovalStatus approvalStatus = ApprovalStatus.valueOf(status.toUpperCase());
 
             // ⭐ Update + cộng tiền vào booking + attach LateCheckout vào booking
-            // ⭐ Truyền thêm staffId và staffName để lưu vào DB và tạo notification
-            LateCheckout lc = lateCheckoutService.updateApprovalStatus(
-                    requestId,
-                    approvalStatus,
-                    staffId,
-                    staffName
-            );
+            LateCheckout lc = lateCheckoutService.updateApprovalStatus(requestId, approvalStatus);
 
             // ⭐ Trả về DTO sau khi update
             LateCheckoutDTO dto = lateCheckoutService.convertToDTO(lc);

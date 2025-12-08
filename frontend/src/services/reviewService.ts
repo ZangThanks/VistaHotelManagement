@@ -29,37 +29,3 @@ export const saveReview = async (
     throw error;
   }
 };
-
-
-// Category Ratings API
-export const getCategoryRatings = async () => {
-    try {
-        const response = await api.get(`${ENDPOINT}/ratings/category`);
-        return response.data;
-    } catch (error) {
-        console.error('Error fetching category ratings:', error);
-        throw error;
-    }
-};
-
-// Sentiment API
-export const getSentimentStats = async () => {
-    try {
-        const response = await api.get(`${ENDPOINT}/ratings/sentiment`);
-        return response.data; 
-    } catch (error) {
-        console.error('Error fetching sentiment stats:', error);
-        throw error;
-    }
-};
-
-// Rating Trend by Month API (line chart)
-export const getRatingTrend = async () => {
-    try {
-        const response = await api.get(`${ENDPOINT}/ratings/trend`);
-        return response.data; 
-    } catch (error) {
-        console.error('Error fetching rating trend:', error);
-        throw error;
-    }
-};

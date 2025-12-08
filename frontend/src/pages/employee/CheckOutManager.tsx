@@ -199,7 +199,7 @@ export default function CheckOutManager() {
             bookingId: booking.bookingID,
             guestName: booking.customer?.fullName || '',
             guestEmail: booking.customer?.email || '',
-            guestPhone: booking.customer?.phone || '',
+            guestPhone: booking.customer?.phoneNumber || '',
             guestImage: booking.customer?.avatarUrl || '',
             roomNumber: roomInfo,
             balanceDue: `${balanceDue.toLocaleString('vi-VN')} VND`,

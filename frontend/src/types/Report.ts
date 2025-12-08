@@ -51,24 +51,15 @@ export interface DateRange {
     endDate: string;
 }
 
-// ====================== ReportPeriod ======================
+// ====================== ReportPeriod (PPH version) ======================
 export type ReportPeriod =
-    | 'daily'
-    | 'weekly'
-    | 'monthly'
-    | 'quarterly'
-    | 'yearly';
+    | "daily"
+    | "weekly"
+    | "monthly"
+    | "quarterly"
+    | "yearly";
 
-// ====================== ReportTab ======================
-export type ReportTab =
-    | 'revenue'
-    | 'occupancy'
-    | 'loyalty'
-    | 'reviews'
-    | 'bookings'
-    | 'services';
-
-// ====================== ServiceData ======================
+// ====================== ServiceData (HEAD version) ======================
 export interface ServiceData {
     date: string;
     foodBeverage: number;
@@ -80,3 +71,12 @@ export interface ServiceData {
     totalOrders: number;
     avgOrderValue: number;
 }
+
+// ====================== ReportTab (HEAD version) ======================
+export type ReportTab =
+    | "revenue"
+    | "occupancy"
+    | "loyalty"
+    | "reviews"
+    | "bookings"
+    | "services";
