@@ -23,6 +23,7 @@ import { CiEdit } from 'react-icons/ci';
 import Dropdown from '../../../../components/Dropdown';
 import ModernCalendar from '../../../../components/common/ModernCalendar';
 import { Calendar } from 'lucide-react';
+import { Area } from 'recharts';
 
 type Props = {
     seasonLoading: boolean;
@@ -813,6 +814,27 @@ const SeasonalTab: FC<Props> = (props) => {
                                             Base prices will be multiplied by
                                             this value
                                         </p>
+                                    </div>
+                                    <div className="w-full relative">
+                                        <label className="block text-sm font-semibold text-gray-800 mb-2">
+                                            Description
+                                        </label>
+
+                                        <textarea
+                                            rows={4}
+                                            value={newSeason.description ?? ''}
+                                            onChange={(e) =>
+                                                setNewSeason({
+                                                    ...newSeason,
+                                                    description: e.target.value,
+                                                })
+                                            }
+                                            placeholder="Description"
+                                            className="w-full text-base rounded-lg border border-gray-300 
+                   px-3 py-2 resize-none
+                   focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none
+                   transition-all"
+                                        />
                                     </div>
 
                                     <div
