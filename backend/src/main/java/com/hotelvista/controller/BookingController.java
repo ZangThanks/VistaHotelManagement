@@ -528,12 +528,14 @@ public class BookingController {
             }
 
             List<com.hotelvista.model.BookingService> listServiceDetail = bookingServiceService.findAllByBooking_BookingID(bookingId);
-//            listServiceDetail.forEach((sd) -> {
-//               paymentAmount.updateAndGet(v -> v + sd.getTotalAmount());
-//            });
-
-
-            String qrUrl = QRGenerateUtil.buildVietQRUrl(bookingId, (double)10000);
+            if(listServiceDetail != null) {
+                listServiceDetail.forEach((sd) -> {
+                    paymentAmount.updateAndGet(v -> v + sd.getTotalAmount());
+                    System.out.println(sd);
+                });
+            }
+            System.out.println("===================================SO TIEN: " + paymentAmount.get());
+            String qrUrl = QRGenerateUtil.buildVietQRUrl(bookingId, paymentAmount.get());
             byte[] qrImage = QRGenerateUtil.generateQrImage(qrUrl);
 
             return ResponseEntity.ok()
