@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import type { Booking } from '../../types/Booking';
 import { cancelBooking } from '../../services/bookingService';
+import { useNotificationContext } from '../../context/NotificationContextAPI';
+import { earlyCheckinNotificationService } from '../../services/earlyCheckinNotificationService';
+import type { CancelBookingRequest } from '../../services/earlyCheckinNotificationService';
 
 interface Props {
     booking: Booking | null;
@@ -15,6 +18,7 @@ export default function CancelBookingModal({
     onSuccess,
     onError,
 }: Props) {
+    const { refreshNotifications } = useNotificationContext();
     const [reason, setReason] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [confirmed, setConfirmed] = useState(false);
@@ -178,6 +182,34 @@ export default function CancelBookingModal({
                 } else {
                     console.log('SUCCESS: Refund data saved successfully');
                 }
+            }
+
+            // ✅ Send notifications to customer & employee
+            try {
+                const notificationRequest: CancelBookingRequest = {
+                    customerId: booking?.customer?.id || '',
+                    customerName: booking?.customer?.fullName || 'Khách hàng',
+                    bookingId: booking?.bookingID || '',
+                    roomNumber:
+                        booking?.bookingDetails?.[0]?.room?.roomNumber || 'N/A',
+                    checkInDate: booking?.checkInDate || '',
+                    checkOutDate: booking?.checkOutDate || '',
+                    totalAmount: booking?.totalAmount || 0,
+                    reason: reason.trim(),
+                    userRole: 'CUSTOMER',
+                };
+
+                await earlyCheckinNotificationService.sendCancelBookingRequest(
+                    notificationRequest,
+                );
+
+                await refreshNotifications();
+
+                console.log(
+                    '✅ Cancel booking notifications sent successfully',
+                );
+            } catch (notifError) {
+                console.error('⚠️ Failed to send notifications:', notifError);
             }
 
             // Thông báo thành công

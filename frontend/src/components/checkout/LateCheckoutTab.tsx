@@ -2,17 +2,27 @@
 import { useEffect, useState } from 'react';
 import { FaCheck, FaTimes, FaEye } from 'react-icons/fa';
 import {
-    getAllEarlyCheckins,
-    approveEarlyCheckin,
-} from '../../services/earlyCheckinService';
-import type { EarlyCheckinResponse } from '../../types/EarlyCheckin';
+    getAllLateCheckouts,
+    approveLateCheckout,
+} from '../../services/lateCheckoutService';
+import { earlyCheckinNotificationService } from '../../services/earlyCheckinNotificationService';
+import type { CheckoutApproval } from '../../services/earlyCheckinNotificationService';
 
-type EarlyTabProps = {
-    onViewDetails: (req: EarlyCheckinResponse | any) => void;
+type LateCheckoutResponse = {
+    requestID: string;
+    requestTime: string;
+    approvalStatus: 'PENDING' | 'APPROVED' | 'REJECTED';
+    additionalFee: number;
+    requestDate: string;
+    booking?: any;
 };
 
-const EarlyTab = ({ onViewDetails }: EarlyTabProps) => {
-    const [requests, setRequests] = useState<EarlyCheckinResponse[]>([]);
+type LateCheckoutTabProps = {
+    onViewDetails: (req: LateCheckoutResponse | any) => void;
+};
+
+const LateCheckoutTab = ({ onViewDetails }: LateCheckoutTabProps) => {
+    const [requests, setRequests] = useState<LateCheckoutResponse[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string>('');
     const [processingId, setProcessingId] = useState<string | null>(null);
@@ -22,14 +32,11 @@ const EarlyTab = ({ onViewDetails }: EarlyTabProps) => {
             setLoading(true);
             setError('');
             try {
-                const res = await getAllEarlyCheckins();
-
-                // Service trả về data trực tiếp, không phải { data: ... }
+                const res = await getAllLateCheckouts();
                 const list = Array.isArray(res) ? res : [];
-
                 setRequests(list);
             } catch (e) {
-                setError('Không tải được danh sách check-in sớm');
+                setError('Không tải được danh sách checkout muộn');
             } finally {
                 setLoading(false);
             }
@@ -51,19 +58,39 @@ const EarlyTab = ({ onViewDetails }: EarlyTabProps) => {
                 return;
             }
 
-            // Prepare booking info for notification
-            const bookingInfo = {
-                customerId: request.booking?.customer?.id || '',
-                customerName:
-                    request.booking?.customer?.fullName || 'Khách hàng',
-                roomNumber:
-                    request.booking?.bookingDetails?.[0]?.room?.roomNumber ||
-                    'N/A',
-                requestedTime: request.requestTime,
-            };
+            // Call backend to approve/reject
+            await approveLateCheckout(id, status);
 
-            await approveEarlyCheckin(id, status, 'Staff', bookingInfo);
+            // Send notification to customer
+            try {
+                const approvalData: CheckoutApproval = {
+                    requestId: id,
+                    customerId: request.booking?.customer?.id || '',
+                    customerName:
+                        request.booking?.customer?.fullName || 'Khách hàng',
+                    roomNumber:
+                        request.booking?.bookingDetails?.[0]?.room
+                            ?.roomNumber || 'N/A',
+                    approvedBy: 'Staff',
+                    approvedTime: request.requestTime,
+                    isApproved: status === 'APPROVED',
+                    reason:
+                        status === 'REJECTED'
+                            ? 'Yêu cầu bị từ chối bởi nhân viên'
+                            : undefined,
+                };
 
+                await earlyCheckinNotificationService.processLateCheckoutRequest(
+                    approvalData,
+                );
+                console.log(
+                    '✅ Notification sent to customer after late checkout approval/rejection',
+                );
+            } catch (notifError) {
+                console.error('⚠️ Failed to send notification:', notifError);
+            }
+
+            // Update UI
             setRequests((prev) =>
                 prev.map((req) =>
                     req.requestID === id
@@ -89,7 +116,7 @@ const EarlyTab = ({ onViewDetails }: EarlyTabProps) => {
     if (loading)
         return (
             <div className="p-6 text-center text-sm text-gray-500">
-                Đang tải yêu cầu check-in sớm...
+                Đang tải yêu cầu checkout muộn...
             </div>
         );
     if (error)
@@ -99,7 +126,7 @@ const EarlyTab = ({ onViewDetails }: EarlyTabProps) => {
     if (!requests.length)
         return (
             <div className="p-6 text-center text-sm text-gray-500">
-                Không có yêu cầu check-in sớm.
+                Không có yêu cầu checkout muộn.
             </div>
         );
 
@@ -141,7 +168,7 @@ const EarlyTab = ({ onViewDetails }: EarlyTabProps) => {
                         <th className="py-4 px-4 font-semibold">Guest</th>
                         <th className="py-4 px-4 font-semibold">Room</th>
                         <th className="py-4 px-4 font-semibold">
-                            Regular Check-in
+                            Regular Checkout
                         </th>
                         <th className="py-4 px-4 font-semibold">
                             Requested Time
@@ -168,65 +195,20 @@ const EarlyTab = ({ onViewDetails }: EarlyTabProps) => {
                                 <td className="py-4 px-4">
                                     <div>
                                         <p className="font-medium">
-                                            {customer.fullName ||
-                                                (req.requestID === 'EC001'
-                                                    ? 'Nguyễn Văn A'
-                                                    : req.requestID === 'EC002'
-                                                    ? 'Trần Thị B'
-                                                    : req.requestID.includes(
-                                                          '2811',
-                                                      )
-                                                    ? 'Lê Văn C'
-                                                    : req.requestID.includes(
-                                                          '3011',
-                                                      )
-                                                    ? 'Phạm Thị D'
-                                                    : 'N/A')}
+                                            {customer.fullName || 'N/A'}
                                         </p>
                                         <p className="text-sm text-gray-500">
-                                            {customer.email ||
-                                                (req.requestID === 'EC001'
-                                                    ? 'nguyenvana@email.com'
-                                                    : req.requestID === 'EC002'
-                                                    ? 'tranthib@email.com'
-                                                    : req.requestID.includes(
-                                                          '2811',
-                                                      )
-                                                    ? 'levanc@email.com'
-                                                    : req.requestID.includes(
-                                                          '3011',
-                                                      )
-                                                    ? 'phamthid@email.com'
-                                                    : 'No email')}
+                                            {customer.email || 'No email'}
                                         </p>
                                     </div>
                                 </td>
 
                                 <td className="py-4 px-4">
-                                    {room.roomNumber ||
-                                        (req.requestID === 'EC001'
-                                            ? '101'
-                                            : req.requestID === 'EC002'
-                                            ? '205'
-                                            : req.requestID.includes('2811')
-                                            ? '301'
-                                            : req.requestID.includes('3011')
-                                            ? '402'
-                                            : 'N/A')}{' '}
-                                    -{' '}
-                                    {room.roomType?.typeName ||
-                                        (req.requestID === 'EC001'
-                                            ? 'Deluxe'
-                                            : req.requestID === 'EC002'
-                                            ? 'Suite'
-                                            : req.requestID.includes('2811')
-                                            ? 'Standard'
-                                            : req.requestID.includes('3011')
-                                            ? 'Premium'
-                                            : 'N/A')}
+                                    {room.roomNumber || 'N/A'} -{' '}
+                                    {room.roomType?.typeName || 'N/A'}
                                 </td>
 
-                                <td className="py-4 px-4">14:00</td>
+                                <td className="py-4 px-4">12:00</td>
 
                                 <td className="py-4 px-4">
                                     {formatTime(req.requestTime)}
@@ -240,7 +222,7 @@ const EarlyTab = ({ onViewDetails }: EarlyTabProps) => {
                                     {renderStatusBadge(req.approvalStatus)}
                                 </td>
 
-                                <td className="py-4 px-4 flex items-center justify-center">
+                                <td className="py-4 px-4">
                                     <div className="flex gap-2 items-center">
                                         {req.approvalStatus === 'PENDING' && (
                                             <>
@@ -256,6 +238,7 @@ const EarlyTab = ({ onViewDetails }: EarlyTabProps) => {
                                                         )
                                                     }
                                                     className="p-2.5 rounded-full bg-[#F5F0EB] hover:bg-green-100 text-green-600"
+                                                    title="Approve"
                                                 >
                                                     <FaCheck size={14} />
                                                 </button>
@@ -272,6 +255,7 @@ const EarlyTab = ({ onViewDetails }: EarlyTabProps) => {
                                                         )
                                                     }
                                                     className="p-2.5 rounded-full bg-[#F5F0EB] hover:bg-red-100 text-red-600"
+                                                    title="Reject"
                                                 >
                                                     <FaTimes size={14} />
                                                 </button>
@@ -280,7 +264,8 @@ const EarlyTab = ({ onViewDetails }: EarlyTabProps) => {
 
                                         <button
                                             onClick={() => onViewDetails(req)}
-                                            className="p-2.5 rounded-full bg-[#F5F0EB] hover:bg-[#EBE3D7]"
+                                            className="p-2.5 rounded-full bg-[#F5F0EB] hover:bg-[#b9ad96] hover:text-white text-gray-600"
+                                            title="View Details"
                                         >
                                             <FaEye size={14} />
                                         </button>
@@ -295,4 +280,4 @@ const EarlyTab = ({ onViewDetails }: EarlyTabProps) => {
     );
 };
 
-export default EarlyTab;
+export default LateCheckoutTab;
