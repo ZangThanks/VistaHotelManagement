@@ -4,6 +4,7 @@ import com.hotelvista.dto.ServiceReportDTO;
 import com.hotelvista.dto.report.DashboardStatsDTO;
 import com.hotelvista.service.ReportService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +24,7 @@ import java.util.List;
 @CrossOrigin(origins = "http://localhost:5173")
 public class ReportController {
 
+    @Autowired
     private  ReportService reportService;
 
     /**
