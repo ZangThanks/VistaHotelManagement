@@ -3,9 +3,6 @@ package com.hotelvista.service;
 import com.hotelvista.model.Room;
 import com.hotelvista.repository.RoomRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -60,5 +57,9 @@ public class RoomService {
      */
     public void delete(String id) {
         roomRepo.deleteById(id);
+    }
+
+    public void save(Room room) {
+
     }
 }

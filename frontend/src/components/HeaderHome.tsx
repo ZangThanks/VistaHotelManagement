@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { CiSearch } from 'react-icons/ci';
-import SearchSidebar from './SearchSidebar';
+import React, { useState, useEffect } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { CiSearch } from "react-icons/ci";
+import SearchSidebar from "./SearchSidebar";
 import {
   faUser,
   faUserCircle,
@@ -14,7 +14,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { handleLogout } from "../services/authService";
 import ConfirmDialog from "./dialog/ConfirmDialog";
 import { useToastContext } from "../hooks/useToastContext";
-
 
 interface User {
   id: string;
@@ -78,10 +77,10 @@ const HeaderHome: React.FC = () => {
   };
 
   const getLastTwoWords = (name: string): string => {
-    if (!name) return '';
-    const parts = name.trim().split(' ');
+    if (!name) return "";
+    const parts = name.trim().split(" ");
     if (parts.length <= 2) return name;
-    return parts.slice(-2).join(' ');
+    return parts.slice(-2).join(" ");
   };
 
   // Check user login status
@@ -127,17 +126,17 @@ const HeaderHome: React.FC = () => {
             <div className="flex flex-col space-y-1">
               <span
                 className={`block w-5 h-0.5 bg-white transition-all duration-300 ${
-                  mobileMenuOpen ? 'rotate-45 translate-y-1.5' : ''
+                  mobileMenuOpen ? "rotate-45 translate-y-1.5" : ""
                 }`}
               ></span>
               <span
                 className={`block w-5 h-0.5 bg-white transition-all duration-300 ${
-                  mobileMenuOpen ? 'opacity-0' : ''
+                  mobileMenuOpen ? "opacity-0" : ""
                 }`}
               ></span>
               <span
                 className={`block w-5 h-0.5 bg-white transition-all duration-300 ${
-                  mobileMenuOpen ? '-rotate-45 -translate-y-1.5' : ''
+                  mobileMenuOpen ? "-rotate-45 -translate-y-1.5" : ""
                 }`}
               ></span>
             </div>
@@ -193,7 +192,10 @@ const HeaderHome: React.FC = () => {
                   className="w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 border-white object-cover"
                 />
               ) : (
-                <FontAwesomeIcon icon={faUser} className="text-sm lg:text-base text-white" />
+                <FontAwesomeIcon
+                  icon={faUser}
+                  className="text-sm lg:text-base text-white"
+                />
               )}
             </button>
             <div className="absolute right-0 mt-2 w-48 bg-black/50 backdrop-blur-md rounded-md shadow-lg ring-1 ring-white/10 py-1 z-50 opacity-0 invisible scale-95 transform transition-all duration-300 ease-out group-hover:opacity-100 group-hover:visible group-hover:scale-100">
@@ -299,9 +301,7 @@ const HeaderHome: React.FC = () => {
       {/* Backdrop Overlay */}
       <div
         className={`lg:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-40 transition-all duration-500 ${
-          mobileMenuOpen
-            ? 'opacity-100 visible'
-            : 'opacity-0 invisible'
+          mobileMenuOpen ? "opacity-100 visible" : "opacity-0 invisible"
         }`}
         onClick={() => setMobileMenuOpen(false)}
       ></div>
@@ -309,11 +309,11 @@ const HeaderHome: React.FC = () => {
       {/* Mobile Navigation Menu - Slide from Left */}
       <div
         className={`lg:hidden fixed top-0 left-0 w-64 h-full bg-gradient-to-br from-black/98 via-slate-900/95 to-black/98 backdrop-blur-xl border-r border-white/20 shadow-2xl z-50 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${
-          mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+          mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
         } overflow-hidden`}
         style={{
-          scrollbarWidth: 'none',
-          msOverflowStyle: 'none',
+          scrollbarWidth: "none",
+          msOverflowStyle: "none",
         }}
       >
         {/* Decorative Background Pattern */}
@@ -387,9 +387,7 @@ const HeaderHome: React.FC = () => {
           {/* Language Selection - Inline Style */}
           <div className="border-t border-white/10 pt-2 mb-3">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-white/60 font-serif">
-                Language:
-              </span>
+              <span className="text-white/60 font-serif">Language:</span>
               <div className="flex items-center space-x-2">
                 <button className="flex items-center space-x-1 px-2 py-1 bg-white text-black rounded-md font-serif text-xs transition-all duration-200 hover:bg-white/90">
                   <span>🇺🇸</span>
@@ -406,10 +404,7 @@ const HeaderHome: React.FC = () => {
         </nav>
       </div>
 
-      <SearchSidebar
-        isOpen={searchOpen}
-        onClose={() => setSearchOpen(false)}
-      />
+      <SearchSidebar isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
 
       {/* Logout Confirmation Dialog */}
       <ConfirmDialog

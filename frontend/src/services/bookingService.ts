@@ -84,7 +84,7 @@ export const getBookingsByCustomerId = async (
 ): Promise<Booking[]> => {
   try {
     const response = await api.get(`${ENDPOINT}/customer/${customerId}`);
-    console.log(`📋 Bookings for customer ${customerId}:`, response.data);
+    console.log(`Bookings for customer ${customerId}:`, response.data);
     return response.data;
   } catch (error) {
     console.error(`Error fetching bookings for customer ${customerId}:`, error);
@@ -474,6 +474,18 @@ export const cancelBooking = async (
     return response.data;
   } catch (error) {
     console.error(`Error cancelling booking ${bookingId}:`, error);
+    throw error;
+  }
+};
+
+export const getBookingServicesByBookingId = async (bookingId: string) => {
+  try {
+    const response = await api.get(
+      `${ENDPOINT}/booking-services/booking/${bookingId}`
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching booking services:", error);
     throw error;
   }
 };

@@ -50,7 +50,7 @@ public class Customer extends User{
     private List<Booking> bookings;
 
     @ToString.Exclude
-    @OneToOne(fetch = FetchType.EAGER)
+    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JsonIgnore
     @JoinColumn(name = "cart_bean_id")
     private CartBean cartBean;
