@@ -29,3 +29,27 @@ export const saveReview = async (
     throw error;
   }
 };
+
+export const getReviewsWithCustomerByRoomNumber = async (
+  roomNumber: string
+) => {
+  try {
+    const response = await api.get(
+      `${ENDPOINT}/room/with-customer/${roomNumber}`
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error get review:", error);
+    throw error;
+  }
+};
+
+export const getBookingByReviewId = async (reviewID: string) => {
+  try {
+    const res = await api.get(`${ENDPOINT}/booking/${reviewID}`);
+    return res.data;
+  } catch (err) {
+    console.log("Error get booking by review ID:", err);
+    throw err;
+  }
+};

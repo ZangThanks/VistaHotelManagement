@@ -2,6 +2,7 @@ package com.hotelvista.repository;
 
 import com.hotelvista.model.Booking;
 import com.hotelvista.model.BookingDetail;
+import com.hotelvista.model.enums.BookingStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -102,4 +103,37 @@ public interface BookingRepository extends JpaRepository<Booking, String> {
             @Param("checkIn") LocalDateTime checkIn,
             @Param("checkOut") LocalDateTime checkOut
     );
+
+    /**
+     * Tìm tất cả booking theo trạng thái và ngày đặt phòng
+     *
+     * @param status
+     * @param bookingDate
+     * @return
+     */
+    @Query("SELECT b " +
+            "FROM Booking b " +
+            "WHERE b.status = :status " +
+            "   AND b.bookingDate = :bookingDate")
+    List<Booking> findAllByStatusAndBookingDate(@Param("status") BookingStatus status, @Param("bookingDate") LocalDateTime bookingDate);
+
+    @Query(value = """
+        SELECT
+            CASE
+                WHEN rp BETWEEN 0 AND 40 THEN
+                    SEC_TO_TIME(GREATEST(0, 6*3600 - TIMESTAMPDIFF(SECOND, created_at, NOW())))
+                WHEN rp BETWEEN 41 AND 80 THEN
+                    SEC_TO_TIME(GREATEST(0, 8*3600 - TIMESTAMPDIFF(SECOND, created_at, NOW())))
+                ELSE
+                    'UNLIMITED'
+            END AS remaining_time
+        FROM (
+            SELECT b.created_at, c.reputation_point AS rp
+            FROM bookings b
+            JOIN customers c ON c.customer_id = b.customer_id
+            WHERE b.booking_id = :bookingId
+        ) AS t
+        """, nativeQuery = true)
+    String getRemainingPaymentTime(@Param("bookingId") String bookingId);
+
 }

@@ -50,6 +50,8 @@ import PromotionTypeManagement from "../pages/admin/promotion/PromotionTypeManag
 import VoucherManagement from "../pages/admin/voucher/VoucherManagement.tsx";
 import ReportPage from "../pages/admin/report/Report.tsx";
 import BookingDetailPage from "../pages/customer/BookingDetail.tsx";
+import ReviewsPage from "../pages/customer/review/ReviewPage.tsx";
+import ReplyReviewsPage from "../pages/employee/review/ReplyReviewPage.tsx";
 
 export const router = createBrowserRouter([
   // OAuth
@@ -83,6 +85,7 @@ export const router = createBrowserRouter([
       { path: "room-management", element: <RoomManagement /> },
       { path: "room-type-management", element: <RoomTypeManagement /> },
       { path: "support", element: <ChatSupport /> },
+      { path: "reviews", element: <ReplyReviewsPage /> },
     ],
   },
 
@@ -151,6 +154,7 @@ export const router = createBrowserRouter([
       { path: "payment", element: <PaymentPage /> },
       { path: "profile", element: <UserProfilePage /> },
       { path: "cart", element: <RoomCart /> },
+      { path: "reviews/:id", element: <ReviewsPage /> },
     ],
   },
 ]);

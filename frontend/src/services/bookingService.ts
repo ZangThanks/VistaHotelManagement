@@ -361,37 +361,6 @@ export const getCompletedCheckouts = async (): Promise<Booking[]> => {
   }
 };
 
-//TODO: ĐỪNG XÓA, pls, OKE EM
-// export const checkOut = async (bookingId: string): Promise<Booking> => {
-//   try {
-//     const response = await axiosInstance.put(
-//       `${ENDPOINT}/${bookingId}/check-out`
-//     );
-//     return response.data;
-//   } catch (error) {
-//     console.error("Check-out error:", error);
-//     throw error;
-//   }
-// };
-// export const approveEarlyCheckin = async (
-//   bookingId: string,
-//   approve: boolean
-// ): Promise<Booking> => {
-//   try {
-//     const response = await axiosInstance.put(
-//       `${ENDPOINT}/${bookingId}/early-checkin/approve`,
-//       null,
-//       {
-//         params: { approve },
-//       }
-//     );
-//     return response.data;
-//   } catch (error) {
-//     console.error("Approve early check-in error:", error);
-//     throw error;
-//   }
-// };
-
 export const getByRoom = async (roomNumber: string) => {
   const response = await api.get(`/bookings/room/${roomNumber}`);
   return response.data;
@@ -486,6 +455,23 @@ export const getBookingServicesByBookingId = async (bookingId: string) => {
     return response.data;
   } catch (error) {
     console.error("Error fetching booking services:", error);
+    throw error;
+  }
+};
+
+export const confirmPayAtCheckout = async (
+    bookingId: string
+): Promise<Booking> => {
+  try {
+    const response = await api.put(
+        `${ENDPOINT}/${bookingId}/confirm-pay-at-checkout`
+    );
+    return response.data;
+  } catch (error) {
+    console.error(
+        `Error confirming pay at checkout for booking ${bookingId}:`,
+        error
+    );
     throw error;
   }
 };

@@ -23,7 +23,6 @@ const Breadcrumb: React.FC<BreadcrumbProps> = ({ items, className = "" }) => {
         to="/"
         className="flex items-center gap-1 text-gray-600 hover:text-[#ccbda3] transition-colors"
       >
-        <FaHome className="text-base" />
         <span className="font-medium">Home</span>
       </Link>
 

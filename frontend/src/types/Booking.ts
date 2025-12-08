@@ -3,7 +3,7 @@ export interface Booking {
   checkInDate: string;
   checkOutDate: string;
   numberOfGuests: number;
-  status: "PENDING" | "CONFIRMED" | "CHECKED_IN" | "CHECKED_OUT" | "CANCELLED";
+  status: "PENDING" | "WAITING" | "CHECKED_IN" | "CHECKED_OUT" | "CANCELLED";
   specialRequests?: string;
   bookingDate: string;
   cancellationDate?: string;
@@ -18,8 +18,7 @@ export interface Booking {
     | "PERCENTAGE_50"
     | "PAID"
     | "REFUNDED"
-    | "CANCELLED"
-    | "PARTIAL";
+    | "CANCELLED";
   invoiceType?: string | null;
   totalCost: number;
   type: "HOURLY" | "DAILY";
@@ -27,6 +26,8 @@ export interface Booking {
   employee?: Employee;
   bookingDetails: BookingDetail[];
   earlyCheckin?: EarlyCheckin | null;
+  lateCheckout?: LateCheckout | null;
+  cancellation: BookingCancellation;
 }
 
 export interface EarlyCheckin {
@@ -45,16 +46,34 @@ export interface RoomBooking {
   guestName: string;
   checkIn: Date;
   checkOut: Date;
-  status: "pending" | "confirmed" | "checked-in" | "checked-out" | "cancelled";
+  status: "pending" | "waiting" | "checked-in" | "checked-out" | "cancelled";
   numberOfGuests: number;
   totalAmount: number;
   specialRequests?: string;
   paymentStatus?: string;
-  customer?: any;
-  bookingDetails?: any[];
+  customer?: unknown;
+  bookingDetails?: unknown[];
   earlyCheckin?: EarlyCheckin | null;
+}
+
+export type RefundMethod =
+  | "BANK_TRANSFER"
+  | "MOMO"
+  | "ZALOPAL"
+  | "VNPAY"
+  | string;
+
+export interface BookingCancellation {
+  id: string;
+  booking: Booking;
+  cancelReason: string;
+  cancelledAt: string;
+  refundAmount: number;
+  refundMethod: RefundMethod;
+  refundAccountInfo: string;
 }
 
 import type { Customer } from "./Customer";
 import type { Employee } from "./Employee";
 import type { BookingDetail } from "./BookingDetail";
+import type { LateCheckout } from "./LateCheckout";
