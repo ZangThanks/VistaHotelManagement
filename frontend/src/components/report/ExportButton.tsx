@@ -254,9 +254,27 @@ const ExportButton: React.FC<ExportButtonProps> = ({
                         bodyStyles: {
                             fontSize: 8,
                             cellPadding: 3,
+                            halign: 'center',
                         },
                         alternateRowStyles: {
                             fillColor: [250, 248, 245],
+                        },
+                        tableWidth: pageWidth - 28,
+                        columnStyles: {
+                            0: { halign: 'center' },
+                            1: { halign: 'center' },
+                            2: { halign: 'center' },
+                            3: { halign: 'center' },
+                            4: { halign: 'center' },
+                            5: { halign: 'center' },
+                            6: { halign: 'center' },
+                            7: { halign: 'center' },
+                        },
+                        didParseCell: (cellData) => {
+                            // Áp dụng cùng alignment cho foot như body
+                            if (cellData.section === 'foot') {
+                                cellData.cell.styles.halign = 'center';
+                            }
                         },
                         margin: { left: 14, right: 14 },
                     });
@@ -301,9 +319,23 @@ const ExportButton: React.FC<ExportButtonProps> = ({
                         bodyStyles: {
                             fontSize: 9,
                             cellPadding: 3,
+                            halign: 'center',
                         },
                         alternateRowStyles: {
                             fillColor: [250, 248, 245],
+                        },
+                        tableWidth: pageWidth - 28,
+                        columnStyles: {
+                            0: { halign: 'center' },
+                            1: { halign: 'center' },
+                            2: { halign: 'center' },
+                            3: { halign: 'center' },
+                        },
+                        didParseCell: (cellData) => {
+                            // Áp dụng cùng alignment cho foot như body
+                            if (cellData.section === 'foot') {
+                                cellData.cell.styles.halign = 'center';
+                            }
                         },
                         margin: { left: 14, right: 14 },
                     });

@@ -210,20 +210,19 @@ export const generateRevenueReportPdf = ({
         ];
     });
 
+    // Generate table
     autoTable(doc, {
         startY: yPos,
         head: [headers],
         body: tableData,
-        foot: [
-            [
-                'TOTAL',
-                totals.roomRevenue.toLocaleString('vi-VN'),
-                totals.serviceRevenue.toLocaleString('vi-VN'),
-                totals.totalRevenue.toLocaleString('vi-VN'),
-                totals.bookingCount.toString(),
-                avgPerBooking.toLocaleString('vi-VN'),
-            ],
-        ],
+        foot: [[
+            'TOTAL',
+            totals.roomRevenue.toLocaleString('vi-VN'),
+            totals.serviceRevenue.toLocaleString('vi-VN'),
+            totals.totalRevenue.toLocaleString('vi-VN'),
+            totals.bookingCount.toString(),
+            avgPerBooking.toLocaleString('vi-VN'),
+        ]],
         theme: 'striped',
         headStyles: {
             fillColor: [204, 189, 163],
@@ -246,13 +245,27 @@ export const generateRevenueReportPdf = ({
         alternateRowStyles: {
             fillColor: [250, 248, 245],
         },
+        tableWidth: pageWidth - 28,
         columnStyles: {
-            0: { halign: 'center', cellWidth: 28 },
-            1: { halign: 'right', cellWidth: 28 },
-            2: { halign: 'right', cellWidth: 28 },
-            3: { halign: 'right', cellWidth: 28 },
-            4: { halign: 'center', cellWidth: 20 },
-            5: { halign: 'right', cellWidth: 28 },
+            0: { halign: 'center' },
+            1: { halign: 'right' },
+            2: { halign: 'right' },
+            3: { halign: 'right' },
+            4: { halign: 'center' },
+            5: { halign: 'right' },
+        },
+        // Áp dụng cùng columnStyles cho foot
+        didParseCell: (data) => {
+            if (data.section === 'foot') {
+                // Áp dụng cùng alignment như body
+                if (data.column.index === 0) {
+                    data.cell.styles.halign = 'center';
+                } else if (data.column.index === 4) {
+                    data.cell.styles.halign = 'center';
+                } else {
+                    data.cell.styles.halign = 'right';
+                }
+            }
         },
         margin: { left: 14, right: 14 },
     });
