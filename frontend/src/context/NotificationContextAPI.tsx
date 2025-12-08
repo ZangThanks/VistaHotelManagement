@@ -1,10 +1,16 @@
-/*eslint-disable */
+/* eslint-disable */
 import React, { createContext, useCallback, useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import { notificationApiService } from '../services/notificationApiService';
 import type { BackendNotification } from '../services/notificationApiService';
+import {
+    websocketService,
+    type NotificationMessage,
+} from '../services/websocketService';
 
+// ============================
 // Frontend Notification Interface
+// ============================
 interface Notification {
     id: string;
     title: string;
@@ -39,17 +45,83 @@ interface NotificationProviderProps {
     userId?: string;
 }
 
+// ============================
+// MAIN PROVIDER
+// ============================
 export const NotificationProvider: React.FC<NotificationProviderProps> = ({
     children,
-    userId = 'ADMIN_001',
 }) => {
     const [notifications, setNotifications] = useState<Notification[]>([]);
 
-    // Convert backend notification to frontend format
+    // Load user from localStorage
+    const savedUser = localStorage.getItem('user');
+    const parsedUser = savedUser ? JSON.parse(savedUser) : null;
+
+    const userId =
+        parsedUser?.customerId ||
+        parsedUser?.employeeId ||
+        parsedUser?.adminId ||
+        parsedUser?.id ||
+        null;
+
+    let rawRole = parsedUser?.role || '';
+    rawRole = rawRole.toUpperCase();
+
+    let userType: 'CUSTOMER' | 'EMPLOYEE' | 'ADMIN' = 'CUSTOMER';
+
+    if (rawRole.includes('ADMIN')) userType = 'ADMIN';
+    else if (rawRole.includes('EMPLOYEE')) userType = 'EMPLOYEE';
+    else userType = 'CUSTOMER';
+
+    useEffect(() => {
+        if (!userId) {
+            console.warn('[WebSocket] No userId → skip WebSocket');
+            return;
+        }
+
+        websocketService
+            .connect(userId, userType)
+            .then(() => {
+                console.log('[WebSocket] Connected successfully');
+
+                const unsubscribe = websocketService.onMessage(
+                    (notification: NotificationMessage) => {
+                        const frontendNotif: Notification = {
+                            id: notification.id,
+                            title: notification.title,
+                            message: notification.message,
+                            type:
+                                notification.type === 'ALERT'
+                                    ? 'error'
+                                    : notification.type === 'REQUEST'
+                                    ? 'warning'
+                                    : 'info',
+                            timestamp: notification.createdAt,
+                            isRead: notification.isRead,
+                            category: notification.category,
+                            priority: notification.priority,
+                            needsAction: false,
+                        };
+
+                        setNotifications((prev) => [frontendNotif, ...prev]);
+                    },
+                );
+
+                return unsubscribe;
+            })
+            .catch((error) => {
+                console.error('WebSocket connection failed:', error);
+            });
+
+        return () => {
+            websocketService.disconnect();
+        };
+    }, [userId, userType]);
+
     const convertBackendToFrontend = (
         backendNotif: BackendNotification,
     ): Notification => {
-        const getTypeFromCategory = (category: string, type: string) => {
+        const getType = (category: string, type: string) => {
             if (type === 'ALERT') return 'error';
             if (category === 'PAYMENT_ISSUE') return 'warning';
             if (category === 'PROMOTION') return 'success';
@@ -60,8 +132,8 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
             id: backendNotif.id,
             title: backendNotif.title,
             message: backendNotif.message,
-            type: getTypeFromCategory(backendNotif.category, backendNotif.type),
-            timestamp: backendNotif.deliveredAt || backendNotif.createdAt, // Dùng deliveredAt nếu có, fallback to createdAt
+            type: getType(backendNotif.category, backendNotif.type),
+            timestamp: backendNotif.deliveredAt || backendNotif.createdAt,
             isRead: backendNotif.isRead,
             category: backendNotif.category,
             priority: backendNotif.priority,
@@ -69,232 +141,98 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
         };
     };
 
-    // Load notifications from API cho customer và employee
+    // ============================
+    // Fetch notifications (API)
+    // ============================
     const refreshNotifications = useCallback(async () => {
         try {
             const token = localStorage.getItem('token');
             if (!token) {
-                console.warn('⚠️ [Context] No token, user not logged in');
                 setNotifications([]);
                 return;
             }
-
-            console.log('🔄 [Context] Refreshing notifications...');
-
-            // Lấy tất cả notifications (customer hoặc employee)
             const response = await notificationApiService.getMyNotifications(
                 0,
                 50,
             );
 
-            console.log('📥 [Context] API Response:', {
-                success: response.success,
-                hasData: !!response.data,
-                hasContent: !!response.data?.content,
-                contentLength: response.data?.content?.length,
-            });
-
-            if (
-                response.success &&
-                response.data?.content &&
-                Array.isArray(response.data.content)
-            ) {
-                const frontendNotifications = response.data.content.map(
+            if (response.success && Array.isArray(response.data?.content)) {
+                const mapped = response.data.content.map(
                     convertBackendToFrontend,
                 );
-
-                console.log(
-                    '✅ [Context] Loaded',
-                    frontendNotifications.length,
-                    'notifications',
-                );
-                setNotifications(frontendNotifications);
+                setNotifications(mapped);
                 return;
             }
 
-            console.log(
-                '⚠️ [Context] No content in response, trying unread...',
-            );
-
-            // Fallback: lấy unread notifications
-            const unreadResponse =
+            // fallback
+            const unread =
                 await notificationApiService.getUnreadNotifications();
-            if (
-                unreadResponse.success &&
-                unreadResponse.data &&
-                Array.isArray(unreadResponse.data)
-            ) {
-                console.log(
-                    '📭 [Context] Got',
-                    unreadResponse.data.length,
-                    'unread notifications',
-                );
-
-                const frontendNotifications = unreadResponse.data.map(
-                    convertBackendToFrontend,
-                );
-                setNotifications(frontendNotifications);
+            if (unread.success && Array.isArray(unread.data)) {
+                setNotifications(unread.data.map(convertBackendToFrontend));
                 return;
             }
 
-            console.log('ℹ️ [Context] No notifications available');
             setNotifications([]);
         } catch (error) {
-            console.error('❌ [Context] Error loading notifications:', error);
-            setNotifications([]);
+            console.error('[Context] Error loading notifications:', error);
         }
     }, []);
 
-    // Load initial notifications
     useEffect(() => {
         refreshNotifications();
     }, [refreshNotifications]);
 
-    // ⚠️ POLLING DISABLED - Waiting for backend endpoint
-    // TODO: Enable after backend /api/notifications endpoint is ready
-    // useEffect(() => {
-    //     const interval = setInterval(refreshNotifications, 5000);
-    //     return () => clearInterval(interval);
-    // }, [refreshNotifications]);
-
     const addNotification = useCallback(
-        (
-            notificationData: Omit<Notification, 'id' | 'timestamp' | 'isRead'>,
-        ) => {
-            const newNotification: Notification = {
-                ...notificationData,
-                id:
-                    'local_' +
-                    Date.now().toString() +
-                    Math.random().toString(36).substr(2, 9),
+        (data: Omit<Notification, 'id' | 'timestamp' | 'isRead'>) => {
+            const newNoti: Notification = {
+                ...data,
+                id: 'local_' + Date.now() + Math.random().toString(36).slice(2),
                 timestamp: new Date().toISOString(),
                 isRead: false,
             };
 
-            setNotifications((prev) => [newNotification, ...prev]);
+            setNotifications((prev) => [newNoti, ...prev]);
 
-            // Browser notification
-            if (typeof window !== 'undefined' && 'Notification' in window) {
-                if (Notification.permission === 'granted') {
-                    new Notification(newNotification.title, {
-                        body: newNotification.message,
-                        icon: '/vite.svg',
-                    });
-                } else if (Notification.permission === 'default') {
-                    Notification.requestPermission().then((permission) => {
-                        if (permission === 'granted') {
-                            new Notification(newNotification.title, {
-                                body: newNotification.message,
-                                icon: '/vite.svg',
-                            });
-                        }
-                    });
-                }
-            }
-
-            // Try to send to backend API
-            const backendType: 'REQUEST' | 'INFO' | 'ALERT' | 'SYSTEM' =
-                notificationData.type === 'info'
-                    ? 'INFO'
-                    : notificationData.type === 'success'
-                    ? 'INFO'
-                    : notificationData.type === 'warning'
-                    ? 'ALERT'
-                    : 'ALERT';
-
-            const backendCategory:
-                | 'EARLY_CHECKIN'
-                | 'LATE_CHECKOUT'
-                | 'CANCELLATION'
-                | 'PAYMENT_ISSUE'
-                | 'MAINTENANCE'
-                | 'HOUSEKEEPING'
-                | 'PROMOTION'
-                | 'SECURITY'
-                | 'OTHER' =
-                (notificationData.category as
-                    | 'EARLY_CHECKIN'
-                    | 'LATE_CHECKOUT'
-                    | 'CANCELLATION'
-                    | 'PAYMENT_ISSUE'
-                    | 'MAINTENANCE'
-                    | 'HOUSEKEEPING'
-                    | 'PROMOTION'
-                    | 'SECURITY'
-                    | 'OTHER') || 'OTHER';
-
-            notificationApiService
-                .createNotification({
-                    type: backendType,
-                    category: backendCategory,
-                    title: notificationData.title,
-                    message: notificationData.message,
-                    toUserId: userId,
-                    needsAction: notificationData.needsAction || false,
-                    isRead: false,
-                    isRealtime: true,
-                    status: 'PENDING',
-                    priority: notificationData.priority || 'NORMAL',
-                })
-                .catch((error) => {
-                    console.error(
-                        'Error sending notification to backend:',
-                        error,
-                    );
-                });
+            notificationApiService.createNotification({
+                type: data.type === 'warning' ? 'ALERT' : 'INFO',
+                category: (data.category as any) || 'OTHER',
+                title: data.title,
+                message: data.message,
+                toUserId: userId,
+                isRead: false,
+                isRealtime: true,
+                status: 'PENDING',
+                priority: data.priority || 'NORMAL',
+            });
         },
         [userId],
     );
 
     const markAsRead = useCallback(async (id: string) => {
         setNotifications((prev) =>
-            prev.map((notification) =>
-                notification.id === id
-                    ? { ...notification, isRead: true }
-                    : notification,
-            ),
+            prev.map((n) => (n.id === id ? { ...n, isRead: true } : n)),
         );
 
-        // Call API if it's a backend notification
         if (!id.startsWith('local_')) {
-            try {
-                await notificationApiService.markAsRead(id);
-            } catch (error) {
-                console.error('Error marking as read:', error);
-            }
+            await notificationApiService.markAsRead(id).catch(() => {});
         }
     }, []);
 
     const markAllAsRead = useCallback(async () => {
-        setNotifications((prev) =>
-            prev.map((notification) => ({ ...notification, isRead: true })),
-        );
+        setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
 
-        try {
-            await notificationApiService.markAllAsRead();
-        } catch (error) {
-            console.error('Error marking all as read:', error);
-        }
+        await notificationApiService.markAllAsRead().catch(() => {});
     }, []);
 
     const removeNotification = useCallback(async (id: string) => {
-        setNotifications((prev) =>
-            prev.filter((notification) => notification.id !== id),
-        );
+        setNotifications((prev) => prev.filter((n) => n.id !== id));
 
-        // Call API if it's a backend notification
         if (!id.startsWith('local_')) {
-            try {
-                await notificationApiService.deleteNotification(id);
-            } catch (error) {
-                console.error('Error deleting notification:', error);
-            }
+            await notificationApiService.deleteNotification(id).catch(() => {});
         }
     }, []);
 
-    const clearAll = useCallback(() => {
-        setNotifications([]);
-    }, []);
+    const clearAll = useCallback(() => setNotifications([]), []);
 
     const unreadCount = notifications.filter((n) => !n.isRead).length;
 
@@ -316,13 +254,13 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
     );
 };
 
-// Hook to use the notification context
+// ============================
+// Export hook
+// ============================
 export const useNotificationContext = (): NotificationContextType => {
-    const context = React.useContext(NotificationContext);
-    if (context === undefined) {
-        throw new Error(
-            'useNotificationContext must be used within a NotificationProvider',
-        );
+    const ctx = React.useContext(NotificationContext);
+    if (!ctx) {
+        throw new Error('useNotificationContext must be used inside provider');
     }
-    return context;
+    return ctx;
 };

@@ -4,7 +4,7 @@ import { cancelBooking } from '../../services/bookingService';
 import { useNotificationContext } from '../../context/NotificationContextAPI';
 import { earlyCheckinNotificationService } from '../../services/earlyCheckinNotificationService';
 import type { CancelBookingRequest } from '../../services/earlyCheckinNotificationService';
-
+import { useToastContext } from '../../hooks/useToastContext';
 interface Props {
     booking: Booking | null;
     onClose: () => void;
@@ -22,6 +22,7 @@ export default function CancelBookingModal({
     const [reason, setReason] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [confirmed, setConfirmed] = useState(false);
+    const toast = useToastContext();
     const [paymentInfo, setPaymentInfo] = useState({
         method: 'BANK_TRANSFER',
         accountNumber: '',
@@ -52,23 +53,13 @@ export default function CancelBookingModal({
         e.preventDefault();
 
         if (!confirmed) {
-            alert('Vui lòng xác nhận hủy booking');
+            toast.error('Vui lòng xác nhận hủy booking');
             return;
         }
 
         if (!reason.trim()) {
-            alert('Vui lòng nhập lý do hủy');
+            toast.error('Vui lòng nhập lý do hủy');
             return;
-        }
-
-        // Extra confirmation for reputation penalty
-        if (willLoseReputation) {
-            const confirmWithPenalty = window.confirm(
-                'WARNING: Cancelling this booking will reduce your reputation by 3 points. This may affect your future booking privileges. Are you sure you want to proceed?',
-            );
-            if (!confirmWithPenalty) {
-                return;
-            }
         }
 
         setIsSubmitting(true);
@@ -85,7 +76,7 @@ export default function CancelBookingModal({
                         !paymentInfo.accountNumber ||
                         !paymentInfo.accountName
                     ) {
-                        alert('Vui lòng điền đầy đủ thông tin ngân hàng');
+                        toast.error('Vui lòng điền đầy đủ thông tin ngân hàng');
                         setIsSubmitting(false);
                         return;
                     }
@@ -99,7 +90,7 @@ export default function CancelBookingModal({
                 } else {
                     // MOMO, ZALOPAY, VNPAY
                     if (!paymentInfo.mobileNumber) {
-                        alert(
+                        toast.error(
                             `Vui lòng điền số điện thoại ${paymentInfo.method}`,
                         );
                         setIsSubmitting(false);
@@ -141,7 +132,7 @@ export default function CancelBookingModal({
                 console.error(
                     'ERROR: Refund data is null but refund amount > 0',
                 );
-                alert('Lỗi: Không thể tạo thông tin hoàn tiền');
+                toast.error('Lỗi: Không thể tạo thông tin hoàn tiền');
                 setIsSubmitting(false);
                 return;
             }
@@ -205,15 +196,13 @@ export default function CancelBookingModal({
 
                 await refreshNotifications();
 
-                console.log(
-                    '✅ Cancel booking notifications sent successfully',
-                );
+                console.log('Cancel booking notifications sent successfully');
             } catch (notifError) {
                 console.error('⚠️ Failed to send notifications:', notifError);
             }
 
             // Thông báo thành công
-            alert('Booking is cancelled successfully!!!');
+            toast.success('Booking is cancelled successfully!!!');
             onSuccess();
         } catch (error) {
             console.error('Error cancelling booking:', error);
@@ -221,7 +210,7 @@ export default function CancelBookingModal({
             if (onError) {
                 onError('Có lỗi xảy ra khi hủy booking');
             } else {
-                alert('Có lỗi xảy ra khi hủy booking');
+                toast.error('Có lỗi xảy ra khi hủy booking');
             }
         } finally {
             setIsSubmitting(false);

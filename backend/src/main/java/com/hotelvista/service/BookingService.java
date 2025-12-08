@@ -219,7 +219,6 @@ public class BookingService {
         if (booking.getStatus() == BookingStatus.CANCELLED)
             throw new BadRequestException("Booking đã bị hủy trước đó");
 
-
         // Lấy dữ liệu từ JSON
         String cancelReason = (String) body.get("cancelReason");
         String cancelledBy = (String) body.get("cancelledBy");
