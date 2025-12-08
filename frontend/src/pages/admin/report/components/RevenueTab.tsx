@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import type { ReportPeriod, RevenueData } from '../../../../types/Report';
 import DateRangePicker from '../../../../components/report/DateRangePicker';
 import FilterBar from '../../../../components/report/FilterBar';
-import ExportButton from '../../../../components/report/ExportButton';
 import RevenueSummary from '../../../../components/report/RevenueSummary';
 import RevenueChart from '../../../../components/report/RevenueChart';
 import {
@@ -13,6 +12,7 @@ import {
     getQuarterlyInYear,
     getYearlyRevenue,
 } from '../../../../services/revenueReportService';
+import { generateRevenueReportPdf } from '../../../../utils/revenueReportPdf';
 
 type Props = {
     startDate: string;
@@ -99,6 +99,35 @@ const RevenueTab: React.FC<Props> = ({
         fetchRevenue();
     }, [startDate, endDate, period, showDateFilter, selectedYear]);
 
+    // Get user from localStorage
+    const getUserFullName = (): string => {
+        try {
+            const userStr = localStorage.getItem('user');
+            if (userStr) {
+                const user = JSON.parse(userStr);
+                return user.fullName || user.userName || 'System Admin';
+            }
+        } catch (e) {
+            console.error('Error parsing user from localStorage:', e);
+        }
+        return 'System Admin';
+    };
+
+    const handleExportPdf = () => {
+        if (revenueData.length === 0) {
+            alert('No data to export');
+            return;
+        }
+
+        generateRevenueReportPdf({
+            data: revenueData,
+            startDate,
+            endDate,
+            period: showDateFilter ? 'daily' : period,
+            preparedBy: getUserFullName(),
+        });
+    };
+
     return (
         <div className="space-y-6">
             {/* Filters */}
@@ -165,10 +194,33 @@ const RevenueTab: React.FC<Props> = ({
                             />
                         )}
                     </div>
-                    <ExportButton
-                        reportType={activeTab}
-                        dateRange={{ startDate, endDate }}
-                    />
+
+                    {/* Export PDF Button */}
+                    <button
+                        onClick={handleExportPdf}
+                        disabled={revenueData.length === 0 || revenueLoading}
+                        className={`px-4 py-2 rounded-md font-medium transition flex items-center gap-2 ${
+                            revenueData.length === 0 || revenueLoading
+                                ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                : 'bg-[#B8935F] text-white hover:bg-[#9A7A4D]'
+                        }`}
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-4 w-4"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                            />
+                        </svg>
+                        Export PDF
+                    </button>
                 </div>
             </div>
 

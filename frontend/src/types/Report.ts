@@ -1,11 +1,17 @@
 // ====================== INTERFACES ======================
 
 export interface RevenueData {
-    date: string;
-    roomRevenue: number;
-    serviceRevenue: number;
+    label: string;
     totalRevenue: number;
-    bookingCount: number;
+    roomRevenue?: number;
+    serviceRevenue?: number;
+    bookingCount?: number;
+    day?: number;
+    month?: number;
+    year?: number;
+    week?: number;
+    quarter?: number;
+    date?: string;
 }
 
 export interface OccupancyData {

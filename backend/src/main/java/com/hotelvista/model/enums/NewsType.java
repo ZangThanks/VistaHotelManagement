@@ -13,5 +13,6 @@ public enum NewsType {
     NEWS("NEWS"),
     EVENT("EVENT"),
     PROMOTION("PROMOTION");
+
     private String newsType;
 }

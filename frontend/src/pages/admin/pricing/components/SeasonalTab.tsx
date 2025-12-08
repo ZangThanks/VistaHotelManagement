@@ -23,7 +23,6 @@ import { CiEdit } from 'react-icons/ci';
 import Dropdown from '../../../../components/Dropdown';
 import ModernCalendar from '../../../../components/common/ModernCalendar';
 import { Calendar } from 'lucide-react';
-import { Area } from 'recharts';
 
 type Props = {
     seasonLoading: boolean;
