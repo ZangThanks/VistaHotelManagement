@@ -886,7 +886,11 @@ export default function BookingForm({
   const discountValue = calculateDiscount();
 
   const calculatedTotalAmount = async () => {
-    return (await calculateSubTotal()) - (await calculateDiscount());
+    let totalAmount = (await calculateSubTotal()) - (await calculateDiscount());
+    if (totalAmount <= 0) {
+      totalAmount = 0;
+    }
+    return totalAmount;
   };
 
   if (currentStep === 1) {

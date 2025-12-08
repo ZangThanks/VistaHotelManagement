@@ -33,6 +33,7 @@ public class BookingController {
     @Autowired
     private BookingDetailService bookingDetailService;
 
+    @Autowired
     private BookingServiceService bookingServiceService;
 
     @Autowired
