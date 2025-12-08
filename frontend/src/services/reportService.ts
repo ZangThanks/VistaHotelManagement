@@ -186,7 +186,7 @@ export const reportService = {
         period: string = 'monthly',
     ): Promise<ServiceReportData[]> => {
         const response = await api.get<ServiceReportData[]>(
-            '/reports/services',
+            '/report/services',
             {
                 params: {
                     startDate,

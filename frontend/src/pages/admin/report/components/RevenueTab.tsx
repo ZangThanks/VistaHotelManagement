@@ -12,7 +12,10 @@ import {
     getQuarterlyInYear,
     getYearlyRevenue,
 } from '../../../../services/revenueReportService';
-import { generateRevenueReportPdf } from '../../../../utils/revenueReportPdf';
+import {
+    generateRevenueReportPdf,
+    generateRevenueReportExcel,
+} from '../../../../utils/revenueReportPdf';
 
 type Props = {
     startDate: string;
@@ -128,6 +131,21 @@ const RevenueTab: React.FC<Props> = ({
         });
     };
 
+    const handleExportExcel = async () => {
+        if (revenueData.length === 0) {
+            alert('No data to export');
+            return;
+        }
+
+        await generateRevenueReportExcel({
+            data: revenueData,
+            startDate,
+            endDate,
+            period: showDateFilter ? 'daily' : period,
+            preparedBy: getUserFullName(),
+        });
+    };
+
     return (
         <div className="space-y-6">
             {/* Filters */}
@@ -195,32 +213,63 @@ const RevenueTab: React.FC<Props> = ({
                         )}
                     </div>
 
-                    {/* Export PDF Button */}
-                    <button
-                        onClick={handleExportPdf}
-                        disabled={revenueData.length === 0 || revenueLoading}
-                        className={`px-4 py-2 rounded-md font-medium transition flex items-center gap-2 ${
-                            revenueData.length === 0 || revenueLoading
-                                ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                                : 'bg-[#B8935F] text-white hover:bg-[#9A7A4D]'
-                        }`}
-                    >
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-4 w-4"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
+                    {/* Export Buttons */}
+                    <div className="flex gap-2">
+                        <button
+                            onClick={handleExportPdf}
+                            disabled={
+                                revenueData.length === 0 || revenueLoading
+                            }
+                            className={`px-4 py-2 rounded-md font-medium transition flex items-center gap-2 ${
+                                revenueData.length === 0 || revenueLoading
+                                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                    : 'bg-red-500 text-white hover:bg-red-600'
+                            }`}
                         >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                            />
-                        </svg>
-                        Export PDF
-                    </button>
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-4 w-4"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                />
+                            </svg>
+                            PDF
+                        </button>
+                        <button
+                            onClick={handleExportExcel}
+                            disabled={
+                                revenueData.length === 0 || revenueLoading
+                            }
+                            className={`px-4 py-2 rounded-md font-medium transition flex items-center gap-2 ${
+                                revenueData.length === 0 || revenueLoading
+                                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                    : 'bg-green-500 text-white hover:bg-green-600'
+                            }`}
+                        >
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-4 w-4"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                />
+                            </svg>
+                            Excel
+                        </button>
+                    </div>
                 </div>
             </div>
 
