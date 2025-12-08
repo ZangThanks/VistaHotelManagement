@@ -8,7 +8,6 @@ import {
     FaConciergeBell,
 } from 'react-icons/fa';
 import type {
-    // RevenueData,
     OccupancyData,
     LoyaltyData,
     ReviewData,
@@ -518,7 +517,7 @@ const ReportPage: React.FC = () => {
         switch (activeTab) {
             case 'revenue':
             return (
-                  
+
                     <RevenueTab
                         startDate={startDate}
                         endDate={endDate}
@@ -595,57 +594,6 @@ const ReportPage: React.FC = () => {
             case 'services':
                 return (
                     <div className="space-y-6">
-                        {/* Filters */}
-                        <div className="bg-white p-4 rounded-lg shadow-sm border border-[#EBE3D7] mb-6">
-                            <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
-                                <div className="flex items-center gap-2 flex-wrap">
-                                    <FilterBar
-                                        period={period}
-                                        onPeriodChange={setPeriod}
-                                        showDateFilter={false}
-                                        onToggleDateFilter={undefined}
-                                    />
-                                    <button
-                                        onClick={() =>
-                                            setShowDateFilter(!showDateFilter)
-                                        }
-                                        className={`px-4 py-2 rounded-md font-medium transition flex items-center gap-2 ${
-                                            showDateFilter
-                                                ? 'bg-[#B8935F] text-white hover:bg-[#9A7A4D]'
-                                                : 'bg-white text-gray-700 border border-[#EBE3D7] hover:bg-[#F5F0EB]'
-                                        }`}
-                                    >
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            className="h-4 w-4"
-                                            fill="none"
-                                            viewBox="0 0 24 24"
-                                            stroke="currentColor"
-                                        >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth={2}
-                                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                                            />
-                                        </svg>
-                                        Date Filter
-                                    </button>
-                                    {showDateFilter && (
-                                        <DateRangePicker
-                                            startDate={startDate}
-                                            endDate={endDate}
-                                            onStartDateChange={setStartDate}
-                                            onEndDateChange={setEndDate}
-                                        />
-                                    )}
-                                </div>
-                                <ExportButton
-                                    reportType={activeTab}
-                                    dateRange={{ startDate, endDate }}
-                                />
-                            </div>
-                        </div>
                         {isLoadingServiceData ? (
                             <div className="flex justify-center items-center py-12">
                                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#CCBDA3]"></div>
@@ -693,7 +641,80 @@ const ReportPage: React.FC = () => {
                     </p>
                 </div>
 
-                
+                {/* Filters */}
+                <div className="bg-white p-4 rounded-lg shadow-sm border border-[#EBE3D7] mb-6">
+                    <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
+                        <div className="flex items-center gap-2 flex-wrap">
+                            <FilterBar
+                                period={period}
+                                onPeriodChange={setPeriod}
+                                showDateFilter={false}
+                                onToggleDateFilter={undefined}
+                            />
+                            <button
+                                onClick={() =>
+                                    setShowDateFilter(!showDateFilter)
+                                }
+                                className={`px-4 py-2 rounded-md font-medium transition flex items-center gap-2 ${
+                                    showDateFilter
+                                        ? 'bg-[#B8935F] text-white hover:bg-[#9A7A4D]'
+                                        : 'bg-white text-gray-700 border border-[#EBE3D7] hover:bg-[#F5F0EB]'
+                                }`}
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    className="h-4 w-4"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                    />
+                                </svg>
+                                Date Filter
+                            </button>
+                            {showDateFilter && (
+                                <DateRangePicker
+                                    startDate={startDate}
+                                    endDate={endDate}
+                                    onStartDateChange={setStartDate}
+                                    onEndDateChange={setEndDate}
+                                />
+                            )}
+                        </div>
+                        <ExportButton
+                            reportType={activeTab}
+                            dateRange={{ startDate, endDate }}
+                            data={
+                                activeTab === 'services'
+                                    ? serviceData
+                                    : undefined
+                            }
+                        />
+                    </div>
+                );
+
+            default:
+                return null;
+        }
+    };
+
+    return (
+        <div className="min-h-screen bg-[#F5F0EB] p-6">
+            <div className="max-w-7xl mx-auto">
+                {/* Header */}
+                <div className="mb-6">
+                    <h1 className="text-3xl font-playfair font-bold mb-2">
+                        Reports & Analytics
+                    </h1>
+                    <p className="text-gray-600">
+                        Comprehensive insights into hotel performance
+                    </p>
+                </div>
 
                 {/* Tabs */}
                 <div className="bg-white rounded-lg shadow-sm border border-[#EBE3D7] mb-6">

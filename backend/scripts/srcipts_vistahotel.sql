@@ -321,6 +321,7 @@ INSERT INTO `booking_details` (room_price, booking_id, room_number, review_id) V
 (900000,  'B0201250009', 'STD101', NULL),
 (1500000, 'B2209250020', 'DLX201', NULL);
 
+
 -- BOOKING SERVICES
 INSERT INTO booking_services (quantity, service_price, total_amount, booking_id, service_id)
 VALUES (2, 80000, 160000, 'B2803250026', 'SV001'),
@@ -357,12 +358,6 @@ INSERT INTO cart_items (room_number, cart_bean_id)
 VALUES ('STD101', 'CA5073'),
        ('DLX201', 'CA5073');
 
--- ROOM CHANGE REQUESTS
-# INSERT INTO room_change_requests (request_id, booking_id, current_room_id, new_room_id, reason, request_date, status, response_note, response_date, processed_by)
-# VALUES
-# ('RC001', 'B2411250022', 'DLX201', 'DLX203', 'Phòng hiện tại ồn ào, muốn chuyển sang phòng yên tĩnh hơn', '2024-06-16 10:30:00', 'COMPLETED', 'Đã chuyển phòng thành công', '2024-06-16 11:00:00', 'EMP001'),
-# ('RC002', 'B3207250030', 'STD101', 'STD102', 'Muốn chuyển sang phòng có view đẹp hơn', '2024-06-11 09:00:00', 'FAILED', 'Phòng yêu cầu đang được sử dụng', '2024-06-11 09:30:00', 'EMP001'),
-# ('RC003', 'B3005250028', 'STE301', 'STE302', 'Điều hòa không hoạt động tốt', '2024-06-20 15:00:00', 'PENDING', NULL, NULL, NULL);
 INSERT INTO `bookings` (`booking_id`, `actual_check_in_time`, `actual_check_out_time`, `booking_date`, `cancellation_date`, `check_in_date`, `check_out_date`, `duration`, `hourly_rate`, `invoice_type`, `number_of_guests`, `package_type`, `payment_status`, `special_requests`, `status`, `total_amount`, `total_cost`, `type`, `customer_id`, `employee_id`) VALUES
 -- 2022 (8 rows)
 ('B2202010001','2022-01-05 14:10:00.000000','2022-01-07 12:00:00.000000','2022-01-01 09:00:00.000000',NULL,'2022-01-05 14:00:00.000000','2022-01-07 12:00:00.000000',2,NULL,NULL,2,'Standard','COMPLETED','No requests','CHECKED_OUT',300000,220000,'DAILY','CUS0412250001','EMP001'),
@@ -425,18 +420,8 @@ INSERT INTO `bookings` (`booking_id`, `actual_check_in_time`, `actual_check_out_
 ('B2507231029','2025-07-23 16:10:00.000000','2025-07-25 11:50:00.000000','2025-12-07 08:20:00.000000',NULL,'2025-07-23 14:00:00.000000','2025-07-25 12:00:00.000000',2,NULL,NULL,1,'Suite','COMPLETED','Anniversary setup','CHECKED_OUT',760000,560000,'DAILY','CUS0412250003',NULL),
 ('B2508311030','2025-08-31 14:40:00.000000','2025-09-03 12:15:00.000000','2025-12-01 10:00:00.000000',NULL,'2025-08-31 14:00:00.000000','2025-09-03 12:00:00.000000',3,NULL,NULL,2,'Deluxe','COMPLETED','Birthday setup','CHECKED_OUT',1280000,960000,'DAILY','CUS0412250002',NULL);
 
-
-SELECT
-    DATE(b.check_in_date) AS date,
-    COUNT(DISTINCT bd.room_number) AS bookedRooms,
-    (SELECT COUNT(*) FROM rooms WHERE status = 'AVAILABLE') AS availableRooms,
-    ROUND(
-            COUNT(DISTINCT bd.room_number) * 100.0 /
-            (SELECT COUNT(*) FROM rooms WHERE status = 'AVAILABLE'),
-            2
-    ) AS occupancyRate
-FROM bookings b join booking_details bd
-WHERE b.status = 'CHECKED_OUT'
-#   AND b.check_in_date BETWEEN :startDate AND :endDate
-GROUP BY DATE(b.check_in_date)
-ORDER BY date;
+INSERT INTO room_change_requests (request_id, booking_id, current_room_id, new_room_id, reason, request_date, status, response_note, response_date, processed_by)
+VALUES
+('RC001', 'B2411250022', 'DLX201', 'DLX203', 'Phòng hiện tại ồn ào, muốn chuyển sang phòng yên tĩnh hơn', '2024-06-16 10:30:00', 'COMPLETED', 'Đã chuyển phòng thành công', '2024-06-16 11:00:00', 'EMP001'),
+('RC002', 'B3207250030', 'STD101', 'STD102', 'Muốn chuyển sang phòng có view đẹp hơn', '2024-06-11 09:00:00', 'FAILED', 'Phòng yêu cầu đang được sử dụng', '2024-06-11 09:30:00', 'EMP001'),
+('RC003', 'B3005250028', 'STE301', 'STE302', 'Điều hòa không hoạt động tốt', '2024-06-20 15:00:00', 'PENDING', NULL, NULL, NULL);
