@@ -60,7 +60,7 @@ const RevenueTab: React.FC<Props> = ({
 
                     data = raw.map((item: any) => ({
                         ...item,
-                        label: `${item.day}-${item.month}-${item.year}`, // ✅ FIX CHÍNH
+                        label: `${item.day}-${item.month}-${item.year}`,
                     }));
                 } else {
                     // Gọi API tương ứng với period

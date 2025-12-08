@@ -30,7 +30,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
                     onClick={() => onPeriodChange(p.value)}
                     className={`px-4 py-2 rounded-md font-medium transition ${
                         period === p.value
-                            ? 'bg-[#CCBDA3] text-white'
+                            ? 'bg-[#c7a160] text-white'
                             : 'bg-white text-gray-700 border border-[#EBE3D7] hover:bg-[#F5F0EB]'
                     }`}
                 >

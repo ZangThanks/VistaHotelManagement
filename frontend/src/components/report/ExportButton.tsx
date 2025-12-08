@@ -42,7 +42,7 @@ const ExportButton: React.FC<ExportButtonProps> = ({
       <button
         onClick={() => setIsOpen(!isOpen)}
         disabled={loading}
-        className="flex items-center gap-2 px-4 py-2 bg-[#CCBDA3] text-white rounded-md hover:bg-[#b8ac94] transition disabled:opacity-50"
+        className="flex items-center gap-2 px-4 py-2 bg-[#c7a160] text-white rounded-md hover:bg-[#b8ac94] transition disabled:opacity-50"
       >
         <FaDownload />
         {loading ? "Exporting..." : "Export Report"}

@@ -139,9 +139,7 @@ public interface RevenueReportRepository extends JpaRepository<Report, String> {
      */
     @Query(value = """
                 SELECT
-                    YEAR(booking_date) AS year,
-                    MONTH(booking_date) AS month,
-                    DAY(booking_date) AS day,
+                    DATE(booking_date) AS date,
                     COUNT(*) AS bookingCount,
                     SUM(total_amount) AS roomRevenue,
                     SUM(total_cost) AS serviceRevenue,
@@ -149,8 +147,8 @@ public interface RevenueReportRepository extends JpaRepository<Report, String> {
                 FROM bookings
                 WHERE booking_date BETWEEN :fromDate AND :toDate
                   AND status = 'CHECKED_OUT'
-                GROUP BY YEAR(booking_date), MONTH(booking_date), DAY(booking_date)
-                ORDER BY year, month, day
+                GROUP BY DATE(booking_date)
+                ORDER BY DATE(booking_date)
             """, nativeQuery = true)
     List<RevenueReportProjection> getRevenueByDateRange(
             @Param("fromDate") LocalDate fromDate,

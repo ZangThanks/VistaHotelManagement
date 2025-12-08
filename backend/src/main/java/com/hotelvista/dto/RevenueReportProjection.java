@@ -3,6 +3,7 @@ package com.hotelvista.dto;
 public interface RevenueReportProjection {
 
     Integer getYear();
+    String getDate();
     Integer getMonth();
     Integer getWeek();
     Integer getDay();
