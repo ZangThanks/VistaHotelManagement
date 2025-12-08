@@ -1,10 +1,10 @@
-import { api } from "./apiClient";
+import { api } from './apiClient';
 
 // =======================
 // DASHBOARD
 // =======================
 
-const ENDPOINT = "/report";
+const ENDPOINT = '/report';
 
 export interface DashboardStats {
     totalRevenue: number;
@@ -62,7 +62,7 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
         const response = await api.get(`${ENDPOINT}/dashboard`);
         return response.data;
     } catch (error) {
-        console.error("Error fetching dashboard stats:", error);
+        console.error('Error fetching dashboard stats:', error);
         throw error;
     }
 };
@@ -93,16 +93,15 @@ import type {
     ReviewData,
     BookingData,
     ServiceData,
-} from "../types/Report";
+} from '../types/Report';
 
-//MERGED SERVICE OBJECT DUY NHẤT
 export const reportService = {
     // Revenue Report
     getRevenueReport: async (
         startDate: string,
-        endDate: string
+        endDate: string,
     ): Promise<RevenueData[]> => {
-        const response = await api.get("/reports/revenue", {
+        const response = await api.get('/report/revenue', {
             params: { startDate, endDate },
         });
         return response.data;
@@ -111,9 +110,9 @@ export const reportService = {
     // Occupancy Report
     getOccupancyReport: async (
         startDate: string,
-        endDate: string
+        endDate: string,
     ): Promise<OccupancyData[]> => {
-        const response = await api.get("/reports/occupancy", {
+        const response = await api.get('/report/occupancy', {
             params: { startDate, endDate },
         });
         return response.data;
@@ -123,9 +122,9 @@ export const reportService = {
     getLoyaltyReport: async (
         startDate: string,
         endDate: string,
-        period: string = "MONTHLY"
+        period: string = 'MONTHLY',
     ): Promise<LoyaltyData[]> => {
-        const response = await api.get("/reports/loyalty", {
+        const response = await api.get('/report/loyalty', {
             params: { startDate, endDate, period },
         });
         return response.data;
@@ -134,9 +133,9 @@ export const reportService = {
     // Review Report
     getReviewReport: async (
         startDate: string,
-        endDate: string
+        endDate: string,
     ): Promise<ReviewData[]> => {
-        const response = await api.get("/reports/reviews", {
+        const response = await api.get('/report/reviews', {
             params: { startDate, endDate },
         });
         return response.data;
@@ -146,34 +145,56 @@ export const reportService = {
     getBookingReport: async (
         startDate: string,
         endDate: string,
-        period: string = "MONTHLY"
+        period: string = 'MONTHLY',
     ): Promise<BookingData[]> => {
-        const response = await api.get("/reports/booking", {
+        const response = await api.get('/report/booking', {
             params: { startDate, endDate, period },
         });
         return response.data;
     },
 
-    //SERVICE REPORT CHI TIẾT (TABLE)
     getServiceReportTable: async (
         startDate: string,
-        endDate: string
+        endDate: string,
     ): Promise<ServiceData[]> => {
-        const response = await api.get("/reports/services", {
+        const response = await api.get('/report/services', {
             params: { startDate, endDate },
         });
         return response.data;
     },
 
-    //SERVICE REPORT BIỂU ĐỒ
     getServiceReportChart: async (
         startDate: string,
         endDate: string,
-        period: string = "monthly"
+        period: string = 'monthly',
     ): Promise<ServiceReportData[]> => {
-        const response = await api.get("/reports/services/chart", {
+        const response = await api.get('/report/services/chart', {
             params: { startDate, endDate, period },
         });
+        return response.data;
+    },
+
+    /**
+     * Lấy báo cáo dịch vụ
+     * @param startDate ngày bắt đầu (format: yyyy-MM-dd)
+     * @param endDate ngày kết thúc (format: yyyy-MM-dd)
+     * @param period loại báo cáo: daily, weekly, monthly, quarterly, yearly
+     */
+    getServiceReport: async (
+        startDate: string,
+        endDate: string,
+        period: string = 'monthly',
+    ): Promise<ServiceReportData[]> => {
+        const response = await api.get<ServiceReportData[]>(
+            '/reports/services',
+            {
+                params: {
+                    startDate,
+                    endDate,
+                    period,
+                },
+            },
+        );
         return response.data;
     },
 };

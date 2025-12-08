@@ -1,13 +1,12 @@
 package com.hotelvista.service;
 
 import com.hotelvista.dto.ServiceReportDTO;
+import com.hotelvista.dto.report.BookingReportDTO;
 import com.hotelvista.dto.report.DashboardStatsDTO;
+import com.hotelvista.dto.report.LoyaltyReportDTO;
 import com.hotelvista.model.*;
 import com.hotelvista.model.BookingService;
-import com.hotelvista.model.enums.ApprovalStatus;
-import com.hotelvista.model.enums.BookingStatus;
-import com.hotelvista.model.enums.MemberShipLevel;
-import com.hotelvista.model.enums.ServiceCategory;
+import com.hotelvista.model.enums.*;
 import com.hotelvista.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -34,6 +33,7 @@ public class ReportService {
 
     private final BookingServiceRepository bookingServiceRepository;
     private final ReportRepository reportRepository;
+
 
     /**
      * Lấy báo cáo dịch vụ theo khoảng thời gian
