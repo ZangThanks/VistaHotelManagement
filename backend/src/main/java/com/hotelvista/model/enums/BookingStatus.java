@@ -7,11 +7,11 @@ import lombok.*;
 @NoArgsConstructor
 @ToString
 public enum BookingStatus {
+    WAITING("Waiting"),
     PENDING("Pending"),
     CHECKED_IN("Checked In"),
     CHECKED_OUT("Checked Out"),
-    CANCELLED("Cancelled"),
-    WAITING("Waiting");
+    CANCELLED("Cancelled");
 
     private String status;
 }

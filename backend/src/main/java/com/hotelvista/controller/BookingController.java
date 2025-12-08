@@ -33,6 +33,7 @@ public class BookingController {
     @Autowired
     private BookingDetailService bookingDetailService;
 
+    @Autowired
     private BookingServiceService bookingServiceService;
 
     @Autowired
@@ -110,7 +111,7 @@ public class BookingController {
             } else if (choice == 2) {
                 amount = booking.getTotalAmount() * 50 / 100; // 50%
             } else {
-                amount = 0; // 0% - pay at checkout
+                amount = 0; // 0% - pay at checkout,
             }
         }
 
@@ -134,8 +135,11 @@ public class BookingController {
                 return ResponseEntity.notFound().build();
             }
 
-            booking.setPaymentStatus(PaymentStatus.CANCELLED);
-            booking.setStatus(BookingStatus.CANCELLED);
+            // Chỉ cancel nếu status vẫn là PENDING
+            if (booking.getStatus() == BookingStatus.PENDING) {
+                booking.setPaymentStatus(PaymentStatus.CANCELLED);
+                booking.setStatus(BookingStatus.CANCELLED);
+            }
             boolean saved = service.save(booking);
 
             if (saved) {
@@ -199,7 +203,8 @@ public class BookingController {
             }
 
             // Check nếu đã paid
-            if (booking.getPaymentStatus() == PaymentStatus.PAID) {
+            if (booking.getPaymentStatus() == PaymentStatus.PAID && booking.getStatus() != BookingStatus.CHECKED_OUT
+            ) {
                 System.out.println("Warning: Booking " + bookingId + " is already paid");
                 return ResponseEntity.ok("Booking already marked as paid");
             }
@@ -219,6 +224,13 @@ public class BookingController {
 
             // Update booking payment status
             booking.setPaymentStatus(newStatus);
+
+            // Chuyển status sang PENDING khi đã thanh toán (bất kể %)
+            if (booking.getStatus() == BookingStatus.WAITING) {
+                booking.setStatus(BookingStatus.PENDING);
+                System.out.println("Booking status changed from WAITING to PENDING");
+            }
+            
             boolean saved = service.save(booking);
 
             if (saved) {
@@ -262,6 +274,7 @@ public class BookingController {
         LocalDateTime endDateTime = end.atTime(23, 59, 59);
         return service.findAllByCheckInDateBetween(startDateTime, endDateTime);
     }
+
     /**
      * Lấy bookings theo check-out date
      */
@@ -460,6 +473,37 @@ public class BookingController {
     }
 
     /**
+     * Xác nhận booking cho pay at checkout
+     */
+    @PutMapping("/{bookingId}/confirm-pay-at-checkout")
+    public ResponseEntity<?> confirmPayAtCheckout(@PathVariable String bookingId) {
+        try {
+            Booking booking = service.findById(bookingId);
+            if (booking == null) {
+                return ResponseEntity.badRequest().body("Booking not found");
+            }
+
+            // Chuyển status sang WAITING to PENDING cho pay at checkout
+            if (booking.getStatus() == BookingStatus.WAITING) {
+                booking.setStatus(BookingStatus.PENDING);
+                boolean saved = service.save(booking);
+                
+                if (saved) {
+                    System.out.println("Booking " + bookingId + " confirmed for pay at checkout. Status: PLACE");
+                    return ResponseEntity.ok(booking);
+                } else {
+                    return ResponseEntity.internalServerError().body("Failed to confirm booking");
+                }
+            }
+            
+            return ResponseEntity.ok(booking);
+        } catch (Exception e) {
+            System.err.println("Error confirming pay at checkout: " + e.getMessage());
+            return ResponseEntity.internalServerError().body("Error: " + e.getMessage());
+        }
+    }
+
+    /**
      * Hủy booking
      */
     @PostMapping("/{id}/cancel")
@@ -484,12 +528,14 @@ public class BookingController {
             }
 
             List<com.hotelvista.model.BookingService> listServiceDetail = bookingServiceService.findAllByBooking_BookingID(bookingId);
-//            listServiceDetail.forEach((sd) -> {
-//               paymentAmount.updateAndGet(v -> v + sd.getTotalAmount());
-//            });
-
-
-            String qrUrl = QRGenerateUtil.buildVietQRUrl(bookingId, (double)10000);
+            if(listServiceDetail != null) {
+                listServiceDetail.forEach((sd) -> {
+                    paymentAmount.updateAndGet(v -> v + sd.getTotalAmount());
+                    System.out.println(sd);
+                });
+            }
+            System.out.println("===================================SO TIEN: " + paymentAmount.get());
+            String qrUrl = QRGenerateUtil.buildVietQRUrl(bookingId, paymentAmount.get());
             byte[] qrImage = QRGenerateUtil.generateQrImage(qrUrl);
 
             return ResponseEntity.ok()

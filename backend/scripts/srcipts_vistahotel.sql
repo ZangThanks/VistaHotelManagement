@@ -251,10 +251,10 @@ VALUES (b'1', 'VOUCHER001', 'CUS0412250003'),
        (b'1', 'VOUCHER002', 'CUS0412250001');
 
 -- REVIEWS (Need to create reviews before booking_details since booking_details references reviews)
-INSERT INTO reviews (review_id, comment, is_anonymous, location, rating, review_date, room_quantity, service_quantity,
-                     value_for_money)
-VALUES ('REVIEW001', 'Phòng sạch sẽ, nhân viên thân thiện', b'0', 5, 4.5, '2024-06-12 13:00:00', 1, 2, 5),
-       ('REVIEW002', 'View biển đẹp, đồ ăn ngon', b'1', 4, 4.8, '2024-06-18 13:00:00', 1, 3, 5);
+INSERT INTO reviews (review_id, comment, is_anonymous, location, rating, review_date, room_quality, service_quantity,
+                     value_for_money, flag)
+VALUES ('REVIEW001', 'Phòng sạch sẽ, nhân viên thân thiện', b'0', 5, 4.5, '2024-06-12 13:00:00', 1, 2, 5, true),
+       ('REVIEW002', 'View biển đẹp, đồ ăn ngon', b'1', 4, 4.8, '2024-06-18 13:00:00', 1, 3, 5, true);
 
 -- REVIEW IMAGES
 INSERT INTO review_images (review_id, images_url)

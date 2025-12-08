@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -70,5 +71,14 @@ public class RoomTypeController {
     @DeleteMapping("/delete/{id}")
     public void delete(@PathVariable String id) {
         service.delete(id);
+    }
+
+    @GetMapping("/discounted-price/{roomTypeId}")
+    public Double calculateDiscountedPrice(@PathVariable("roomTypeId") String roomTypeId, @RequestParam LocalDate bookingDate) {
+        Double price = service.calculateDiscountedPrice(roomTypeId, bookingDate);
+        if (price <= 0.0) {
+            return 0.0;
+        }
+        return price;
     }
 }

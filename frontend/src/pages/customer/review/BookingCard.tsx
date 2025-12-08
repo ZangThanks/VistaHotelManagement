@@ -16,8 +16,6 @@ export default function BookingCard({
   reviews,
   onReviewClick,
 }: BookingCardProps) {
-  console.log(booking);
-
   const getStatusColor = (status: string) => {
     switch (status) {
       case "CHECKED_OUT":

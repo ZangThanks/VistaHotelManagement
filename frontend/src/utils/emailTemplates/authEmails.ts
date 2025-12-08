@@ -140,7 +140,6 @@ export const otpEmailTemplate = (otp: string) => `
   </div>
 `;
 
-
 export const passwordChangedTemplate = (name: string) => `
   <div style="font-family:Arial;padding:20px;">
     <h2 style="color:#c3923c;">Xin chào ${name},</h2>
@@ -151,4 +150,184 @@ export const passwordChangedTemplate = (name: string) => `
       <p><strong>Vista Hotel Security Team</strong></p>
     </div>
   </div>
+`;
+
+export const confirmBookingEmail = (
+  fullName: string,
+  bookingID?: string,
+  checkInDate?: string,
+  checkOutDate?: string,
+  totalAmount?: number,
+  roomDetails?: string[]
+) => `
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <title>Xác nhận đặt phòng - Vista Hotel</title>
+</head>
+<body style="margin:0;padding:0;background:#f5f5f5;font-family:Arial,Helvetica,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="padding:24px 0;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" 
+               style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,0.08);">
+          
+          <!-- Header với icon checkmark -->
+          <tr>
+            <td style="background:linear-gradient(135deg, #6b5430 0%, #8b7355 100%);padding:32px;text-align:center;color:#ffffff;">
+              <div style="width:64px;height:64px;background:#ffffff;border-radius:50%;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#6b5430" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+              </div>
+              <h1 style="margin:0;font-size:28px;font-weight:bold;">Đặt phòng thành công!</h1>
+              <p style="margin:12px 0 0;font-size:15px;opacity:0.95;">
+                Cảm ơn bạn đã tin tưởng Vista Hotel
+              </p>
+            </td>
+          </tr>
+
+          <!-- Booking Info -->
+          <tr>
+            <td style="padding:32px;color:#333333;font-size:14px;line-height:1.6;">
+              <p style="font-size:16px;margin:0 0 24px;">
+                Xin chào <strong style="color:#6b5430;">${fullName}</strong>,
+              </p>
+              
+              <p style="margin:0 0 24px;">
+                Chúng tôi rất vui thông báo rằng đặt phòng của bạn đã được xác nhận thành công. 
+                Dưới đây là thông tin chi tiết về đơn đặt phòng của bạn:
+              </p>
+
+              ${
+                bookingID
+                  ? `
+              <!-- Booking Details Card -->
+              <div style="background:#f8f5f0;border-left:4px solid #6b5430;padding:20px;border-radius:8px;margin:24px 0;">
+                <table width="100%" cellpadding="0" cellspacing="0">
+                  <tr>
+                    <td style="padding:8px 0;">
+                      <span style="color:#666;font-size:13px;">Mã đặt phòng</span><br/>
+                      <strong style="font-size:18px;color:#6b5430;">${bookingID}</strong>
+                    </td>
+                  </tr>
+                  ${
+                    checkInDate
+                      ? `
+                  <tr>
+                    <td style="padding:8px 0;border-top:1px solid #e0d8cc;">
+                      <span style="color:#666;font-size:13px;">Ngày nhận phòng</span><br/>
+                      <strong style="font-size:15px;color:#333;">${checkInDate}</strong>
+                    </td>
+                  </tr>
+                  `
+                      : ""
+                  }
+                  ${
+                    checkOutDate
+                      ? `
+                  <tr>
+                    <td style="padding:8px 0;border-top:1px solid #e0d8cc;">
+                      <span style="color:#666;font-size:13px;">Ngày trả phòng</span><br/>
+                      <strong style="font-size:15px;color:#333;">${checkOutDate}</strong>
+                    </td>
+                  </tr>
+                  `
+                      : ""
+                  }
+                  ${
+                    roomDetails && roomDetails.length > 0
+                      ? `
+                  <tr>
+                    <td style="padding:8px 0;border-top:1px solid #e0d8cc;">
+                      <span style="color:#666;font-size:13px;">Phòng đã đặt</span><br/>
+                      ${roomDetails
+                        .map(
+                          (room) =>
+                            `<strong style="font-size:15px;color:#333;display:block;margin-top:4px;">• ${room}</strong>`
+                        )
+                        .join("")}
+                    </td>
+                  </tr>
+                  `
+                      : ""
+                  }
+                  ${
+                    totalAmount
+                      ? `
+                  <tr>
+                    <td style="padding:12px 0;border-top:2px solid #6b5430;">
+                      <span style="color:#666;font-size:13px;">Tổng thanh toán</span><br/>
+                      <strong style="font-size:20px;color:#6b5430;">${totalAmount.toLocaleString(
+                        "vi-VN"
+                      )} VNĐ</strong>
+                    </td>
+                  </tr>
+                  `
+                      : ""
+                  }
+                </table>
+              </div>
+              `
+                  : ""
+              }
+
+              <!-- Important Notes -->
+              <div style="background:#fff8e1;border-radius:8px;padding:16px;margin:24px 0;">
+                <p style="margin:0 0 12px;font-weight:bold;color:#f57c00;">
+                  📌 Lưu ý quan trọng:
+                </p>
+                <ul style="margin:0;padding-left:20px;color:#666;font-size:13px;line-height:1.8;">
+                  <li>Vui lòng mang theo CMND/CCCD khi check-in</li>
+                  <li>Giờ nhận phòng: 14:00 | Giờ trả phòng: 12:00</li>
+                  <li>Liên hệ lễ tân nếu cần hỗ trợ thêm</li>
+                  <li>Kiểm tra email này để biết mã đặt phòng khi check-in</li>
+                </ul>
+              </div>
+
+              <!-- CTA Buttons -->
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin:32px 0;">
+                <tr>
+                  <td align="center">
+                    <a href="http://localhost:5173/customer/mybooking${
+                      bookingID ? `/${bookingID}` : ""
+                    }"
+                       style="background:#6b5430;color:#ffffff;text-decoration:none;padding:14px 32px;
+                              border-radius:8px;font-weight:bold;display:inline-block;font-size:14px;
+                              box-shadow:0 2px 8px rgba(107,84,48,0.3);">
+                      Xem chi tiết đặt phòng
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <p style="margin:24px 0 8px;font-size:13px;color:#666;">
+                Nếu bạn có bất kỳ thắc mắc nào, vui lòng liên hệ với chúng tôi:
+              </p>
+              <p style="margin:0;font-size:13px;color:#666;">
+                📞 Hotline: <strong style="color:#6b5430;">1900 xxxx</strong><br/>
+                📧 Email: <strong style="color:#6b5430;">support@vistahotel.com</strong>
+              </p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background:#f2eee7;padding:20px 32px;text-align:center;font-size:12px;color:#777777;">
+              <p style="margin:0 0 8px;">
+                Chúng tôi rất mong được phục vụ bạn tại Vista Hotel
+              </p>
+              <p style="margin:0;">
+                © ${new Date().getFullYear()} VISTA HOTEL. All rights reserved.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
 `;

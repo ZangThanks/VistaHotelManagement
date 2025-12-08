@@ -4,7 +4,6 @@ import BookingCard from "./BookingCard";
 import ReviewModal from "./ReviewModal";
 import type { Review } from "../../../types/Review";
 import type { BookingDetail } from "../../../types/BookingDetail";
-import { getBookingDetailsById } from "../../../services/bookingDetailService";
 import { saveReview } from "../../../services/reviewService";
 import { uploadReviewImagesToCloudinary } from "../../../services/cloudinaryService";
 import { useParams } from "react-router-dom";
@@ -20,7 +19,6 @@ interface ReviewModalState {
 export default function ReviewsList() {
   const { id } = useParams();
   const [reviews, setReviews] = useState<Record<string, Review>>({});
-  const [bookingDetails, setBookingDetails] = useState<BookingDetail[]>([]);
   const [booking, setBooking] = useState<Booking>();
   const [modalState, setModalState] = useState<ReviewModalState>({
     isOpen: false,
@@ -34,17 +32,19 @@ export default function ReviewsList() {
     try {
       setLoading(true);
 
-      if (!id) return;
+      if (!id) {
+        console.error("No booking ID found in URL params");
+        setError("No booking ID provided");
+        setLoading(false);
+        return;
+      }
 
       const bookingData = await getBookingById(id);
       setBooking(bookingData);
 
-      const bdData = await getBookingDetailsById(id);
-      setBookingDetails(bdData);
-
       // Load reviews đã có từ bookingDetails
       const existingReviews: Record<string, Review> = {};
-      bdData.forEach((bd) => {
+      bookingData.bookingDetails.forEach((bd) => {
         if (bd.review) {
           const reviewKey = `${bookingData.bookingID}-${bd.room.roomNumber}`;
           existingReviews[reviewKey] = bd.review;
@@ -57,14 +57,41 @@ export default function ReviewsList() {
     } catch (err) {
       console.error("Error fetching data:", err);
       setError("Failed to fetch data: " + err);
-    } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center py-12">
+        <div className="text-gray-500">Loading booking...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+        <p className="text-red-800 font-semibold">Error</p>
+        <p className="text-red-600 text-sm mt-1">{error}</p>
+      </div>
+    );
+  }
+
+  if (!booking) {
+    return (
+      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+        <p className="text-yellow-800 font-semibold">No Booking Found</p>
+        <p className="text-yellow-600 text-sm mt-1">
+          Could not find booking with ID: {id}
+        </p>
+      </div>
+    );
+  }
 
   const handleOpenReview = (
     bookingID: string,
@@ -123,17 +150,15 @@ export default function ReviewsList() {
 
       const reviewPayload = {
         rating: reviewData.rating,
-        roomQuantity: reviewData.roomQuality,
+        roomQuality: reviewData.roomQuality,
         serviceQuality: reviewData.serviceQuality,
         location: reviewData.location,
         valueForMoney: reviewData.valueForMoney,
         comment: reviewData.comment,
         isAnonymous: reviewData.isAnonymous,
         images: imageUrls,
+        flag: true,
       };
-
-      console.log("Saving review with payload:", reviewPayload);
-      console.log("For booking:", bookingID, "Room:", roomNumber);
 
       const savedReview = await saveReview(
         reviewPayload,
@@ -158,17 +183,13 @@ export default function ReviewsList() {
 
   return (
     <div className="space-y-6">
-      {bookingDetails.map((bd) => (
-        <div key={bd.room.roomNumber}>
-          <BookingCard
-            booking={booking!}
-            reviews={reviews}
-            onReviewClick={(bookingDetail) =>
-              handleOpenReview(booking!.bookingID, bookingDetail)
-            }
-          />
-        </div>
-      ))}
+      <BookingCard
+        booking={booking}
+        reviews={reviews}
+        onReviewClick={(bookingDetail) =>
+          handleOpenReview(booking.bookingID, bookingDetail)
+        }
+      />
 
       {modalState.isOpen && modalState.bookingDetail && (
         <ReviewModal

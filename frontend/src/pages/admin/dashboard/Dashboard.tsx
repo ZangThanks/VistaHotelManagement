@@ -36,7 +36,9 @@ import {
   Line,
 } from "recharts";
 import { motion } from "framer-motion";
-import reportService from "../../../services/reportService";
+import reportService, {
+  getDashboardStats,
+} from "../../../services/reportService";
 
 interface DashboardStats {
   totalRevenue: number;
@@ -111,7 +113,7 @@ const Dashboard: React.FC = () => {
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      const data = await reportService.getDashboardStats();
+      const data = await getDashboardStats();
 
       setStats(data);
       setRevenueData(data.revenueData || []);

@@ -32,7 +32,6 @@ public class Room {
 
     private String notes;
 
-    @ToString.Exclude
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "room_type_id")
     private RoomType roomType;
