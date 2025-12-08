@@ -83,21 +83,7 @@ class NotificationApiService {
                 },
             );
 
-            console.log(
-                '📡 [API] GET /notifications - Status:',
-                response.status,
-                response.statusText,
-            );
-
             if (!response.ok) {
-                const errorText = await response.text();
-                console.error('❌ [API] Error response:', {
-                    status: response.status,
-                    statusText: response.statusText,
-                    body: errorText,
-                });
-
-                // Return empty data instead of throwing
                 return {
                     success: false,
                     message: `Error: ${response.status}`,
@@ -107,30 +93,17 @@ class NotificationApiService {
 
             const data = await response.json();
 
-            console.log('📦 [API] Response data:', {
+            // Extract content từ Spring Page
+            const content =
+                data?.data?.content ?? data?.content ?? data?.data ?? [];
+
+            return {
                 success: data.success,
                 message: data.message,
-                hasData: !!data.data,
-                dataType: typeof data.data,
-                dataKeys: data.data ? Object.keys(data.data) : [],
-                hasContent: data.data?.content ? true : false,
-                contentLength: data.data?.content?.length,
-                sampleNotification: data.data?.content?.[0],
-            });
-
-            // Ensure we always return proper structure
-            if (data.success && data.data) {
-                return data;
-            }
-
-            console.warn('⚠️ [API] Unexpected response structure:', data);
-            return {
-                success: false,
-                message: 'Invalid response structure',
-                data: { content: [] },
+                data: { content: Array.isArray(content) ? content : [] },
             };
         } catch (error) {
-            console.error('❌ [API] Error fetching notifications:', error);
+            console.error('API error fetching notifications:', error);
             return {
                 success: false,
                 message:
@@ -147,7 +120,7 @@ class NotificationApiService {
         try {
             const token = localStorage.getItem('token');
             if (!token) {
-                console.error('❌ [API] No token for unread notifications');
+                console.error('[API] No token for unread notifications');
                 return {
                     success: false,
                     message: 'No authentication token',
@@ -163,13 +136,8 @@ class NotificationApiService {
                 },
             );
 
-            console.log(
-                '📡 [API] GET /notifications/unread - Status:',
-                response.status,
-            );
-
             if (!response.ok) {
-                console.error('❌ [API] Failed to fetch unread notifications');
+                console.error('API failed to fetch unread notifications');
                 return {
                     success: false,
                     message: `Error: ${response.status}`,
@@ -178,16 +146,10 @@ class NotificationApiService {
             }
 
             const data = await response.json();
-            console.log(
-                '📭 [API] Unread notifications:',
-                data.data?.length || 0,
-            );
+
             return data;
         } catch (error) {
-            console.error(
-                '❌ [API] Error fetching unread notifications:',
-                error,
-            );
+            console.error('[API] Error fetching unread notifications:', error);
             return {
                 success: false,
                 message:
