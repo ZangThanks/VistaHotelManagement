@@ -15,7 +15,7 @@ import {
   validateFullName,
   validateEmail,
   validatePhone,
-  validatePassword,
+  validatePasswordCombined,
   validateConfirmPassword,
   validateUserName,
 } from "../../utils/validators";
@@ -102,10 +102,10 @@ const Register: React.FC = () => {
   const handlePasswordChange = (value: string) => {
     setPassword(value);
     if (value) {
-      const error = validatePassword(value);
+      const error = validatePasswordCombined(value);
       setPasswordError(error);
       setPasswordSuccess(!error);
-      // Xác nhận lại mật khẩu nếu nó tồn tại
+      // Re-validate confirm password if it exists
       if (confirmPassword) {
         const confirmError = validateConfirmPassword(value, confirmPassword);
         setConfirmPasswordError(confirmError);
@@ -168,7 +168,7 @@ const Register: React.FC = () => {
     }
 
     // Password
-    const passwordErr = validatePassword(password);
+    const passwordErr = validatePasswordCombined(password);
     setPasswordError(passwordErr);
     setPasswordSuccess(!passwordErr);
     if (passwordErr) isValid = false;
@@ -226,12 +226,9 @@ const Register: React.FC = () => {
       const result = await handleRegister(payload);
 
       if (result.success) {
-        toast.success(
-          "Đăng ký thành công! Đang chuyển sang trang đăng nhập...",
-          {
-            duration: 2000,
-          }
-        );
+        toast.success("Registration successful! Redirecting to login page...", {
+          duration: 2000,
+        });
 
         setTimeout(() => {
           navigate("/auth/login");
@@ -240,7 +237,7 @@ const Register: React.FC = () => {
         toast.error(result.message, { duration: 3000 });
       }
     } catch {
-      toast.error("Có lỗi xảy ra. Vui lòng thử lại.", { duration: 3000 });
+      toast.error("An error occurred. Please try again.", { duration: 3000 });
     } finally {
       setIsSubmitting(false);
     }
@@ -268,11 +265,11 @@ const Register: React.FC = () => {
 
         {/* Title */}
         <div className="text-center mb-4">
-          <h1 className="text-2xl font-bold text-yellow-50 mb-2">
-            Đăng ký tài khoản
+          <h1 className="text-[30px] font-bold text-yellow-50 mb-2">
+            Create Account
           </h1>
           <p className="text-sm text-yellow-50/80">
-            Tạo tài khoản để trải nghiệm Vista Hotel
+            Create an account to experience Vista Hotel
           </p>
         </div>
 
@@ -284,7 +281,7 @@ const Register: React.FC = () => {
           }`}
         >
           <FloatingInput
-            label="Tên đăng nhập"
+            label="Username"
             type="text"
             value={userName}
             onChange={handleUserNameChange}
@@ -324,9 +321,7 @@ const Register: React.FC = () => {
             <p className="text-red-500 text-xs mt-1">{userNameError}</p>
           )}
           {userNameSuccess && !userNameError && (
-            <p className="text-green-500 text-xs mt-1">
-              ✓ Tên đăng nhập hợp lệ
-            </p>
+            <p className="text-green-500 text-xs mt-1">✓ Username is valid</p>
           )}
         </div>
 
@@ -338,7 +333,7 @@ const Register: React.FC = () => {
           }`}
         >
           <FloatingInput
-            label="Họ và tên"
+            label="Full Name"
             type="text"
             value={fullName}
             onChange={handleFullNameChange}
@@ -378,7 +373,7 @@ const Register: React.FC = () => {
             <p className="text-red-500 text-xs mt-1">{fullNameError}</p>
           )}
           {fullNameSuccess && !fullNameError && (
-            <p className="text-green-500 text-xs mt-1">✓ Họ và tên hợp lệ</p>
+            <p className="text-green-500 text-xs mt-1">✓ Full name is valid</p>
           )}
         </div>
 
@@ -430,7 +425,7 @@ const Register: React.FC = () => {
             <p className="text-red-500 text-xs mt-1">{emailError}</p>
           )}
           {emailSuccess && !emailError && (
-            <p className="text-green-500 text-xs mt-1">✓ Email hợp lệ</p>
+            <p className="text-green-500 text-xs mt-1">✓ Email is valid</p>
           )}
         </div>
 
@@ -442,7 +437,7 @@ const Register: React.FC = () => {
           }`}
         >
           <FloatingInput
-            label="Số điện thoại"
+            label="Phone Number"
             type="tel"
             value={phone}
             onChange={handlePhoneChange}
@@ -483,7 +478,7 @@ const Register: React.FC = () => {
           )}
           {phoneSuccess && !phoneError && (
             <p className="text-green-500 text-xs mt-1">
-              ✓ Số điện thoại hợp lệ
+              ✓ Phone number is valid
             </p>
           )}
         </div>
@@ -496,7 +491,7 @@ const Register: React.FC = () => {
           }`}
         >
           <FloatingInput
-            label="Mật khẩu"
+            label="Password"
             type="password"
             value={password}
             onChange={handlePasswordChange}
@@ -536,7 +531,7 @@ const Register: React.FC = () => {
             <p className="text-red-500 text-xs mt-1">{passwordError}</p>
           )}
           {passwordSuccess && !passwordError && (
-            <p className="text-green-500 text-xs mt-1">✓ Mật khẩu hợp lệ</p>
+            <p className="text-green-500 text-xs mt-1">✓ Password is valid</p>
           )}
         </div>
 
@@ -548,7 +543,7 @@ const Register: React.FC = () => {
           }`}
         >
           <FloatingInput
-            label="Xác nhận mật khẩu"
+            label="Confirm Password"
             type="password"
             value={confirmPassword}
             onChange={handleConfirmPasswordChange}
@@ -588,13 +583,13 @@ const Register: React.FC = () => {
             <p className="text-red-500 text-xs mt-1">{confirmPasswordError}</p>
           )}
           {confirmPasswordSuccess && !confirmPasswordError && (
-            <p className="text-green-500 text-xs mt-1">✓ Mật khẩu khớp</p>
+            <p className="text-green-500 text-xs mt-1">✓ Passwords match</p>
           )}
         </div>
 
         {/* Submit */}
         <Button
-          text={isSubmitting ? "Đang xử lý..." : "Đăng ký"}
+          text={isSubmitting ? "Processing..." : "Register"}
           color="bg-[#c3923c]"
           textColor="text-white"
           size="lg"
@@ -610,7 +605,7 @@ const Register: React.FC = () => {
         {/* Divider */}
         <div className="flex items-center gap-3 my-2">
           <div className="flex-1 h-px bg-white/30"></div>
-          <span className="text-white/70 text-xs">Hoặc tiếp tục với</span>
+          <span className="text-white/70 text-xs">Or continue with</span>
           <div className="flex-1 h-px bg-white/30"></div>
         </div>
 
@@ -641,31 +636,31 @@ const Register: React.FC = () => {
 
         {/* Terms */}
         <p className="text-center text-xs text-white/70 leading-relaxed">
-          Khi đăng ký, bạn đồng ý với{" "}
+          By registering, you agree to our{" "}
           <a
             href="#"
             className="text-[#eab354] hover:text-[#c3923c] hover:underline font-medium"
           >
-            Điều khoản
+            Terms
           </a>{" "}
-          và{" "}
+          and{" "}
           <a
             href="#"
             className="text-[#eab354] hover:text-[#c3923c] hover:underline font-medium"
           >
-            Chính sách
+            Privacy Policy
           </a>
         </p>
 
         {/* Login link*/}
         <p className="text-center text-sm text-white/80">
-          Đã có tài khoản?{" "}
+          Already have an account?{" "}
           <button
             type="button"
             onClick={() => navigate("/auth/login")}
             className="text-[#eab354] hover:text-[#c3923c] font-semibold transition-colors cursor-pointer"
           >
-            Đăng nhập
+            Login
           </button>
         </p>
       </form>

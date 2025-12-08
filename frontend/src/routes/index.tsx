@@ -54,7 +54,10 @@ import ReportPage from "../pages/admin/report/Report.tsx";
 import BookingDetailPage from "../pages/customer/BookingDetail.tsx";
 import ReviewsPage from "../pages/customer/review/ReviewPage.tsx";
 import ReplyReviewsPage from "../pages/employee/review/ReplyReviewPage.tsx";
-
+// Error pages
+import AccessDenied403 from "../pages/error/AccessDenied403.tsx";
+import NotFound404 from "../pages/error/NotFound404.tsx";
+import ServerError500 from "../pages/error/ServerError500.tsx";
 export const router = createBrowserRouter([
   // OAuth
   {
@@ -160,4 +163,17 @@ export const router = createBrowserRouter([
       { path: "reviews/:id", element: <ReviewsPage /> },
     ],
   },
+    // ERROR PAGES
+    {
+      path: '/403',
+      element: <AccessDenied403 />,
+    },
+    {
+      path: '/500',
+      element: <ServerError500 />,
+    },
+    {
+      path: '*',
+      element: <NotFound404 />,
+    },
 ]);

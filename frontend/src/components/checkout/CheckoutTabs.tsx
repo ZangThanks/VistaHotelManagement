@@ -8,7 +8,8 @@ export default function CheckoutTabs({
     const tabs = [
         { id: 'today', label: "Today's Check-outs" },
         { id: 'tomorrow', label: "Tomorrow's Check-outs" },
-        { id: 'late', label: 'Late Check-out Requests' },
+        { id: 'late-requests', label: 'Late Check-out Requests' },
+        { id: 'late', label: 'Overdue Check-outs' },
         { id: 'completed', label: 'Recently Completed' },
     ];
 

@@ -34,17 +34,42 @@ public class NotificationService {
      */
     public Notification createAndSendNotification(Notification notification) {
         try {
+            // ⭐ DEBUG: Log dữ liệu nhận được
+            System.out.println("📥 Creating notification:");
+            System.out.println("   - toUserId: " + notification.getToUserId());
+            System.out.println("   - fromUserId: " + notification.getFromUserId());
+            System.out.println("   - title: " + notification.getTitle());
+            System.out.println("   - type: " + notification.getType());
+            System.out.println("   - category: " + notification.getCategory());
+
+            // Set các giá trị mặc định nếu chưa có
+            if (notification.getCreatedAt() == null) {
+                notification.setCreatedAt(LocalDateTime.now());
+            }
+            if (notification.getIsRead() == null) {
+                notification.setIsRead(false);
+            }
+            if (notification.getIsRealtime() == null) {
+                notification.setIsRealtime(true);
+            }
+
             // Lưu vào database
             Notification savedNotification = notificationRepository.save(notification);
 
+            // ⭐ DEBUG: Confirm đã lưu
+            System.out.println("✅ Notification SAVED with ID: " + savedNotification.getId());
+
             // Gửi realtime nếu được yêu cầu
-            if (notification.getIsRealtime()) {
+            if (Boolean.TRUE.equals(notification.getIsRealtime())) {
                 sendRealtimeNotification(savedNotification);
             }
 
             return savedNotification;
         } catch (Exception e) {
-            log.error("Error creating notification: ", e);
+            // ⭐ DEBUG: Log lỗi chi tiết
+            System.err.println("❌ Error creating notification: " + e.getMessage());
+            e.printStackTrace();
+
             notification.setStatus(NotificationStatus.FAILED);
             return notificationRepository.save(notification);
         }
@@ -139,57 +164,53 @@ public class NotificationService {
 
     /**
      * Đánh dấu thông báo đã đọc
+     * Hỗ trợ cả personal notifications và broadcast notifications
      */
     public Notification markAsRead(String notificationId, String userId) {
         Optional<Notification> notificationOpt = notificationRepository.findById(notificationId);
 
-        if (notificationOpt.isPresent()) {
-            Notification notification = notificationOpt.get();
-
-            // ✅ FIX: Check cả toUserId VÀ toUserType
-            boolean hasAccess = false;
-
-            // Case 1: Personal notification (toUserId specified)
-            if (userId.equals(notification.getToUserId())) {
-                hasAccess = true;
-            }
-
-            // Case 2: Broadcast notification (toUserType specified)
-            if (notification.getToUserType() != null && notification.getToUserId() == null) {
-                // Get user's role from SecurityContext
-                String userRole = SecurityContextHolder.getContext()
-                        .getAuthentication()
-                        .getAuthorities()
-                        .stream()
-                        .findFirst()
-                        .map(authority -> {
-                            String authStr = authority.toString();
-                            if (authStr.contains(".EMPLOYEE")) return "EMPLOYEE";
-                            if (authStr.contains(".CUSTOMER")) return "CUSTOMER";
-                            if (authStr.contains(".ADMIN")) return "ADMIN";
-                            return "";
-                        })
-                        .orElse("");
-
-                // Check if user's role matches notification's toUserType
-                if (notification.getToUserType().toString().contains(userRole)) {
-                    hasAccess = true;
-                }
-            }
-
-            // Case 3: Multiple recipients (toUserIds list)
-            if (notification.getToUserIds() != null && notification.getToUserIds().contains(userId)) {
-                hasAccess = true;
-            }
-
-            if (hasAccess) {
-                notification.setIsRead(true);
-                notification.setReadAt(LocalDateTime.now());
-                return notificationRepository.save(notification);
-            }
+        if (notificationOpt.isEmpty()) {
+            System.out.println("⚠️ Notification not found: " + notificationId);
+            return null;
         }
 
-        throw new RuntimeException("Notification not found or access denied");
+        Notification notification = notificationOpt.get();
+
+        // Cho phép đánh dấu đã đọc trong các trường hợp:
+        // 1. Personal notification: toUserId == userId
+        // 2. Broadcast notification: toUserId == null (gửi cho role)
+        // 3. Multi-recipient: userId nằm trong toUserIds list
+
+        boolean canMark = false;
+
+        // Case 1: Personal notification
+        if (notification.getToUserId() != null && notification.getToUserId().equals(userId)) {
+            canMark = true;
+            System.out.println("✅ Personal notification - marking as read");
+        }
+
+        // Case 2: Broadcast notification (toUserId = null)
+        if (notification.getToUserId() == null) {
+            canMark = true;
+            System.out.println("✅ Broadcast notification - marking as read for user: " + userId);
+        }
+
+        // Case 3: Multi-recipient
+        if (notification.getToUserIds() != null && notification.getToUserIds().contains(userId)) {
+            canMark = true;
+            System.out.println("✅ Multi-recipient notification - marking as read");
+        }
+
+        if (canMark) {
+            notification.setIsRead(true);
+            notification.setReadAt(LocalDateTime.now());
+            Notification saved = notificationRepository.save(notification);
+            System.out.println("✅ Notification " + notificationId + " marked as read successfully");
+            return saved;
+        }
+
+        System.out.println("❌ Access denied for user " + userId + " to notification " + notificationId);
+        return null;
     }
 
     /**
@@ -236,5 +257,45 @@ public class NotificationService {
         for (Notification notification : pendingNotifications) {
             sendRealtimeNotification(notification);
         }
+    }
+    /**
+     * Mark notification as read - với userRole để hỗ trợ broadcast notifications
+     */
+    public Notification markAsRead(String notificationId, String userId, String userRole) {
+        Optional<Notification> notificationOpt = notificationRepository.findById(notificationId);
+
+        if (!notificationOpt.isPresent()) {
+            System.out.println("⚠️ Notification not found: " + notificationId);
+            return null;
+        }
+
+        Notification notification = notificationOpt.get();
+        boolean hasAccess = false;
+
+        // Case 1: Personal notification
+        if (userId != null && userId.equals(notification.getToUserId())) {
+            hasAccess = true;
+        }
+
+        // Case 2: Broadcast notification (toUserId = null, có toUserType)
+        if (notification.getToUserId() == null && notification.getToUserType() != null) {
+            String notifType = notification.getToUserType().toString();
+            if (notifType.contains(userRole) || userRole.equals("ADMIN")) {
+                hasAccess = true;
+            }
+        }
+
+        // Case 3: Multi-recipient
+        if (notification.getToUserIds() != null && notification.getToUserIds().contains(userId)) {
+            hasAccess = true;
+        }
+
+        if (hasAccess) {
+            notification.setIsRead(true);
+            notification.setReadAt(java.time.LocalDateTime.now());
+            return notificationRepository.save(notification);
+        }
+
+        return null;
     }
 }

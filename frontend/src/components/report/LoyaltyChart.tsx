@@ -10,8 +10,9 @@ import {
   ResponsiveContainer,
   LineChart,
   Line,
+  ComposedChart,
 } from "recharts";
-import type { LoyaltyData } from "../../../types/Report";
+import type { LoyaltyData } from "../../types/Report";
 
 interface LoyaltyChartProps {
   data: LoyaltyData[];
@@ -25,7 +26,8 @@ const LoyaltyChart: React.FC<LoyaltyChartProps> = ({ data }) => {
           <p className="font-semibold mb-2">{payload[0].payload.month}</p>
           {payload.map((entry: any, index: number) => (
             <p key={index} style={{ color: entry.color }} className="text-sm">
-              {entry.name}: {entry.value} members
+              {entry.name}: {entry.value.toLocaleString()}
+              {entry.dataKey !== "totalPoints" ? " members" : " points"}
             </p>
           ))}
         </div>
@@ -36,17 +38,51 @@ const LoyaltyChart: React.FC<LoyaltyChartProps> = ({ data }) => {
 
   return (
     <ResponsiveContainer width="100%" height={400}>
-      <BarChart data={data}>
+      <ComposedChart data={data}>
         <CartesianGrid strokeDasharray="3 3" stroke="#EBE3D7" />
         <XAxis dataKey="month" stroke="#666" />
-        <YAxis stroke="#666" />
+        <YAxis yAxisId="left" stroke="#666" />
+        <YAxis yAxisId="right" orientation="right" stroke="#666" />
         <Tooltip content={<CustomTooltip />} />
         <Legend />
-        <Bar dataKey="bronze" stackId="a" fill="#CD7F32" name="Bronze" />
-        <Bar dataKey="silver" stackId="a" fill="#C0C0C0" name="Silver" />
-        <Bar dataKey="gold" stackId="a" fill="#FFD700" name="Gold" />
-        <Bar dataKey="platinum" stackId="a" fill="#E5E4E2" name="Platinum" />
-      </BarChart>
+        <Bar
+          yAxisId="left"
+          dataKey="bronze"
+          stackId="a"
+          fill="#CD7F32"
+          name="Bronze"
+        />
+        <Bar
+          yAxisId="left"
+          dataKey="silver"
+          stackId="a"
+          fill="#C0C0C0"
+          name="Silver"
+        />
+        <Bar
+          yAxisId="left"
+          dataKey="gold"
+          stackId="a"
+          fill="#FFD700"
+          name="Gold"
+        />
+        <Bar
+          yAxisId="left"
+          dataKey="platinum"
+          stackId="a"
+          fill="#E5E4E2"
+          name="Platinum"
+        />
+        <Line
+          yAxisId="right"
+          type="monotone"
+          dataKey="totalPoints"
+          stroke="#8B4513"
+          strokeWidth={2}
+          name="Total Points"
+          dot={{ fill: "#8B4513" }}
+        />
+      </ComposedChart>
     </ResponsiveContainer>
   );
 };

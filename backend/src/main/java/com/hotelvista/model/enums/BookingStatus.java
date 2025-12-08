@@ -11,7 +11,8 @@ public enum BookingStatus {
     PENDING("Pending"),
     CHECKED_IN("Checked In"),
     CHECKED_OUT("Checked Out"),
-    CANCELLED("Cancelled");
+    CANCELLED("Cancelled"),
+    WAITING("Waiting");
 
     private String status;
 }

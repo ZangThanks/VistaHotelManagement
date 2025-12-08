@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -74,4 +75,41 @@ public interface CustomerRepository extends JpaRepository<Customer, String> {
     );
 
 
+    /**
+     * Đếm số lượng khách hàng theo membership level tại thời điểm cuối tháng
+     * @param level
+     * @param endDate
+     * @return
+     */
+    @Query("SELECT COUNT(c) " +
+            "FROM Customer c " +
+            "WHERE c.memberShipLevel = :level " +
+            "AND c.joinedDate <= :endDate")
+    Integer countByMembershipLevelAndDate(
+            @Param("level") MemberShipLevel level,
+            @Param("endDate") LocalDate endDate
+    );
+
+    /**
+     * Tổng loyalty points của tất cả khách hàng trong khoảng thời gian
+     * Tính dựa trên joined_date (hoặc có thể dùng trường khác nếu có)
+     * @param startDate
+     * @param endDate
+     * @return
+     */
+    @Query("SELECT COALESCE(SUM(c.loyaltyPoints), 0) " +
+            "FROM Customer c " +
+            "WHERE c.joinedDate BETWEEN :startDate AND :endDate")
+    Long getTotalLoyaltyPointsByDateRange(
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
+    );
+
+    /**
+     * Tổng loyalty points hiện có của tất cả customers
+     * @return
+     */
+    @Query("SELECT COALESCE(SUM(c.loyaltyPoints), 0) " +
+            "FROM Customer c")
+    Long getTotalLoyaltyPoints();
 }

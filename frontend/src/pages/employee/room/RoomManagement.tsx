@@ -60,11 +60,6 @@ const RoomManagement: React.FC = () => {
   const [isEditRoomModalOpen, setIsEditRoomModalOpen] = useState(false);
   const [roomToEdit, setRoomToEdit] = useState<Room | null>(null);
 
-  // Delete confirmation
-  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
-  const [roomToDelete, setRoomToDelete] = useState<Room | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
-
   // Change status modal
   const [changeStatusRoom, setChangeStatusRoom] = useState<Room | null>(null);
 
@@ -290,11 +285,6 @@ const RoomManagement: React.FC = () => {
     setSelectedRoom(room);
   };
 
-  const handleDelete = (room: Room) => {
-    console.log("Delete room:", room);
-    handleDeleteRoom(room);
-  };
-
   // Handler để thay đổi trạng thái phòng
   const handleChangeStatus = async (
     roomId: string,
@@ -508,56 +498,6 @@ const RoomManagement: React.FC = () => {
     }
   };
 
-  const handleDeleteRoom = (room: Room) => {
-    setRoomToDelete(room);
-    setIsDeleteConfirmOpen(true);
-  };
-
-  const confirmDeleteRoom = async () => {
-    if (!roomToDelete) return;
-
-    try {
-      setIsDeleting(true);
-
-      // Delete room via API
-      await roomService.deleteRoom(roomToDelete.roomNumber);
-
-      // Reload rooms
-      const apiRooms = await roomService.getAllRooms();
-      const uiRooms = apiRooms
-        .map((apiRoom: ApiRoom) => {
-          if (!apiRoom.roomType) {
-            console.warn(
-              `Room ${apiRoom.roomNumber} has null roomType, skipping...`
-            );
-            return null;
-          }
-          return convertApiRoomToUiRoom(apiRoom);
-        })
-        .filter((room: Room | null): room is Room => room !== null);
-
-      setRooms(uiRooms);
-
-      // Close dialog
-      setIsDeleteConfirmOpen(false);
-      setRoomToDelete(null);
-
-      // Show success toast
-      toast?.success("Room deleted successfully!", {
-        duration: 3000,
-        position: "top-right",
-      });
-    } catch (error) {
-      console.error("Failed to delete room:", error);
-      toast?.error("Failed to delete room. Please try again.", {
-        duration: 5000,
-        position: "top-right",
-      });
-    } finally {
-      setIsDeleting(false);
-    }
-  };
-
   const handleRoomClick = (room: Room) => {
     setSelectedRoom(room);
   };
@@ -767,14 +707,12 @@ const RoomManagement: React.FC = () => {
               rooms={paginatedRooms}
               onEdit={handleEdit}
               onView={handleView}
-              onDelete={handleDelete}
             />
           ) : (
             <RoomTableView
               rooms={paginatedRooms}
               onEdit={handleEdit}
               onView={handleView}
-              onDelete={handleDelete}
             />
           )}
         </motion.div>
@@ -830,22 +768,6 @@ const RoomManagement: React.FC = () => {
           room={roomToEdit}
         />
       )}
-
-      {/* Delete Confirmation Dialog */}
-      <ConfirmDialog
-        isOpen={isDeleteConfirmOpen}
-        onClose={() => {
-          setIsDeleteConfirmOpen(false);
-          setRoomToDelete(null);
-        }}
-        onConfirm={confirmDeleteRoom}
-        title="Delete Room"
-        message={`Are you sure you want to delete Room ${roomToDelete?.roomNumber}? This action cannot be undone.`}
-        type="danger"
-        confirmText="Delete"
-        cancelText="Cancel"
-        isLoading={isDeleting}
-      />
 
       {/* Change Status Modal */}
       {changeStatusRoom && (

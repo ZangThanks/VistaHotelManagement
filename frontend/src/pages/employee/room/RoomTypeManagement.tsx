@@ -28,15 +28,10 @@ const RoomTypeManagement: React.FC = () => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
-  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
 
   const [selectedRoomType, setSelectedRoomType] = useState<RoomType | null>(
     null
   );
-  const [roomTypeToDelete, setRoomTypeToDelete] = useState<RoomType | null>(
-    null
-  );
-  const [isDeleting, setIsDeleting] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   const toast = useContext(ToastContext);
@@ -118,29 +113,6 @@ const RoomTypeManagement: React.FC = () => {
   const handleView = (roomType: RoomType) => {
     setSelectedRoomType(roomType);
     setIsDetailModalOpen(true);
-  };
-
-  const handleDelete = (roomType: RoomType) => {
-    setRoomTypeToDelete(roomType);
-    setIsDeleteConfirmOpen(true);
-  };
-
-  const confirmDelete = async () => {
-    if (!roomTypeToDelete?.roomTypeID) return;
-
-    try {
-      setIsDeleting(true);
-      await roomTypeService.deleteRoomType(roomTypeToDelete.roomTypeID);
-      toast?.success("Room type deleted successfully!");
-      await loadRoomTypes();
-      setIsDeleteConfirmOpen(false);
-      setRoomTypeToDelete(null);
-    } catch (error) {
-      console.error("Error deleting room type:", error);
-      toast?.error("Failed to delete room type");
-    } finally {
-      setIsDeleting(false);
-    }
   };
 
   const handleSubmit = async (data: Partial<RoomType>) => {
@@ -282,7 +254,6 @@ const RoomTypeManagement: React.FC = () => {
                   roomType={roomType}
                   onView={handleView}
                   onEdit={handleEdit}
-                  onDelete={handleDelete}
                 />
               ))}
             </div>
@@ -328,21 +299,6 @@ const RoomTypeManagement: React.FC = () => {
         onClose={() => setIsDetailModalOpen(false)}
         roomType={selectedRoomType}
         onEdit={handleEdit}
-      />
-
-      <ConfirmDialog
-        isOpen={isDeleteConfirmOpen}
-        onClose={() => {
-          setIsDeleteConfirmOpen(false);
-          setRoomTypeToDelete(null);
-        }}
-        onConfirm={confirmDelete}
-        title="Delete Room Type"
-        message={`Are you sure you want to delete "${roomTypeToDelete?.typeName}"? This action cannot be undone.`}
-        type="danger"
-        confirmText="Delete"
-        cancelText="Cancel"
-        isLoading={isDeleting}
       />
     </div>
   );

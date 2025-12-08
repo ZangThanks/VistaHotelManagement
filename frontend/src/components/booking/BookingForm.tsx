@@ -1046,6 +1046,7 @@ export default function BookingForm({
                 onCheckInTimeChange={setCheckInTime}
                 duration={duration}
                 onDurationChange={setDuration}
+                selectedRooms={selectedRoom}
               />
             </div>
 
