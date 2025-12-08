@@ -1,5 +1,6 @@
 package com.hotelvista.controller;
 
+import com.hotelvista.model.CheckInCheckOutPolicy;
 import com.hotelvista.model.RoomType;
 import com.hotelvista.service.RoomTypeService;
 import com.hotelvista.util.ValidatorsUtil;
@@ -63,6 +64,13 @@ public class RoomTypeController {
         if (areaError != null) {
             return ResponseEntity.badRequest().body(areaError);
         }
+
+        if (roomType.getCheckInPolicy() == null) {
+            CheckInCheckOutPolicy policy = new CheckInCheckOutPolicy();
+            policy.setId(1L);
+            roomType.setCheckInPolicy(policy);
+        }
+
 
         RoomType saved = service.insertOrUpdate(roomType);
         return ResponseEntity.ok(saved);

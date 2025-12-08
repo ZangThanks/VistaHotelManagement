@@ -32,7 +32,6 @@ export default function CancelBookingModal({
         mobileNumber: '',
     });
 
-    const toast = useToastContext();
 
     // Chặn scroll body khi modal mở và thêm ESC key
     useEffect(() => {
