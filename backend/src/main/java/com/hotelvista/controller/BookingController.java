@@ -4,16 +4,14 @@ import com.hotelvista.dto.BookingRequestDTO;
 import com.hotelvista.dto.PaymentWebhookDTO;
 import com.hotelvista.model.Booking;
 import com.hotelvista.model.BookingCancellation;
-import com.hotelvista.model.BookingDetail;
 import com.hotelvista.model.Customer;
 import com.hotelvista.model.enums.BookingStatus;
 import com.hotelvista.model.enums.PaymentStatus;
-import com.hotelvista.model.enums.RoomStatus;
-import com.hotelvista.service.BookingDetailService;
-import com.hotelvista.service.BookingService;
+import com.hotelvista.service.*;
 import com.hotelvista.util.PaymentUtil;
 import com.hotelvista.util.QRGenerateUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,8 +22,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.concurrent.atomic.AtomicReference;
 
 @RestController
 @RequestMapping("/bookings")
@@ -35,6 +32,11 @@ public class BookingController {
 
     @Autowired
     private BookingDetailService bookingDetailService;
+
+    private BookingServiceService bookingServiceService;
+
+    @Autowired
+    private RoomService roomService;
 
     @GetMapping("")
     public List<Booking> findAll() {
@@ -319,12 +321,13 @@ public class BookingController {
             booking.setStatus(BookingStatus.CHECKED_OUT);
             booking.setCheckOutDate(LocalDateTime.now());
 
-            booking.getBookingDetails().forEach(r -> {
-                r.getRoom().setStatus(RoomStatus.CLEANING);
-                //TODO: Cập nhật trạng thái phòng
-            });
+//            booking.getBookingDetails().forEach(r -> {
+//                r.getRoom().setStatus(RoomStatus.CLEANING);
+//                roomService.save(r.getRoom());
+//            });
 
             boolean saved = service.save(booking);
+            System.out.println("BOOKING ĐÃ CẬP NHẬT: " + saved);
 
             if (saved) {
                 return ResponseEntity.ok(booking);
@@ -466,5 +469,34 @@ public class BookingController {
     ) {
         BookingCancellation cancellation = service.cancelBooking(id, body);
         return ResponseEntity.ok(cancellation);
+    }
+
+    @GetMapping(value = "/payment-qr-checkout/{bookingId}", produces = MediaType.IMAGE_PNG_VALUE)
+    public ResponseEntity<byte[]> getPaymentQr(
+            @PathVariable String bookingId
+    ) {
+        try {
+            Booking booking = service.findById(bookingId);
+
+            AtomicReference<Double> paymentAmount = new AtomicReference<>((double) 0);
+            if(booking != null) {
+                paymentAmount.set(calculateRemainingAmount(booking));
+            }
+
+            List<com.hotelvista.model.BookingService> listServiceDetail = bookingServiceService.findAllByBooking_BookingID(bookingId);
+//            listServiceDetail.forEach((sd) -> {
+//               paymentAmount.updateAndGet(v -> v + sd.getTotalAmount());
+//            });
+
+
+            String qrUrl = QRGenerateUtil.buildVietQRUrl(bookingId, (double)10000);
+            byte[] qrImage = QRGenerateUtil.generateQrImage(qrUrl);
+
+            return ResponseEntity.ok()
+                    .contentType(MediaType.IMAGE_PNG)
+                    .body(qrImage);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 }

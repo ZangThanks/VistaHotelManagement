@@ -1,9 +1,13 @@
 package com.hotelvista.controller;
 
+import com.hotelvista.model.BookingService;
 import com.hotelvista.model.Service;
 import com.hotelvista.model.enums.ServiceCategory;
+import com.hotelvista.service.BookingDetailService;
+import com.hotelvista.service.BookingServiceService;
 import com.hotelvista.service.ServiceService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -14,6 +18,12 @@ import java.util.List;
 public class ServiceController {
     @Autowired
     private ServiceService service;
+
+    @Autowired
+    private BookingServiceService bookingService;
+
+    @Autowired
+    private BookingDetailService bookingDetailService;
 
     @GetMapping("")
     public List<Service> findAll() {
@@ -49,5 +59,15 @@ public class ServiceController {
     @DeleteMapping("/{id}")
     public void deleteById(@PathVariable String id) {
         service.deleteById(id);
+    }
+
+    @GetMapping("/booking/{bookingId}")
+    public ResponseEntity<List<BookingService>> getByBookingId(@PathVariable String bookingId) {
+        try {
+            List<BookingService> services = bookingService.findAllByBooking_BookingID(bookingId);
+            return ResponseEntity.ok(services);
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }
