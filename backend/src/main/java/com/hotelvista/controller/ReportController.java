@@ -4,6 +4,7 @@ import com.hotelvista.dto.ServiceReportDTO;
 import com.hotelvista.dto.report.BookingReportDTO;
 import com.hotelvista.dto.report.DashboardStatsDTO;
 import com.hotelvista.dto.report.LoyaltyReportDTO;
+import com.hotelvista.dto.report.RoomOccupancyReportDTO;
 import com.hotelvista.model.enums.ReportPeriod;
 import com.hotelvista.service.ReportService;
 import lombok.RequiredArgsConstructor;
@@ -61,6 +62,16 @@ public class ReportController {
             @RequestParam(defaultValue = "MONTHLY") ReportPeriod period
     ) {
         List<BookingReportDTO> report = reportService.getBookingReport(startDate, endDate, period);
+        return ResponseEntity.ok(report);
+    }
+
+    @GetMapping("/room-occupancy")
+    public ResponseEntity<List<RoomOccupancyReportDTO>> getRoomOccupancyReport(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(defaultValue = "MONTHLY") ReportPeriod period
+    ) {
+        List<RoomOccupancyReportDTO> report = reportService.getRoomOccupancyReport(startDate, endDate, period);
         return ResponseEntity.ok(report);
     }
 

@@ -93,6 +93,7 @@ import type {
     ReviewData,
     BookingData,
     ServiceData,
+    RoomOccupancyData,
 } from '../types/Report';
 
 export const reportService = {
@@ -197,8 +198,25 @@ export const reportService = {
         );
         return response.data;
     },
-};
 
+    getRoomOccupancyReport: async (
+        startDate: string,
+        endDate: string,
+        period: string = 'MONTHLY',
+    ): Promise<RoomOccupancyData[]> => {
+        const response = await api.get<RoomOccupancyData[]>(
+            '/report/room-occupancy',
+            {
+                params: {
+                    startDate,
+                    endDate,
+                    period,
+                },
+            },
+        );
+        return response.data;
+    },
+};
 
 //EXPORT DUY NHẤT
 export default reportService;

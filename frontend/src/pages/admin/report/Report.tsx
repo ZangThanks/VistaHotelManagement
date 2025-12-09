@@ -1,5 +1,5 @@
 /* eslint-disable */
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     FaChartLine,
     FaBed,
@@ -7,6 +7,9 @@ import {
     FaUsers,
     FaCalendarCheck,
     FaConciergeBell,
+    FaChartBar,
+    FaDollarSign,
+    FaDoorOpen,
 } from 'react-icons/fa';
 
 import type {
@@ -14,6 +17,7 @@ import type {
     ReviewData,
     ReportPeriod,
     ServiceData,
+    RoomOccupancyData,
 } from '../../../types/Report';
 
 import OccupancyChart from '../../../components/report/OccupancyChart';
@@ -30,6 +34,18 @@ import ServiceSummary from '../../../components/report/ServiceSummary';
 import ServiceChart from '../../../components/report/ServiceChart';
 import ServiceDistribution from '../../../components/report/ServiceDistribution';
 import PopularServices from '../../../components/report/PopularServices';
+
+import {
+    Bar,
+    Line,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Tooltip,
+    Legend,
+    ResponsiveContainer,
+    ComposedChart,
+} from 'recharts';
 
 import { reportService } from '../../../services/reportService';
 
@@ -64,6 +80,12 @@ const ReportPage: React.FC = () => {
 
     const [serviceData, setServiceData] = useState<ServiceData[]>([]);
     const [isLoadingServiceData, setIsLoadingServiceData] = useState(false);
+
+    const [occupancyData, setOccupancyData] = useState<RoomOccupancyData[]>([]);
+    const [isLoadingOccupancy, setIsLoadingOccupancy] = useState(false);
+
+    const [reviewData, setReviewData] = useState<ReviewData[]>([]);
+    const [isLoadingReview, setIsLoadingReview] = useState(false);
 
     const [showDateFilter, setShowDateFilter] = useState(false);
 
@@ -124,6 +146,12 @@ const ReportPage: React.FC = () => {
         if (activeTab === 'services') {
             fetchServiceReport();
         }
+        if (activeTab === 'occupancy') {
+            fetchOccupancyReport();
+        }
+        if (activeTab === 'reviews') {
+            fetchReviewReport();
+        }
     }, [activeTab, startDate, endDate, period]);
 
     const fetchServiceReport = async () => {
@@ -142,155 +170,36 @@ const ReportPage: React.FC = () => {
         }
     };
 
-    /* -------------------------------------------------- */
-    /* ---------------- Mock Occupancy Data ------------- */
-    /* -------------------------------------------------- */
-    const occupancyData: OccupancyData[] = useMemo(
-        () => [
-            {
-                date: 'Jan 2024',
-                totalRooms: 105,
-                occupiedRooms: 78,
-                occupancyRate: 74.3,
-            },
-            {
-                date: 'Feb 2024',
-                totalRooms: 105,
-                occupiedRooms: 82,
-                occupancyRate: 78.1,
-            },
-            {
-                date: 'Mar 2024',
-                totalRooms: 105,
-                occupiedRooms: 88,
-                occupancyRate: 83.8,
-            },
-            {
-                date: 'Apr 2024',
-                totalRooms: 105,
-                occupiedRooms: 84,
-                occupancyRate: 80.0,
-            },
-            {
-                date: 'May 2024',
-                totalRooms: 105,
-                occupiedRooms: 86,
-                occupancyRate: 81.9,
-            },
-            {
-                date: 'Jun 2024',
-                totalRooms: 105,
-                occupiedRooms: 95,
-                occupancyRate: 90.5,
-            },
-            {
-                date: 'Jul 2024',
-                totalRooms: 105,
-                occupiedRooms: 98,
-                occupancyRate: 93.3,
-            },
-            {
-                date: 'Aug 2024',
-                totalRooms: 105,
-                occupiedRooms: 96,
-                occupancyRate: 91.4,
-            },
-            {
-                date: 'Sep 2024',
-                totalRooms: 105,
-                occupiedRooms: 89,
-                occupancyRate: 84.8,
-            },
-            {
-                date: 'Oct 2024',
-                totalRooms: 105,
-                occupiedRooms: 87,
-                occupancyRate: 82.9,
-            },
-            {
-                date: 'Nov 2024',
-                totalRooms: 105,
-                occupiedRooms: 85,
-                occupancyRate: 81.0,
-            },
-            {
-                date: 'Dec 2024',
-                totalRooms: 105,
-                occupiedRooms: 100,
-                occupancyRate: 95.2,
-            },
-        ],
-        [],
-    );
+    const fetchOccupancyReport = async () => {
+        try {
+            setIsLoadingOccupancy(true);
+            const data = await reportService.getRoomOccupancyReport(
+                startDate,
+                endDate,
+                period.toUpperCase(),
+            );
+            setOccupancyData(data);
+        } catch (error) {
+            console.error('Error fetching occupancy report:', error);
+        } finally {
+            setIsLoadingOccupancy(false);
+        }
+    };
 
-    /* -------------------------------------------------- */
-    /* ---------------- Mock Review Data ---------------- */
-    /* -------------------------------------------------- */
-    const reviewData: ReviewData[] = useMemo(
-        () => [
-            {
-                date: 'Jan 2024',
-                averageRating: 4.3,
-                totalReviews: 142,
-                roomQuality: 4.5,
-                service: 4.4,
-                location: 4.2,
-                value: 4.1,
-                sentimentScore: 0.78,
-            },
-            {
-                date: 'Feb 2024',
-                averageRating: 4.4,
-                totalReviews: 158,
-                roomQuality: 4.6,
-                service: 4.5,
-                location: 4.3,
-                value: 4.2,
-                sentimentScore: 0.82,
-            },
-            {
-                date: 'Mar 2024',
-                averageRating: 4.5,
-                totalReviews: 175,
-                roomQuality: 4.7,
-                service: 4.6,
-                location: 4.4,
-                value: 4.3,
-                sentimentScore: 0.85,
-            },
-            {
-                date: 'Apr 2024',
-                averageRating: 4.4,
-                totalReviews: 165,
-                roomQuality: 4.6,
-                service: 4.5,
-                location: 4.3,
-                value: 4.2,
-                sentimentScore: 0.81,
-            },
-            {
-                date: 'May 2024',
-                averageRating: 4.5,
-                totalReviews: 170,
-                roomQuality: 4.7,
-                service: 4.6,
-                location: 4.4,
-                value: 4.3,
-                sentimentScore: 0.83,
-            },
-            {
-                date: 'Jun 2024',
-                averageRating: 4.6,
-                totalReviews: 188,
-                roomQuality: 4.8,
-                service: 4.7,
-                location: 4.5,
-                value: 4.4,
-                sentimentScore: 0.87,
-            },
-        ],
-        [],
-    );
+    const fetchReviewReport = async () => {
+        try {
+            setIsLoadingReview(true);
+            const data = await reportService.getReviewReport(
+                startDate,
+                endDate,
+            );
+            setReviewData(data);
+        } catch (error) {
+            console.error('Error fetching review report:', error);
+        } finally {
+            setIsLoadingReview(false);
+        }
+    };
 
     /* -------------------------------------------------- */
     /* ----------------- UI Tabs Config ----------------- */
@@ -355,7 +264,7 @@ const ReportPage: React.FC = () => {
             case 'occupancy':
                 return (
                     <div className="space-y-6">
-                        {/* Filter Bar for Occupancy */}
+                        {/* Filter Bar */}
                         <div className="bg-white p-4 rounded-lg shadow-sm border border-[#EBE3D7]">
                             <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
                                 <FilterBar
@@ -376,15 +285,298 @@ const ReportPage: React.FC = () => {
                             </div>
                         </div>
 
-                        <OccupancyStats data={occupancyData} />
-                        <div className="bg-white p-6 rounded-lg shadow-sm border border-[#EBE3D7]">
-                            <h3 className="text-lg font-semibold mb-4">
-                                Occupancy Trends
-                            </h3>
-                            <OccupancyChart data={occupancyData} />
-                        </div>
+                        {isLoadingOccupancy ? (
+                            <div className="flex items-center justify-center h-64">
+                                <div className="text-center">
+                                    <div className="inline-block w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                                    <p className="mt-2 text-gray-600 dark:text-gray-400">
+                                        Đang tải dữ liệu...
+                                    </p>
+                                </div>
+                            </div>
+                        ) : occupancyData.length === 0 ? (
+                            <div className="p-8 text-center text-gray-500 dark:text-gray-400">
+                                <p className="text-lg">
+                                    Không có dữ liệu trong khoảng thời gian này
+                                </p>
+                            </div>
+                        ) : (
+                            <>
+                                {/* Stats Cards */}
+                                <div className="grid grid-cols-1 gap-6 mb-6 lg:grid-cols-4">
+                                    <div className="p-6 bg-white rounded-lg shadow-md dark:bg-gray-800">
+                                        <div className="flex items-center justify-between mb-4">
+                                            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                                                Average Occupancy
+                                            </h3>
+                                            <div className="p-2 bg-blue-100 rounded-lg dark:bg-blue-900">
+                                                <FaChartLine className="w-5 h-5 text-blue-600 dark:text-blue-300" />
+                                            </div>
+                                        </div>
+                                        <p className="text-3xl font-bold text-gray-900 dark:text-white">
+                                            {(
+                                                occupancyData.reduce(
+                                                    (sum, item) =>
+                                                        sum +
+                                                        item.occupancyRate,
+                                                    0,
+                                                ) / occupancyData.length
+                                            ).toFixed(1)}
+                                            %
+                                        </p>
+                                        <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                                            Average for period
+                                        </p>
+                                    </div>
 
-                        <RoomTypeAnalysis />
+                                    <div className="p-6 bg-white rounded-lg shadow-md dark:bg-gray-800">
+                                        <div className="flex items-center justify-between mb-4">
+                                            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                                                Total Booked Rooms
+                                            </h3>
+                                            <div className="p-2 bg-green-100 rounded-lg dark:bg-green-900">
+                                                <FaBed className="w-5 h-5 text-green-600 dark:text-green-300" />
+                                            </div>
+                                        </div>
+                                        <p className="text-3xl font-bold text-gray-900 dark:text-white">
+                                            {occupancyData.reduce(
+                                                (sum, item) =>
+                                                    sum + item.bookedRooms,
+                                                0,
+                                            )}
+                                        </p>
+                                        <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                                            Out of{' '}
+                                            {occupancyData[0]?.totalRooms || 0}{' '}
+                                            rooms
+                                        </p>
+                                    </div>
+
+                                    <div className="p-6 bg-white rounded-lg shadow-md dark:bg-gray-800">
+                                        <div className="flex items-center justify-between mb-4">
+                                            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                                                Average Rate
+                                            </h3>
+                                            <div className="p-2 bg-purple-100 rounded-lg dark:bg-purple-900">
+                                                <FaDoorOpen className="w-5 h-5 text-purple-600 dark:text-purple-300" />
+                                            </div>
+                                        </div>
+                                        <p className="text-3xl font-bold text-gray-900 dark:text-white">
+                                            $
+                                            {(
+                                                occupancyData.reduce(
+                                                    (sum, item) =>
+                                                        sum + item.averageRate,
+                                                    0,
+                                                ) / occupancyData.length
+                                            ).toFixed(0)}
+                                        </p>
+                                        <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                                            Per room per night
+                                        </p>
+                                    </div>
+
+                                    <div className="p-6 bg-white rounded-lg shadow-md dark:bg-gray-800">
+                                        <div className="flex items-center justify-between mb-4">
+                                            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                                                Total Revenue
+                                            </h3>
+                                            <div className="p-2 bg-yellow-100 rounded-lg dark:bg-yellow-900">
+                                                <FaDollarSign className="w-5 h-5 text-yellow-600 dark:text-yellow-300" />
+                                            </div>
+                                        </div>
+                                        <p className="text-3xl font-bold text-gray-900 dark:text-white">
+                                            $
+                                            {occupancyData
+                                                .reduce(
+                                                    (sum, item) =>
+                                                        sum + item.totalRevenue,
+                                                    0,
+                                                )
+                                                .toLocaleString()}
+                                        </p>
+                                        <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                                            Revenue from rooms
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* Chart */}
+                                <div className="p-6 bg-white rounded-lg shadow-md dark:bg-gray-800">
+                                    <h3 className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">
+                                        Room Occupancy Chart
+                                    </h3>
+                                    <ResponsiveContainer
+                                        width="100%"
+                                        height={400}
+                                    >
+                                        <ComposedChart data={occupancyData}>
+                                            <CartesianGrid strokeDasharray="3 3" />
+                                            <XAxis dataKey="period" />
+                                            <YAxis yAxisId="left" />
+                                            <YAxis
+                                                yAxisId="right"
+                                                orientation="right"
+                                            />
+                                            <Tooltip />
+                                            <Legend />
+                                            <Bar
+                                                yAxisId="left"
+                                                dataKey="totalRooms"
+                                                fill="#94a3b8"
+                                                name="Total Rooms"
+                                            />
+                                            <Bar
+                                                yAxisId="left"
+                                                dataKey="bookedRooms"
+                                                fill="#3b82f6"
+                                                name="Booked Rooms"
+                                            />
+                                            <Line
+                                                yAxisId="right"
+                                                type="monotone"
+                                                dataKey="occupancyRate"
+                                                stroke="#ef4444"
+                                                strokeWidth={2}
+                                                name="Occupancy (%)"
+                                            />
+                                        </ComposedChart>
+                                    </ResponsiveContainer>
+                                </div>
+
+                                {/* Table */}
+                                <div className="p-6 bg-white rounded-lg shadow-md dark:bg-gray-800">
+                                    <h3 className="mb-4 text-lg font-semibold text-gray-900 dark:text-white">
+                                        Room Occupancy Details
+                                    </h3>
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+                                            <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                                                <tr>
+                                                    <th
+                                                        scope="col"
+                                                        className="px-6 py-3"
+                                                    >
+                                                        Period
+                                                    </th>
+                                                    <th
+                                                        scope="col"
+                                                        className="px-6 py-3 text-center"
+                                                    >
+                                                        Total Rooms
+                                                    </th>
+                                                    <th
+                                                        scope="col"
+                                                        className="px-6 py-3 text-center"
+                                                    >
+                                                        Booked Rooms
+                                                    </th>
+                                                    <th
+                                                        scope="col"
+                                                        className="px-6 py-3 text-center"
+                                                    >
+                                                        Occupancy (%)
+                                                    </th>
+                                                    <th
+                                                        scope="col"
+                                                        className="px-6 py-3 text-right"
+                                                    >
+                                                        Avg Rate
+                                                    </th>
+                                                    <th
+                                                        scope="col"
+                                                        className="px-6 py-3 text-right"
+                                                    >
+                                                        Revenue
+                                                    </th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {occupancyData.map(
+                                                    (item, index) => (
+                                                        <tr
+                                                            key={index}
+                                                            className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
+                                                        >
+                                                            <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                                                {item.period}
+                                                            </td>
+                                                            <td className="px-6 py-4 text-center">
+                                                                {
+                                                                    item.totalRooms
+                                                                }
+                                                            </td>
+                                                            <td className="px-6 py-4 text-center">
+                                                                {
+                                                                    item.bookedRooms
+                                                                }
+                                                            </td>
+                                                            <td className="px-6 py-4 text-center">
+                                                                <span
+                                                                    className={`font-semibold ${
+                                                                        item.occupancyRate >=
+                                                                        80
+                                                                            ? 'text-green-600 dark:text-green-400'
+                                                                            : item.occupancyRate >=
+                                                                              60
+                                                                            ? 'text-blue-600 dark:text-blue-400'
+                                                                            : item.occupancyRate >=
+                                                                              40
+                                                                            ? 'text-yellow-600 dark:text-yellow-400'
+                                                                            : 'text-red-600 dark:text-red-400'
+                                                                    }`}
+                                                                >
+                                                                    {item.occupancyRate.toFixed(
+                                                                        1,
+                                                                    )}
+                                                                    %
+                                                                </span>
+                                                            </td>
+                                                            <td className="px-6 py-4 text-right">
+                                                                $
+                                                                {item.averageRate.toFixed(
+                                                                    2,
+                                                                )}
+                                                            </td>
+                                                            <td className="px-6 py-4 text-right font-semibold">
+                                                                $
+                                                                {item.totalRevenue.toLocaleString()}
+                                                            </td>
+                                                        </tr>
+                                                    ),
+                                                )}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div className="flex items-center gap-6 mt-4 text-xs">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                                            <span className="text-gray-600 dark:text-gray-400">
+                                                ≥ 80%: Excellent
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                                            <span className="text-gray-600 dark:text-gray-400">
+                                                60-79%: Good
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                                            <span className="text-gray-600 dark:text-gray-400">
+                                                40-59%: Average
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                                            <span className="text-gray-600 dark:text-gray-400">
+                                                &lt; 40%: Low
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </>
+                        )}
                     </div>
                 );
 
@@ -425,9 +617,28 @@ const ReportPage: React.FC = () => {
                             </div>
                         </div>
 
-                        <ReviewChart data={reviewData} />
-                        <RatingBreakdown data={reviewData} />
-                        <SentimentAnalysis data={reviewData} />
+                        {isLoadingReview ? (
+                            <div className="flex items-center justify-center h-64">
+                                <div className="text-center">
+                                    <div className="inline-block w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                                    <p className="mt-2 text-gray-600 dark:text-gray-400">
+                                        Đang tải dữ liệu...
+                                    </p>
+                                </div>
+                            </div>
+                        ) : reviewData.length === 0 ? (
+                            <div className="p-8 text-center text-gray-500 dark:text-gray-400">
+                                <p className="text-lg">
+                                    Không có dữ liệu trong khoảng thời gian này
+                                </p>
+                            </div>
+                        ) : (
+                            <>
+                                <ReviewChart data={reviewData} />
+                                <RatingBreakdown data={reviewData} />
+                                <SentimentAnalysis data={reviewData} />
+                            </>
+                        )}
                     </div>
                 );
 
@@ -485,6 +696,9 @@ const ReportPage: React.FC = () => {
                         />
                     </div>
                 );
+
+            default:
+                return null;
         }
     };
 

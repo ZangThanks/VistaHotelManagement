@@ -51,6 +51,15 @@ export interface BookingData {
     totalRevenue: number;
 }
 
+export interface RoomOccupancyData {
+    period: string;
+    totalRooms: number;
+    bookedRooms: number;
+    occupancyRate: number;
+    averageRate: number;
+    totalRevenue: number;
+}
+
 export interface DateRange {
     startDate: string;
     endDate: string;
@@ -84,4 +93,5 @@ export type ReportTab =
     | 'loyalty'
     | 'reviews'
     | 'bookings'
-    | 'services';
+    | 'services'
+    | 'room-occupancy';
