@@ -87,7 +87,6 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
       path: "/admin/voucher-management",
     },
     { icon: <FaChartLine />, label: "Reports", path: "/admin/reports" },
-    { icon: <FaCog />, label: "Settings", path: "/settings" },
   ];
 
   const getIconScale = (index: number) => {

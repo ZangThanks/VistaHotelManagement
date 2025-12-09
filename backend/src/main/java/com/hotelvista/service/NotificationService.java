@@ -1,9 +1,13 @@
 package com.hotelvista.service;
 
+import com.hotelvista.model.Customer;
+import com.hotelvista.model.Employee;
 import com.hotelvista.model.Notification;
 import com.hotelvista.model.User;
 import com.hotelvista.model.enums.NotificationStatus;
 import com.hotelvista.model.enums.UserRole;
+import com.hotelvista.repository.CustomerRepository;
+import com.hotelvista.repository.EmployeeRepository;
 import com.hotelvista.repository.NotificationRepository;
 import com.hotelvista.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +29,11 @@ public class NotificationService {
 
     private final NotificationRepository notificationRepository;
     private final SimpMessagingTemplate messagingTemplate;
+    @Autowired
+    private CustomerRepository customerRepository;  // ← MongoDB
+
+    @Autowired
+    private EmployeeRepository employeeRepository;  // ← MongoDB
 
     @Autowired
     private UserRepository userRepository;
@@ -131,7 +140,7 @@ public class NotificationService {
                 return customerNoti;
 
             case EMPLOYEE:
-                // EMPLOYEE thấy tất cả thông báo broadcast cho EMPLOYEE
+                // thấy tất cả thông báo broadcast cho EMPLOYEE
                 Page<Notification> empNoti =
                         notificationRepository.findByToUserTypeOrderByDeliveredAtDesc(UserRole.EMPLOYEE, pageable);
 
@@ -139,7 +148,7 @@ public class NotificationService {
                 return empNoti;
 
             case ADMIN:
-                // ADMIN thấy tất cả thông báo broadcast cho ADMIN và EMPLOYEE
+                // thấy tất cả thông báo broadcast cho ADMIN và EMPLOYEE
                 Page<Notification> adminNoti =
                         notificationRepository.findByToUserTypeInOrderByDeliveredAtDesc(
                                 List.of(UserRole.ADMIN, UserRole.EMPLOYEE),
@@ -215,16 +224,84 @@ public class NotificationService {
 
     /**
      * Đánh dấu tất cả thông báo đã đọc
+     * - CUSTOMER: Mark personal notifications của customer đó
+     * - EMPLOYEE: Mark broadcast notifications cho EMPLOYEE role
+     * - ADMIN: Mark broadcast notifications cho ADMIN + EMPLOYEE role
      */
     public void markAllAsRead(String userId) {
-        List<Notification> unreadNotifications = getUnreadNotifications(userId);
 
-        for (Notification notification : unreadNotifications) {
-            notification.setIsRead(true);
-            notification.setReadAt(LocalDateTime.now());
+        // Xác định UserRole từ userId
+        UserRole userRole = determineUserRole(userId);
+
+        if (userRole == null) {
+            return;
         }
 
-        notificationRepository.saveAll(unreadNotifications);
+        System.out.println("📧 User Role: " + userRole);
+
+        List<Notification> notificationsToMarkAsRead = new java.util.ArrayList<>();
+
+        // CASE 1: CUSTOMER - Chỉ mark personal notifications
+        if (userRole == UserRole.CUSTOMER) {
+            List<Notification> personalNotifications =
+                    notificationRepository.findByToUserIdAndIsReadFalseOrderByCreatedAtDesc(userId);
+
+            notificationsToMarkAsRead.addAll(personalNotifications);
+        }
+
+        // CASE 2: EMPLOYEE - Mark broadcast notifications cho EMPLOYEE
+        else if (userRole == UserRole.EMPLOYEE) {
+            List<Notification> broadcastNotifications =
+                    notificationRepository.findByToUserIdIsNullAndToUserTypeAndIsReadFalseOrderByCreatedAtDesc(UserRole.EMPLOYEE);
+
+            notificationsToMarkAsRead.addAll(broadcastNotifications);
+
+        }
+
+        // CASE 3: ADMIN - Mark broadcast cho ADMIN + EMPLOYEE
+        else if (userRole == UserRole.ADMIN) {
+            List<Notification> adminBroadcast =
+                    notificationRepository.findByToUserIdIsNullAndToUserTypeAndIsReadFalseOrderByCreatedAtDesc(UserRole.ADMIN);
+
+            List<Notification> employeeBroadcast =
+                    notificationRepository.findByToUserIdIsNullAndToUserTypeAndIsReadFalseOrderByCreatedAtDesc(UserRole.EMPLOYEE);
+
+            notificationsToMarkAsRead.addAll(adminBroadcast);
+            notificationsToMarkAsRead.addAll(employeeBroadcast);
+        }
+
+        // Mark all as read
+        if (notificationsToMarkAsRead.isEmpty()) {
+            return;
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        for (Notification notification : notificationsToMarkAsRead) {
+            notification.setIsRead(true);
+            notification.setReadAt(now);
+        }
+
+        notificationRepository.saveAll(notificationsToMarkAsRead);
+    }
+
+    /**
+     * Xác định UserRole từ userId
+     * Kiểm tra trong CustomerRepository và EmployeeRepository
+     */
+    private UserRole determineUserRole(String userId) {
+        // Kiểm tra Customer
+        Optional<Customer> customerOpt = customerRepository.findById(userId);
+        if (customerOpt.isPresent()) {
+            return customerOpt.get().getUserRole();
+        }
+
+        // Kiểm tra Employee
+        Optional<Employee> employeeOpt = employeeRepository.findById(userId);
+        if (employeeOpt.isPresent()) {
+            return employeeOpt.get().getUserRole();
+        }
+
+        return null;
     }
 
     /**
@@ -265,7 +342,7 @@ public class NotificationService {
         Optional<Notification> notificationOpt = notificationRepository.findById(notificationId);
 
         if (!notificationOpt.isPresent()) {
-            System.out.println("⚠️ Notification not found: " + notificationId);
+            System.out.println("Notification not found: " + notificationId);
             return null;
         }
 

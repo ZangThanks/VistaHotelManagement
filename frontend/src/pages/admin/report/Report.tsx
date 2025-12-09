@@ -1,24 +1,31 @@
 /* eslint-disable */
 import React, { useState, useMemo, useEffect } from "react";
 import {
-    FaChartLine,
-    FaBed,
-    FaStar,
-    FaUsers,
-    FaCalendarCheck,
-    FaConciergeBell,
+  FaChartLine,
+  FaBed,
+  FaStar,
+  FaUsers,
+  FaCalendarCheck,
+  FaConciergeBell,
 } from "react-icons/fa";
 import type {
-    OccupancyData,
-    ReviewData,
-    ReportPeriod,
-    ServiceData,
+  OccupancyData,
+  LoyaltyData,
+  ReviewData,
+  BookingData,
+  ReportPeriod,
+  ServiceData,
+  RevenueData,
 } from "../../../types/Report";
 import OccupancyChart from "../../../components/report/OccupancyChart";
 import RoomTypeAnalysis from "../../../components/report/RoomTypeAnalysis";
+import LoyaltyChart from "../../../components/report/LoyaltyChart";
+import MembershipDistribution from "../../../components/report/MembershipDistribution";
 import ReviewChart from "../../../components/report/ReviewChart";
 import RatingBreakdown from "../../../components/report/RatingBreakdown";
 import SentimentAnalysis from "../../../components/report/SentimentAnalysis";
+import BookingTrends from "../../../components/report/BookingTrends";
+import BookingChart from "../../../components/report/BookingChart";
 import DateRangePicker from "../../../components/report/DateRangePicker";
 import FilterBar from "../../../components/report/FilterBar";
 import ExportButton from "../../../components/report/ExportButton";
@@ -28,11 +35,21 @@ import ServiceChart from "../../../components/report/ServiceChart";
 import ServiceDistribution from "../../../components/report/ServiceDistribution";
 import PopularServices from "../../../components/report/PopularServices";
 import { reportService } from "../../../services/reportService";
+import { getRevenueData } from "../../../services/revenueReportService";
+import LoyaltySummary from "../../../components/report/LoyaltySummary";
+import {
+  exportLoyaltyToPDF,
+  exportLoyaltyToExcel,
+} from "../../../utils/exportUtils";
 import RevenueTab from "./components/RevenueTab";
 import LoyaltyTab from "./components/LoyaltyTab";
 import BookingsTab from "./components/BookingsTab";
 
-
+import {
+  getCategoryRatings,
+  getRatingTrend,
+  getSentimentStats,
+} from "../../../services/reviewService";
 type ReportTab =
   | "revenue"
   | "occupancy"
@@ -57,6 +74,14 @@ const ReportPage: React.FC = () => {
   const [serviceData, setServiceData] = useState<ServiceData[]>([]);
   const [isLoadingServiceData, setIsLoadingServiceData] = useState(false);
   const [showDateFilter, setShowDateFilter] = useState(false);
+
+  const [revenueData, setRevenueData] = useState<RevenueData[]>([]);
+  const [revenueLoading, setRevenueLoading] = useState<boolean>(false);
+  const [revenueError, setRevenueError] = useState<string | null>(null);
+
+  const [reviewTrend, setReviewTrend] = useState([]);
+  const [categoryRatings, setCategoryRatings] = useState(null);
+  const [sentimentStats, setSentimentStats] = useState(null);
 
   // Auto update date range when period changes
   useEffect(() => {
@@ -123,6 +148,23 @@ const ReportPage: React.FC = () => {
       setIsLoadingServiceData(false);
     }
   };
+
+  useEffect(() => {
+    const fetchRevenue = async () => {
+      setRevenueLoading(true);
+      setRevenueError(null);
+      try {
+        const data = await getRevenueData();
+        setRevenueData(Array.isArray(data) ? data : []);
+      } catch (e: any) {
+        setRevenueError(e?.message || "Failed to load revenue data");
+        setRevenueData([]);
+      } finally {
+        setRevenueLoading(false);
+      }
+    };
+    fetchRevenue();
+  }, []);
 
   // Mock data - Occupancy
   const occupancyData: OccupancyData[] = useMemo(
@@ -204,71 +246,23 @@ const ReportPage: React.FC = () => {
   );
 
   // Mock data - Reviews
-  const reviewData: ReviewData[] = useMemo(
-    () => [
-      {
-        date: "Jan 2024",
-        averageRating: 4.3,
-        totalReviews: 142,
-        roomQuality: 4.5,
-        service: 4.4,
-        location: 4.2,
-        value: 4.1,
-        sentimentScore: 0.78,
-      },
-      {
-        date: "Feb 2024",
-        averageRating: 4.4,
-        totalReviews: 158,
-        roomQuality: 4.6,
-        service: 4.5,
-        location: 4.3,
-        value: 4.2,
-        sentimentScore: 0.82,
-      },
-      {
-        date: "Mar 2024",
-        averageRating: 4.5,
-        totalReviews: 175,
-        roomQuality: 4.7,
-        service: 4.6,
-        location: 4.4,
-        value: 4.3,
-        sentimentScore: 0.85,
-      },
-      {
-        date: "Apr 2024",
-        averageRating: 4.4,
-        totalReviews: 165,
-        roomQuality: 4.6,
-        service: 4.5,
-        location: 4.3,
-        value: 4.2,
-        sentimentScore: 0.81,
-      },
-      {
-        date: "May 2024",
-        averageRating: 4.5,
-        totalReviews: 170,
-        roomQuality: 4.7,
-        service: 4.6,
-        location: 4.4,
-        value: 4.3,
-        sentimentScore: 0.83,
-      },
-      {
-        date: "Jun 2024",
-        averageRating: 4.6,
-        totalReviews: 188,
-        roomQuality: 4.8,
-        service: 4.7,
-        location: 4.5,
-        value: 4.4,
-        sentimentScore: 0.87,
-      },
-    ],
-    []
-  );
+  useEffect(() => {
+    // Load line chart
+    getRatingTrend().then((res) => {
+      // Backend returns: [{month: "2024-06", avgRating: 4.65}]
+      setReviewTrend(res || []);
+    });
+
+    // Load bar chart
+    getCategoryRatings().then((res) => {
+      setCategoryRatings(res);
+    });
+
+    // Load pie chart
+    getSentimentStats().then((res) => {
+      setSentimentStats(res);
+    });
+  }, []);
 
   const tabs = [
     {
@@ -349,66 +343,23 @@ const ReportPage: React.FC = () => {
           />
         );
       case "reviews":
-        // Calculate average rating breakdown
-        const avgRatingBreakdown =
-          reviewData.length > 0
-            ? {
-                location:
-                  reviewData.reduce((sum, item) => sum + item.location, 0) /
-                  reviewData.length,
-                service:
-                  reviewData.reduce((sum, item) => sum + item.service, 0) /
-                  reviewData.length,
-                roomQuality:
-                  reviewData.reduce((sum, item) => sum + item.roomQuality, 0) /
-                  reviewData.length,
-                value:
-                  reviewData.reduce((sum, item) => sum + item.value, 0) /
-                  reviewData.length,
-              }
-            : null;
-
-        // Calculate sentiment data based on sentiment scores
-        const totalReviews = reviewData.reduce(
-          (sum, item) => sum + item.totalReviews,
-          0
-        );
-        const avgSentiment =
-          reviewData.length > 0
-            ? reviewData.reduce((sum, item) => sum + item.sentimentScore, 0) /
-              reviewData.length
-            : 0;
-
-        // Convert sentiment score (0-1) to distribution
-        const positiveCount = Math.round(totalReviews * avgSentiment);
-        const negativeCount = Math.round(
-          totalReviews * (1 - avgSentiment) * 0.3
-        );
-        const neutralCount = totalReviews - positiveCount - negativeCount;
-
-        const sentimentData =
-          totalReviews > 0
-            ? {
-                positive: positiveCount,
-                neutral: neutralCount,
-                negative: negativeCount,
-                positivePercent: (positiveCount / totalReviews) * 100,
-                neutralPercent: (neutralCount / totalReviews) * 100,
-                negativePercent: (negativeCount / totalReviews) * 100,
-              }
-            : null;
-
         return (
           <div className="space-y-6">
             <div className="bg-white p-6 rounded-lg shadow-sm border border-[#EBE3D7]">
               <h3 className="text-lg font-semibold mb-4">
                 Average Rating Over Time
               </h3>
-              <ReviewChart data={reviewData} />
+              {reviewTrend && reviewTrend.length > 0 ? (
+                <ReviewChart data={reviewTrend} />
+              ) : (
+                <div className="flex items-center justify-center h-[400px] text-gray-400">
+                  No rating data available
+                </div>
+              )}
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <RatingBreakdown data={avgRatingBreakdown} />
-              <SentimentAnalysis data={sentimentData} />
+              <RatingBreakdown data={categoryRatings} />
+              <SentimentAnalysis data={sentimentStats} />
             </div>
           </div>
         );
