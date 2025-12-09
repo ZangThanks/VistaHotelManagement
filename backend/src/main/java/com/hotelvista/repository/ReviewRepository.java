@@ -89,8 +89,6 @@ public interface ReviewRepository extends JpaRepository<Review, String> {
     List<Object[]> getCategoryRatingsRaw();
 
 
-
-
     // Sentiment Analysis (Positive / Neutral / Negative)
     @Query("""
         SELECT 

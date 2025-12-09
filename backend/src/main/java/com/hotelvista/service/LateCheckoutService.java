@@ -1,12 +1,15 @@
 package com.hotelvista.service;
 
 import com.hotelvista.dto.LateCheckoutDTO;
-import com.hotelvista.model.Booking;
-import com.hotelvista.model.LateCheckout;
+import com.hotelvista.model.*;
 import com.hotelvista.model.enums.ApprovalStatus;
 import com.hotelvista.model.enums.MemberShipLevel;
+import com.hotelvista.model.enums.NotificationCategory;
+import com.hotelvista.model.enums.NotificationType;
 import com.hotelvista.repository.BookingRepository;
+import com.hotelvista.repository.EmployeeRepository;
 import com.hotelvista.repository.LateCheckoutRepository;
+import com.hotelvista.repository.NotificationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +28,13 @@ public class LateCheckoutService {
     @Autowired
     private BookingRepository bookingRepository;
 
+    @Autowired
+    private EmployeeRepository employeeRepository;
+
+    @Autowired
+    private NotificationRepository notificationRepository;
+
+
     /** Lấy toàn bộ yêu cầu */
     public List<LateCheckout> findAll() {
         return repo.findAll();
@@ -32,37 +42,12 @@ public class LateCheckoutService {
 
     /** Trả về DTO đầy đủ cho FE */
     public List<LateCheckoutDTO> getAllDTO() {
-
-        return repo.findAll().stream().map(item -> {
-            LateCheckoutDTO dto = new LateCheckoutDTO();
-
-            dto.setRequestID(item.getRequestID());
-            dto.setRequestTime(item.getRequestTime());
-            dto.setRequestDate(item.getRequestDate());
-            dto.setAdditionalFee(item.getAdditionalFee());
-            dto.setApprovalStatus(item.getApprovalStatus().name());
-            dto.setBookingId(item.getBooking().getBookingID());
-
-            Booking booking = bookingRepository.findById(item.getBooking().getBookingID()).orElse(null);
-
-            if (booking != null) {
-                dto.setCustomerName(booking.getCustomer().getFullName());
-                dto.setCustomerEmail(booking.getCustomer().getEmail());
-                dto.setCheckInDate(booking.getCheckInDate().toString());
-                dto.setCheckOutDate(booking.getCheckOutDate().toString());
-
-                if (!booking.getBookingDetails().isEmpty()) {
-                    var detail = booking.getBookingDetails().get(0);
-
-                    dto.setRoomNumber(detail.getRoom().getRoomNumber());
-                    dto.setRoomType(detail.getRoom().getRoomType().getTypeName());
-                    dto.setRoomPrice(detail.getRoomPrice());
-                }
-            }
-
-            return dto;
-        }).toList();
+        return repo.findAll()
+                .stream()
+                .map(this::convertToDTO)
+                .toList();
     }
+
 
     /**
      * Tạo yêu cầu checkout muộn (PENDING)
@@ -106,31 +91,58 @@ public class LateCheckoutService {
      * Cập nhật trạng thái APPROVED / REJECTED
      * UPDATE BOOKING + CỘNG PHÍ
      */
-    public LateCheckout updateApprovalStatus(String requestId, ApprovalStatus status) {
-
-        LateCheckout lc = repo.findById(requestId).orElse(null);
-        if (lc == null) {
-            throw new IllegalArgumentException("Late checkout request not found: " + requestId);
-        }
+    public LateCheckout updateApprovalStatus(
+            String requestId,
+            ApprovalStatus status,
+            String employeeId
+    ) {
+        LateCheckout lc = repo.findById(requestId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy yêu cầu"));
 
         lc.setApprovalStatus(status);
 
-        // Khi APPROVED: Gắn vào booking + cộng phí vào totalAmount
-        if (status == ApprovalStatus.APPROVED) {
-            Booking booking = lc.getBooking();
-
-            // Gắn lateCheckout vào booking
-            booking.setLateCheckout(lc);
-
-            // Cộng phí vào tổng hóa đơn
-            double fee = lc.getAdditionalFee();
-            booking.setTotalAmount(booking.getTotalAmount() + fee);
-
-            bookingRepository.save(booking);
+        if (employeeId != null && !employeeId.isEmpty()) {
+            Employee employee = employeeRepository.findById(employeeId)
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy nhân viên: " + employeeId));
+            lc.setEmployee(employee);
         }
 
-        return repo.save(lc);
+        LateCheckout saved = repo.save(lc);
+
+        Booking booking = saved.getBooking();
+        String customerId = booking.getCustomer().getId();
+        String roomNumber = booking.getBookingDetails().get(0).getRoom().getRoomNumber();
+
+        String staffName = saved.getEmployee() != null
+                ? saved.getEmployee().getFullName()
+                : "Nhân viên";
+
+        Notification notification = new Notification();
+        notification.setType(NotificationType.INFO);
+        notification.setCategory(NotificationCategory.LATE_CHECKOUT);
+
+        boolean isApproved = status == ApprovalStatus.APPROVED;
+        notification.setTitle(isApproved
+                ? "Yêu cầu checkout muộn đã được phê duyệt"
+                : "Yêu cầu checkout muộn bị từ chối");
+        notification.setMessage(String.format(
+                "[Mã NV: %s] [Mã KH: %s] Yêu cầu checkout muộn phòng %s đã được %s bởi %s",
+                employeeId, customerId, roomNumber,
+                isApproved ? "phê duyệt" : "từ chối", staffName
+        ));
+
+        notification.setFromUserId(employeeId);
+        notification.setFromUserName(staffName);
+        notification.setToUserId(customerId);
+        notification.setIsRealtime(true);
+        notification.setIsRead(false);
+        notification.setCreatedAt(LocalDateTime.now());
+
+        notificationRepository.save(notification);
+
+        return saved;
     }
+
 
     /**
      * Tính phụ phí checkout muộn
@@ -219,18 +231,32 @@ public class LateCheckoutService {
         Booking booking = bookingRepository.findById(item.getBooking().getBookingID()).orElse(null);
 
         if (booking != null) {
-            dto.setCustomerName(booking.getCustomer().getFullName());
-            dto.setCustomerEmail(booking.getCustomer().getEmail());
+            dto.setBookingId(booking.getBookingID());
             dto.setCheckInDate(booking.getCheckInDate().toString());
             dto.setCheckOutDate(booking.getCheckOutDate().toString());
 
+            Customer customer = booking.getCustomer();
+            if (customer != null) {
+                // ✅ LƯU Ý: Dùng đúng method để lấy ID
+                // Có thể là getId() hoặc getCustomerId() tùy model của bạn
+                dto.setCustomerId(customer.getId());  // hoặc customer.getId()
+                dto.setCustomerName(customer.getFullName());
+                dto.setCustomerEmail(customer.getEmail());
+
+                // ⭐ DEBUG: In ra để kiểm tra
+                System.out.println("✅ Setting customerId: " + customer.getId());
+            } else {
+                System.out.println("❌ Customer is null for booking: " + booking.getBookingID());
+            }
+
             if (!booking.getBookingDetails().isEmpty()) {
                 var detail = booking.getBookingDetails().get(0);
-
                 dto.setRoomNumber(detail.getRoom().getRoomNumber());
                 dto.setRoomType(detail.getRoom().getRoomType().getTypeName());
                 dto.setRoomPrice(detail.getRoomPrice());
             }
+        } else {
+            System.out.println("❌ Booking not found: " + item.getBooking().getBookingID());
         }
 
         return dto;

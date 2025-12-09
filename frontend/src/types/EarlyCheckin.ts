@@ -14,6 +14,10 @@ export interface EarlyCheckin {
     approvalStatus: 'PENDING' | 'APPROVED' | 'REJECTED';
     additionalFee: number;
     requestDate: string;
+    employee?: {
+        id: string;
+        fullName?: string;
+    };
 }
 
 /** Response server trả về khi lấy danh sách yêu cầu */

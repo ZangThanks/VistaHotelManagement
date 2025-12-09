@@ -54,11 +54,16 @@ public class EarlyCheckinController {
     @PutMapping("/approve/{id}")
     public Map<String, Object> approveRequest(
             @PathVariable("id") String requestId,
-            @RequestParam("status") String status
+            @RequestParam("status") String status,
+            @RequestParam(value = "employeeId", required = false) String employeeId
     ) {
         ApprovalStatus approvalStatus = ApprovalStatus.valueOf(status.toUpperCase());
 
-        EarlyCheckin ec = earlyCheckinService.updateApprovalStatus(requestId, approvalStatus);
+        EarlyCheckin ec = earlyCheckinService.updateApprovalStatus(
+                requestId,
+                approvalStatus,
+                employeeId
+        );
 
         if (ec == null) {
             return Map.of("success", false, "message", "Không tìm thấy yêu cầu");
