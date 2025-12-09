@@ -495,6 +495,23 @@ export const confirmPayAtCheckout = async (
   }
 };
 
+export const getRemainingTimeForPayment = async (
+  bookingId: string
+): Promise<string> => {
+  try {
+    const response = await api.get(
+      `${ENDPOINT}/remaining-payment-time/${bookingId}`
+    );
+    return response.data;
+  } catch (error) {
+    console.error(
+      `Error getting remaining time for payment for booking ${bookingId}:`,
+      error
+    );
+    throw error;
+  }
+};
+
 export default {
   getAll,
   getBookingById,
@@ -506,4 +523,5 @@ export default {
   addServicesToBooking,
   addServiceToBooking,
   checkRoomAvailability,
+  getRemainingTimeForPayment,
 };

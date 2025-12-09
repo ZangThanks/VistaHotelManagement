@@ -5,6 +5,7 @@ import {
   getBookingById,
   cancelBookingPayment,
   confirmPayAtCheckout,
+  getRemainingTimeForPayment,
 } from "../../../services/bookingService";
 import type { Booking } from "../../../types/Booking";
 import CountdownTimer from "../../../components/common/CountdownTimer";
@@ -25,6 +26,7 @@ const PaymentPage: React.FC = () => {
   const [paymentCompleted, setPaymentCompleted] = useState(false);
   const [paymentExpired, setPaymentExpired] = useState(false);
   const [showTimer, setShowTimer] = useState(false);
+  const [remainingMinutes, setRemainingMinutes] = useState<number>(15);
 
   const reputationPoint = booking?.customer?.reputationPoint || 0;
   const totalAmount = booking?.totalAmount || 0;
@@ -62,6 +64,62 @@ const PaymentPage: React.FC = () => {
     return 0;
   };
 
+  // Lấy thời gian còn lại từ API
+  const fetchRemainingTime = async () => {
+    if (!booking?.bookingID) return;
+
+    try {
+      const timeString = await getRemainingTimeForPayment(booking.bookingID);
+      console.log("Remaining time from API:", timeString);
+
+      // Parse timeString (format có thể là "15 minutes", "14 minutes 30 seconds", etc.)
+      // Hoặc có thể là format khác tùy backend trả về
+      const minutes = parseTimeString(timeString);
+      setRemainingMinutes(minutes);
+      console.log("Parsed remaining minutes:", minutes);
+    } catch (error) {
+      console.error("Error fetching remaining time:", error);
+      // Giữ nguyên default 15 phút nếu lỗi
+    }
+  };
+
+  // Hàm parse chuỗi thời gian thành số phút
+  const parseTimeString = (timeString: string): number => {
+    // Xử lý format "HH:MM:SS" từ backend (ví dụ: "05:58:37")
+    const timeMatch = timeString.match(/^(\d{2}):(\d{2}):(\d{2})$/);
+
+    if (timeMatch) {
+      const hours = parseInt(timeMatch[1]);
+      const minutes = parseInt(timeMatch[2]);
+      const seconds = parseInt(timeMatch[3]);
+
+      // Chuyển tất cả sang phút (bao gồm cả giây)
+      const totalMinutes = hours * 60 + minutes + seconds / 60;
+
+      console.log(
+        `Parsed time: ${hours}h ${minutes}m ${seconds}s = ${totalMinutes.toFixed(
+          2
+        )} minutes`
+      );
+
+      return totalMinutes;
+    }
+
+    // "X minutes Y seconds"
+    const minutesMatch = timeString.match(/(\d+)\s*minutes?/i);
+    const secondsMatch = timeString.match(/(\d+)\s*seconds?/i);
+
+    if (minutesMatch || secondsMatch) {
+      const mins = minutesMatch ? parseInt(minutesMatch[1]) : 0;
+      const secs = secondsMatch ? parseInt(secondsMatch[1]) : 0;
+      return mins + secs / 60;
+    }
+
+    // Nếu không parse được, trả về 15 phút
+    console.warn("Could not parse time string:", timeString);
+    return 15;
+  };
+
   const fetchQRCode = async (choice: number) => {
     if (!booking?.bookingID) {
       console.error("No booking ID available");
@@ -69,7 +127,7 @@ const PaymentPage: React.FC = () => {
     }
 
     // Skip QR nếu chọn pay at check-out
-    if (choice === 0) {
+    if (choice === 0 || totalAmount <= 0) {
       setLoading(true);
       try {
         // Gọi API để cập nhật booking status thành PLACE
@@ -98,8 +156,11 @@ const PaymentPage: React.FC = () => {
       const url = URL.createObjectURL(blob);
       setImageUrl(url);
 
+      // Lấy thời gian còn lại từ API
+      await fetchRemainingTime();
+
       // Bắt đầu đếm ngược thời gian thanh toán
-      //setShowTimer(true);
+      setShowTimer(true);
 
       //Bắt đầu polling kiểm tra trạng thái thanh toán
       startPaymentPolling();
@@ -305,10 +366,10 @@ const PaymentPage: React.FC = () => {
         {/* Countdown Timer */}
         {showTimer && !paymentCompleted && !paymentExpired && (
           <div className="mb-6">
-            {/* <CountdownTimer
-              durationInMinutes={15}
+            <CountdownTimer
+              durationInMinutes={remainingMinutes}
               onExpire={handlePaymentExpiry}
-            /> */}
+            />
           </div>
         )}
 

@@ -323,30 +323,3 @@ VALUES ('REP001', '2024-06-01 18:00:00', '2024-06', 'OCCUPANCY', 'EMP003'),
 
 select * from booking_services;
 select * from bookings;
-
-
-SELECT
-    r.review_id,
-    c.customer_id,
-    ro.room_number
-FROM reviews r
-         LEFT JOIN booking_details bd ON bd.review_id = r.review_id
-         LEFT JOIN bookings b ON b.booking_id = bd.booking_id
-         LEFT JOIN customers c ON c.customer_id = b.customer_id
-         LEFT JOIN rooms ro ON ro.room_number = bd.room_number;
-
-SELECT
-    CASE
-        WHEN rp BETWEEN 0 AND 40 THEN
-            SEC_TO_TIME(GREATEST(0, 6*3600 - TIMESTAMPDIFF(SECOND, booking_date, NOW())))
-        WHEN rp BETWEEN 41 AND 80 THEN
-            SEC_TO_TIME(GREATEST(0, 8*3600 - TIMESTAMPDIFF(SECOND, booking_date, NOW())))
-        ELSE
-            'UNLIMITED'
-        END AS remaining_time
-FROM (SELECT b.booking_date, c.reputation_point AS rp
-      FROM bookings b
-          JOIN customers c ON c.customer_id = b.customer_id
-      WHERE b.booking_id = 'B0812250005' AND b.status = 'WAITING' ) AS t
-
-

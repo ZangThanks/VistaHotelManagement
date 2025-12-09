@@ -735,7 +735,7 @@ export default function BookingForm({
       numberOfGuests: booking.numberOfGuests || 1,
       status: "WAITING",
       specialRequests: specialRequests,
-      bookingDate: new Date().toISOString(),
+      bookingDate: formatLocalDateTime(new Date()),
       packageType: booking.packageType || "Standard",
       totalAmount: await calculatedTotalAmount(),
       invoiceType: "ROOM_BOOKING",

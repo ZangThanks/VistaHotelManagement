@@ -331,3 +331,245 @@ export const confirmBookingEmail = (
 </body>
 </html>
 `;
+
+export const bookingReceipt = (paymentData: any) => {
+  return `
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hóa đơn thanh toán - ${paymentData.bookingId}</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 20mm;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #333;
+            padding-bottom: 20px;
+        }
+        
+        .logo {
+            font-size: 32px;
+            font-weight: bold;
+            font-style: italic;
+        }
+        
+        .company-info {
+            text-align: right;
+            font-size: 14px;
+        }
+        
+        .company-info h2 {
+            margin: 0 0 5px 0;
+            font-size: 16px;
+        }
+        
+        .company-info p {
+            margin: 2px 0;
+        }
+        
+        .invoice-title {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            margin: 30px 0;
+            text-transform: uppercase;
+        }
+        
+        .invoice-info {
+            margin: 20px 0;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .invoice-info div {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px;
+            background-color: #f5f5f5;
+        }
+        
+        .invoice-info .label {
+            font-weight: bold;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 30px 0;
+        }
+        
+        table thead {
+            background-color: #333;
+            color: white;
+        }
+        
+        table th, table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        
+        table th {
+            font-weight: bold;
+        }
+        
+        table td.number {
+            text-align: right;
+        }
+        
+        table td.center {
+            text-align: center;
+        }
+        
+        .total-row {
+            background-color: #f9f9f9;
+            font-weight: bold;
+        }
+        
+        .payment-row {
+            background-color: #e8f5e9;
+            font-weight: bold;
+        }
+        
+        .signature-section {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 50px;
+        }
+        
+        .signature-box {
+            text-align: center;
+            width: 45%;
+        }
+        
+        .signature-box p {
+            margin: 5px 0;
+        }
+        
+        .signature-line {
+            margin-top: 60px;
+            border-top: 1px solid #333;
+            padding-top: 5px;
+        }
+        
+        @media print {
+            body {
+                padding: 0;
+            }
+            
+            .no-print {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">
+            Vista<br/>Hotel
+        </div>
+        <div class="company-info">
+            <h2>Vista Hotel - Premium Resort</h2>
+            <p>112 Nguyễn Văn Trỗi, quận 2</p>
+            <p><strong>T</strong> +84 98 348 06 83</p>
+            <p><strong>E</strong> vistahotel@gmail.com</p>
+            <p>www.vistahotel.com</p>
+        </div>
+    </div>
+    
+    <h1 class="invoice-title">Hóa Đơn</h1>
+    
+    <div class="invoice-info">
+        <div>
+            <span class="label">Số hóa đơn:</span>
+            <span>${paymentData.bookingId}</span>
+        </div>
+        <div>
+            <span class="label">Ngày:</span>
+            <span>${new Date().toLocaleDateString("vi-VN", {
+              day: "2-digit",
+              month: "2-digit",
+              year: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+            })}</span>
+        </div>
+        <div>
+            <span class="label">Khách hàng:</span>
+            <span>${paymentData.guestName}</span>
+        </div>
+        <div>
+            <span class="label">Phòng:</span>
+            <span>${paymentData.roomNumber}</span>
+        </div>
+    </div>
+    
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 50px;">#</th>
+                <th>Nội dung</th>
+                <th class="center" style="width: 100px;">Số lượng</th>
+                <th class="number" style="width: 150px;">Đơn giá</th>
+                <th class="number" style="width: 150px;">Thành tiền</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="center">1</td>
+                <td>
+                    <div><strong>Tiền phòng</strong></div>
+                    <div style="font-size: 0.9em; color: #666;">Phòng ${
+                      paymentData.roomNumber
+                    }</div>
+                </td>
+                <td class="center">1</td>
+                <td class="number">${paymentData.totalAmount}</td>
+                <td class="number">${paymentData.totalAmount}</td>
+            </tr>
+            <tr class="total-row">
+                <td colspan="4" style="text-align: right; padding-right: 20px;">Tổng tiền</td>
+                <td class="number">${paymentData.totalAmount}</td>
+            </tr>
+            <tr class="payment-row">
+                <td colspan="4" style="text-align: right; padding-right: 20px;">Thanh toán (Bank Transfer)</td>
+                <td class="number">${paymentData.balanceDue}</td>
+            </tr>
+            <tr>
+                <td colspan="4" style="text-align: right; padding-right: 20px; font-weight: bold;">Số tiền còn lại</td>
+                <td class="number" style="font-weight: bold;">0 VND</td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <div class="signature-section">
+        <div class="signature-box">
+            <p><strong>Lễ tân</strong></p>
+            <div class="signature-line"></div>
+        </div>
+        <div class="signature-box">
+            <p><strong>Khách hàng</strong></p>
+            <div class="signature-line"></div>
+        </div>
+    </div>
+</body>
+</html>
+        `;
+};
