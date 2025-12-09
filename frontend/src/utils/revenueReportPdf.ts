@@ -215,14 +215,16 @@ export const generateRevenueReportPdf = ({
         startY: yPos,
         head: [headers],
         body: tableData,
-        foot: [[
-            'TOTAL',
-            totals.roomRevenue.toLocaleString('vi-VN'),
-            totals.serviceRevenue.toLocaleString('vi-VN'),
-            totals.totalRevenue.toLocaleString('vi-VN'),
-            totals.bookingCount.toString(),
-            avgPerBooking.toLocaleString('vi-VN'),
-        ]],
+        foot: [
+            [
+                'TOTAL',
+                totals.roomRevenue.toLocaleString('vi-VN'),
+                totals.serviceRevenue.toLocaleString('vi-VN'),
+                totals.totalRevenue.toLocaleString('vi-VN'),
+                totals.bookingCount.toString(),
+                avgPerBooking.toLocaleString('vi-VN'),
+            ],
+        ],
         theme: 'striped',
         headStyles: {
             fillColor: [204, 189, 163],
