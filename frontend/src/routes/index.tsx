@@ -1,4 +1,4 @@
-import { createBrowserRouter } from 'react-router-dom';
+import { createBrowserRouter } from "react-router-dom";
 
 // Layouts
 import AuthLayout from "../layouts/AuthLayout";
@@ -58,6 +58,7 @@ import ReplyReviewsPage from "../pages/employee/review/ReplyReviewPage.tsx";
 import AccessDenied403 from "../pages/error/AccessDenied403.tsx";
 import NotFound404 from "../pages/error/NotFound404.tsx";
 import ServerError500 from "../pages/error/ServerError500.tsx";
+import ReservationList from "../pages/admin/ReservationList.tsx";
 export const router = createBrowserRouter([
   // OAuth
   {
@@ -91,6 +92,7 @@ export const router = createBrowserRouter([
       { path: "room-type-management", element: <RoomTypeManagement /> },
       { path: "support", element: <ChatSupport /> },
       { path: "reviews", element: <ReplyReviewsPage /> },
+      { path: "services", element: <ServiceManagement /> },
     ],
   },
 
@@ -105,7 +107,6 @@ export const router = createBrowserRouter([
       { path: "info", element: <NewsList /> }, // NewsList thay InfoManagement
       //{ path: 'info/manage', element: <NewsList /> }, // nếu bạn cần InfoManagement
       { path: "info/:id", element: <NewsDetail /> },
-      { path: "services", element: <ServiceManagement /> },
       { path: "room-management", element: <RoomManagement /> },
       { path: "room-type-management", element: <RoomTypeManagement /> },
       { path: "promotion-management", element: <PromotionManagement /> },
@@ -120,6 +121,7 @@ export const router = createBrowserRouter([
       // { path: 'employees/:id', element: <EmployeeDetail /> },
       { path: "profile", element: <UserProfilePage /> },
       { path: "reports", element: <ReportPage /> },
+      { path: "reservations", element: <ReservationList /> },
       { path: "", element: <Dashboard /> },
     ],
   },

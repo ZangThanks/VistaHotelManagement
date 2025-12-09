@@ -62,15 +62,15 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
     {
       icon: <FaCalendarAlt />,
       label: "Reservations",
-      path: "/reservations",
+      path: "/admin/reservations",
     },
-    { icon: <FaUsers />, label: "Guests", path: "/guests" },
+    { icon: <FaUsers />, label: "Guests", path: "/employee/customer/list" },
     {
       icon: <FaExclamationTriangle />,
-      label: 'Incidents',
-      path: '/employee/incidents',
+      label: "Incidents",
+      path: "/employee/incidents",
     },
-    { icon: <MdRoomService />, label: "Services", path: "/services" },
+    { icon: <MdRoomService />, label: "Services", path: "/employee/services" },
     {
       icon: <RiDiscountPercentFill />,
       label: "Promotions",
