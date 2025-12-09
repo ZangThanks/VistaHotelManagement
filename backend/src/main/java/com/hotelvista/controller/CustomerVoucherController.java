@@ -3,6 +3,7 @@ package com.hotelvista.controller;
 import com.hotelvista.model.CustomerVoucher;
 import com.hotelvista.service.CustomerVoucherService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -14,6 +15,7 @@ public class CustomerVoucherController {
     private CustomerVoucherService service;
 
     @PostMapping("/save")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public boolean save(@RequestBody CustomerVoucher customerVoucher) {
         return service.save(customerVoucher);
     }
@@ -24,6 +26,7 @@ public class CustomerVoucherController {
     }
 
     @GetMapping("/customer/{id}")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'EMPLOYEE', 'CUSTOMER')")
     public List<CustomerVoucher> findAllByCustomer_Id(@PathVariable("id") String customerId) {
         return service.findAllByCustomer_Id(customerId);
     }

@@ -6,6 +6,7 @@ import com.hotelvista.model.enums.ApprovalStatus;
 import com.hotelvista.service.LateCheckoutService;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -22,6 +23,7 @@ public class LateCheckoutController {
 
     /** Lấy danh sách yêu cầu checkout muộn (dạng DTO đầy đủ) */
     @GetMapping
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'EMPLOYEE', 'CUSTOMER')")
     public List<LateCheckoutDTO> getAllLateCheckouts() {
         return lateCheckoutService.getAllDTO();
     }
@@ -29,6 +31,7 @@ public class LateCheckoutController {
 
     /** Gửi yêu cầu checkout muộn */
     @PostMapping("/request")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'EMPLOYEE', 'CUSTOMER')")
     public Map<String, Object> requestLateCheckout(@RequestBody Map<String, Object> payload) {
         try {
             String bookingId = (String) payload.get("bookingId");
@@ -63,6 +66,7 @@ public class LateCheckoutController {
 
     /** Duyệt hoặc từ chối yêu cầu checkout muộn */
     @PutMapping("/approve/{id}")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'EMPLOYEE')")
     public Map<String, Object> approveLateCheckout(
             @PathVariable("id") String requestId,
             @RequestParam("status") String status,

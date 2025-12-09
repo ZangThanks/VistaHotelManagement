@@ -6,6 +6,7 @@ import com.hotelvista.model.RoomChangeRequest;
 import com.hotelvista.service.RoomChangeRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -80,6 +81,7 @@ public class RoomChangeRequestController {
 
     // Delete request
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'EMPLOYEE')")
     public ResponseEntity<Void> deleteRequest(@PathVariable String id) {
         service.deleteRequest(id);
         return ResponseEntity.ok().build();

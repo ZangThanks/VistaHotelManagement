@@ -210,9 +210,11 @@ const Header: React.FC = () => {
         </div>
       </div>
 
-      <Link to="/customer/cart">
-        <CiShoppingCart className="ml-4 text-black text-2xl hover:opacity-80 transition" />
-      </Link>
+      {user && (
+        <Link to="/customer/cart">
+          <CiShoppingCart className="ml-4 text-black text-2xl hover:opacity-80 transition" />
+        </Link>
+      )}
 
       <MenuSidebar
         isOpen={menuOpen}

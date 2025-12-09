@@ -8,6 +8,7 @@ import com.hotelvista.service.BookingServiceService;
 import com.hotelvista.service.ServiceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -51,17 +52,20 @@ public class ServiceController {
     }
 
     @PostMapping("")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'EMPLOYEE')")
     public Service save(@RequestBody Service serviceData) {
         service.save(serviceData);
         return serviceData;
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'EMPLOYEE')")
     public void deleteById(@PathVariable String id) {
         service.deleteById(id);
     }
 
     @GetMapping("/booking/{bookingId}")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'EMPLOYEE', 'CUSTOMER')")
     public ResponseEntity<List<BookingService>> getByBookingId(@PathVariable String bookingId) {
         try {
             List<BookingService> services = bookingService.findAllByBooking_BookingID(bookingId);

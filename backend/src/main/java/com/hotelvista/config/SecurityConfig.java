@@ -1,19 +1,14 @@
 package com.hotelvista.config;
 
-import com.hotelvista.security.JwtAuthenticationFilter;
-import com.hotelvista.security.oauth.CustomAuthorizationRequestResolver;
-import com.hotelvista.security.oauth.CustomOAuth2UserService;
-import com.hotelvista.security.oauth.OAuth2SuccessHandler;
-import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+import java.util.Arrays;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestResolver;
 import org.springframework.security.web.SecurityFilterChain;
@@ -22,7 +17,12 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.Arrays;
+import com.hotelvista.security.JwtAuthenticationFilter;
+import com.hotelvista.security.oauth.CustomAuthorizationRequestResolver;
+import com.hotelvista.security.oauth.CustomOAuth2UserService;
+import com.hotelvista.security.oauth.OAuth2SuccessHandler;
+
+import lombok.RequiredArgsConstructor;
 
 /**
  * Cấu hình bảo mật cho ứng dụng sử dụng Spring Security.
@@ -31,6 +31,7 @@ import java.util.Arrays;
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
+@EnableMethodSecurity
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
@@ -42,11 +43,9 @@ public class SecurityConfig {
      * Định nghĩa các quy tắc authorization cho từng endpoint.
      * 
      * Quy tắc phân quyền:
-     * - /auth/**, /public/**: Cho phép truy cập công khai (không cần xác thực)
-     * - /admin/**: Chỉ ADMIN
-     * - /employee/**: ADMIN và EMPLOYEE
-     * - /customer/**: ADMIN, EMPLOYEE và CUSTOMER
-     * - Các endpoint khác: Yêu cầu xác thực
+     * - Public endpoints: /auth/**, /oauth2/**, /error, /public/**
+     * - Public READ: /rooms/**, /room-types/**, /promotions/**, /news/**, /services/** (GET only)
+     * - Method-level security: Sử dụng @PreAuthorize trong các controller
      * 
      * @param http đối tượng HttpSecurity để cấu hình bảo mật
      * @return SecurityFilterChain đã được cấu hình
@@ -71,8 +70,9 @@ public class SecurityConfig {
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
 
-                // Authorization rules
+                // Authorization rules - Simplified for method-level security
                 .authorizeHttpRequests(auth -> auth
+                        // Public endpoints - không cần authentication
                         .requestMatchers(
                                 "/auth/**",
                                 "/oauth2/**",
@@ -80,10 +80,25 @@ public class SecurityConfig {
                                 "/error",
                                 "/public/**"
                         ).permitAll()
-//                        .requestMatchers("/admin/**").hasAuthority("ADMIN")
-//                        .requestMatchers("/employee/**").hasAnyAuthority("ADMIN", "EMPLOYEE")
-//                        .requestMatchers("/customer/**").hasAnyAuthority("ADMIN", "EMPLOYEE", "CUSTOMER")
-                        .anyRequest().permitAll()
+                        
+                        // Public READ endpoints - cho phép xem thông tin
+                        .requestMatchers(
+                                "/rooms/**",
+                                "/room-types/**",
+                                "/promotions/**",
+                                "/promotion-types/**",
+                                "/vouchers/**",
+                                "/reviews/**",
+                                "/news/**",
+                                "/services/**",
+                                "/seasonal-prices/**",
+                                "/room-type-promotions/**",
+                                "/ai/**"
+                        ).permitAll()
+                        
+                        // Tất cả các endpoint khác sử dụng method-level security (@PreAuthorize)
+                        // Yêu cầu authentication, quyền cụ thể được kiểm tra ở controller
+                        .anyRequest().authenticated()
                 )
                 // OAuth2 Login
                 .oauth2Login(oauth -> oauth

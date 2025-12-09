@@ -71,16 +71,28 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
       path: "/admin/checkout",
     },
     {
+      icon: <FaUsers />,
+      label: "Employees",
+      path: "/admin/employees",
+    },
+    {
       icon: <FaCalendarAlt />,
       label: "Reservations",
-      path: "/reservations",
+      path: "/admin/reservations",
     },
-    { icon: <FaUsers />, label: "Guests", path: "/guests" },
-    { icon: <MdRoomService />, label: "Services", path: "/admin/services" },
+    { 
+      icon: <FaUsers />, 
+      label: "Customers", 
+      path: "/admin/customers" 
+    },
+    { 
+      icon: <MdRoomService />, 
+      label: "Services", 
+      path: "/admin/services" },
     {
       icon: <MdRateReview />,
       label: "Reviews",
-      paht: "/employee/reviews",
+      path: "/admin/reviews",
     },
     {
       icon: <RiDiscountPercentFill />,
@@ -97,36 +109,44 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
       label: "Vouchers",
       path: "/admin/voucher-management",
     },
-    { icon: <FaChartLine />, label: "Reports", path: "/admin/reports" },
-    { icon: <FaCog />, label: "Settings", path: "/settings" },
+    { 
+      icon: <FaChartLine />, 
+      label: "Reports", 
+      path: "/admin/reports" 
+    },
   ];
 
   const employeeMenuItems = [
     {
       icon: <MdMeetingRoom />,
       label: "Rooms",
-      path: "/admin/room-management",
+      path: "/employee/room-management",
     },
     {
       icon: <BiSolidCategory />,
       label: "Room Types",
-      path: "/admin/room-type-management",
+      path: "/employee/room-type-management",
     },
     { icon: <MdRoomService />, label: "Services", path: "/employee/services" },
     {
       icon: <RiInfoCardFill />,
       label: "Information",
-      path: "/admin/info",
+      path: "/employee/info",
     },
     {
       icon: <LuMapPinCheckInside />,
       label: "Check-in",
-      path: "/admin/checkin",
+      path: "/employee/checkin",
     },
     {
       icon: <IoBagCheckOutline />,
       label: "Check-out",
-      path: "/admin/checkout",
+      path: "/employee/checkout",
+    },
+    {
+      icon: <FaUsers />,
+      label: "Customers",
+      path: "/employee/customers",
     },
     {
       icon: <FaCalendarAlt />,

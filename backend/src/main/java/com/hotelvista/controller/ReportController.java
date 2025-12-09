@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -31,6 +32,7 @@ public class ReportController {
      * @return danh sách ServiceReportDTO
      */
     @GetMapping("/services")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public List<ServiceReportDTO> getServiceReport(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
@@ -40,11 +42,13 @@ public class ReportController {
     }
 
     @GetMapping("/dashboard")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<DashboardStatsDTO> getDashboardStats() {
         return ResponseEntity.ok(reportService.getDashboardStats());
     }
 
     @GetMapping("/loyalty")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<List<LoyaltyReportDTO>> getLoyaltyReport(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
@@ -55,6 +59,7 @@ public class ReportController {
     }
 
     @GetMapping("/booking")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<List<BookingReportDTO>> getBookingReport(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,

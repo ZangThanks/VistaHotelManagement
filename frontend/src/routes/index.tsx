@@ -82,7 +82,7 @@ export const router = createBrowserRouter([
     path: "employee",
     element: <EmployeeLayout />,
     children: [
-      { path: "customer/list", element: <CustomerList /> },
+      { path: "customers", element: <CustomerList /> },
       { path: "incidents", element: <IncidentManagement /> },
       { path: "bookingPage", element: <BookingPage /> },
       { path: "newsPage", element: <NewsPage /> },
@@ -93,6 +93,9 @@ export const router = createBrowserRouter([
       { path: "support", element: <ChatSupport /> },
       { path: "reviews", element: <ReplyReviewsPage /> },
       { path: "services", element: <ServiceManagement /> },
+      { path: "checkin", element: <CheckInManager /> },
+      { path: "checkout", element: <CheckOutManager /> },
+      { path: "info", element: <NewsList /> },
     ],
   },
 
@@ -104,8 +107,7 @@ export const router = createBrowserRouter([
       { path: "", element: <Dashboard /> },
       { path: "checkin", element: <CheckInManager /> },
       { path: "checkout", element: <CheckOutManager /> },
-      { path: "info", element: <NewsList /> }, // NewsList thay InfoManagement
-      //{ path: 'info/manage', element: <NewsList /> }, // nếu bạn cần InfoManagement
+      { path: "info", element: <NewsList /> },
       { path: "info/:id", element: <NewsDetail /> },
       { path: "services", element: <ServiceManagement /> },
       { path: "room-management", element: <RoomManagement /> },
@@ -118,11 +120,14 @@ export const router = createBrowserRouter([
       { path: "voucher-management", element: <VoucherManagement /> },
       { path: "bookingPage", element: <BookingPage /> },
       { path: "employees", element: <EmployeeList /> },
+      { path: "daily", element: <DailyWorkStatistics /> },
+
       { path: "pricing", element: <PricingManager /> },
-      // { path: 'employees/:id', element: <EmployeeDetail /> },
       { path: "profile", element: <UserProfilePage /> },
       { path: "reports", element: <ReportPage /> },
-      { path: "", element: <Dashboard /> },
+      { path: "customers", element: <CustomerList /> },
+      { path: "incidents", element: <IncidentManagement /> },
+      { path: "reviews", element: <ReplyReviewsPage /> },
     ],
   },
 

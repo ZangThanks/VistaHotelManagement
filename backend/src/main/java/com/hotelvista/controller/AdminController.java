@@ -3,6 +3,7 @@ package com.hotelvista.controller;
 import com.hotelvista.model.Admin;
 import com.hotelvista.service.AdminService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -39,6 +40,7 @@ public class AdminController {
      * Cập nhật thông tin profile Admin
      */
     @PutMapping("/{adminId}")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public Admin updateAdminProfile(@PathVariable String adminId, @RequestBody Admin admin) {
         Admin adm = service.findById(adminId);
         if (adm != null) {
@@ -61,6 +63,7 @@ public class AdminController {
      * Cập nhật avatar Admin
      */
     @PutMapping("/{adminId}/avatar")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public Admin updateAdminAvatar(@PathVariable String adminId, @RequestBody Map<String, String> body) {
         String avatarUrl = body.get("avatarUrl");
         Admin adm = service.findById(adminId);
@@ -72,6 +75,7 @@ public class AdminController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public void deleteAdmin(@PathVariable String id) {
         service.delete(id);
     }

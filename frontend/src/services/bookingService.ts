@@ -1,5 +1,4 @@
 /* eslint-disable */
-import { axiosInstance } from "../config/api";
 import { api } from "./apiClient";
 import type { Booking, RoomBooking } from "../types/Booking";
 import type { BookingDetail } from "../types/BookingDetail";
@@ -8,7 +7,7 @@ const ENDPOINT = "/bookings";
 
 export const getAll = async (): Promise<Booking[]> => {
   try {
-    const response = await axiosInstance.get(ENDPOINT);
+    const response = await api.get(ENDPOINT);
     return Array.isArray(response.data) ? response.data : [];
   } catch (error) {
     console.error("Error fetching booking:", error);
@@ -163,7 +162,7 @@ export const getAllRoomBookings = async (): Promise<RoomBooking[]> => {
 
 export const searchBookings = async (keyword: string) => {
   try {
-    const response = await axiosInstance.get(`${ENDPOINT}/search`, {
+    const response = await api.get(`${ENDPOINT}/search`, {
       params: { keyword },
     });
     return response.data;
@@ -187,7 +186,7 @@ export const simulatePaymentCallback = async (
   body: unknown
 ): Promise<unknown> => {
   try {
-    const res = await axiosInstance.post(`${ENDPOINT}/pay-callback`, body);
+    const res = await api.post(`${ENDPOINT}/pay-callback`, body);
     return res.data;
   } catch (error) {
     console.error("Error generating booking ID:", error);
@@ -232,7 +231,7 @@ export const overlapBookingExists = async (roomNumber: string) => {
 // };
 export const checkIn = async (bookingId: string): Promise<Booking> => {
   try {
-    const response = await axiosInstance.put(
+    const response = await api.put(
       `${ENDPOINT}/${bookingId}/check-in`
     );
     return response.data;
@@ -244,7 +243,7 @@ export const checkIn = async (bookingId: string): Promise<Booking> => {
 export const getBookingsByCheckInDate = async (
   date: string
 ): Promise<Booking[]> => {
-  const response = await axiosInstance.get(
+  const response = await api.get(
     `/bookings/check-in-date?date=${date}`
   );
   return response.data;
@@ -254,7 +253,7 @@ export const getBookingsByCheckInDateRange = async (
   startDate: string,
   endDate: string
 ): Promise<Booking[]> => {
-  const response = await axiosInstance.get(
+  const response = await api.get(
     `/bookings/check-in-range?startDate=${startDate}&endDate=${endDate}`
   );
   return response.data;
@@ -262,7 +261,7 @@ export const getBookingsByCheckInDateRange = async (
 export const getBookingsByCheckOutDate = async (
   date: string
 ): Promise<Booking[]> => {
-  const response = await axiosInstance.get(
+  const response = await api.get(
     `/bookings/check-out-date?date=${date}`
   );
   return response.data;
@@ -272,7 +271,7 @@ export const getBookingsByCheckOutDateRange = async (
   startDate: string,
   endDate: string
 ): Promise<Booking[]> => {
-  const response = await axiosInstance.get(
+  const response = await api.get(
     `/bookings/check-out-range?startDate=${startDate}&endDate=${endDate}`
   );
   return response.data;
@@ -282,7 +281,7 @@ export const processCheckout = async (
   bookingId: string,
   paymentMethod: string
 ): Promise<any> => {
-  const response = await axiosInstance.post(`/bookings/${bookingId}/checkout`, {
+  const response = await api.post(`/bookings/${bookingId}/checkout`, {
     paymentMethod,
   });
   return response.data;
