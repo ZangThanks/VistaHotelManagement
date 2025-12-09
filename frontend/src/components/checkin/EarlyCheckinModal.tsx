@@ -2,7 +2,6 @@
 import { useState, useEffect } from 'react';
 import { useToastContext } from '../../hooks/useToastContext';
 import { createEarlyCheckinRequest } from '../../services/earlyCheckinService';
-import { earlyCheckinNotificationService } from '../../services/earlyCheckinNotificationService';
 import ModernCalendar from '../common/ModernCalendar';
 import TimePicker from '../common/Time';
 
@@ -214,47 +213,6 @@ export default function EarlyCheckinModal({ onClose, booking }: Props) {
             const res = await createEarlyCheckinRequest(payload);
 
             if (res.success || res.requestID) {
-                // ✅ GỬI NOTIFICATION CHO EMPLOYEE
-                try {
-                    const roomNumber =
-                        booking.bookingDetails?.[0]?.room?.roomNumber || 'N/A';
-                    const checkInDate = booking.checkInDate
-                        ? new Date(booking.checkInDate).toLocaleString(
-                              'vi-VN',
-                              {
-                                  day: '2-digit',
-                                  month: '2-digit',
-                                  year: 'numeric',
-                                  hour: '2-digit',
-                                  minute: '2-digit',
-                              },
-                          )
-                        : 'N/A';
-
-                    await earlyCheckinNotificationService.sendEarlyCheckinRequest(
-                        {
-                            customerId: booking.customer.id,
-                            customerName:
-                                booking.customer.fullName || 'Khách hàng',
-                            roomNumber: roomNumber,
-                            bookingId: booking.bookingID,
-                            requestedTime: `${finalDate}T${time}`,
-                            standardCheckInTime: checkInDate,
-                            reason: `Check-in sớm (phí: ${additionalFee.toLocaleString(
-                                'vi-VN',
-                            )} VND)`,
-                            userRole: 'CUSTOMER',
-                        },
-                    );
-                    console.log('✅ Notification sent successfully');
-                } catch (notifError) {
-                    console.error(
-                        '❌ Failed to send notification:',
-                        notifError,
-                    );
-                    // Không fail toàn bộ request nếu notification lỗi
-                }
-
                 toast.success('Yêu cầu check-in sớm đã được gửi!');
                 onClose();
                 setTimeout(() => window.location.reload(), 300);

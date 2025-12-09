@@ -51,9 +51,12 @@ export default function PaymentModal({
   const [loading, setLoading] = useState(true);
   const [isProcessingCheckout, setIsProcessingCheckout] = useState(false);
 
+  const [booking, setBooking] = useState<any>(null);
+
   const [bookingServices, setBookingServices] = useState<BookingService[]>([]);
   const [bookingDetails, setBookingDetails] = useState<BookingDetail[]>([]);
   const [qrCodeUrl, setQrCodeUrl] = useState("");
+  const [initialPaymentStatus, setInitialPaymentStatus] = useState<string>("");
 
   const [paymentConfirmed, setPaymentConfirmed] = useState(false);
   const pollingRef = useRef<NodeJS.Timeout | null>(null);
@@ -74,19 +77,24 @@ export default function PaymentModal({
     try {
       setLoading(true);
 
-      const booking = await getBookingById(paymentData.bookingId);
-      if (booking?.bookingDetails) {
-        setBookingDetails(booking.bookingDetails);
+      const bookingData = await getBookingById(paymentData.bookingId);
+
+      setBooking(bookingData);
+
+      setInitialPaymentStatus(
+        bookingData?.paymentStatus || paymentData.paymentStatus
+      );
+
+      if (bookingData?.bookingDetails) {
+        setBookingDetails(bookingData.bookingDetails);
       }
 
-      const services = await getBookingServicesByBookingId(
-        paymentData.bookingId
-      );
-      setBookingServices(services || []);
+      setBookingServices([]);
 
       setLoading(false);
     } catch (error) {
       console.error("Error fetching booking data:", error);
+      setBookingServices([]);
       setLoading(false);
     }
   };
@@ -105,10 +113,57 @@ export default function PaymentModal({
   const roomCharges = calculateRoomCharges();
   const serviceCharges = calculateServiceCharges();
   const subtotal = roomCharges + serviceCharges;
-  const vat = subtotal;
-  const serviceCharge = subtotal;
-  const total = subtotal;
-  const prepaidAmount = paymentData.prepaidAmount || 0;
+  const total = booking?.totalAmount || paymentData.totalAmount || 0;
+
+  const calculatePrepaidAmount = () => {
+    const paymentStatus = paymentData.paymentStatus;
+    let paid = 0;
+
+    switch (paymentStatus) {
+      case "PAID":
+        paid = total;
+        break;
+
+      case "COMPLETED":
+        paid = total;
+        break;
+
+      case "PERCENTAGE_30":
+        paid = total * 0.3;
+        break;
+
+      case "PERCENTAGE_50":
+        paid = total * 0.5;
+        break;
+
+      case "PARTIAL":
+        paid = total * 0.5;
+        break;
+
+      case "PENDING":
+        paid = 0;
+        break;
+
+      case "FAILED":
+        paid = 0;
+        break;
+
+      case "REFUNDED":
+        paid = 0;
+        break;
+
+      case "CANCELLED":
+        paid = 0;
+        break;
+
+      default:
+        paid = 0;
+    }
+
+    return paid;
+  };
+
+  const prepaidAmount = calculatePrepaidAmount();
   const balanceDue = total - prepaidAmount;
 
   useEffect(() => {
@@ -135,21 +190,28 @@ export default function PaymentModal({
 
     const poll = async () => {
       if (attempts >= maxAttempts) {
-        console.log("Payment polling timeout");
         stopPaymentPolling();
         return;
       }
 
       try {
         const refreshed = await getBookingById(paymentData.bookingId);
+        const currentStatus = refreshed?.paymentStatus;
 
-        if (
-          refreshed?.paymentStatus === "PAID" ||
-          refreshed?.paymentStatus === "PERCENTAGE_30" ||
-          refreshed?.paymentStatus === "PERCENTAGE_50" ||
-          refreshed?.paymentStatus === "COMPLETED"
-        ) {
-          console.log("Payment confirmed!", refreshed.paymentStatus);
+        console.log(
+          `[Attempt ${attempts + 1}] Current status: ${currentStatus}`
+        );
+
+        const hasStatusChanged = currentStatus !== initialPaymentStatus;
+
+        const isPaid =
+          currentStatus === "PAID" || currentStatus === "COMPLETED";
+
+        const isPartiallyPaid =
+          currentStatus === "PERCENTAGE_30" ||
+          currentStatus === "PERCENTAGE_50";
+
+        if (hasStatusChanged && (isPaid || isPartiallyPaid)) {
           setPaymentConfirmed(true);
           stopPaymentPolling();
 
@@ -159,10 +221,15 @@ export default function PaymentModal({
           return;
         }
 
+        if (!hasStatusChanged && isPaid && balanceDue === 0) {
+          setPaymentConfirmed(true);
+          stopPaymentPolling();
+          return;
+        }
+
         attempts++;
         pollingRef.current = setTimeout(poll, delayMs);
       } catch (error) {
-        console.debug("Polling attempt failed:", error);
         attempts++;
         pollingRef.current = setTimeout(poll, delayMs);
       }
@@ -198,21 +265,36 @@ export default function PaymentModal({
   const handleAmountTenderedChange = (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
+    // Remove all non-digit characters
     const value = e.target.value.replace(/[^0-9]/g, "");
+
+    // Store the raw number value
     setAmountTendered(value);
 
     try {
-      const tendered = parseFloat(value);
+      const tendered = parseFloat(value) || 0;
+      // Ensure balanceDue is a valid number
+      const balance =
+        typeof balanceDue === "number" && !isNaN(balanceDue) ? balanceDue : 0;
 
-      if (!isNaN(tendered) && tendered >= balanceDue) {
-        const change = tendered - balanceDue;
+      if (tendered > 0 && tendered >= balance) {
+        const change = tendered - balance;
+        console.log("Change calculated:", change);
         setChangeAmount(formatCurrency(change));
       } else {
+        console.log("Not enough money or zero input");
         setChangeAmount("0");
       }
     } catch (error) {
+      console.error("Error calculating change:", error);
       setChangeAmount("0");
     }
+  };
+
+  // Format amount tendered for display
+  const formatAmountTenderedDisplay = (value: string): string => {
+    if (!value) return "";
+    return formatCurrency(parseFloat(value));
   };
 
   const formatCurrency = (amount: number): string => {
@@ -229,6 +311,10 @@ export default function PaymentModal({
 
       if (paymentMethod === "vnpay") {
         await processCheckout(paymentData.bookingId, "vnpay");
+      } else if (paymentMethod === "cash") {
+        await processCheckout(paymentData.bookingId, "cash");
+      } else {
+        await processCheckout(paymentData.bookingId, "transfer");
       }
 
       onConfirmPayment(paymentMethod, amountTendered, changeAmount, notes);
@@ -312,7 +398,7 @@ export default function PaymentModal({
                   </tr>
                 </thead>
                 <tbody>
-                  {/* Room Charges */}
+                  {/* Room Charges - CHỈ HIỂN thị, không dùng để tính tổng */}
                   {bookingDetails.map((detail, index) => (
                     <tr key={index} className="border-b border-cream">
                       <td className="py-2 px-4">
@@ -331,33 +417,61 @@ export default function PaymentModal({
                   ))}
 
                   {/* Service Charges */}
-                  {bookingServices.map((service, index) => (
-                    <tr key={index} className="border-b border-cream">
-                      <td className="py-2 px-4">
-                        {service.service.serviceName}
-                        {service.quantity > 1 && (
-                          <span className="text-xs text-gray-500 ml-2">
-                            (x{service.quantity})
-                          </span>
-                        )}
+                  {bookingServices.length > 0 &&
+                    bookingServices.map((service, index) => (
+                      <tr key={index} className="border-b border-cream">
+                        <td className="py-2 px-4">
+                          {service.service.serviceName}
+                          {service.quantity > 1 && (
+                            <span className="text-xs text-gray-500 ml-2">
+                              (x{service.quantity})
+                            </span>
+                          )}
+                        </td>
+                        <td className="py-2 px-4 text-right">
+                          {formatCurrency(service.totalAmount)} VND
+                        </td>
+                      </tr>
+                    ))}
+
+                  {roomCharges + serviceCharges > 0 && (
+                    <tr className="border-b border-cream">
+                      <td className="py-2 px-4 font-medium text-gray-600 text-sm">
+                        Subtotal (Room + Services)
                       </td>
-                      <td className="py-2 px-4 text-right">
-                        {formatCurrency(service.totalAmount)} VND
+                      <td className="py-2 px-4 text-right font-medium text-gray-600 text-sm">
+                        {formatCurrency(roomCharges + serviceCharges)} VND
                       </td>
                     </tr>
-                  ))}
+                  )}
 
-                  {/* Subtotal */}
-                  <tr className="border-b border-cream">
-                    <td className="py-2 px-4 font-medium">Subtotal</td>
-                    <td className="py-2 px-4 text-right font-medium">
-                      {formatCurrency(subtotal)} VND
-                    </td>
-                  </tr>
+                  {booking &&
+                    roomCharges + serviceCharges !== booking.totalAmount && (
+                      <tr className="border-b border-cream text-green-600">
+                        <td className="py-2 px-4 text-sm">
+                          <div className="flex items-center gap-2">
+                            <span>Discount/Adjustment</span>
+                            <i
+                              className="fas fa-info-circle text-xs"
+                              title="Promotions, vouchers, or dynamic pricing applied"
+                            ></i>
+                          </div>
+                        </td>
+                        <td className="py-2 px-4 text-right text-sm">
+                          -
+                          {formatCurrency(
+                            Math.abs(
+                              booking.totalAmount -
+                                (roomCharges + serviceCharges)
+                            )
+                          )}{" "}
+                          VND
+                        </td>
+                      </tr>
+                    )}
 
-                  {/* Total */}
                   <tr className="border-b border-cream bg-light font-semibold">
-                    <td className="py-3 px-4">Total</td>
+                    <td className="py-3 px-4">Total Amount</td>
                     <td className="py-3 px-4 text-right">
                       {formatCurrency(total)} VND
                     </td>
@@ -365,21 +479,98 @@ export default function PaymentModal({
 
                   {/* Prepaid Amount */}
                   {prepaidAmount > 0 && (
-                    <tr className="border-b border-cream text-green-600">
-                      <td className="py-2 px-4">Prepaid Amount</td>
-                      <td className="py-2 px-4 text-right">
-                        -{formatCurrency(prepaidAmount)} VND
-                      </td>
-                    </tr>
+                    <>
+                      <tr className="border-b border-cream text-green-600">
+                        <td className="py-2 px-4">
+                          <div className="flex items-center gap-2">
+                            <span>Prepaid Amount</span>
+                            <i className="fas fa-check-circle text-xs"></i>
+                          </div>
+                        </td>
+                        <td className="py-2 px-4 text-right">
+                          -{formatCurrency(prepaidAmount)} VND
+                        </td>
+                      </tr>
+
+                      {/* Payment Progress */}
+                      <tr className="border-b border-cream bg-green-50/30">
+                        <td colSpan={2} className="py-3 px-4">
+                          <div className="space-y-2">
+                            <div className="flex justify-between text-xs text-gray-600">
+                              <span>Payment Progress</span>
+                              <span className="font-semibold">
+                                {((prepaidAmount / total) * 100).toFixed(0)}%
+                                completed
+                              </span>
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-2">
+                              <div
+                                className="bg-gradient-to-r from-green-500 to-green-600 h-2 rounded-full transition-all duration-500"
+                                style={{
+                                  width: `${(prepaidAmount / total) * 100}%`,
+                                }}
+                              ></div>
+                            </div>
+                            <div className="flex justify-between text-xs">
+                              <span className="text-green-600 font-medium">
+                                ✓ {formatCurrency(prepaidAmount)} VND paid
+                              </span>
+                              <span className="text-amber-600 font-medium">
+                                {formatCurrency(balanceDue)} VND remaining
+                              </span>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    </>
                   )}
 
                   {/* Balance Due */}
                   <tr className="font-bold text-lg">
-                    <td className="py-3 px-4">Balance Due</td>
-                    <td className="py-3 px-4 text-right text-[#c9b8a8]">
-                      {formatCurrency(balanceDue)} VND
+                    <td className="py-3 px-4">
+                      <div className="flex items-center gap-2">
+                        <span>Balance Due</span>
+                        {balanceDue > 0 && (
+                          <span
+                            className="text-amber-500 text-sm"
+                            title="Payment required"
+                          >
+                            <i className="fas fa-exclamation-triangle"></i>
+                          </span>
+                        )}
+                        {balanceDue === 0 && (
+                          <span
+                            className="text-green-500 text-sm"
+                            title="Fully paid"
+                          >
+                            <i className="fas fa-check-circle"></i>
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="py-3 px-4 text-right">
+                      <span
+                        className={
+                          balanceDue > 0 ? "text-[#c9b8a8]" : "text-green-600"
+                        }
+                      >
+                        {formatCurrency(balanceDue)} VND
+                      </span>
                     </td>
                   </tr>
+
+                  {balanceDue === 0 && (
+                    <tr>
+                      <td colSpan={2} className="py-2 px-4">
+                        <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-center">
+                          <i className="fas fa-check-circle text-green-600 mr-2"></i>
+                          <span className="text-sm text-green-700 font-medium">
+                            All payments completed. Ready for checkout!
+                          </span>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
@@ -448,10 +639,11 @@ export default function PaymentModal({
                 </label>
                 <input
                   type="text"
-                  value={amountTendered}
+                  value={formatAmountTenderedDisplay(amountTendered)}
                   onChange={handleAmountTenderedChange}
                   placeholder={formatCurrency(balanceDue)}
-                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#c9b8a8] focus:border-transparent"
+                  disabled={loading || balanceDue === 0}
+                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#c9b8a8] focus:border-transparent disabled:bg-gray-200 disabled:cursor-not-allowed"
                 />
                 <p className="text-xs text-gray-500 mt-1">
                   Balance due: {formatCurrency(balanceDue)} VND

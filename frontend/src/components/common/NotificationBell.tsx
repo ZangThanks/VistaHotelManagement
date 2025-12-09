@@ -1,7 +1,6 @@
-/* eslint-disable */
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaBell, FaTimes, FaCheck, FaTrash } from 'react-icons/fa';
+import { FaBell, FaCheck, FaTrash } from 'react-icons/fa';
 import { useNotifications } from '../../hooks/useNotificationsAPI';
 
 interface NotificationBellProps {
@@ -12,14 +11,36 @@ export default function NotificationBell({
     variant = 'dark',
 }: NotificationBellProps) {
     const [isOpen, setIsOpen] = useState(false);
-    const {
-        notifications,
-        unreadCount,
-        markAsRead,
-        markAllAsRead,
-        removeNotification,
-        clearAll,
-    } = useNotifications();
+    const dropdownRef = useRef<HTMLDivElement>(null);
+    const { notifications, unreadCount, markAsRead, markAllAsRead, clearAll } =
+        useNotifications();
+
+    // Sort notifications: newest first (by timestamp)
+    const sortedNotifications = [...notifications].sort((a, b) => {
+        const timeA = new Date(a.timestamp).getTime();
+        const timeB = new Date(b.timestamp).getTime();
+        return timeB - timeA; // Newest first
+    });
+
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (
+                dropdownRef.current &&
+                !dropdownRef.current.contains(event.target as Node)
+            ) {
+                setIsOpen(false);
+            }
+        };
+
+        if (isOpen) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [isOpen]);
 
     const handleNotificationClick = async (id: string) => {
         try {
@@ -55,7 +76,7 @@ export default function NotificationBell({
             : 'relative p-2 text-gray-600 hover:text-[#b9ad96] transition-colors';
 
     return (
-        <div className="relative">
+        <div className="relative" ref={dropdownRef}>
             {/* Bell Icon */}
             <button
                 onClick={() => setIsOpen(!isOpen)}
@@ -112,9 +133,9 @@ export default function NotificationBell({
                             </div>
                         </div>
 
-                        {/* Notifications List */}
-                        <div className="max-h-[500px] overflow-y-auto scrollbar-thin scrollbar-thumb-[#b9ad96]/30 scrollbar-track-transparent">
-                            {notifications.length === 0 ? (
+                        {/* Notifications List - Hidden scrollbar */}
+                        <div className="notification-list max-h-[500px] overflow-y-auto">
+                            {sortedNotifications.length === 0 ? (
                                 <div className="p-12 text-center">
                                     <div className="w-20 h-20 bg-[#b9ad96]/10 rounded-full flex items-center justify-center mx-auto mb-4">
                                         <FaBell
@@ -128,7 +149,7 @@ export default function NotificationBell({
                                 </div>
                             ) : (
                                 <div className="divide-y divide-[#b9ad96]/10">
-                                    {notifications.map((notification) => (
+                                    {sortedNotifications.map((notification) => (
                                         <motion.div
                                             key={notification.id}
                                             initial={{ opacity: 0, x: -20 }}
@@ -183,7 +204,7 @@ export default function NotificationBell({
                         </div>
 
                         {/* Footer */}
-                        {notifications.length > 0 && (
+                        {sortedNotifications.length > 0 && (
                             <div className="px-6 py-4 bg-gradient-to-r from-white to-[#b9ad96]/5 border-t border-[#b9ad96]/20 flex justify-between items-center">
                                 <button
                                     onClick={clearAll}
@@ -193,8 +214,8 @@ export default function NotificationBell({
                                     Clear All
                                 </button>
                                 <span className="text-xs text-gray-400 font-medium">
-                                    {notifications.length}{' '}
-                                    {notifications.length === 1
+                                    {sortedNotifications.length}{' '}
+                                    {sortedNotifications.length === 1
                                         ? 'notification'
                                         : 'notifications'}
                                 </span>
