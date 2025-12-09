@@ -107,32 +107,32 @@ export const validatePassword = (password: string): string => {
  * validatePasswordCombined("abc"); // "Min 8 chars | Max 50 chars | Uppercase | Lowercase | Digit | Special char"
  */
 export const validatePasswordCombined = (password: string): string => {
-  if (!password) return "Password is required";
+    if (!password) return "Password is required";
 
-  const missing: string[] = [];
+    const missing: string[] = [];
 
-  if (password.length < 8) {
-    missing.push("Min 8 chars");
-  }
-  if (password.length > 50) {
-    missing.push("Max 50 chars");
-  }
-  if (!/[A-Z]/.test(password)) {
-    missing.push("Uppercase");
-  }
-  if (!/[a-z]/.test(password)) {
-    missing.push("Lowercase");
-  }
-  if (!/[0-9]/.test(password)) {
-    missing.push("Digit");
-  }
-  if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
-    missing.push("Special char");
-  }
+    if (password.length < 8) {
+        missing.push("Min 8 chars");
+    }
+    if (password.length > 50) {
+        missing.push("Max 50 chars");
+    }
+    if (!/[A-Z]/.test(password)) {
+        missing.push("Uppercase");
+    }
+    if (!/[a-z]/.test(password)) {
+        missing.push("Lowercase");
+    }
+    if (!/[0-9]/.test(password)) {
+        missing.push("Digit");
+    }
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+        missing.push("Special char");
+    }
 
-  if (missing.length === 0) return "";
+    if (missing.length === 0) return "";
 
-  return missing.join(" | ");
+    return missing.join(" | ");
 };
 
 /**
