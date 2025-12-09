@@ -1,29 +1,14 @@
-import { useEffect, useState } from "react";
 import type { Booking } from "../../types/Booking";
-import { bookingReceipt } from "../../utils/emailTemplates/authEmails";
-import imgLogo from "../../assets/images/logo.png";
 
 export default function CheckoutDetailsModal({
-    booking,
-    onClose,
-    onProceedToPayment,
+  booking,
+  onClose,
+  onProceedToPayment,
 }: {
-    booking: Booking;
-    onClose: () => void;
-    onProceedToPayment?: () => void;
+  booking: Booking;
+  onClose: () => void;
+  onProceedToPayment?: () => void;
 }) {
-  const [paymentData, setPaymentData] = useState({
-    bookingId: "",
-    guestName: "",
-    guestEmail: "",
-    guestPhone: "",
-    guestImage: "",
-    roomNumber: "",
-    balanceDue: "",
-    totalAmount: "",
-    amountTendered: "",
-    changeAmount: "",
-  });
   const roomInfo = (booking.bookingDetails ?? [])
     .map(
       (detail) =>
@@ -32,81 +17,44 @@ export default function CheckoutDetailsModal({
         }`
     )
     .join(", ");
-    const balanceDue =
-        booking.paymentStatus === "PAID"
-            ? 0
-            : booking.paymentStatus === "PARTIAL"
-                ? booking.totalAmount * 0.5
-                : booking.totalAmount;
-    // Calculate balance due based on payment status
-    const calculateBalanceDue = () => {
-        const totalAmount = booking.totalAmount || 0;
-        let amountPaid = 0;
 
-        switch (booking.paymentStatus) {
-            case 'PAID':
-                amountPaid = totalAmount;
-                break;
-            case 'PERCENTAGE_50':
-                amountPaid = totalAmount * 0.5;
-                break;
-            case 'PERCENTAGE_30':
-                amountPaid = totalAmount * 0.3;
-                break;
-            case 'PENDING':
-            default:
-                amountPaid = 0;
-        }
-        return totalAmount - amountPaid;
-    };
-  const isCheckedOut = booking.status === "CHECKED_OUT";
+  // Calculate balance due based on payment status
+  const calculateBalanceDue = (): number => {
+    const totalAmount = booking.totalAmount || 0;
+    switch (booking.paymentStatus) {
+      case "PAID":
+        return 0;
 
-  useEffect(() => {
-    setPaymentData({
-      bookingId: booking.bookingID,
-      bookingDate: booking.bookingDate || "",
-      checkInDate: booking.checkInDate || "",
-      checkOutDate: booking.checkOutDate || "",
-      actualCheckInTime: booking.actualCheckInTime || "",
-      actualCheckOutTime: booking.actualCheckOutTime || "",
-      guestName: booking.customer?.fullName || "",
-      guestEmail: booking.customer?.email || "",
-      guestPhone: booking.customer?.phone || "",
-      guestImage: booking.customer?.avatarUrl || "",
-      roomNumber: roomInfo,
-      balanceDue: `${balanceDue.toLocaleString("vi-VN")} VND`,
-      totalAmount: `${booking.totalAmount.toLocaleString("vi-VN")} VND`,
-      amountTendered: "",
-      changeAmount: "",
-    });
-  }, []);
+      case "PERCENTAGE_30":
+        return totalAmount * 0.7;
 
-  const handlePrintReceipt = () => {
-    // Tạo nội dung HTML cho hóa đơn
-    const receiptHTML = bookingReceipt(paymentData);
+      case "PERCENTAGE_50":
+        return totalAmount * 0.5;
 
-    // Tạo cửa sổ mới để in
-    const printWindow = window.open("", "_blank", "width=800,height=600");
+      case "PARTIAL":
+        return totalAmount * 0.5;
 
-    if (printWindow) {
-      printWindow.document.write(receiptHTML);
-      printWindow.document.close();
+      case "PENDING":
+        return totalAmount;
 
-      // Đợi nội dung load xong rồi mới in
-      printWindow.onload = () => {
-        printWindow.focus();
-        printWindow.print();
-        // Tự động đóng cửa sổ sau khi in (hoặc hủy in)
-        printWindow.onafterprint = () => {
-          printWindow.close();
-        };
-      };
-    } else {
-      alert(
-        "Không thể mở cửa sổ in. Vui lòng kiểm tra trình duyệt có chặn popup không."
-      );
+      case "COMPLETED":
+        return 0;
+
+      case "REFUNDED":
+        return 0;
+
+      case "CANCELLED":
+        return 0;
+
+      case "FAILED":
+        return totalAmount;
+      default:
+        return totalAmount;
     }
   };
+
+  const balanceDue = calculateBalanceDue();
+  const isCheckedOut = booking.status === "CHECKED_OUT";
 
   return (
     <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/60 p-4">
@@ -133,7 +81,7 @@ export default function CheckoutDetailsModal({
             <div className="flex items-center gap-4 bg-gray-50 p-4 rounded-lg">
               <img
                 src={
-                  booking.customer?.avatarUrl ||
+                  booking.customer?.avatartUrl ||
                   "https://ui-avatars.com/api/?name=" +
                     (booking.customer?.fullName || "Guest")
                 }
@@ -274,38 +222,38 @@ export default function CheckoutDetailsModal({
             </div>
           )}
 
-            {/* Actions */}
-            <div className="flex gap-3">
-                <button
-                    onClick={onClose}
-                    className="flex-1 px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
-                >
-                    Close
-                </button>
-                {booking.status === 'CHECKED_IN' &&
-                    onProceedToPayment && (
-                        <button
-                            onClick={onProceedToPayment}
-                            className="flex-1 px-6 py-3 bg-gold text-white rounded-lg hover:bg-gold/90 transition flex items-center justify-center gap-2"
-                        >
-                            <i className="fas fa-arrow-right"></i>
-                            Proceed to Payment
-                        </button>
-                    )}
-                {booking.status === 'CHECKED_OUT' && (
-                    <button
-                        onClick={() => {
-                            handlePrintReceipt();
-                        }}
-                        className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center justify-center gap-2"
-                    >
-                        <i className="fas fa-print"></i>
-                        Print Receipt
-                    </button>
-                )}
-            </div>
-                </div>
-            </div>
+          {/* Actions */}
+          <div className="flex gap-3">
+            <button
+              onClick={onClose}
+              className="flex-1 px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
+            >
+              Close
+            </button>
+            {booking.status === "CHECKED_IN" && onProceedToPayment && (
+              <button
+                onClick={onProceedToPayment}
+                className="flex-1 px-6 py-3 bg-gold text-white rounded-lg hover:bg-gold/90 transition flex items-center justify-center gap-2"
+              >
+                <i className="fas fa-arrow-right"></i>
+                Proceed to Payment
+              </button>
+            )}
+            {booking.status === "CHECKED_OUT" && (
+              <button
+                onClick={() => {
+                  // TODO: Implement print receipt
+                  console.log("Print receipt for:", booking.bookingID);
+                }}
+                className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center justify-center gap-2"
+              >
+                <i className="fas fa-print"></i>
+                Print Receipt
+              </button>
+            )}
+          </div>
         </div>
-    );
+      </div>
+    </div>
+  );
 }

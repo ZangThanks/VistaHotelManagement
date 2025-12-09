@@ -36,9 +36,38 @@ export default function CheckoutTable({
   };
 
   const calculateBalanceDue = (booking: Booking): number => {
-    if (booking.paymentStatus === "PAID") return 0;
-    if (booking.paymentStatus === "PARTIAL") return booking.totalAmount * 0.5;
-    return booking.totalAmount;
+    const totalAmount = booking.totalAmount;
+
+    switch (booking.paymentStatus) {
+      case "PAID":
+        return 0;
+
+      case "PERCENTAGE_30":
+        return totalAmount * 0.7;
+
+      case "PERCENTAGE_50":
+        return totalAmount * 0.5;
+
+      case "PARTIAL":
+        return totalAmount * 0.5;
+
+      case "PENDING":
+        return totalAmount;
+
+      case "COMPLETED":
+        return 0;
+
+      case "REFUNDED":
+        return 0;
+
+      case "CANCELLED":
+        return 0;
+
+      case "FAILED":
+        return totalAmount;
+      default:
+        return totalAmount;
+    }
   };
 
   const getRoomInfo = (booking: Booking): string => {
@@ -52,8 +81,7 @@ export default function CheckoutTable({
       .join(", ");
   };
 
-  const getTrustScore = () => {
-    const score = Math.floor(Math.random() * 40) + 60;
+  const getTrustScore = (score: number) => {
     return {
       score,
       level:
@@ -103,7 +131,9 @@ export default function CheckoutTable({
           </thead>
           <tbody>
             {data.map((booking) => {
-              const trustScore = getTrustScore();
+              const trustScore = getTrustScore(
+                booking.customer.reputationPoint
+              );
               const balanceDue = calculateBalanceDue(booking);
               const roomInfo = getRoomInfo(booking);
               const isLate = isLateCheckout(booking);
@@ -125,7 +155,7 @@ export default function CheckoutTable({
                     <div className="flex items-center gap-3">
                       <img
                         src={
-                          booking.customer?.avatarUrl ||
+                          booking.customer?.avatartUrl ||
                           "https://ui-avatars.com/api/?name=" +
                             (booking.customer?.fullName || "Guest")
                         }

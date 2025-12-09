@@ -533,27 +533,56 @@ public class BookingController {
         try {
             Booking booking = service.findById(bookingId);
 
-            AtomicReference<Double> paymentAmount = new AtomicReference<>((double) 0);
-            if(booking != null) {
-                paymentAmount.set(calculateRemainingAmount(booking));
+            if (booking == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
             }
 
-            List<com.hotelvista.model.BookingService> listServiceDetail = bookingServiceService.findAllByBooking_BookingID(bookingId);
-            if(listServiceDetail != null) {
-                listServiceDetail.forEach((sd) -> {
-                    paymentAmount.updateAndGet(v -> v + sd.getTotalAmount());
-                    System.out.println(sd);
-                });
-            }
-            System.out.println("===================================SO TIEN: " + paymentAmount.get());
-            String qrUrl = QRGenerateUtil.buildVietQRUrl(bookingId, paymentAmount.get());
+            double totalAmount = booking.getTotalAmount();
+
+            double remainingAmount = calculateRemainingAmountCheckout(booking);
+
+            String qrUrl = QRGenerateUtil.buildVietQRUrl(bookingId, remainingAmount);
             byte[] qrImage = QRGenerateUtil.generateQrImage(qrUrl);
 
             return ResponseEntity.ok()
                     .contentType(MediaType.IMAGE_PNG)
                     .body(qrImage);
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Hàm tính số tiền còn lại dựa trên paymentStatus
+     */
+    private double calculateRemainingAmountCheckout(Booking booking) {
+        double totalAmount = booking.getTotalAmount();
+        String paymentStatus = booking.getPaymentStatus().name(); // Assuming enum
+
+        switch (paymentStatus) {
+            case "PAID":
+            case "COMPLETED":
+                return 0.0;
+
+            case "PERCENTAGE_30":
+                return totalAmount * 0.7;
+
+            case "PERCENTAGE_50":
+                return totalAmount * 0.5;
+
+            case "PARTIAL":
+                return totalAmount * 0.5;
+
+            case "PENDING":
+            case "FAILED":
+                return totalAmount;
+            case "REFUNDED":
+            case "CANCELLED":
+                return 0.0;
+
+            default:
+                return totalAmount;
         }
     }
 }

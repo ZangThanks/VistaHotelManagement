@@ -343,7 +343,6 @@ export const confirmBookingEmail = (
 </body>
 </html>
 `;
-
 export const bookingReceipt = (paymentData: any) => {
   const formatDate = (dateString: string) => {
     if (!dateString) return "N/A";

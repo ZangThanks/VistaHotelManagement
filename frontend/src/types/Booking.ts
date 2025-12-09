@@ -19,7 +19,8 @@ export interface Booking {
     | "PAID"
     | "REFUNDED"
     | "CANCELLED"
-      | "PARTIAL";
+    | "PARTIAL"
+    | "FAILED";
   invoiceType?: string | null;
   totalCost: number;
   type: "HOURLY" | "DAILY";
@@ -58,11 +59,11 @@ export interface RoomBooking {
   earlyCheckin?: EarlyCheckin | null;
 }
 export type RefundMethod =
-    | "BANK_TRANSFER"
-    | "MOMO"
-    | "ZALOPAL"
-    | "VNPAY"
-    | string;
+  | "BANK_TRANSFER"
+  | "MOMO"
+  | "ZALOPAL"
+  | "VNPAY"
+  | string;
 
 export interface BookingCancellation {
   id: string;
