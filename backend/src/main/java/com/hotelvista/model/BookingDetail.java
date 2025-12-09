@@ -1,8 +1,10 @@
 package com.hotelvista.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.io.Serializable;
 import java.util.List;
 
 @Entity
@@ -13,27 +15,27 @@ import java.util.List;
 @Table(name = "booking_details")
 public class BookingDetail {
     @Id
-    @ManyToOne
-    @JoinColumn(name = "room_id")
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "room_number")
     private Room room;
 
     @Id
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "booking_id")
+    @JsonIgnore
     private Booking booking;
 
     @Column(name = "room_price")
-    private double roomPrice;
+    private Double roomPrice;
 
-    @ToString.Exclude
-    @OneToOne
+    @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "review_id")
     private Review review;
 
     @EqualsAndHashCode
     @AllArgsConstructor
     @NoArgsConstructor
-    public class BookingDetailId {
+    public static class BookingDetailId implements Serializable {
         private Room room;
         private Booking booking;
     }

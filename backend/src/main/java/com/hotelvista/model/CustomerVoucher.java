@@ -3,6 +3,8 @@ package com.hotelvista.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.io.Serializable;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -11,12 +13,12 @@ import lombok.*;
 @Table(name = "customer_vouchers")
 public class CustomerVoucher {
     @Id
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "customer_id")
     private Customer customer;
 
     @Id
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "vouchers_id")
     private Voucher voucher;
 
@@ -25,7 +27,7 @@ public class CustomerVoucher {
     @EqualsAndHashCode
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class CustomerVoucherId {
+    public static class CustomerVoucherId implements Serializable {
         private Customer customer;
         private Voucher voucher;
     }

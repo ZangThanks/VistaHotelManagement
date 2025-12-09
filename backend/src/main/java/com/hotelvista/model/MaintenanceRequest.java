@@ -45,7 +45,10 @@ public class MaintenanceRequest {
     @Column(name = "actual_cost")
     private double actualCost;
 
-    @ManyToOne
+    @Column(name = "image_url", columnDefinition = "NVARCHAR(500)")
+    private String imageUrl;
+
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "booking_id")
     private Booking booking;
 }

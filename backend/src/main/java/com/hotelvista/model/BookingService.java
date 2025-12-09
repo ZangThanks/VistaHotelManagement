@@ -1,6 +1,7 @@
 package com.hotelvista.model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hotelvista.model.enums.OrderStatus;
 import com.hotelvista.model.enums.PaymentMethod;
 import jakarta.persistence.*;
@@ -8,6 +9,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+
+import java.io.Serializable;
 
 @Entity
 @Data
@@ -17,22 +20,23 @@ import lombok.NoArgsConstructor;
 @Table(name = "booking_services")
 public class BookingService {
     @Id
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "service_id")
     private Service service;
 
     @Id
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JsonIgnore
     @JoinColumn(name = "booking_id")
     private Booking booking;
 
     @Column(name = "service_price")
-    private double servicePrice;
+    private Double servicePrice;
 
-    private int quantity;
+    private Integer quantity;
 
     @Column(name = "total_amount")
-    private double totalAmount;
+    private Double totalAmount;
 
     @Enumerated(EnumType.STRING)
     private OrderStatus orderStatus;
@@ -43,7 +47,7 @@ public class BookingService {
     @EqualsAndHashCode
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class BookingServiceId {
+    public static class BookingServiceId implements Serializable {
         private Service service;
         private Booking booking;
     }

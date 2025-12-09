@@ -1,6 +1,8 @@
 package com.hotelvista.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hotelvista.model.enums.BookingStatus;
+import com.hotelvista.model.enums.BookingType;
 import com.hotelvista.model.enums.InvoiceType;
 import com.hotelvista.model.enums.PaymentStatus;
 import jakarta.persistence.*;
@@ -28,8 +30,14 @@ public class Booking {
     @Column(name = "check_out_date")
     private LocalDateTime checkOutDate;
 
+    @Column(name = "actual_check_in_time")
+    private LocalDateTime actualCheckInTime;
+
+    @Column(name = "actual_check_out_time")
+    private LocalDateTime actualCheckoutTime;
+
     @Column(name = "number_of_guests")
-    private int numberOfGuests;
+    private Integer numberOfGuests;
 
     @Enumerated(EnumType.STRING)
     private BookingStatus status;
@@ -39,20 +47,20 @@ public class Booking {
 
     @Column(name = "booking_date")
     private LocalDateTime bookingDate;
-
+    
     @Column(name = "cancellation_date")
     private LocalDateTime cancellationDate;
 
     @Column(name = "hourly_rate")
-    private double hourlyRate;
+    private Double hourlyRate;
 
-    private int duration;
+    private Integer duration;
 
     @Column(name = "package_type")
     private String packageType;
 
     @Column(name = "total_amount")
-    private double totalAmount;
+    private Double totalAmount;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "payment_status")
@@ -62,13 +70,13 @@ public class Booking {
     private InvoiceType invoiceType;
 
     @Column(name = "total_cost")
-    private double totalCost;
+    private Double totalCost;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "customer_id")
     private Customer customer;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "employee_id")
     private Employee employee;
 
@@ -77,6 +85,28 @@ public class Booking {
     private List<BookingDetail> bookingDetails;
 
     @ToString.Exclude
-    @OneToMany(mappedBy = "booking")
+    @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<BookingService> bookingServices;
+
+    @ToString.Exclude
+    @JsonIgnore
+    @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MaintenanceRequest> maintenanceRequests;
+
+    @OneToOne(mappedBy = "booking")
+    private EarlyCheckin earlyCheckin;
+
+    @OneToOne(mappedBy = "booking")
+    private LateCheckout lateCheckout;
+
+    @Enumerated(EnumType.STRING)
+    private BookingType type;
+
+    @ToString.Exclude
+    @OneToOne(mappedBy = "booking", cascade = CascadeType.ALL)
+    @JsonIgnore
+    private BookingCancellation cancellation;
+
+
+
 }

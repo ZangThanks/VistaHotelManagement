@@ -1,5 +1,8 @@
+// java
 package com.hotelvista.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.hotelvista.model.enums.ApprovalStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -7,7 +10,6 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -24,18 +26,18 @@ public class EarlyCheckin {
     private LocalDateTime requestTime;
 
     @Column(name = "approval_status")
-    private String approvalStatus;
+    @Enumerated(EnumType.STRING)
+    private ApprovalStatus approvalStatus;
 
     @Column(name = "additional_fee")
     private double additionalFee;
 
-    @Column(name = "approve_by", columnDefinition = "NVARCHAR(255)")
-    private String approveBy;
-
     @Column(name = "request_date")
     private LocalDateTime requestDate;
 
-    @ManyToOne
-    @JoinColumn(name = "customer_id")
-    private Customer customer;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "booking_id")
+    @JsonIgnoreProperties({"earlyCheckin", "hibernateLazyInitializer", "handler"})
+    @ToString.Exclude
+    private Booking booking;
 }

@@ -1,5 +1,6 @@
 package com.hotelvista.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -23,10 +24,10 @@ public class Voucher {
     private String voucherName;
 
     @Column(name = "discount_percentage")
-    private double discountPercentage;
+    private Double discountPercentage;
 
     @Column(name = "discount_value")
-    private double discountValue;
+    private Double discountValue;
 
     @Column(name = "start_date")
     private LocalDate startDate;
@@ -41,6 +42,12 @@ public class Voucher {
     private boolean isActive;
 
     @ToString.Exclude
+    @JsonIgnore
     @OneToMany(mappedBy = "voucher")
     private List<CustomerVoucher> customerVouchers;
+
+    @ToString.Exclude
+    @JsonIgnore
+    @OneToMany(mappedBy = "voucher")
+    private List<HolidayVoucher> holidayVouchers;
 }

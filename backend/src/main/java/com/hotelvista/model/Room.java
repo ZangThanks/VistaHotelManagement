@@ -1,5 +1,7 @@
 package com.hotelvista.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.hotelvista.model.enums.RoomStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -20,7 +22,7 @@ public class Room {
     @Column(name = "room_number", insertable=false, updatable=false)
     private String roomNumber;
 
-    private int floor;
+    private Integer floor;
 
     @Enumerated(EnumType.STRING)
     private RoomStatus status;
@@ -30,12 +32,22 @@ public class Room {
 
     private String notes;
 
-    @ToString.Exclude
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "room_type_id")
     private RoomType roomType;
 
     @ToString.Exclude
+    @JsonIgnore
     @OneToMany(mappedBy = "room")
     private List<BookingDetail> bookingDetails;
+
+    @ElementCollection
+    @CollectionTable(name = "room_images", joinColumns = @JoinColumn(name = "room_id"))
+    @Column(name = "images_url")
+    private List<String> images;
+
+    @ToString.Exclude
+    @JsonIgnore
+    @ManyToMany(mappedBy = "items")
+    private List<CartBean> cartBeans;
 }

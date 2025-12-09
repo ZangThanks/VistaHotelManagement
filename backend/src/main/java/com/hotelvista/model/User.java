@@ -23,6 +23,8 @@ public abstract class User {
 
     private String phone;
 
+    private String avatarUrl;
+
     @Column(name = "full_name", columnDefinition = "NVARCHAR(255)")
     private String fullName;
 
@@ -31,6 +33,4 @@ public abstract class User {
 
     @Enumerated(EnumType.STRING)
     private UserRole userRole;
-
-
 }
