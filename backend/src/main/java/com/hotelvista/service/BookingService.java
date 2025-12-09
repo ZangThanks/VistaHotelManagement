@@ -6,6 +6,7 @@ import com.hotelvista.model.enums.*;
 import com.hotelvista.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cglib.core.Local;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -310,11 +311,17 @@ public class BookingService {
 
         return cancellationRepo.save(cancel);
     }
+
     public String generateCancellationId(String bookingId) {
         return "C-" + bookingId;
     }
 
+    public List<Booking> findAllByStatusAndBookingDate(BookingStatus status, LocalDateTime bookingDate) {
+        return repo.findAllByStatusAndBookingDate(status, bookingDate);
+    }
 
-
+    public String getRemainingPaymentTime(String bookingId) {
+        return repo.getRemainingPaymentTime(bookingId);
+    }
 }
 

@@ -477,12 +477,29 @@ export const confirmPayAtCheckout = async (
 ): Promise<Booking> => {
   try {
     const response = await api.put(
-      `${ENDPOINT}/${bookingId}/confirm-pay-at-checkout`
+        `${ENDPOINT}/${bookingId}/confirm-pay-at-checkout`
     );
     return response.data;
   } catch (error) {
     console.error(
-      `Error confirming pay at checkout for booking ${bookingId}:`,
+        `Error confirming pay at checkout for booking ${bookingId}:`,
+        error
+    );
+    throw error;
+  }
+};
+
+export const getRemainingTimeForPayment = async (
+  bookingId: string
+): Promise<string> => {
+  try {
+    const response = await api.get(
+      `${ENDPOINT}/remaining-payment-time/${bookingId}`
+    );
+    return response.data;
+  } catch (error) {
+    console.error(
+      `Error getting remaining time for payment for booking ${bookingId}:`,
       error
     );
     throw error;
@@ -500,5 +517,6 @@ export default {
   addServicesToBooking,
   addServiceToBooking,
   checkRoomAvailability,
-    cancelBooking,
+  getRemainingTimeForPayment,
+  cancelBooking,
 };

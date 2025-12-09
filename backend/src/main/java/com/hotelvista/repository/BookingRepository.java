@@ -113,6 +113,7 @@ public interface BookingRepository extends JpaRepository<Booking, String> {
             "AND b.checkInDate < :endDateTime")
     List<Booking> findByCheckInDateRange(@Param("startDateTime") LocalDateTime startDateTime,
                                          @Param("endDateTime") LocalDateTime endDateTime);
+
     /**
      * Tìm tất cả booking theo trạng thái và ngày đặt phòng
      *
@@ -123,21 +124,21 @@ public interface BookingRepository extends JpaRepository<Booking, String> {
     @Query("SELECT b " +
             "FROM Booking b " +
             "WHERE b.status = :status " +
-            "   AND b.bookingDate = :bookingDate")
+            "   AND b.bookingDate <= :bookingDate")
     List<Booking> findAllByStatusAndBookingDate(@Param("status") BookingStatus status, @Param("bookingDate") LocalDateTime bookingDate);
 
     @Query(value = """
         SELECT
             CASE
                 WHEN rp BETWEEN 0 AND 40 THEN
-                    SEC_TO_TIME(GREATEST(0, 6*3600 - TIMESTAMPDIFF(SECOND, created_at, NOW())))
+                    SEC_TO_TIME(GREATEST(0, 6*3600 - TIMESTAMPDIFF(SECOND, booking_date, NOW())))
                 WHEN rp BETWEEN 41 AND 80 THEN
-                    SEC_TO_TIME(GREATEST(0, 8*3600 - TIMESTAMPDIFF(SECOND, created_at, NOW())))
+                    SEC_TO_TIME(GREATEST(0, 8*3600 - TIMESTAMPDIFF(SECOND, booking_date, NOW())))
                 ELSE
                     'UNLIMITED'
             END AS remaining_time
         FROM (
-            SELECT b.created_at, c.reputation_point AS rp
+            SELECT b.booking_date, c.reputation_point AS rp
             FROM bookings b
             JOIN customers c ON c.customer_id = b.customer_id
             WHERE b.booking_id = :bookingId

@@ -515,6 +515,17 @@ public class BookingController {
         return ResponseEntity.ok(cancellation);
     }
 
+    @GetMapping("/status-and-date")
+    public List<Booking> findAllByStatusAndBookingDate(BookingStatus status, LocalDateTime bookingDate) {
+        return service.findAllByStatusAndBookingDate(BookingStatus.WAITING, LocalDateTime.now().minusMinutes(8));
+    }
+
+    @GetMapping("/remaining-payment-time/{bookingId}")
+    public String getRemainingPaymentTime(@PathVariable("bookingId") String bookingId) {
+        return service.getRemainingPaymentTime(bookingId);
+
+    }
+    
     @GetMapping(value = "/payment-qr-checkout/{bookingId}", produces = MediaType.IMAGE_PNG_VALUE)
     public ResponseEntity<byte[]> getPaymentQr(
             @PathVariable String bookingId

@@ -1,6 +1,7 @@
 /* eslint-disable */
 import ModalContainer from "./ModalContainer";
 import { sendEmail } from "../../services/emailService";
+import { bookingReceipt } from "../../utils/emailTemplates/authEmails";
 
 export default function PaymentSuccessModal({
   paymentData,
@@ -49,7 +50,30 @@ export default function PaymentSuccessModal({
   };
 
   const handlePrintReceipt = () => {
-    window.print();
+    // Tạo nội dung HTML cho hóa đơn
+    const receiptHTML = bookingReceipt(paymentData);
+
+    // Tạo cửa sổ mới để in
+    const printWindow = window.open("", "_blank", "width=800,height=600");
+
+    if (printWindow) {
+      printWindow.document.write(receiptHTML);
+      printWindow.document.close();
+
+      // Đợi nội dung load xong rồi mới in
+      printWindow.onload = () => {
+        printWindow.focus();
+        printWindow.print();
+        // Tự động đóng cửa sổ sau khi in (hoặc hủy in)
+        printWindow.onafterprint = () => {
+          printWindow.close();
+        };
+      };
+    } else {
+      alert(
+        "Không thể mở cửa sổ in. Vui lòng kiểm tra trình duyệt có chặn popup không."
+      );
+    }
   };
 
   return (

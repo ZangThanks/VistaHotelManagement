@@ -35,7 +35,8 @@ export default function CountdownTimer({
     return () => clearInterval(timer);
   }, [remainingSeconds, onExpire, onTick]);
 
-  const minutes = Math.floor(remainingSeconds / 60);
+  const hours = Math.floor(remainingSeconds / 3600);
+  const minutes = Math.floor((remainingSeconds % 3600) / 60);
   const seconds = remainingSeconds % 60;
 
   const getColorClass = () => {
@@ -66,6 +67,7 @@ export default function CountdownTimer({
           <span className="font-semibold text-sm">Payment Time Remaining</span>
         </div>
         <div className="text-2xl font-bold tabular-nums">
+          {hours > 0 && <>{String(hours).padStart(2, "0")}:</>}
           {String(minutes).padStart(2, "0")}:{String(seconds).padStart(2, "0")}
         </div>
       </div>
