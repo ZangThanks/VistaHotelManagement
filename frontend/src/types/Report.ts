@@ -1,17 +1,25 @@
+// ====================== INTERFACES ======================
+
 export interface RevenueData {
-  date: string;
-  roomRevenue: number;
-  serviceRevenue: number;
-  totalRevenue: number;
-  bookingCount: number;
+    label: string;
+    totalRevenue: number;
+    roomRevenue?: number;
+    serviceRevenue?: number;
+    bookingCount?: number;
+    day?: number;
+    month?: number;
+    year?: number;
+    week?: number;
+    quarter?: number;
+    date?: string;
 }
 
 export interface OccupancyData {
-  date: string;
-  totalRooms: number;
-  occupiedRooms: number;
-  occupancyRate: number;
-  roomType?: string;
+    date: string;
+    totalRooms: number;
+    occupiedRooms: number;
+    occupancyRate: number;
+    roomType?: string;
 }
 
 export interface LoyaltyData {
@@ -21,53 +29,60 @@ export interface LoyaltyData {
   gold: number;
   platinum: number;
   totalPoints: number;
-  redemptions: number;
 }
 
 export interface ReviewData {
-  date: string;
-  averageRating: number;
-  totalReviews: number;
-  roomQuality: number;
-  service: number;
-  location: number;
-  value: number;
-  sentimentScore: number;
+    date: string;
+    averageRating: number;
+    totalReviews: number;
+    roomQuality: number;
+    service: number;
+    location: number;
+    value: number;
+    sentimentScore: number;
 }
 
 export interface BookingData {
-  date: string;
-  website: number;
-  phone: number;
-  walkin: number;
+  period: string; // Match backend field name
   totalBookings: number;
+  completedBookings: number;
+  cancelledBookings: number;
   cancellationRate: number;
+  averageBookingValue: number;
+  totalRevenue: number;
 }
 
 export interface DateRange {
-  startDate: string;
-  endDate: string;
+    startDate: string;
+    endDate: string;
 }
 
+// ====================== ReportPeriod (PPH version) ======================
 export type ReportPeriod =
-  | "daily"
-  | "weekly"
-  | "monthly"
-  | "quarterly"
-  | "yearly";
+    | 'daily'
+    | 'weekly'
+    | 'monthly'
+    | 'quarterly'
+    | 'yearly';
+
+// ====================== ServiceData (HEAD version) ======================
 export interface ServiceData {
   date: string;
   foodBeverage: number;
   laundry: number;
+  spa: number;
+  transport: number;
+  tour: number;
   others: number;
   totalOrders: number;
   avgOrderValue: number;
 }
 
+// ====================== ReportTab (HEAD version) ======================
 export type ReportTab =
-  | "revenue"
-  | "occupancy"
-  | "loyalty"
-  | "reviews"
-  | "bookings"
-  | "services";
+    | 'revenue'
+    | 'occupancy'
+    | 'loyalty'
+    | 'reviews'
+    | 'bookings'
+    | 'services';

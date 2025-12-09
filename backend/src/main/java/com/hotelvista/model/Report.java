@@ -16,19 +16,19 @@ import java.time.LocalDateTime;
 public class Report {
     @Id
     @Column(name = "report_id")
-    private String reportID;
+    private String reportId;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "report_type")
     private ReportType reportType;
 
-    @Column(name = "generated_date")
-    private LocalDateTime generatedDate;
-
     @Column(name = "report_period")
     private String reportPeriod;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @Column(name = "generated_date")
+    private LocalDateTime generatedDate;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "employee_id")
     private Employee employee;
 }

@@ -7,14 +7,31 @@ import {
   Legend,
   Tooltip,
 } from "recharts";
+import type { LoyaltyData } from "../../types/Report";
 
-const MembershipDistribution: React.FC = () => {
-  const distributionData = [
-    { name: "Bronze", value: 450, color: "#CD7F32" },
-    { name: "Silver", value: 280, color: "#C0C0C0" },
-    { name: "Gold", value: 150, color: "#FFD700" },
-    { name: "Platinum", value: 45, color: "#E5E4E2" },
-  ];
+interface MembershipDistributionProps {
+  data: LoyaltyData[];
+}
+
+const MembershipDistribution: React.FC<MembershipDistributionProps> = ({
+  data,
+}) => {
+  // Use the latest month's data for distribution
+  const latestData = data.length > 0 ? data[data.length - 1] : null;
+
+  const distributionData = latestData
+    ? [
+        { name: "Bronze", value: latestData.bronze, color: "#CD7F32" },
+        { name: "Silver", value: latestData.silver, color: "#C0C0C0" },
+        { name: "Gold", value: latestData.gold, color: "#FFD700" },
+        { name: "Platinum", value: latestData.platinum, color: "#E5E4E2" },
+      ]
+    : [
+        { name: "Bronze", value: 0, color: "#CD7F32" },
+        { name: "Silver", value: 0, color: "#C0C0C0" },
+        { name: "Gold", value: 0, color: "#FFD700" },
+        { name: "Platinum", value: 0, color: "#E5E4E2" },
+      ];
 
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {

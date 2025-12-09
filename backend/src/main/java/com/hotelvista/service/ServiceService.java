@@ -41,4 +41,8 @@ public class ServiceService {
     public List<com.hotelvista.model.Service> findAllByServiceCategory(ServiceCategory serviceCategory) {
         return repo.findAllByServiceCategory(serviceCategory);
     }
+
+    public List<com.hotelvista.model.Service> getByBookingId(String bookingId) {
+        return repo.findServicesByBookingId(bookingId);
+    }
 }

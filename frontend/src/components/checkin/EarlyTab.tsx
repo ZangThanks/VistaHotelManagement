@@ -43,7 +43,27 @@ const EarlyTab = ({ onViewDetails }: EarlyTabProps) => {
     ) => {
         setProcessingId(id);
         try {
-            await approveEarlyCheckin(id, status, 'Staff');
+            // Find the request to get booking info
+            const request = requests.find((req) => req.requestID === id);
+
+            if (!request) {
+                console.error('Request not found:', id);
+                return;
+            }
+
+            // Prepare booking info for notification
+            const bookingInfo = {
+                customerId: request.booking?.customer?.id || '',
+                customerName:
+                    request.booking?.customer?.fullName || 'Khách hàng',
+                roomNumber:
+                    request.booking?.bookingDetails?.[0]?.room?.roomNumber ||
+                    'N/A',
+                requestedTime: request.requestTime,
+            };
+
+            await approveEarlyCheckin(id, status, 'Staff', bookingInfo);
+
             setRequests((prev) =>
                 prev.map((req) =>
                     req.requestID === id

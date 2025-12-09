@@ -42,6 +42,9 @@ public class BookingService {
     @Autowired
     private BookingCancellationRepository cancellationRepo;
 
+    @Autowired
+    private CustomerRepository customerRepo;
+
     @Transactional(readOnly = true)
     public List<Booking> findAll() {
         return repo.findAll();
@@ -199,7 +202,7 @@ public class BookingService {
     public List<Booking> findAllByCheckOutDateBetween(LocalDateTime startDate, LocalDateTime endDate) {
         return repo.findAllByCheckOutDateBetween(startDate, endDate);
     }
-    
+
     public List<Booking> findConflictingBookings(String roomNumber, LocalDateTime checkIn, LocalDateTime checkOut) {
         return repo.findConflictingBookings(roomNumber, checkIn, checkOut);
     }
@@ -219,7 +222,6 @@ public class BookingService {
 
         if (booking.getStatus() == BookingStatus.CANCELLED)
             throw new BadRequestException("Booking đã bị hủy trước đó");
-
 
         // Lấy dữ liệu từ JSON
         String cancelReason = (String) body.get("cancelReason");

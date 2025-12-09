@@ -122,4 +122,83 @@ public class UserService {
     public Optional<User> findById(String userId) {
         return userRepository.findById(userId);
     }
+
+    /**
+     * Tìm user bằng email (tìm trong Customer, Admin, Employee)
+     */
+    public User findByEmail(String email) {
+        if (email == null || email.trim().isEmpty()) {
+            return null;
+        }
+
+        User u = customerRepo.findByEmail(email).orElse(null);
+        if (u != null) return u;
+
+        u = adminRepo.findByEmail(email).orElse(null);
+        if (u != null) return u;
+
+        u = employeeRepo.findByEmail(email).orElse(null);
+        return u;
+    }
+
+    /**
+     * Tìm user bằng phone (tìm trong Customer, Admin, Employee)
+     */
+    public User findByPhone(String phone) {
+        if (phone == null || phone.trim().isEmpty()) {
+            return null;
+        }
+
+        User u = customerRepo.findByPhone(phone).orElse(null);
+        if (u != null) return u;
+
+        u = adminRepo.findByPhone(phone).orElse(null);
+        if (u != null) return u;
+
+        u = employeeRepo.findByPhone(phone).orElse(null);
+        return u;
+    }
+
+    /**
+     * Tìm user bằng username (tìm trong Customer, Admin, Employee)
+     */
+    public User findByUserName(String userName) {
+        if (userName == null || userName.trim().isEmpty()) {
+            return null;
+        }
+
+        User u = customerRepo.findByUserName(userName).orElse(null);
+        if (u != null) return u;
+
+        u = adminRepo.findByUserName(userName).orElse(null);
+        if (u != null) return u;
+
+        u = employeeRepo.findByUserName(userName).orElse(null);
+        return u;
+    }
+
+    /**
+     * Tìm user bằng email, phone hoặc username
+     */
+    public User findByEmailOrPhoneOrUsername(String email, String phone, String userName) {
+        // Thử tìm bằng email
+        if (email != null && !email.trim().isEmpty()) {
+            User user = findByEmail(email);
+            if (user != null) return user;
+        }
+
+        // Thử tìm bằng phone
+        if (phone != null && !phone.trim().isEmpty()) {
+            User user = findByPhone(phone);
+            if (user != null) return user;
+        }
+
+        // Thử tìm bằng username
+        if (userName != null && !userName.trim().isEmpty()) {
+            User user = findByUserName(userName);
+            if (user != null) return user;
+        }
+
+        return null;
+    }
 }

@@ -35,24 +35,29 @@ import ServiceManagement from "../pages/admin/ServiceManagement.tsx";
 import Contact from "../pages/customer/Contact.tsx";
 import EmployeeList from "../pages/admin/EmployeeList.tsx";
 import BookingPage from "../pages/customer/booking/BookingPage.tsx";
+import RoomManagement from "../pages/employee/room/RoomManagement.tsx";
+import RoomTypeManagement from "../pages/employee/room/RoomTypeManagement.tsx";
+import VoucherManagement from "../pages/admin/voucher/VoucherManagement.tsx";
+import PromotionManagement from "../pages/admin/promotion/PromotionManagement.tsx";
+import PromotionTypeManagement from "../pages/admin/promotion/PromotionTypeManagement.tsx";
+import ExclusiveOffers from "../pages/customer/ExclusiveOffers.tsx";
+
 import FAQ from "../pages/customer/FAQ.tsx";
 import AIConcierge from "../pages/customer/AIConcierge.tsx";
 import ChatSupport from "../pages/employee/ChatSupport.tsx";
 import PricingManager from "../pages/admin/pricing/PricingManager.tsx";
 import MyBookings from "../pages/customer/MyBooking.tsx";
-import RoomManagement from "../pages/employee/room/RoomManagement.tsx";
 import RoomCart from "../pages/admin/booking/RoomCart.tsx";
 import PaymentPage from "../pages/customer/booking/PaymentPage.tsx";
 import UserProfilePage from "../pages/customer/UserProfile.tsx";
-import RoomTypeManagement from "../pages/employee/room/RoomTypeManagement.tsx";
-import PromotionManagement from "../pages/admin/promotion/PromotionManagement.tsx";
-import PromotionTypeManagement from "../pages/admin/promotion/PromotionTypeManagement.tsx";
-import VoucherManagement from "../pages/admin/voucher/VoucherManagement.tsx";
 import ReportPage from "../pages/admin/report/Report.tsx";
 import BookingDetailPage from "../pages/customer/BookingDetail.tsx";
 import ReviewsPage from "../pages/customer/review/ReviewPage.tsx";
 import ReplyReviewsPage from "../pages/employee/review/ReplyReviewPage.tsx";
-
+// Error pages
+import AccessDenied403 from "../pages/error/AccessDenied403.tsx";
+import NotFound404 from "../pages/error/NotFound404.tsx";
+import ServerError500 from "../pages/error/ServerError500.tsx";
 export const router = createBrowserRouter([
   // OAuth
   {
@@ -115,6 +120,7 @@ export const router = createBrowserRouter([
       // { path: 'employees/:id', element: <EmployeeDetail /> },
       { path: "profile", element: <UserProfilePage /> },
       { path: "reports", element: <ReportPage /> },
+      { path: "", element: <Dashboard /> },
     ],
   },
 
@@ -133,6 +139,7 @@ export const router = createBrowserRouter([
       { path: "room", element: <RoomList /> },
       { path: "room/:id", element: <RoomDetail /> },
       { path: "service", element: <ServiceList /> },
+      { path: "promotion-and-voucher", element: <ExclusiveOffers /> },
       { path: "faq", element: <FAQ /> },
       { path: "chat", element: <AIConcierge /> },
     ],
@@ -155,5 +162,18 @@ export const router = createBrowserRouter([
       { path: "cart", element: <RoomCart /> },
       { path: "reviews/:id", element: <ReviewsPage /> },
     ],
+  },
+  // ERROR PAGES
+  {
+    path: "/403",
+    element: <AccessDenied403 />,
+  },
+  {
+    path: "/500",
+    element: <ServerError500 />,
+  },
+  {
+    path: "*",
+    element: <NotFound404 />,
   },
 ]);

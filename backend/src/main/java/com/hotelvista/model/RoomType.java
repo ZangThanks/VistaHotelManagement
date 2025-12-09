@@ -62,7 +62,7 @@ public class RoomType {
     private HourlyRatePolicy hourlyRatePolicy;
 
     @ManyToOne
-    @JoinColumn(name = "check_in_out_policy_id", nullable = false)
+    @JoinColumn(name = "check_in_out_policy_id", nullable = true)
     private CheckInCheckOutPolicy checkInPolicy;
 
 }

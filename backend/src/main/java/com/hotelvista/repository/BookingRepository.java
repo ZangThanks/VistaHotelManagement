@@ -36,11 +36,12 @@ public interface BookingRepository extends JpaRepository<Booking, String> {
      * @return
      */
     @Query("""
-        SELECT b FROM Booking b 
-            WHERE b.bookingID = :keyword OR b.customer.phone LIKE %:keyword% OR
-            LOWER(b.customer.fullName) LIKE LOWER(CONCAT('%', :keyword, '%')) 
-        """)
+            SELECT b FROM Booking b 
+                WHERE b.bookingID = :keyword OR b.customer.phone LIKE %:keyword% OR
+                LOWER(b.customer.fullName) LIKE LOWER(CONCAT('%', :keyword, '%')) 
+            """)
     List<Booking> searchBookings(@Param("keyword") String keyword);
+
 
     //B1109250001
     /**
@@ -104,6 +105,20 @@ public interface BookingRepository extends JpaRepository<Booking, String> {
             @Param("checkOut") LocalDateTime checkOut
     );
 
+
+    @Query("SELECT b " +
+            "FROM Booking b " +
+            "WHERE b.checkInDate <= :endDate " +
+            "AND b.checkOutDate >= :startDate")
+    List<Booking> findOverLappingBookings(@Param("startDate") LocalDateTime startDate,
+                                          @Param("endDate") LocalDateTime endDate);
+
+    @Query("SELECT b " +
+            "FROM Booking b " +
+            "WHERE b.checkInDate >= :startDateTine " +
+            "AND b.checkInDate < :endDateTime")
+    List<Booking> findByCheckInDateRange(@Param("startDateTime") LocalDateTime startDateTime,
+                                         @Param("endDateTime") LocalDateTime endDateTime);
     /**
      * Tìm tất cả booking theo trạng thái và ngày đặt phòng
      *
@@ -135,5 +150,9 @@ public interface BookingRepository extends JpaRepository<Booking, String> {
         ) AS t
         """, nativeQuery = true)
     String getRemainingPaymentTime(@Param("bookingId") String bookingId);
+
+
+
+
 
 }

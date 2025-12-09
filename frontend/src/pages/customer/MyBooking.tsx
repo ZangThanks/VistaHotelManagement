@@ -47,7 +47,6 @@ export default function MyBookingsPage() {
       return null;
     }
   };
-
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
@@ -210,10 +209,6 @@ export default function MyBookingsPage() {
         .includes(searchQuery.toLowerCase());
     return matchesFilter && matchesSearch;
   });
-
-  const handleNavigate = (bookingId: string) => {
-    navigate(`/customer/reviews/${bookingId}`);
-  };
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: "#FAF8F5" }}>
@@ -585,16 +580,6 @@ export default function MyBookingsPage() {
                               View Details
                               <ChevronRight size={18} />
                             </button>
-                            {booking.status === "CHECKED_OUT" && (
-                              <button
-                                className="flex-1 bg-black hover:bg-black/90 text-white py-3 px-6 rounded-2xl font-semibold transition-all duration-300 hover:shadow-lg flex items-center justify-center gap-2"
-                                onClick={() =>
-                                  handleNavigate(booking.bookingID)
-                                }
-                              >
-                                Reviews
-                              </button>
-                            )}
                           </div>
                         </div>
                       </div>
