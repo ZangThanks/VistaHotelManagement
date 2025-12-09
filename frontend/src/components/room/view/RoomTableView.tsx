@@ -1,5 +1,5 @@
 import React from "react";
-import { FaEdit, FaEye, FaTrashAlt } from "react-icons/fa";
+import { FaEdit, FaEye } from "react-icons/fa";
 import { motion } from "framer-motion";
 import type { RoomType } from "../../../types/RoomType";
 
@@ -23,7 +23,6 @@ interface RoomTableViewProps {
   rooms: Room[];
   onEdit: (room: Room) => void;
   onView: (room: Room) => void;
-  onDelete: (room: Room) => void;
 }
 
 const statusConfig = {
@@ -54,13 +53,11 @@ const statusConfig = {
  * @param rooms - Danh sách phòng
  * @param onEdit - Callback khi chỉnh sửa phòng
  * @param onView - Callback khi xem chi tiết phòng
- * @param onDelete - Callback khi xóa phòng
  */
 const RoomTableView: React.FC<RoomTableViewProps> = ({
   rooms,
   onEdit,
   onView,
-  onDelete,
 }) => {
   return (
     <div className="bg-white rounded-xl shadow-sm border border-[#ebe3d7] overflow-hidden">
@@ -160,16 +157,6 @@ const RoomTableView: React.FC<RoomTableViewProps> = ({
                       title="Edit"
                     >
                       <FaEdit className="text-lg" />
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onDelete(room);
-                      }}
-                      className="text-[#c62828] hover:text-[#b71c1c] transition-colors p-2 hover:bg-red-50 rounded-lg cursor-pointer"
-                      title="Delete"
-                    >
-                      <FaTrashAlt className="text-lg" />
                     </button>
                   </div>
                 </td>

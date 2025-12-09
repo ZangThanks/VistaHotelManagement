@@ -31,7 +31,7 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
     {
       icon: <FaTachometerAlt />,
       label: "Dashboard",
-      path: "/admin/dashboard",
+      path: "/admin",
     },
     {
       icon: <MdMeetingRoom />,

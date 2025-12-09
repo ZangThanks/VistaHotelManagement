@@ -1,16 +1,16 @@
-import type { RoomType } from '../types/RoomType';
-import { api } from './apiClient';
+import type { RoomType } from "../types/RoomType";
+import { api } from "./apiClient";
 
-const ENDPOINT = '/room-types';
+const ENDPOINT = "/room-types";
 
 export const getAllRoomTypes = async () => {
-    try {
-        const response = await api.get(ENDPOINT);
-        return response.data;
-    } catch (error) {
-        console.error('Error fetching room types:', error);
-        throw error;
-    }
+  try {
+    const response = await api.get(ENDPOINT);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching room types:", error);
+    throw error;
+  }
 };
 
 /**
@@ -49,6 +49,22 @@ export const deleteRoomType = async (id: string): Promise<void> => {
     await api.delete(`${ENDPOINT}/delete/${id}`);
   } catch (error) {
     console.error("Error deleting room type:", error);
+    throw error;
+  }
+};
+
+export const calculateDiscountedPrice = async (
+  roomTypeId: string,
+  bookingDate: string
+): Promise<number> => {
+  try {
+    const response = await api.get(
+      `${ENDPOINT}/discounted-price/${roomTypeId}`,
+      { params: { bookingDate } }
+    );
+    return response.data;
+  } catch (error) {
+    console.log(error);
     throw error;
   }
 };

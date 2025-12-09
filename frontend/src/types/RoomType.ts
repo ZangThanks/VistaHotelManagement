@@ -4,7 +4,7 @@ export interface RoomType {
   description?: string;
   area?: number;
   maxOccupancy?: number;
-  amenties?: string[]; 
+  amenties?: string[];
   basePrice?: number;
   [key: string]: unknown;
 }

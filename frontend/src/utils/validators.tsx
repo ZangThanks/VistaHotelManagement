@@ -65,6 +65,11 @@ export const validateEmailOrPhone = (value: string): string => {
 };
 
 /**
+ * Alias for validateEmailOrPhone
+ */
+export const validateEmailOrPhoneOrUsername = validateEmailOrPhone;
+
+/**
  * Kiểm tra độ mạnh của mật khẩu theo quy tắc bảo mật.
  *
  * @param {string} password - Mật khẩu cần kiểm tra.
@@ -89,6 +94,45 @@ export const validatePassword = (password: string): string => {
         return 'Password must contain at least one special character';
 
     return '';
+};
+
+/**
+ * Kiểm tra độ mạnh của mật khẩu và trả về tất cả lỗi trong 1 dòng.
+ *
+ * @param {string} password - Mật khẩu cần kiểm tra.
+ * @returns {string} Chuỗi lỗi gộp chung nếu không hợp lệ, ngược lại là chuỗi rỗng.
+ *
+ * @example
+ * validatePasswordCombined("Abc@1234"); // ""
+ * validatePasswordCombined("abc"); // "Min 8 chars | Max 50 chars | Uppercase | Lowercase | Digit | Special char"
+ */
+export const validatePasswordCombined = (password: string): string => {
+    if (!password) return "Password is required";
+
+    const missing: string[] = [];
+
+    if (password.length < 8) {
+        missing.push("Min 8 chars");
+    }
+    if (password.length > 50) {
+        missing.push("Max 50 chars");
+    }
+    if (!/[A-Z]/.test(password)) {
+        missing.push("Uppercase");
+    }
+    if (!/[a-z]/.test(password)) {
+        missing.push("Lowercase");
+    }
+    if (!/[0-9]/.test(password)) {
+        missing.push("Digit");
+    }
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+        missing.push("Special char");
+    }
+
+    if (missing.length === 0) return "";
+
+    return missing.join(" | ");
 };
 
 /**

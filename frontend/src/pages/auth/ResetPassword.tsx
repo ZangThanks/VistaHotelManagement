@@ -6,8 +6,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import logoImage from "../../assets/images/logoWhite.png";
 import Button from "../../components/common/Button";
 import FloatingInput from "../../components/common/FloatingInput";
-import { validatePassword } from "../../utils/validators";
-import { changePassword, resetPassword } from "../../services/authService";
+import { validatePasswordCombined } from "../../utils/validators";
+import { resetPassword } from "../../services/authService";
 
 const ResetPassword: React.FC = () => {
   const [newPassword, setNewPassword] = useState("");
@@ -39,18 +39,18 @@ const ResetPassword: React.FC = () => {
     }
   }, [location, navigate]);
 
-  // Real-time validation cho mật khẩu mới
+  // Real-time validation for new password
   const handleNewPasswordChange = (value: string) => {
     setNewPassword(value);
     if (value) {
-      const error = validatePassword(value);
+      const error = validatePasswordCombined(value);
       setNewPasswordError(error);
       setNewPasswordSuccess(!error);
 
-      // Xác thực lại mật khẩu nếu nó có giá trị
+      // Re-validate confirm password if it has value
       if (confirmPassword) {
         if (value !== confirmPassword) {
-          setConfirmPasswordError("Mật khẩu xác nhận không khớp");
+          setConfirmPasswordError("Password confirmation does not match");
           setConfirmPasswordSuccess(false);
         } else {
           setConfirmPasswordError("");
@@ -63,12 +63,12 @@ const ResetPassword: React.FC = () => {
     }
   };
 
-  // Real-time validation cho confirm password
+  // Real-time validation for confirm password
   const handleConfirmPasswordChange = (value: string) => {
     setConfirmPassword(value);
     if (value) {
       if (value !== newPassword) {
-        setConfirmPasswordError("Mật khẩu xác nhận không khớp");
+        setConfirmPasswordError("Password confirmation does not match");
         setConfirmPasswordSuccess(false);
       } else {
         setConfirmPasswordError("");
@@ -84,9 +84,11 @@ const ResetPassword: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const newPwErr = validatePassword(newPassword);
+    const newPwErr = validatePasswordCombined(newPassword);
     const confirmPwErr =
-      newPassword !== confirmPassword ? "Mật khẩu xác nhận không khớp" : "";
+      newPassword !== confirmPassword
+        ? "Password confirmation does not match"
+        : "";
 
     setNewPasswordError(newPwErr);
     setConfirmPasswordError(confirmPwErr);
@@ -98,11 +100,9 @@ const ResetPassword: React.FC = () => {
       return;
     }
 
-    // Không có email từ flow quên mật khẩu → cho quay về
+    // No email from forgot password flow → redirect back
     if (!emailFromForgot) {
-      alert(
-        "Không tìm thấy thông tin email để đặt lại mật khẩu. Vui lòng thử lại."
-      );
+      alert("Email information not found to reset password. Please try again.");
       navigate("/auth/forgot-password", { replace: true });
       return;
     }
@@ -127,7 +127,7 @@ const ResetPassword: React.FC = () => {
     } catch (error: any) {
       console.error("Reset password failed:", error);
       setLoading(false);
-      alert(error?.message || "Không thể đặt lại mật khẩu. Vui lòng thử lại.");
+      alert(error?.message || "Unable to reset password. Please try again.");
     }
   };
 
@@ -143,13 +143,17 @@ const ResetPassword: React.FC = () => {
 
     switch (strength) {
       case 1:
-        return { label: "Yếu", color: "bg-red-500", width: "25%" };
+        return { label: "Weak", color: "bg-red-500", width: "25%" };
       case 2:
-        return { label: "Trung bình", color: "bg-yellow-500", width: "50%" };
+        return {
+          label: "Medium",
+          color: "bg-yellow-500",
+          width: "50%",
+        };
       case 3:
-        return { label: "Khá", color: "bg-blue-500", width: "75%" };
+        return { label: "Good", color: "bg-blue-500", width: "75%" };
       case 4:
-        return { label: "Mạnh", color: "bg-green-500", width: "100%" };
+        return { label: "Strong", color: "bg-green-500", width: "100%" };
       default:
         return { label: "", color: "", width: "0%" };
     }
@@ -173,15 +177,15 @@ const ResetPassword: React.FC = () => {
           </div>
 
           <div className="text-center space-y-2">
-            <h1 className="text-3xl font-bold text-white">Thành công!</h1>
+            <h1 className="text-3xl font-bold text-white">Success!</h1>
             <p className="text-white/80">
-              Mật khẩu của bạn đã được đặt lại thành công
+              Your password has been reset successfully
             </p>
           </div>
 
           <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg p-6 text-center">
             <p className="text-white/80 text-sm">
-              Đang chuyển hướng đến trang đăng nhập...
+              Redirecting to login page...
             </p>
             <div className="mt-4 flex justify-center gap-2">
               <div className="w-2 h-2 bg-[#eab354] rounded-full animate-bounce [animation-delay:0ms]" />
@@ -191,7 +195,7 @@ const ResetPassword: React.FC = () => {
           </div>
 
           <Button
-            text="Đi đến trang đăng nhập"
+            text="Go to Login Page"
             color="bg-[#c3923c]"
             textColor="text-white"
             size="lg"
@@ -215,10 +219,10 @@ const ResetPassword: React.FC = () => {
         {/* Header */}
         <div className="text-center mb-6">
           <h1 className="text-2xl font-bold text-yellow-50 mb-2">
-            Đặt lại mật khẩu
+            Reset Password
           </h1>
           <p className="text-sm text-yellow-50/80">
-            Tạo mật khẩu mới cho tài khoản của bạn
+            Create a new password for your account
           </p>
         </div>
 
@@ -230,7 +234,7 @@ const ResetPassword: React.FC = () => {
           }`}
         >
           <FloatingInput
-            label="Mật khẩu mới"
+            label="New Password"
             type="password"
             value={newPassword}
             onChange={handleNewPasswordChange}
@@ -271,7 +275,7 @@ const ResetPassword: React.FC = () => {
           {newPassword && !newPasswordError && (
             <div className="mt-2 space-y-1">
               <div className="flex items-center justify-between text-xs">
-                <span className="text-white/60">Độ mạnh mật khẩu:</span>
+                <span className="text-white/60">Password strength:</span>
                 <span
                   className={`font-medium ${passwordStrength.color.replace(
                     "bg-",
@@ -296,7 +300,7 @@ const ResetPassword: React.FC = () => {
             <p className="text-red-500 text-xs mt-1">{newPasswordError}</p>
           )}
           {newPasswordSuccess && !newPasswordError && (
-            <p className="text-green-500 text-xs mt-1">✓ Mật khẩu hợp lệ</p>
+            <p className="text-green-500 text-xs mt-1">✓ Password is valid</p>
           )}
         </div>
 
@@ -308,7 +312,7 @@ const ResetPassword: React.FC = () => {
           }`}
         >
           <FloatingInput
-            label="Xác nhận mật khẩu"
+            label="Confirm Password"
             type="password"
             value={confirmPassword}
             onChange={handleConfirmPasswordChange}
@@ -348,16 +352,14 @@ const ResetPassword: React.FC = () => {
             <p className="text-red-500 text-xs mt-1">{confirmPasswordError}</p>
           )}
           {confirmPasswordSuccess && !confirmPasswordError && (
-            <p className="text-green-500 text-xs mt-1">
-              ✓ Mật khẩu xác nhận khớp
-            </p>
+            <p className="text-green-500 text-xs mt-1">✓ Passwords match</p>
           )}
         </div>
 
         {/* Password Requirements */}
         <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg p-4">
           <p className="text-white/80 text-xs font-medium mb-2">
-            Mật khẩu phải có:
+            Password must have:
           </p>
           <ul className="space-y-1 text-xs text-white/60">
             <li className="flex items-center gap-2">
@@ -368,7 +370,7 @@ const ResetPassword: React.FC = () => {
               >
                 {newPassword.length >= 8 ? "✓" : "○"}
               </span>
-              Ít nhất 8 ký tự
+              At least 8 characters
             </li>
             <li className="flex items-center gap-2">
               <span
@@ -382,7 +384,7 @@ const ResetPassword: React.FC = () => {
                   ? "✓"
                   : "○"}
               </span>
-              Chữ hoa và chữ thường
+              Uppercase and lowercase letters
             </li>
             <li className="flex items-center gap-2">
               <span
@@ -392,7 +394,7 @@ const ResetPassword: React.FC = () => {
               >
                 {/\d/.test(newPassword) ? "✓" : "○"}
               </span>
-              Ít nhất 1 chữ số
+              At least 1 digit
             </li>
             <li className="flex items-center gap-2">
               <span
@@ -404,7 +406,7 @@ const ResetPassword: React.FC = () => {
               >
                 {/[^a-zA-Z0-9]/.test(newPassword) ? "✓" : "○"}
               </span>
-              Ít nhất 1 ký tự đặc biệt
+              At least 1 special character
             </li>
           </ul>
         </div>
@@ -412,7 +414,7 @@ const ResetPassword: React.FC = () => {
         {/* Submit Buttons */}
         <div className="flex gap-3">
           <Button
-            text="Quay lại"
+            text="Back"
             color="bg-white/10"
             textColor="text-white"
             size="lg"
@@ -421,7 +423,7 @@ const ResetPassword: React.FC = () => {
             className="flex-1 font-semibold hover:bg-white/20 transition-colors border-2 border-white/30"
           />
           <Button
-            text={loading ? "Đang đặt lại..." : "Đặt lại mật khẩu"}
+            text={loading ? "Resetting..." : "Reset Password"}
             color="bg-[#c3923c]"
             textColor="text-white"
             size="lg"

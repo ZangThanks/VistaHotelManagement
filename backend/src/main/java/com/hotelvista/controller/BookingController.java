@@ -3,16 +3,15 @@ package com.hotelvista.controller;
 import com.hotelvista.dto.BookingRequestDTO;
 import com.hotelvista.dto.PaymentWebhookDTO;
 import com.hotelvista.model.Booking;
-import com.hotelvista.model.BookingDetail;
+import com.hotelvista.model.BookingCancellation;
 import com.hotelvista.model.Customer;
 import com.hotelvista.model.enums.BookingStatus;
 import com.hotelvista.model.enums.PaymentStatus;
-import com.hotelvista.model.enums.RoomStatus;
-import com.hotelvista.service.BookingDetailService;
-import com.hotelvista.service.BookingService;
+import com.hotelvista.service.*;
 import com.hotelvista.util.PaymentUtil;
 import com.hotelvista.util.QRGenerateUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,8 +22,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.concurrent.atomic.AtomicReference;
 
 @RestController
 @RequestMapping("/bookings")
@@ -34,6 +32,12 @@ public class BookingController {
 
     @Autowired
     private BookingDetailService bookingDetailService;
+
+    @Autowired
+    private BookingServiceService bookingServiceService;
+
+    @Autowired
+    private RoomService roomService;
 
     @GetMapping("")
     public List<Booking> findAll() {
@@ -107,7 +111,7 @@ public class BookingController {
             } else if (choice == 2) {
                 amount = booking.getTotalAmount() * 50 / 100; // 50%
             } else {
-                amount = 0; // 0% - pay at checkout
+                amount = 0; // 0% - pay at checkout,
             }
         }
 
@@ -131,8 +135,11 @@ public class BookingController {
                 return ResponseEntity.notFound().build();
             }
 
-            booking.setPaymentStatus(PaymentStatus.CANCELLED);
-            booking.setStatus(BookingStatus.CANCELLED);
+            // Chỉ cancel nếu status vẫn là PENDING
+            if (booking.getStatus() == BookingStatus.PENDING) {
+                booking.setPaymentStatus(PaymentStatus.CANCELLED);
+                booking.setStatus(BookingStatus.CANCELLED);
+            }
             boolean saved = service.save(booking);
 
             if (saved) {
@@ -196,7 +203,8 @@ public class BookingController {
             }
 
             // Check nếu đã paid
-            if (booking.getPaymentStatus() == PaymentStatus.PAID) {
+            if (booking.getPaymentStatus() == PaymentStatus.PAID && booking.getStatus() != BookingStatus.CHECKED_OUT
+            ) {
                 System.out.println("Warning: Booking " + bookingId + " is already paid");
                 return ResponseEntity.ok("Booking already marked as paid");
             }
@@ -216,6 +224,13 @@ public class BookingController {
 
             // Update booking payment status
             booking.setPaymentStatus(newStatus);
+
+            // Chuyển status sang PENDING khi đã thanh toán (bất kể %)
+            if (booking.getStatus() == BookingStatus.WAITING) {
+                booking.setStatus(BookingStatus.PENDING);
+                System.out.println("Booking status changed from WAITING to PENDING");
+            }
+            
             boolean saved = service.save(booking);
 
             if (saved) {
@@ -259,6 +274,7 @@ public class BookingController {
         LocalDateTime endDateTime = end.atTime(23, 59, 59);
         return service.findAllByCheckInDateBetween(startDateTime, endDateTime);
     }
+
     /**
      * Lấy bookings theo check-out date
      */
@@ -318,12 +334,13 @@ public class BookingController {
             booking.setStatus(BookingStatus.CHECKED_OUT);
             booking.setCheckOutDate(LocalDateTime.now());
 
-            booking.getBookingDetails().forEach(r -> {
-                r.getRoom().setStatus(RoomStatus.CLEANING);
-                //TODO: Cập nhật trạng thái phòng
-            });
+//            booking.getBookingDetails().forEach(r -> {
+//                r.getRoom().setStatus(RoomStatus.CLEANING);
+//                roomService.save(r.getRoom());
+//            });
 
             boolean saved = service.save(booking);
+            System.out.println("BOOKING ĐÃ CẬP NHẬT: " + saved);
 
             if (saved) {
                 return ResponseEntity.ok(booking);
@@ -413,5 +430,119 @@ public class BookingController {
     @GetMapping("/overlapping-bookings/{roomNumber}")
     public List<LocalDateTime> findOverlappingBookings(@PathVariable("roomNumber") String roomNumber) {
         return bookingDetailService.findOverlappingBookings(roomNumber);
+    }
+
+    /**
+     * Kiểm tra phòng có available trong khoảng thời gian không
+     * Trả về danh sách các booking bị trùng lịch
+     */
+    @GetMapping("/check-availability")
+    public ResponseEntity<?> checkRoomAvailability(
+            @RequestParam String roomNumber,
+            @RequestParam String checkInDate,
+            @RequestParam String checkOutDate
+    ) {
+        try {
+            // Xử lý ISO format: "2025-12-07T14:30:00.000Z"
+            String cleanCheckIn = checkInDate.replace("Z", "");
+            if (cleanCheckIn.contains(".")) {
+                cleanCheckIn = cleanCheckIn.substring(0, cleanCheckIn.indexOf("."));
+            }
+
+            String cleanCheckOut = checkOutDate.replace("Z", "");
+            if (cleanCheckOut.contains(".")) {
+                cleanCheckOut = cleanCheckOut.substring(0, cleanCheckOut.indexOf("."));
+            }
+
+            LocalDateTime checkIn = LocalDateTime.parse(cleanCheckIn);
+            LocalDateTime checkOut = LocalDateTime.parse(cleanCheckOut);
+
+            if (checkOut.isBefore(checkIn) || checkOut.isEqual(checkIn)) {
+                return ResponseEntity.badRequest().body("Check-out must be after check-in");
+            }
+
+            List<Booking> conflicts = service.findConflictingBookings(roomNumber, checkIn, checkOut);
+            return ResponseEntity.ok(conflicts);
+
+        } catch (Exception e) {
+            System.err.println("Error checking room availability: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.internalServerError()
+                    .body("Error checking room availability: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Xác nhận booking cho pay at checkout
+     */
+    @PutMapping("/{bookingId}/confirm-pay-at-checkout")
+    public ResponseEntity<?> confirmPayAtCheckout(@PathVariable String bookingId) {
+        try {
+            Booking booking = service.findById(bookingId);
+            if (booking == null) {
+                return ResponseEntity.badRequest().body("Booking not found");
+            }
+
+            // Chuyển status sang WAITING to PENDING cho pay at checkout
+            if (booking.getStatus() == BookingStatus.WAITING) {
+                booking.setStatus(BookingStatus.PENDING);
+                boolean saved = service.save(booking);
+                
+                if (saved) {
+                    System.out.println("Booking " + bookingId + " confirmed for pay at checkout. Status: PLACE");
+                    return ResponseEntity.ok(booking);
+                } else {
+                    return ResponseEntity.internalServerError().body("Failed to confirm booking");
+                }
+            }
+            
+            return ResponseEntity.ok(booking);
+        } catch (Exception e) {
+            System.err.println("Error confirming pay at checkout: " + e.getMessage());
+            return ResponseEntity.internalServerError().body("Error: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Hủy booking
+     */
+    @PostMapping("/{id}/cancel")
+    public ResponseEntity<?> cancelBooking(
+            @PathVariable String id,
+            @RequestBody Map<String, Object> body
+    ) {
+        BookingCancellation cancellation = service.cancelBooking(id, body);
+        return ResponseEntity.ok(cancellation);
+    }
+
+    @GetMapping(value = "/payment-qr-checkout/{bookingId}", produces = MediaType.IMAGE_PNG_VALUE)
+    public ResponseEntity<byte[]> getPaymentQr(
+            @PathVariable String bookingId
+    ) {
+        try {
+            Booking booking = service.findById(bookingId);
+
+            AtomicReference<Double> paymentAmount = new AtomicReference<>((double) 0);
+            if(booking != null) {
+                paymentAmount.set(calculateRemainingAmount(booking));
+            }
+
+            List<com.hotelvista.model.BookingService> listServiceDetail = bookingServiceService.findAllByBooking_BookingID(bookingId);
+            if(listServiceDetail != null) {
+                listServiceDetail.forEach((sd) -> {
+                    paymentAmount.updateAndGet(v -> v + sd.getTotalAmount());
+                    System.out.println(sd);
+                });
+            }
+            System.out.println("===================================SO TIEN: " + paymentAmount.get());
+            String qrUrl = QRGenerateUtil.buildVietQRUrl(bookingId, paymentAmount.get());
+            byte[] qrImage = QRGenerateUtil.generateQrImage(qrUrl);
+
+            return ResponseEntity.ok()
+                    .contentType(MediaType.IMAGE_PNG)
+                    .body(qrImage);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 }

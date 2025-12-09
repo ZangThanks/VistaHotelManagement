@@ -2,6 +2,7 @@ package com.hotelvista.controller;
 
 import com.hotelvista.dto.ApiResponse;
 import com.hotelvista.model.Notification;
+import com.hotelvista.model.enums.UserRole;
 import com.hotelvista.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -39,43 +40,47 @@ public class NotificationController {
 
         String userId = principal.getName();
 
-        String userRole = SecurityContextHolder.getContext()
+        // ============ FIX ROLE PARSING ============
+        String rawRole = SecurityContextHolder.getContext()
                 .getAuthentication()
                 .getAuthorities()
                 .stream()
                 .findFirst()
-                .map(authority -> {
-                    String authStr = authority.toString();
-                    System.out.println("🔍 Raw authority: " + authStr);
-
-                    // Parse "UserRole.EMPLOYEE(role=Employee)" → "EMPLOYEE"
-                    if (authStr.contains(".EMPLOYEE")) {
-                        return "EMPLOYEE";
-                    } else if (authStr.contains(".CUSTOMER")) {
-                        return "CUSTOMER";
-                    } else if (authStr.contains(".ADMIN")) {
-                        return "ADMIN";
-                    }
-
-                    // Fallback: Try getAuthority()
-                    String auth = authority.getAuthority();
-                    if (auth != null) {
-                        return auth.replace("ROLE_", "").toUpperCase();
-                    }
-
-                    return "CUSTOMER";
-                })
+                .map(a -> a.getAuthority())
                 .orElse("CUSTOMER");
 
-        Pageable pageable = PageRequest.of(page, size);
-        Page<Notification> notifications = notificationService.getNotificationsForUser(
-                userId,
-                userRole,
-                pageable
-        );
+        System.out.println("RAW ROLE = " + rawRole);
 
-        return ResponseEntity.ok(new ApiResponse(true, "Notifications retrieved successfully", notifications));
+        UserRole userRole;
+
+        try {
+            // Case 1: chuẩn ROLE_EMPLOYEE
+            if (rawRole.startsWith("ROLE_")) {
+                userRole = UserRole.valueOf(rawRole.replace("ROLE_", ""));
+            }
+            // Case 2: dạng "UserRole.EMPLOYEE(role=Employee)"
+            else if (rawRole.contains("EMPLOYEE")) {
+                userRole = UserRole.EMPLOYEE;
+            } else if (rawRole.contains("ADMIN")) {
+                userRole = UserRole.ADMIN;
+            } else {
+                userRole = UserRole.CUSTOMER;
+            }
+        } catch (Exception e) {
+            userRole = UserRole.CUSTOMER;
+        }
+
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<Notification> notifications =
+                notificationService.getNotificationsForUser(userId, userRole, pageable);
+
+        return ResponseEntity.ok(
+                new ApiResponse(true, "Notifications retrieved successfully", notifications)
+        );
     }
+
+
 
     /**
      * Lấy thông báo chưa đọc
@@ -162,8 +167,6 @@ public class NotificationController {
 
         return ResponseEntity.ok(new ApiResponse(true, "Notification created and sent", createdNotification));
     }
-
-    // ============ WebSocket Handlers ============
 
     /**
      * Xử lý khi client subscribe để nhận thông báo realtime

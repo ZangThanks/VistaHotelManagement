@@ -12,15 +12,15 @@ interface BackendNotification {
     id: string;
     type: 'REQUEST' | 'INFO' | 'ALERT' | 'SYSTEM';
     category:
-        | 'EARLY_CHECKIN'
-        | 'LATE_CHECKOUT'
-        | 'CANCELLATION'
-        | 'PAYMENT_ISSUE'
-        | 'MAINTENANCE'
-        | 'HOUSEKEEPING'
-        | 'PROMOTION'
-        | 'SECURITY'
-        | 'OTHER';
+    | 'EARLY_CHECKIN'
+    | 'LATE_CHECKOUT'
+    | 'CANCELLATION'
+    | 'PAYMENT_ISSUE'
+    | 'MAINTENANCE'
+    | 'HOUSEKEEPING'
+    | 'PROMOTION'
+    | 'SECURITY'
+    | 'OTHER';
     title: string;
     message: string;
     fromUserId?: string;
@@ -30,13 +30,13 @@ interface BackendNotification {
     toUserIds?: string[];
     toUserType?: 'CUSTOMER' | 'ADMIN' | 'EMPLOYEE';
     status:
-        | 'PENDING'
-        | 'APPROVED'
-        | 'REJECTED'
-        | 'CANCELLED'
-        | 'DISMISSED'
-        | 'SENT'
-        | 'FAILED';
+    | 'PENDING'
+    | 'APPROVED'
+    | 'REJECTED'
+    | 'CANCELLED'
+    | 'DISMISSED'
+    | 'SENT'
+    | 'FAILED';
     priority: 'LOW' | 'NORMAL' | 'HIGH' | 'URGENT';
     needsAction?: boolean;
     isRead: boolean;
@@ -59,12 +59,22 @@ class NotificationApiService {
         };
     }
 
-    // Lấy danh sách notifications
+    // Lấy danh sách notifications cho customer và employee
     async getMyNotifications(
         page = 0,
         size = 20,
     ): Promise<ApiResponse<{ content: BackendNotification[] }>> {
         try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                console.error('❌ [API] No token found');
+                return {
+                    success: false,
+                    message: 'No authentication token',
+                    data: { content: [] },
+                };
+            }
+
             const response = await fetch(
                 `${API_BASE_URL}/api/notifications?page=${page}&size=${size}`,
                 {
@@ -73,30 +83,51 @@ class NotificationApiService {
                 },
             );
 
-            console.log(
-                '📡 [API] Response status:',
-                response.status,
-                response.statusText,
-            );
-
             if (!response.ok) {
-                throw new Error('Failed to fetch notifications');
+                return {
+                    success: false,
+                    message: `Error: ${response.status}`,
+                    data: { content: [] },
+                };
             }
 
             const data = await response.json();
 
-            return data;
+            // Extract content từ Spring Page
+            const content =
+                data?.data?.content ?? data?.content ?? data?.data ?? [];
+
+            return {
+                success: data.success,
+                message: data.message,
+                data: { content: Array.isArray(content) ? content : [] },
+            };
         } catch (error) {
-            console.error('[API] Error fetching notifications:', error);
-            throw error;
+            console.error('API error fetching notifications:', error);
+            return {
+                success: false,
+                message:
+                    error instanceof Error ? error.message : 'Unknown error',
+                data: { content: [] },
+            };
         }
     }
 
-    // Lấy notifications chưa đọc
+    // Lấy notifications chưa đọc cho customer và employee
     async getUnreadNotifications(): Promise<
         ApiResponse<BackendNotification[]>
     > {
         try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                console.error('[API] No token for unread notifications');
+                return {
+                    success: false,
+                    message: 'No authentication token',
+                    data: [],
+                };
+            }
+
             const response = await fetch(
                 `${API_BASE_URL}/api/notifications/unread`,
                 {
@@ -106,13 +137,25 @@ class NotificationApiService {
             );
 
             if (!response.ok) {
-                throw new Error('Failed to fetch unread notifications');
+                console.error('API failed to fetch unread notifications');
+                return {
+                    success: false,
+                    message: `Error: ${response.status}`,
+                    data: [],
+                };
             }
 
-            return await response.json();
+            const data = await response.json();
+
+            return data;
         } catch (error) {
-            console.error('Error fetching unread notifications:', error);
-            throw error;
+            console.error('[API] Error fetching unread notifications:', error);
+            return {
+                success: false,
+                message:
+                    error instanceof Error ? error.message : 'Unknown error',
+                data: [],
+            };
         }
     }
 

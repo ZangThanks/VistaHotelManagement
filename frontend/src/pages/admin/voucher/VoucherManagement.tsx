@@ -42,6 +42,7 @@ const VoucherManagement: React.FC = () => {
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
   const [selectedVoucher, setSelectedVoucher] = useState<Voucher | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [distributionKey, setDistributionKey] = useState(0);
 
   const toast = useContext(ToastContext);
 
@@ -171,6 +172,8 @@ const VoucherManagement: React.FC = () => {
   const handleDistributionSuccess = () => {
     toast?.success("Voucher distributed successfully!");
     loadVouchers();
+    // Force reload distribution history
+    setDistributionKey(prev => prev + 1);
   };
 
   const handleOpenDistributeModal = (voucher: Voucher) => {
@@ -464,6 +467,7 @@ const VoucherManagement: React.FC = () => {
 
       {activeTab === "distribution" && (
         <DistributionTab
+          key={distributionKey}
           vouchers={vouchers}
           onDistribute={handleOpenDistributeModal}
         />

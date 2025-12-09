@@ -5,9 +5,11 @@ import com.hotelvista.model.Customer;
 import com.hotelvista.service.CartBeanService;
 import com.hotelvista.service.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/customers")
@@ -69,6 +71,43 @@ public class CustomerController {
             cust.setBirthDate(customer.getBirthDate());
             cust.setGender(customer.getGender());
 
+            service.save(cust);
+        }
+        return cust;
+    }
+
+    /**
+     * Tìm khách hàng theo số điện thoại
+     */
+    @GetMapping("/by-phone/{phone}")
+    public ResponseEntity<Customer> getCustomerByPhone(@PathVariable String phone) {
+        Customer customer = service.findByPhone(phone);
+        if (customer != null) {
+            return ResponseEntity.ok(customer);
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    /**
+     * Tìm khách hàng theo email
+     */
+    @GetMapping("/by-email/{email}")
+    public ResponseEntity<Customer> getCustomerByEmail(@PathVariable String email) {
+        Customer customer = service.findByEmail(email);
+        if (customer != null) {
+            return ResponseEntity.ok(customer);
+        }
+        return ResponseEntity.notFound().build();
+    }
+    /**
+     * Cập nhật avatar Customer
+     */
+    @PutMapping("/{customerId}/avatar")
+    public Customer updateCustomerAvatar(@PathVariable String customerId, @RequestBody Map<String, String> body) {
+        String avatarUrl = body.get("avatarUrl");
+        Customer cust = service.findById(customerId);
+        if (cust != null && avatarUrl != null) {
+            cust.setAvatarUrl(avatarUrl);
             service.save(cust);
         }
         return cust;

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { FaUsers, FaCheckCircle } from "react-icons/fa";
+import { FaUsers, FaCheckCircle, FaTimes } from "react-icons/fa";
 import type { Voucher } from "../../types/Voucher";
 import type { DistributionCriteria } from "../../types/CustomerVoucher";
 import voucherService from "../../services/voucherService";
@@ -48,12 +48,16 @@ const DistributeVoucherModal: React.FC<DistributeVoucherModalProps> = ({
       const result = await voucherService.previewDistribution(criteria);
       setPreviewCount(result.count);
       if (result.count === 0) {
-        toast.error("Không tìm thấy khách hàng phù hợp với điều kiện", { duration: 3000 });
+        toast.error("Không tìm thấy khách hàng phù hợp với điều kiện", {
+          duration: 3000,
+        });
       }
     } catch (error) {
       console.error("Error previewing distribution:", error);
       setPreviewCount(0);
-      toast.error("Lỗi khi xem trước danh sách khách hàng", { duration: 3000 });
+      toast.error("Lỗi khi xem trước danh sách khách hàng", {
+        duration: 3000,
+      });
     } finally {
       setLoading(false);
     }
@@ -64,14 +68,23 @@ const DistributeVoucherModal: React.FC<DistributeVoucherModalProps> = ({
 
     try {
       setDistributing(true);
-      const result = await voucherService.distributeVoucher(voucher.voucherID, criteria);
-      
+      const result = await voucherService.distributeVoucher(
+        voucher.voucherID,
+        criteria
+      );
+
       if (result.success) {
-        toast.success(result.message || `Đã phân phối voucher cho ${result.count} khách hàng`, { duration: 3000 });
+        toast.success(
+          result.message ||
+            `Đã phân phối voucher cho ${result.count} khách hàng`,
+          { duration: 3000 }
+        );
         onSuccess();
         onClose();
       } else {
-        toast.error(result.message || "Không thể phân phối voucher", { duration: 3000 });
+        toast.error(result.message || "Không thể phân phối voucher", {
+          duration: 3000,
+        });
       }
     } catch (error) {
       console.error("Error distributing voucher:", error);
@@ -131,21 +144,21 @@ const DistributeVoucherModal: React.FC<DistributeVoucherModalProps> = ({
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
-        className="bg-white rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto"
+        className="bg-white rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto scrollbar-thin"
       >
-        <div className="sticky top-0 bg-gradient-to-r from-[#6b5e4c] to-[#8b7355] text-white px-6 py-4">
+        <div className="sticky top-0 bg-white text-gray-700 px-6 py-4">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-bold">Distribute Voucher</h2>
-              <p className="text-sm text-white/80 mt-1">
+              <p className="text-sm text-gray-700/80 mt-1">
                 {voucher.voucherName}
               </p>
             </div>
             <button
               onClick={onClose}
-              className="text-white/80 hover:text-white transition-colors text-2xl"
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
             >
-              ✕
+              <FaTimes className="text-gray-500" />
             </button>
           </div>
         </div>

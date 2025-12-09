@@ -12,7 +12,6 @@ export interface Booking {
     checkOutDate: string;
     numberOfGuests: number;
 
-    // Full merged booking status
     status:
         | "PENDING"
         | "CONFIRMED"
@@ -30,7 +29,6 @@ export interface Booking {
 
     totalAmount: number;
 
-    // Full merged payment status (HEAD + origin/PPH)
     paymentStatus:
         | "PENDING"
         | "COMPLETED"
@@ -38,9 +36,9 @@ export interface Booking {
         | "PERCENTAGE_50"
         | "PAID"
         | "REFUNDED"
-        | "FAILED"       // from HEAD
+        | "FAILED"
         | "CANCELLED"
-        | "PARTIAL";     // from origin/PPH
+        | "PARTIAL";
 
     invoiceType?: string | null;
     totalCost: number;
@@ -54,6 +52,7 @@ export interface Booking {
     earlyCheckin?: EarlyCheckin | null;
     lateCheckout?: LateCheckout | null;
 
+    cancellation?: BookingCancellation;
 }
 
 // ====================== ROOM BOOKING ======================
@@ -84,4 +83,17 @@ export interface RoomBooking {
 
     earlyCheckin?: EarlyCheckin | null;
     lateCheckout?: LateCheckout | null;
+}
+
+// ====================== REFUND ======================
+export type RefundMethod = "BANK_TRANSFER" | "MOMO" | "ZALOPAL" | "VNPAY" | string;
+
+export interface BookingCancellation {
+    id: string;
+    booking: Booking;
+    cancelReason: string;
+    cancelledAt: string;
+    refundAmount: number;
+    refundMethod: RefundMethod;
+    refundAccountInfo: string;
 }

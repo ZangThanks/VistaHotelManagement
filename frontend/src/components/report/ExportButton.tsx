@@ -37,6 +37,43 @@ const ExportButton: React.FC<ExportButtonProps> = ({
 
         return result;
     };
+    // Chuẩn hóa dữ liệu revenue cho PDF + Excel
+    const buildRevenueTable = (reportData: any, mode: string) => {
+        if (!Array.isArray(reportData))
+            return { head: [], body: [], totals: {} };
+
+        // Xác định cột đầu tiên
+        let firstColumn = 'Date';
+        if (mode === 'weekly') firstColumn = 'Week';
+        if (mode === 'monthly') firstColumn = 'Month';
+        if (mode === 'yearly') firstColumn = 'Year';
+
+        const head = [
+            firstColumn,
+            'Room Revenue',
+            'Service Revenue',
+            'Total Revenue',
+        ];
+
+        const body = reportData.map((item: any) => [
+            item.date || item.week || item.month || item.year || '',
+            item.roomRevenue?.toLocaleString('vi-VN') || 0,
+            item.serviceRevenue?.toLocaleString('vi-VN') || 0,
+            item.totalRevenue?.toLocaleString('vi-VN') || 0,
+        ]);
+
+        const totals = reportData.reduce(
+            (acc: any, cur: any) => ({
+                roomRevenue: (acc.roomRevenue || 0) + (cur.roomRevenue || 0),
+                serviceRevenue:
+                    (acc.serviceRevenue || 0) + (cur.serviceRevenue || 0),
+                totalRevenue: (acc.totalRevenue || 0) + (cur.totalRevenue || 0),
+            }),
+            {},
+        );
+
+        return { head, body, totals };
+    };
 
     const exportToPDF = (reportData: any) => {
         const doc = new jsPDF();
@@ -217,9 +254,27 @@ const ExportButton: React.FC<ExportButtonProps> = ({
                         bodyStyles: {
                             fontSize: 8,
                             cellPadding: 3,
+                            halign: 'center',
                         },
                         alternateRowStyles: {
                             fillColor: [250, 248, 245],
+                        },
+                        tableWidth: pageWidth - 28,
+                        columnStyles: {
+                            0: { halign: 'center' },
+                            1: { halign: 'center' },
+                            2: { halign: 'center' },
+                            3: { halign: 'center' },
+                            4: { halign: 'center' },
+                            5: { halign: 'center' },
+                            6: { halign: 'center' },
+                            7: { halign: 'center' },
+                        },
+                        didParseCell: (cellData) => {
+                            // Áp dụng cùng alignment cho foot như body
+                            if (cellData.section === 'foot') {
+                                cellData.cell.styles.halign = 'center';
+                            }
                         },
                         margin: { left: 14, right: 14 },
                     });
@@ -229,6 +284,66 @@ const ExportButton: React.FC<ExportButtonProps> = ({
                 break;
 
             case 'revenue':
+                if (data) {
+                    const { head, body, totals } = buildRevenueTable(
+                        data,
+                        dateRange.mode || 'daily',
+                    );
+
+                    autoTable(doc, {
+                        startY: yPos,
+                        head: [head],
+                        body,
+                        foot: [
+                            [
+                                'TOTAL',
+                                totals.roomRevenue?.toLocaleString('vi-VN'),
+                                totals.serviceRevenue?.toLocaleString('vi-VN'),
+                                totals.totalRevenue?.toLocaleString('vi-VN'),
+                            ],
+                        ],
+                        theme: 'striped',
+                        headStyles: {
+                            fillColor: [204, 189, 163],
+                            textColor: [255, 255, 255],
+                            fontStyle: 'bold',
+                            fontSize: 9,
+                            halign: 'center',
+                        },
+                        footStyles: {
+                            fillColor: [204, 189, 163],
+                            textColor: [255, 255, 255],
+                            fontStyle: 'bold',
+                            fontSize: 9,
+                        },
+                        bodyStyles: {
+                            fontSize: 9,
+                            cellPadding: 3,
+                            halign: 'center',
+                        },
+                        alternateRowStyles: {
+                            fillColor: [250, 248, 245],
+                        },
+                        tableWidth: pageWidth - 28,
+                        columnStyles: {
+                            0: { halign: 'center' },
+                            1: { halign: 'center' },
+                            2: { halign: 'center' },
+                            3: { halign: 'center' },
+                        },
+                        didParseCell: (cellData) => {
+                            // Áp dụng cùng alignment cho foot như body
+                            if (cellData.section === 'foot') {
+                                cellData.cell.styles.halign = 'center';
+                            }
+                        },
+                        margin: { left: 14, right: 14 },
+                    });
+
+                    yPos = (doc as any).lastAutoTable.finalY + 10;
+                }
+                break;
+
             case 'occupancy':
             case 'loyalty':
             case 'reviews':

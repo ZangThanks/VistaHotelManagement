@@ -1,11 +1,16 @@
 // ====================== INTERFACES ======================
-
 export interface RevenueData {
-    date: string;
-    roomRevenue: number;
-    serviceRevenue: number;
+    label: string;
     totalRevenue: number;
-    bookingCount: number;
+    roomRevenue?: number;
+    serviceRevenue?: number;
+    bookingCount?: number;
+    day?: number;
+    month?: number;
+    year?: number;
+    week?: number;
+    quarter?: number;
+    date?: string;
 }
 
 export interface OccupancyData {
@@ -23,7 +28,6 @@ export interface LoyaltyData {
     gold: number;
     platinum: number;
     totalPoints: number;
-    redemptions: number;
 }
 
 export interface ReviewData {
@@ -38,12 +42,13 @@ export interface ReviewData {
 }
 
 export interface BookingData {
-    date: string;
-    website: number;
-    phone: number;
-    walkin: number;
+    period: string; // Match backend field name
     totalBookings: number;
+    completedBookings: number;
+    cancelledBookings: number;
     cancellationRate: number;
+    averageBookingValue: number;
+    totalRevenue: number;
 }
 
 export interface DateRange {
@@ -51,15 +56,15 @@ export interface DateRange {
     endDate: string;
 }
 
-// ====================== ReportPeriod (PPH version) ======================
+// ====================== ReportPeriod ======================
 export type ReportPeriod =
-    | "daily"
-    | "weekly"
-    | "monthly"
-    | "quarterly"
-    | "yearly";
+    | 'daily'
+    | 'weekly'
+    | 'monthly'
+    | 'quarterly'
+    | 'yearly';
 
-// ====================== ServiceData (HEAD version) ======================
+// ====================== ServiceData ======================
 export interface ServiceData {
     date: string;
     foodBeverage: number;
@@ -72,11 +77,11 @@ export interface ServiceData {
     avgOrderValue: number;
 }
 
-// ====================== ReportTab (HEAD version) ======================
+// ====================== ReportTab ======================
 export type ReportTab =
-    | "revenue"
-    | "occupancy"
-    | "loyalty"
-    | "reviews"
-    | "bookings"
-    | "services";
+    | 'revenue'
+    | 'occupancy'
+    | 'loyalty'
+    | 'reviews'
+    | 'bookings'
+    | 'services';

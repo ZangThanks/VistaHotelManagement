@@ -5,21 +5,6 @@ import type { Room } from '../view/RoomTableView';
 import BookingInfoPopup from '../modal/BookingInfoPopup';
 import type { RoomBooking } from '../../../types/Booking';
 
-// export interface RoomBooking {
-//     id: string;
-//     roomId: string;
-//     roomNumber: string;
-//     guestName: string;
-//     checkIn: Date;
-//     checkOut: Date;
-//     status:
-//         | 'pending'
-//         | 'confirmed'
-//         | 'checked-in'
-//         | 'checked-out'
-//         | 'cancelled';
-// }
-
 interface RoomCalendarViewProps {
     rooms: Room[];
     bookings: RoomBooking[];
@@ -40,7 +25,7 @@ interface CalendarDay {
 }
 
 /**
- * Calendar dạng tháng với các booking hiển thị như thanh kéo dài
+ * Calendar dạng tháng với các booking 
  */
 const RoomCalendarView: React.FC<RoomCalendarViewProps> = ({
     rooms,
@@ -57,7 +42,8 @@ const RoomCalendarView: React.FC<RoomCalendarViewProps> = ({
         null,
     );
 
-    // Không cần closeTimeoutRef nữa vì dùng click
+    console.log("RoomCalendarView - Rooms:", rooms);
+    console.log("RoomCalendarView - Bookings:", bookings);
 
     const weekDays = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
 
@@ -102,8 +88,13 @@ const RoomCalendarView: React.FC<RoomCalendarViewProps> = ({
             daysMap.set(dateKey, { ...day, bookings: [] });
         });
 
+        console.log("Processing bookings - Total:", bookings.length);
+
         bookings.forEach((booking) => {
-            const room = rooms.find((r) => r.id === booking.roomId);
+            console.log("Processing booking:", booking);
+            // Match by roomNumber instead of id
+            const room = rooms.find((r) => r.roomNumber === booking.roomNumber || r.id === booking.roomId);
+            console.log("Found room:", room, "for roomNumber:", booking.roomNumber, "roomId:", booking.roomId);
             if (!room) return;
 
             const checkIn = new Date(booking.checkIn);
@@ -223,6 +214,7 @@ const RoomCalendarView: React.FC<RoomCalendarViewProps> = ({
 
     const statusColors = {
         pending: 'bg-amber-500',
+        waiting: 'bg-yellow-500',
         confirmed: 'bg-blue-500',
         'checked-in': 'bg-emerald-500',
         'checked-out': 'bg-rose-500',
@@ -231,6 +223,7 @@ const RoomCalendarView: React.FC<RoomCalendarViewProps> = ({
 
     const statusBorderColors = {
         pending: 'border-amber-600',
+        waiting: 'border-yellow-600',
         confirmed: 'border-blue-600',
         'checked-in': 'border-emerald-600',
         'checked-out': 'border-rose-600',

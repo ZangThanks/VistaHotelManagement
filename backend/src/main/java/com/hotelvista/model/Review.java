@@ -1,6 +1,9 @@
 package com.hotelvista.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -16,6 +19,7 @@ import java.util.List;
 @NoArgsConstructor
 @Data
 @ToString
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Review {
     @Id
     @Column(name = "review_id")
@@ -23,13 +27,12 @@ public class Review {
 
     private double rating;
 
-    @Column(name = "room_quantity")
-    private int roomQuantity;
+    @Column(name = "room_quality")
+    private int roomQuality;
 
     @Column(name = "service_quantity")
     private int serviceQuality;
 
-    //cấp độ của comment
     private int location;
 
     @Column(name = "value_for_money")
@@ -45,6 +48,9 @@ public class Review {
     @Column(name = "is_anonymous")
     private boolean isAnonymous;
 
+    //phân biệt đánh giá chính và phản hồi
+    private boolean flag;
+
     @ElementCollection
     @CollectionTable(name = "review_images", joinColumns = @JoinColumn(name = "review_id"))
     @Column(name = "images_url")
@@ -52,6 +58,15 @@ public class Review {
 
     @ToString.Exclude
     @JsonIgnore
-    @OneToOne(mappedBy = "review")
+    @OneToOne(mappedBy = "review", fetch = FetchType.LAZY)
     private BookingDetail bookingDetail;
+
+    @JsonBackReference
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_review_id")
+    private Review parentReview;
+
+    @OneToMany(mappedBy = "parentReview", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, orphanRemoval = true)
+    @JsonManagedReference
+    private List<Review> replies;
 }

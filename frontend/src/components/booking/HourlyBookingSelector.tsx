@@ -1,5 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Calendar, Clock, Plus, Minus } from "lucide-react";
+import { getByRoom } from "../../services/bookingService";
+import type { Booking } from "../../types/Booking";
+import Dropdown from "../Dropdown";
+import { MdDangerous, MdDone } from "react-icons/md";
+import { IoMdInformationCircleOutline } from "react-icons/io";
+import { IoWarningOutline } from "react-icons/io5";
 
 interface HourlyBookingSelectorProps {
   checkInDate: Date | null;
@@ -10,6 +16,12 @@ interface HourlyBookingSelectorProps {
   onDurationChange: (hours: number) => void;
   minHours?: number;
   maxHours?: number;
+  selectedRooms?: string[]; // Thêm prop để nhận danh sách phòng đã chọn
+}
+
+interface BookingTimeRange {
+  checkIn: Date;
+  checkOut: Date;
 }
 
 export default function HourlyBookingSelector({
@@ -20,9 +32,102 @@ export default function HourlyBookingSelector({
   duration,
   onDurationChange,
   minHours = 2,
-  maxHours = 24,
+  maxHours = 9,
+  selectedRooms = [],
 }: HourlyBookingSelectorProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [bookedTimeRanges, setBookedTimeRanges] = useState<BookingTimeRange[]>(
+    []
+  ); // Lưu các khoảng thời gian đã đặt
+  const [unavailableTimeSlots, setUnavailableTimeSlots] = useState<string[]>(
+    []
+  ); // Giờ không khả dụng cho ngày đã chọn
+
+  // Fetch bookings cho tất cả phòng đã chọn
+  useEffect(() => {
+    const fetchBookings = async () => {
+      if (!selectedRooms || selectedRooms.length === 0) {
+        setBookedTimeRanges([]);
+        return;
+      }
+
+      try {
+        const allTimeRanges: BookingTimeRange[] = [];
+
+        for (const roomNumber of selectedRooms) {
+          const bookings: Booking[] = await getByRoom(roomNumber);
+
+          // Chỉ lấy các booking PENDING hoặc CHECKED_IN (bỏ qua CANCELLED, CHECKED_OUT)
+          const activeBookings = bookings.filter(
+            (b) => b.status === "PENDING" || b.status === "CHECKED_IN"
+          );
+
+          activeBookings.forEach((booking) => {
+            allTimeRanges.push({
+              checkIn: new Date(booking.checkInDate),
+              checkOut: new Date(booking.checkOutDate),
+            });
+          });
+        }
+
+        setBookedTimeRanges(allTimeRanges);
+        console.log("Booked time ranges for hourly booking:", allTimeRanges);
+      } catch (error) {
+        console.error("Failed to fetch bookings:", error);
+      }
+    };
+
+    fetchBookings();
+  }, [selectedRooms]);
+
+  // Cập nhật unavailable time slots khi chọn ngày
+  useEffect(() => {
+    if (!checkInDate || bookedTimeRanges.length === 0) {
+      setUnavailableTimeSlots([]);
+      return;
+    }
+
+    const unavailable = new Set<string>();
+    const selectedDate = new Date(checkInDate);
+    selectedDate.setHours(0, 0, 0, 0);
+
+    bookedTimeRanges.forEach(({ checkIn, checkOut }) => {
+      const checkInDate = new Date(checkIn);
+      checkInDate.setHours(0, 0, 0, 0);
+
+      const checkOutDate = new Date(checkOut);
+      checkOutDate.setHours(0, 0, 0, 0);
+
+      // Chỉ xử lý nếu booking nằm trong ngày đã chọn
+      if (
+        selectedDate.getTime() >= checkInDate.getTime() &&
+        selectedDate.getTime() <= checkOutDate.getTime()
+      ) {
+        // Tạo time slots 30 phút từ 6:00 đến 23:30
+        let currentTime = new Date(checkIn);
+        const endTime = new Date(checkOut);
+
+        // Block tất cả time slots từ check-in đến check-out
+        while (currentTime < endTime) {
+          // Chỉ block nếu là cùng ngày được chọn
+          const slotDate = new Date(currentTime);
+          slotDate.setHours(0, 0, 0, 0);
+
+          if (slotDate.getTime() === selectedDate.getTime()) {
+            const hour = currentTime.getHours().toString().padStart(2, "0");
+            const minute = currentTime.getMinutes().toString().padStart(2, "0");
+            unavailable.add(`${hour}:${minute}`);
+          }
+
+          // Tăng thêm 30 phút
+          currentTime = new Date(currentTime.getTime() + 30 * 60 * 1000);
+        }
+      }
+    });
+
+    setUnavailableTimeSlots(Array.from(unavailable));
+    console.log("Unavailable time slots:", Array.from(unavailable));
+  }, [checkInDate, bookedTimeRanges]);
 
   // Generate time slots (every 30 minutes from 6:00 to 23:30)
   const generateTimeSlots = () => {
@@ -75,6 +180,16 @@ export default function HourlyBookingSelector({
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
+  // Kiểm tra xem một ngày có booking hay không
+  const hasBookingOnDate = (date: Date): boolean => {
+    const dateStr = date.toDateString();
+    return bookedTimeRanges.some(({ checkIn, checkOut }) => {
+      const checkInStr = new Date(checkIn).toDateString();
+      const checkOutStr = new Date(checkOut).toDateString();
+      return dateStr === checkInStr || dateStr === checkOutStr;
+    });
+  };
+
   // Calculate check-out time
   const calculateCheckOutTime = () => {
     if (!checkInDate || !checkInTime) return "N/A";
@@ -105,6 +220,52 @@ export default function HourlyBookingSelector({
     }
   };
 
+  // Kiểm tra xem một time slot có khả dụng với duration hiện tại không
+  const isTimeSlotAvailableWithDuration = (timeSlot: string): boolean => {
+    if (!checkInDate || !timeSlot) return true;
+
+    const [hours, minutes] = timeSlot.split(":").map(Number);
+    const proposedCheckIn = new Date(checkInDate);
+    proposedCheckIn.setHours(hours, minutes, 0, 0);
+
+    const proposedCheckOut = new Date(
+      proposedCheckIn.getTime() + duration * 60 * 60 * 1000
+    );
+
+    console.log("Checking availability for:", {
+      proposedCheckIn: proposedCheckIn.toISOString(),
+      proposedCheckOut: proposedCheckOut.toISOString(),
+      duration: duration,
+    });
+
+    // Kiểm tra xem khoảng thời gian này có conflict với bất kỳ booking nào không
+    const hasConflict = bookedTimeRanges.some(({ checkIn, checkOut }) => {
+      const existingCheckIn = new Date(checkIn);
+      const existingCheckOut = new Date(checkOut);
+
+      console.log("Comparing with existing booking:", {
+        existingCheckIn: existingCheckIn.toISOString(),
+        existingCheckOut: existingCheckOut.toISOString(),
+      });
+
+      // Conflict nếu có bất kỳ overlap nào giữa 2 khoảng thời gian
+      // [A_start, A_end] và [B_start, B_end] overlap nếu:
+      // A_start < B_end AND A_end > B_start
+      const overlap =
+        proposedCheckIn < existingCheckOut &&
+        proposedCheckOut > existingCheckIn;
+
+      if (overlap) {
+        console.log("CONFLICT DETECTED!");
+      }
+
+      return overlap;
+    });
+
+    console.log("Has conflict:", hasConflict);
+    return !hasConflict;
+  };
+
   return (
     <div className="grid grid-cols-2 gap-6">
       {/* Date Selection */}
@@ -128,7 +289,7 @@ export default function HourlyBookingSelector({
           <div className="flex items-center justify-between mb-4">
             <button
               onClick={previousMonth}
-              className="p-2 hover:bg-gray-100 rounded-lg transition"
+              className="p-2 hover:bg-gray-100 rounded-lg transition cursor-pointer"
             >
               ←
             </button>
@@ -140,7 +301,7 @@ export default function HourlyBookingSelector({
             </h3>
             <button
               onClick={nextMonth}
-              className="p-2 hover:bg-gray-100 rounded-lg transition"
+              className="p-2 hover:bg-gray-100 rounded-lg transition cursor-pointer"
             >
               →
             </button>
@@ -173,21 +334,27 @@ export default function HourlyBookingSelector({
               const isSelected =
                 checkInDate && date.getTime() === checkInDate.getTime();
               const isPast = date < today;
+              const hasBooking = hasBookingOnDate(date);
 
               return (
                 <button
                   key={day}
                   onClick={() => !isPast && handleDateClick(day)}
                   disabled={isPast}
-                  className={`p-2 text-sm rounded-lg transition ${
+                  className={`p-2 text-sm rounded-lg transition relative ${
                     isSelected
-                      ? "bg-[#c9b8a8] text-white font-bold"
+                      ? "bg-[#c9b8a8] text-white font-bold cursor-pointer"
                       : isPast
                       ? "text-gray-300 cursor-not-allowed"
-                      : "hover:bg-gray-100 text-gray-900"
+                      : hasBooking
+                      ? "bg-yellow-100 text-gray-900 hover:bg-yellow-200 cursor-pointer"
+                      : "hover:bg-gray-100 text-gray-900 cursor-pointer"
                   }`}
                 >
                   {day}
+                  {hasBooking && !isSelected && (
+                    <span className="absolute top-1 right-1 w-1.5 h-1.5 bg-orange-500 rounded-full" />
+                  )}
                 </button>
               );
             })}
@@ -199,24 +366,60 @@ export default function HourlyBookingSelector({
       <div className="space-y-6">
         {/* Time Selection */}
         <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-200">
-          <label className="block text-sm font-semibold text-gray-900 mb-4">
-            Check-in Time
-          </label>
-          <div className="flex items-center gap-2 mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
-            <Clock size={20} className="text-gray-600" />
-            <select
-              value={checkInTime}
-              onChange={(e) => onCheckInTimeChange(e.target.value)}
-              className="flex-1 bg-transparent text-gray-900 font-medium focus:outline-none cursor-pointer"
-            >
-              <option value="">Select time</option>
-              {timeSlots.map((slot) => (
-                <option key={slot} value={slot}>
-                  {slot}
-                </option>
-              ))}
-            </select>
+          <div className="flex items-center gap-2 mb-4">
+            <Clock size={20} className="text-[#c9b8a8]" />
+            <label className="text-sm font-bold text-gray-900">
+              Check-in Time
+            </label>
           </div>
+
+          <Dropdown
+            options={[
+              {
+                value: "",
+                label: !checkInDate ? "Select date first" : "Select time",
+                icon: <Clock size={18} className="text-[#c9b8a8]" />,
+              },
+              ...timeSlots.map((slot) => {
+                const isUnavailable = !isTimeSlotAvailableWithDuration(slot);
+                return {
+                  value: slot,
+                  label: `${slot} ${
+                    isUnavailable ? `(Không khả dụng với ${duration}h)` : ""
+                  }`,
+                  icon: isUnavailable ? (
+                    <MdDangerous className="text-red-500" />
+                  ) : (
+                    <MdDone className="text-green-500" />
+                  ),
+                };
+              }),
+            ]}
+            value={checkInTime}
+            onChange={(value) => onCheckInTimeChange(value)}
+            placeholder="Select time"
+            className="w-full"
+          />
+
+          {checkInDate &&
+            checkInTime &&
+            !isTimeSlotAvailableWithDuration(checkInTime) && (
+              <div className="mt-3 p-3 bg-red-50 border-l-4 border-red-500 rounded-lg">
+                <p className="text-xs text-red-700 font-medium flex items-center gap-2">
+                  <MdDangerous className="text-red-500" />
+                  Giờ này không khả dụng với duration {duration}h. Vui lòng chọn
+                  giờ khác hoặc giảm duration.
+                </p>
+              </div>
+            )}
+          {unavailableTimeSlots.length > 0 && checkInDate && (
+            <div className="mt-3 p-3 bg-orange-50 border-l-4 border-orange-400 rounded-lg">
+              <p className="text-xs text-orange-700 font-medium flex items-center gap-2">
+                <IoWarningOutline className="text-orange-400" />
+                Một số khoảng thời gian đã có booking trong ngày này
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Duration Selection */}
@@ -231,7 +434,7 @@ export default function HourlyBookingSelector({
               className={`w-10 h-10 rounded-full flex items-center justify-center transition ${
                 duration <= minHours
                   ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                  : "bg-[#c9b8a8] text-white hover:bg-[#b8a896]"
+                  : "bg-[#c9b8a8] text-white hover:bg-[#b8a896] cursor-pointer"
               }`}
             >
               <Minus className="w-5 h-5" />
@@ -250,7 +453,7 @@ export default function HourlyBookingSelector({
               className={`w-10 h-10 rounded-full flex items-center justify-center transition ${
                 duration >= maxHours
                   ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                  : "bg-[#c9b8a8] text-white hover:bg-[#b8a896]"
+                  : "bg-[#c9b8a8] text-white hover:bg-[#b8a896] cursor-pointer"
               }`}
             >
               <Plus className="w-5 h-5" />

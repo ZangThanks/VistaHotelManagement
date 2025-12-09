@@ -18,7 +18,6 @@ import {
   getAllPromotionTypes,
   createPromotionType,
   updatePromotionType,
-  deletePromotionType,
 } from "../../../services/promotionTypeService";
 
 const PromotionTypeManagement: React.FC = () => {
@@ -32,10 +31,6 @@ const PromotionTypeManagement: React.FC = () => {
     useState<PromotionType | null>(null);
   const [detailPromotionType, setDetailPromotionType] =
     useState<PromotionType | null>(null);
-
-  // Confirm dialogs
-  const [confirmDeleteDialog, setConfirmDeleteDialog] = useState(false);
-  const [pendingDelete, setPendingDelete] = useState<string | null>(null);
 
   const toast = useToastContext();
 
@@ -107,29 +102,6 @@ const PromotionTypeManagement: React.FC = () => {
     } catch (error) {
       console.error("Error updating promotion type:", error);
       toast.error("Failed to update promotion type. Please try again.");
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const handleDeletePromotionType = (id: string) => {
-    setPendingDelete(id);
-    setConfirmDeleteDialog(true);
-  };
-
-  const confirmDeletePromotionType = async () => {
-    if (!pendingDelete) return;
-
-    try {
-      setSubmitting(true);
-      await deletePromotionType(pendingDelete);
-      toast.success("Promotion type deleted successfully!", { duration: 3000 });
-      setConfirmDeleteDialog(false);
-      setPendingDelete(null);
-      await fetchPromotionTypes();
-    } catch (error) {
-      console.error("Error deleting promotion type:", error);
-      toast.error("Failed to delete promotion type. It may be in use.");
     } finally {
       setSubmitting(false);
     }
@@ -360,15 +332,6 @@ const PromotionTypeManagement: React.FC = () => {
                         <FaEdit />
                         Edit
                       </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeletePromotionType(type.promotionTypeID);
-                        }}
-                        className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-all cursor-pointer"
-                      >
-                        <FaTrash />
-                      </button>
                     </div>
                   </div>
                 </motion.div>
@@ -400,22 +363,6 @@ const PromotionTypeManagement: React.FC = () => {
             setDetailPromotionType(null);
             setEditPromotionType(type);
           }}
-        />
-
-        {/* Confirm Delete Dialog */}
-        <ConfirmDialog
-          isOpen={confirmDeleteDialog}
-          onClose={() => {
-            setConfirmDeleteDialog(false);
-            setPendingDelete(null);
-          }}
-          onConfirm={confirmDeletePromotionType}
-          title="Delete Promotion Type"
-          message="Are you sure you want to delete this promotion type? This action cannot be undone. Make sure no promotions are using this type."
-          type="danger"
-          confirmText="Delete"
-          cancelText="Cancel"
-          isLoading={submitting}
         />
       </div>
     </div>

@@ -4,9 +4,14 @@ import {
   generateQRPayment,
   getBookingById,
   cancelBookingPayment,
+  confirmPayAtCheckout,
 } from "../../../services/bookingService";
 import type { Booking } from "../../../types/Booking";
 import CountdownTimer from "../../../components/common/CountdownTimer";
+import Header from "../../../components/Header";
+import { sendEmail } from "../../../services/emailService";
+import { confirmBookingEmail } from "../../../utils/emailTemplates/authEmails";
+import { formatNumber } from "../../../utils/formatters";
 
 const PaymentPage: React.FC = () => {
   const location = useLocation();
@@ -63,14 +68,26 @@ const PaymentPage: React.FC = () => {
       return;
     }
 
-    // Skip qr nếu chọn pay at check-out
+    // Skip QR nếu chọn pay at check-out
     if (choice === 0) {
       setLoading(true);
-      setTimeout(() => {
+      try {
+        // Gọi API để cập nhật booking status thành PLACE
+        await confirmPayAtCheckout(booking.bookingID);
+        console.log("Booking confirmed for pay at checkout");
+
         setLoading(false);
         setPaymentCompleted(true);
-        setTimeout(() => navigate("/"), 3000);
-      }, 1000);
+        setTimeout(
+          () => navigate(`/customer/mybooking/${booking.bookingID}`),
+          3000
+        );
+        handleSendEmailReceipt();
+      } catch (error) {
+        console.error("Error confirming booking:", error);
+        setLoading(false);
+        alert("Failed to confirm booking. Please try again.");
+      }
       return;
     }
 
@@ -80,9 +97,11 @@ const PaymentPage: React.FC = () => {
       const blob = await generateQRPayment(booking.bookingID, choice);
       const url = URL.createObjectURL(blob);
       setImageUrl(url);
-      // Start countdown timer
-      setShowTimer(true);
 
+      // Bắt đầu đếm ngược thời gian thanh toán
+      //setShowTimer(true);
+
+      //Bắt đầu polling kiểm tra trạng thái thanh toán
       startPaymentPolling();
     } catch (error) {
       console.error("Error fetching payment image:", error);
@@ -110,11 +129,77 @@ const PaymentPage: React.FC = () => {
           refreshed?.paymentStatus === "COMPLETED"
         ) {
           setPaymentCompleted(true);
-          setTimeout(() => navigate("/"), 5000);
+          handleSendEmailReceipt();
+          setTimeout(
+            () => navigate(`/customer/mybooking/${booking.bookingID}`),
+            5000
+          );
           return;
         }
       } catch (error) {
         console.debug("Polling attempt failed:", error);
+      }
+    }
+  };
+
+  const handleSendEmailReceipt = async () => {
+    const userDataStr = localStorage.getItem("user");
+    const userData = userDataStr ? JSON.parse(userDataStr) : null;
+    const user = userData?.data || userData;
+
+    if (user?.email && booking) {
+      // Format dates
+      const checkInDate = new Date(booking.checkInDate).toLocaleDateString(
+        "vi-VN",
+        {
+          weekday: "long",
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        }
+      );
+
+      const checkOutDate = new Date(booking.checkOutDate).toLocaleDateString(
+        "vi-VN",
+        {
+          weekday: "long",
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        }
+      );
+
+      // Get room details
+      const roomDetails =
+        booking.bookingDetails?.map(
+          (bd) =>
+            `Phòng ${bd.room.roomNumber} - ${
+              bd.room.roomType?.typeName || "Standard"
+            }`
+        ) || [];
+
+      const html = confirmBookingEmail(
+        user.fullName || user.userName || "Khách hàng",
+        booking.bookingID,
+        checkInDate,
+        checkOutDate,
+        booking.totalAmount,
+        roomDetails
+      );
+
+      try {
+        await sendEmail({
+          to: user.email,
+          subject: `Xác nhận đặt phòng #${booking.bookingID} - Vista Hotel`,
+          htmlContent: html,
+        });
+        console.log("Booking confirmation email sent successfully");
+      } catch (error) {
+        console.error("Failed to send booking confirmation email:", error);
       }
     }
   };
@@ -181,7 +266,10 @@ const PaymentPage: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4">
-      <div className="max-w-2xl w-full bg-white rounded-lg shadow-lg p-8">
+      <div className="fixed top-0 left-0 w-full z-[200]">
+        <Header />
+      </div>
+      <div className="max-w-2xl w-full bg-white rounded-lg shadow-lg p-8 pt-24">
         <h1 className="text-3xl font-bold mb-6 text-center text-gray-900">
           Payment
         </h1>
@@ -199,8 +287,8 @@ const PaymentPage: React.FC = () => {
               {booking.customer?.fullName}
             </p>
             <p>
-              <span className="font-medium">Total Amount:</span> $
-              {totalAmount.toFixed(2)}
+              <span className="font-medium">Total Amount:</span>{" "}
+              {formatNumber(totalAmount)} VND
             </p>
             <p>
               <span className="font-medium">Reputation Points:</span>{" "}
@@ -217,10 +305,10 @@ const PaymentPage: React.FC = () => {
         {/* Countdown Timer */}
         {showTimer && !paymentCompleted && !paymentExpired && (
           <div className="mb-6">
-            <CountdownTimer
+            {/* <CountdownTimer
               durationInMinutes={15}
               onExpire={handlePaymentExpiry}
-            />
+            /> */}
           </div>
         )}
 
@@ -228,7 +316,7 @@ const PaymentPage: React.FC = () => {
         {paymentExpired && (
           <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
             <p className="text-sm text-red-800 font-semibold">
-              ⚠️ Payment time has expired. Your booking is being cancelled...
+              Payment time has expired. Your booking is being cancelled...
             </p>
           </div>
         )}
@@ -250,7 +338,7 @@ const PaymentPage: React.FC = () => {
                 <div className="flex-1">
                   <span className="font-medium">Pay 100% now</span>
                   <span className="ml-2 text-gray-600">
-                    (${totalAmount.toFixed(2)})
+                    ({formatNumber(totalAmount)} VND)
                   </span>
                 </div>
               </label>
@@ -267,7 +355,7 @@ const PaymentPage: React.FC = () => {
                 <div className="flex-1">
                   <span className="font-medium">Pay 50% now</span>
                   <span className="ml-2 text-gray-600">
-                    (${(totalAmount * 0.5).toFixed(2)})
+                    ({formatNumber(totalAmount * 0.5)} VND)
                   </span>
                   <p className="text-xs text-gray-500 mt-1">
                     Remaining 50% at check-out
@@ -314,12 +402,12 @@ const PaymentPage: React.FC = () => {
           <div className="text-center">
             <h3 className="font-semibold mb-4">
               {paymentInfo.hasChoice
-                ? `Payment Amount: $${getAmountByChoice(selectedChoice).toFixed(
+                ? `Payment Amount: ${getAmountByChoice(selectedChoice).toFixed(
                     2
-                  )}`
-                : `Payment Required: $${paymentInfo.required.toFixed(2)} (${
-                    paymentInfo.percentage
-                  }%)`}
+                  )} VND`
+                : `Payment Required: ${formatNumber(
+                    paymentInfo.required
+                  )} VND (${paymentInfo.percentage}%)`}
             </h3>
             <img
               src={imageUrl}

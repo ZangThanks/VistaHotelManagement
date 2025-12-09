@@ -3,6 +3,7 @@ package com.hotelvista.repository;
 import com.hotelvista.model.Service;
 import com.hotelvista.model.enums.ServiceCategory;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 
@@ -30,5 +31,17 @@ public interface ServiceRepository extends JpaRepository<Service, String> {
      * @return
      */
     List<Service> findAllByServiceCategory(ServiceCategory serviceCategory);
+
+    /**
+     * Tìm Service theo bookingID
+     * @param bookingId
+     * @return List<Service>
+     */
+    @Query("""
+    SELECT bs.service
+    FROM BookingService bs
+    WHERE bs.booking.bookingID = :bookingId
+""")
+    List<Service> findServicesByBookingId(String bookingId);
 
 }

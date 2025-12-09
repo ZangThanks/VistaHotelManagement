@@ -38,6 +38,7 @@ public class RoomType {
     @Column(name = "base_price")
     private Double basePrice;
 
+    @ToString.Exclude
     @OneToMany(mappedBy = "roomType")
     @JsonIgnore
     private List<Room> rooms;
@@ -47,7 +48,6 @@ public class RoomType {
     @JsonIgnore
     private List<RoomTypePromotion> roomTypePromotions;
 
-    @ToString.Exclude
     @ManyToMany
     @JoinTable(
             name = "room_type_seasonal_price",
@@ -62,7 +62,7 @@ public class RoomType {
     private HourlyRatePolicy hourlyRatePolicy;
 
     @ManyToOne
-    @JoinColumn(name = "check_in_out_policy_id", nullable = false)
+    @JoinColumn(name = "check_in_out_policy_id", nullable = true)
     private CheckInCheckOutPolicy checkInPolicy;
 
 }

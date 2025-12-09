@@ -23,9 +23,18 @@ export const getById = async (id: string | number) => {
   }
 };
 
-export const saveCustomer = async (customer: Customer) => {
+export const saveCustomer = async (
+  customer: Customer | Omit<Customer, "id">
+) => {
   try {
+    console.log("CustomerService - Sending customer data:", customer);
+    console.log("CustomerService - Customer ID:", (customer as any).id);
+    console.log("CustomerService - Customer Email:", customer.email);
+
     const response = await axiosInstance.post(`${ENDPOINT}/save`, customer);
+
+    console.log("CustomerService - Response status:", response.status);
+    console.log("CustomerService - Response data:", response.data);
 
     if (response.data && Object.keys(response.data).length > 0) {
       return response.data;
@@ -33,16 +42,22 @@ export const saveCustomer = async (customer: Customer) => {
 
     return null;
   } catch (error) {
-    console.error("Error saving customer:", error);
+    console.error("CustomerService - Error saving customer:", error);
 
     // có phản hồi từ server
     if (error && typeof error === "object" && "response" in error) {
       const err = error as any;
-      console.error("Response error:", err.response?.data);
-      throw new Error(
-        err.response?.data?.message ||
-          `Lỗi ${err.response?.status}: Không thể lưu khách hàng`
-      );
+      console.error("CustomerService - Response status:", err.response?.status);
+      console.error("CustomerService - Response data:", err.response?.data);
+      console.error("CustomerService - Full response:", err.response);
+
+      // Backend trả về string trực tiếp trong response.data
+      const errorMessage =
+        err.response?.data ||
+        `Lỗi ${err.response?.status}: Không thể lưu khách hàng`;
+
+      console.error("CustomerService - Throwing error:", errorMessage);
+      throw new Error(errorMessage);
     }
 
     // không có phản hồi
@@ -61,3 +76,27 @@ export const searchByName = async (name: string) => {
     throw error;
   }
 };
+
+export const findByPhone = async (phone: string): Promise<Customer | null> => {
+  try {
+    const response = await axiosInstance.get(
+      `${ENDPOINT}/by-phone/${encodeURIComponent(phone)}`
+    );
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const findByEmail = async (email: string): Promise<Customer | null> => {
+  try {
+    const response = await axiosInstance.get(
+      `${ENDPOINT}/by-email/${encodeURIComponent(email)}`
+    );
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+

@@ -44,68 +44,91 @@ public class UserService {
         if (email != null && !email.isBlank()) {
             // Ưu tiên email
             User u = customerRepo.findByEmail(email).orElse(null);
-            if (u != null) return u;
+            if (u != null)
+                return u;
 
             u = adminRepo.findByEmail(email).orElse(null);
-            if (u != null) return u;
+            if (u != null)
+                return u;
 
             u = employeeRepo.findByEmail(email).orElse(null);
-            if (u != null) return u;
+            if (u != null)
+                return u;
         }
 
         if (phone != null && !phone.isBlank()) {
             // Thử phone
             User u = customerRepo.findByPhone(phone).orElse(null);
-            if (u != null) return u;
+            if (u != null)
+                return u;
 
             u = adminRepo.findByPhone(phone).orElse(null);
-            if (u != null) return u;
+            if (u != null)
+                return u;
 
             u = employeeRepo.findByPhone(phone).orElse(null);
-            if (u != null) return u;
+            if (u != null)
+                return u;
         }
 
         return null;
     }
 
     /**
-     * Tìm user bằng email, phone hoặc userName, áp dụng cho Customer + Admin + Employee
+     * Tìm user bằng email, phone hoặc userName, áp dụng cho Customer + Admin +
+     * Employee
      */
     public User findByEmailOrPhoneOrUserName(String email, String phone, String userName) {
         if (email != null && !email.isBlank()) {
             User u = customerRepo.findByEmail(email).orElse(null);
-            if (u != null) return u;
+            if (u != null)
+                return u;
 
             u = adminRepo.findByEmail(email).orElse(null);
-            if (u != null) return u;
+            if (u != null)
+                return u;
 
             u = employeeRepo.findByEmail(email).orElse(null);
-            if (u != null) return u;
+            if (u != null)
+                return u;
         }
 
         if (phone != null && !phone.isBlank()) {
             User u = customerRepo.findByPhone(phone).orElse(null);
-            if (u != null) return u;
+            if (u != null)
+                return u;
 
             u = adminRepo.findByPhone(phone).orElse(null);
-            if (u != null) return u;
+            if (u != null)
+                return u;
 
             u = employeeRepo.findByPhone(phone).orElse(null);
-            if (u != null) return u;
+            if (u != null)
+                return u;
         }
 
         if (userName != null && !userName.isBlank()) {
             User u = customerRepo.findByUserName(userName).orElse(null);
-            if (u != null) return u;
+            if (u != null)
+                return u;
 
             u = adminRepo.findByUserName(userName).orElse(null);
-            if (u != null) return u;
+            if (u != null)
+                return u;
 
             u = employeeRepo.findByUserName(userName).orElse(null);
-            if (u != null) return u;
+            if (u != null)
+                return u;
         }
 
         return null;
+    }
+
+    /**
+     * Alias method for findByEmailOrPhoneOrUserName
+     */
+    public User findByEmailOrPhoneOrUsername(String email, String phone, String username) {
+        return findByEmailOrPhoneOrUserName(email, phone, username);
     }
 
     public boolean resetPasswordByEmail(String email, String newPassword) {
@@ -113,25 +136,32 @@ public class UserService {
 
         if (email != null && !email.isBlank()) {
             user = customerRepo.findByEmail(email).orElse(null);
-            if (user == null) user = adminRepo.findByEmail(email).orElse(null);
-            if (user == null) user = employeeRepo.findByEmail(email).orElse(null);
+            if (user == null)
+                user = adminRepo.findByEmail(email).orElse(null);
+            if (user == null)
+                user = employeeRepo.findByEmail(email).orElse(null);
         }
 
-        if (user == null) return false;
+        if (user == null)
+            return false;
 
         user.setPassword(passwordEncoder.encode(newPassword));
 
         // Lưu vào repo tương ứng
-        if (user instanceof Customer) customerRepo.save((Customer) user);
-        else if (user instanceof Admin) adminRepo.save((Admin) user);
-        else if (user instanceof Employee) employeeRepo.save((Employee) user);
+        if (user instanceof Customer)
+            customerRepo.save((Customer) user);
+        else if (user instanceof Admin)
+            adminRepo.save((Admin) user);
+        else if (user instanceof Employee)
+            employeeRepo.save((Employee) user);
 
         return true;
     }
 
     public User createUserIfNotExists(String email, String fullName, String provider) {
         User existing = customerRepo.findByEmail(email).orElse(null);
-        if (existing != null) return existing;
+        if (existing != null)
+            return existing;
 
         // create user mới
         Customer c = new Customer();

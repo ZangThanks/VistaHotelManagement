@@ -158,10 +158,26 @@ export const updateRoomStatus = async (
         };
 
         // Gọi API để lưu thay đổi
-        const response = await api.post(`/room/save`, updateRoom);
+        const response = await api.post(`/rooms/save`, updateRoom);
         return response.data;
     } catch (error) {
         console.error('Error updating room status:', error);
+        throw error;
+    }
+};
+
+// Lấy danh sách phòng trống theo khoảng thời gian (ISO datetime)
+export const getAvailableRooms = async (
+    startDate: string, // ISO datetime: YYYY-MM-DDTHH:mm:ss
+    endDate: string, // ISO datetime: YYYY-MM-DDTHH:mm:ss
+): Promise<Room[]> => {
+    try {
+        const response = await api.get(`${ENDPOINT}/available`, {
+            params: { startDate, endDate },
+        });
+        return Array.isArray(response.data) ? response.data : [];
+    } catch (error) {
+        console.error('Error fetching available rooms:', error);
         throw error;
     }
 };
@@ -178,4 +194,5 @@ export const roomService = {
     getAllRoomTypes,
     getNextRoomNumber,
     updateRoomStatus,
+    getAvailableRooms, // added
 };

@@ -40,14 +40,14 @@ public class SecurityConfig {
     /**
      * Cấu hình chuỗi filter bảo mật cho HTTP requests.
      * Định nghĩa các quy tắc authorization cho từng endpoint.
-     * 
+     *
      * Quy tắc phân quyền:
      * - /auth/**, /public/**: Cho phép truy cập công khai (không cần xác thực)
      * - /admin/**: Chỉ ADMIN
      * - /employee/**: ADMIN và EMPLOYEE
      * - /customer/**: ADMIN, EMPLOYEE và CUSTOMER
      * - Các endpoint khác: Yêu cầu xác thực
-     * 
+     *
      * @param http đối tượng HttpSecurity để cấu hình bảo mật
      * @return SecurityFilterChain đã được cấu hình
      * @throws Exception nếu có lỗi trong quá trình cấu hình
@@ -73,18 +73,22 @@ public class SecurityConfig {
 
                 // Authorization rules
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/auth/**",
-                                "/oauth2/**",
-                                "/login/oauth2/**",
-                                "/error",
-                                "/public/**"
-                        ).permitAll()
+                                .requestMatchers("/ws/**").permitAll()
+                                .requestMatchers("/topic/**").permitAll()
+                                .requestMatchers("/queue/**").permitAll()
+                                .requestMatchers(
+                                        "/auth/**",
+                                        "/oauth2/**",
+                                        "/login/oauth2/**",
+                                        "/error",
+                                        "/public/**"
+                                ).permitAll()
 //                        .requestMatchers("/admin/**").hasAuthority("ADMIN")
 //                        .requestMatchers("/employee/**").hasAnyAuthority("ADMIN", "EMPLOYEE")
 //                        .requestMatchers("/customer/**").hasAnyAuthority("ADMIN", "EMPLOYEE", "CUSTOMER")
-                        .anyRequest().permitAll()
+                                .anyRequest().permitAll()
                 )
+                .headers(headers -> headers.frameOptions(frame -> frame.disable()))
                 // OAuth2 Login
                 .oauth2Login(oauth -> oauth
                         .authorizationEndpoint(ep -> ep
@@ -109,14 +113,14 @@ public class SecurityConfig {
     /**
      * Tạo bean cấu hình CORS cho Spring Security.
      * Định nghĩa các quy tắc CORS cho tất cả các endpoints.
-     * 
+     *
      * Cấu hình:
      * - Cho phép origin: http://localhost:5173
      * - Cho phép methods: GET, POST, PUT, DELETE, OPTIONS, PATCH
      * - Cho phép tất cả headers
      * - Cho phép gửi credentials
      * - Cache preflight: 3600 giây
-     * 
+     *
      * @return CorsConfigurationSource đã được cấu hình
      */
     @Bean

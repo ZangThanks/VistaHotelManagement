@@ -6,27 +6,27 @@ import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBr
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 
+
 @Configuration
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
-        // Enable simple broker for destinations prefixed with "/topic" and "/queue"
         config.enableSimpleBroker("/topic", "/queue");
-
-        // Set application destination prefix for messages from client
         config.setApplicationDestinationPrefixes("/app");
-
-        // Set user destination prefix for private messages
         config.setUserDestinationPrefix("/user");
     }
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        // Register websocket endpoint with SockJS fallback
-        registry.addEndpoint("/ws")
+
+        registry.addEndpoint("/ws")     // endpoint WS
                 .setAllowedOriginPatterns("*")
-                .withSockJS();
+                .withSockJS();          // quan trọng khi chạy FE bằng Vite
+
+        System.out.println("🔥 WebSocket /ws is READY for Vite");
     }
 }
+
+

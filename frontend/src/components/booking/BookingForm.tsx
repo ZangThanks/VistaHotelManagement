@@ -4,19 +4,16 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Calendar } from 'lucide-react';
 import BookingCalendar from '../common/Calendar';
 import HourlyBookingSelector from './HourlyBookingSelector';
-
 import { TfiUser, TfiMore } from 'react-icons/tfi';
 import { MdOutlineRoomService, MdRoomService } from 'react-icons/md';
-import { RiHotelLine } from 'react-icons/ri';
-import { TbHotelService } from 'react-icons/tb';
-import { CiSquareQuestion } from 'react-icons/ci';
-
 import { getAll } from '../../services/serviceService';
+import { CiSquareQuestion } from 'react-icons/ci';
 import {
     generateBookingID,
     saveBookingWithDetails,
     getBookingById,
     overlapBookingExists,
+    checkRoomAvailability,
 } from '../../services/bookingService';
 import { getById } from '../../services/customerService';
 
@@ -24,23 +21,22 @@ import {
     getByCustomerIdAndStateTrue,
     saveCustomerVoucher,
 } from '../../services/customerVoucherService';
-
-import { getRoomById } from '../../services/roomService';
-import { getCartBeanByCustomerId } from '../../services/cartBeanService';
-
-import CustomerVoucherModal from './CustomerVoucherModal';
-
-// Hourly rate policy
-import { getAllPolicyBaseRates } from '../../services/hourlyRatePolicyService';
-
 import type { Customer } from '../../types/Customer';
 import type { Service } from '../../types/Service';
 import type { CustomerVoucher } from '../../types/CustomerVoucher';
 import type { Room } from '../../types/Room';
+import { getRoomById } from '../../services/roomService';
+import { getCartBeanByCustomerId } from '../../services/cartBeanService';
+import CustomerVoucherModal from './CustomerVoucherModal';
+import { RiHotelLine } from 'react-icons/ri';
+import { TbHotelService } from 'react-icons/tb';
+import { getAllPolicyBaseRates } from '../../services/HourlyRatePolicyService';
 import type {
     HourlyRatePolicy,
     BaseRateItem,
 } from '../../types/HourlyRatePolicy';
+import { useToastContext } from '../../hooks/useToastContext';
+import { calculateDiscountedPrice } from '../../services/roomTypeService';
 
 interface BookingFormProps {
     currentStep: number;
@@ -75,18 +71,15 @@ export default function BookingForm({
 }: BookingFormProps) {
     const navigate = useNavigate();
     const location = useLocation();
+    const { error: showErrorToast } = useToastContext();
 
     // Get booking type from route state
     const bookingType: BookingType =
         (location.state as any)?.bookingType || 'DAILY';
 
     // Daily booking states
-    const [checkInDate, setCheckInDate] = useState<Date | null>(
-        new Date(2025, 8, 18),
-    );
-    const [checkOutDate, setCheckOutDate] = useState<Date | null>(
-        new Date(2025, 8, 19),
-    );
+    const [checkInDate, setCheckInDate] = useState<Date | null>(null);
+    const [checkOutDate, setCheckOutDate] = useState<Date | null>(null);
 
     // Hourly booking states
     const [hourlyCheckInDate, setHourlyCheckInDate] = useState<Date | null>(
@@ -98,7 +91,6 @@ export default function BookingForm({
     // Special requests text (was missing — required by booking payload)
     const [specialRequests, setSpecialRequests] = useState<string>('');
 
-    const [promotionCode, setPromotionCode] = useState('');
     // Services and vouchers state
     const [services, setServices] = useState<Service[]>([]);
     const [customerVouchers, setCustomerVouchers] = useState<CustomerVoucher[]>(
@@ -114,20 +106,34 @@ export default function BookingForm({
         Record<string, string[] | 'ALL'>
     >({}); // e.g. { serviceId: "ALL" } or { serviceId: ["101","102"] }
 
+    // Thêm state cho số lượng dịch vụ
+    const [serviceQuantities, setServiceQuantities] = useState<
+        Record<string, number>
+    >({});
+
     const [selectedPaymentMethod, setSelectedPaymentMethod] =
         useState<PaymentMethod>(PAYMENT_METHODS[0]);
-    const [selectedRoom, setSelectedRoom] = useState<string[]>([]);
     const [rooms, setRooms] = useState<Room[]>([]);
+    const [selectedRoom, setSelectedRoom] = useState<string[]>([]);
     const [bookingID, setBookingID] = useState<string>('');
     const [isVoucherModalOpen, setIsVoucherModalOpen] = useState(false);
     const [selectedVoucher, setSelectedVoucher] = useState<CustomerVoucher[]>(
         [],
     );
+
     // Lưu danh sách policies từ DB, dùng lấy baseRates, weekendSurcharge, weekkendDays
     const [hourlyRatePolicies, setHourlyRatePolicies] = useState<
         HourlyRatePolicy[]
     >([]);
     const [bookedDates, setBookedDates] = useState<Date[]>([]);
+
+    // State để lưu các giá trị đã tính toán
+    const [roomCosts, setRoomCosts] = useState<number>(0);
+    const [serviceCosts, setServiceCosts] = useState<number>(0);
+    const [subTotal, setSubTotal] = useState<number>(0);
+    const [discount, setDiscount] = useState<number>(0);
+    const [totalAmount, setTotalAmount] = useState<number>(0);
+    const [roomPrices, setRoomPrices] = useState<Record<string, number>>({});
 
     const fetchedData = async () => {
         try {
@@ -191,7 +197,7 @@ export default function BookingForm({
             const roomsData = await Promise.all(roomPromises);
             setRooms(roomsData);
 
-            // Fetch booked dates for all selected rooms
+            // Fetch booked dates for all selected rooms (for daily booking calendar)
             if (roomsToUse.length > 0) {
                 try {
                     const bookedDatesPromises = roomsToUse.map((roomId) =>
@@ -204,7 +210,7 @@ export default function BookingForm({
                     // Flatten and convert to Date objects
                     const allBookedDates = bookedDatesArrays
                         .flat()
-                        .map((dateStr) => new Date(dateStr));
+                        .map((dateStr: any) => new Date(dateStr));
 
                     setBookedDates(allBookedDates);
                     console.log('Booked dates:', allBookedDates);
@@ -259,32 +265,95 @@ export default function BookingForm({
         fetchedData();
     }, []);
 
+    // Effect để tính toán lại giá khi có thay đổi
+    useEffect(() => {
+        const updateCosts = async () => {
+            const roomCost = await calculateRoomCosts();
+            const serviceCost = calculateServiceCosts();
+            const sub = await calculateSubTotal();
+            const disc = await calculateDiscount();
+            const total = await calculatedTotalAmount();
+
+            setRoomCosts(roomCost);
+            setServiceCosts(serviceCost);
+            setSubTotal(sub);
+            setDiscount(disc);
+            setTotalAmount(total);
+
+            // Tính giá từng phòng
+            const prices: Record<string, number> = {};
+            for (const room of rooms) {
+                const roomTypeId = room.roomType?.roomTypeID;
+                if (roomTypeId) {
+                    const price = await calculateRoomPriceAfterApplyPromotion(
+                        roomTypeId,
+                    );
+                    prices[room.roomNumber!] = price;
+                }
+            }
+            setRoomPrices(prices);
+        };
+
+        if (rooms.length > 0) {
+            updateCosts();
+        }
+    }, [
+        rooms,
+        selectedServices,
+        selectedVoucher,
+        checkInDate,
+        checkOutDate,
+        hourlyCheckInDate,
+        duration,
+        bookingType,
+    ]);
+
     const handleNextStep = () => {
-        if (!checkInDate) {
-            setError('Please select a check-in date.');
-            return;
-        }
-        if (!checkOutDate) {
-            setError('Please select a check-out date.');
-            return;
-        }
-
-        const ci = new Date(checkInDate);
-        ci.setHours(0, 0, 0, 0);
-        const co = new Date(checkOutDate);
-        co.setHours(0, 0, 0, 0);
-
-        if (currentStep === 1) {
-            // Kiểm tra chồng lấn với các ngày đã được đặt
-            if (isDateRangeOverlapping(ci, co, bookedDates)) {
-                setError(
-                    'The selected date range overlaps with already booked dates. Please choose different dates.',
-                );
+        if (bookingType === 'HOURLY') {
+            // Validation for hourly booking
+            if (!hourlyCheckInDate) {
+                showErrorToast('Please select a check-in date.');
                 return;
-            } else {
-                setError('');
+            }
+            if (!checkInTime) {
+                showErrorToast('Please select a check-in time.');
+                return;
+            }
+            if (duration < 1) {
+                showErrorToast('Minimum duration is 1 hour.');
+                return;
+            }
+        } else {
+            // Check-in validation
+            if (!checkInDate) {
+                showErrorToast('Please select a valid check-in date.');
+                return;
+            }
+
+            // Check-out validation
+            if (!checkOutDate || checkOutDate < checkInDate) {
+                showErrorToast('Please select a valid check-out date.');
+                return;
+            }
+
+            const ci = new Date(checkInDate);
+            ci.setHours(0, 0, 0, 0);
+            const co = new Date(checkOutDate);
+            co.setHours(0, 0, 0, 0);
+
+            if (currentStep === 1) {
+                // Kiểm tra chồng lấn với các ngày đã được đặt
+                if (isDateRangeOverlapping(ci, co, bookedDates)) {
+                    showErrorToast(
+                        'The selected date range overlaps with already booked dates. Please choose different dates.',
+                    );
+                    return;
+                } else {
+                    setError('');
+                }
             }
         }
+
         if (currentStep < 4) {
             setCurrentStep(currentStep + 1);
         }
@@ -331,6 +400,12 @@ export default function BookingForm({
                     delete copy[serviceId];
                     return copy;
                 });
+                // remove quantity
+                setServiceQuantities((q) => {
+                    const copy = { ...q };
+                    delete copy[serviceId];
+                    return copy;
+                });
                 return prev.filter((id) => id !== serviceId);
             } else {
                 // add service and default to ALL rooms
@@ -338,9 +413,36 @@ export default function BookingForm({
                     ...t,
                     [serviceId]: rooms.length <= 1 ? 'ALL' : 'ALL',
                 }));
+                // set default quantity to 1
+                setServiceQuantities((q) => ({
+                    ...q,
+                    [serviceId]: 1,
+                }));
                 return [...prev, serviceId];
             }
         });
+    };
+
+    // Hàm cập nhật số lượng dịch vụ
+    const updateServiceQuantity = (serviceId: string, quantity: number) => {
+        if (quantity < 1) quantity = 1;
+        if (quantity > 99) quantity = 99;
+        setServiceQuantities((prev) => ({
+            ...prev,
+            [serviceId]: quantity,
+        }));
+    };
+
+    // Hàm tăng số lượng
+    const incrementQuantity = (serviceId: string) => {
+        const current = serviceQuantities[serviceId] || 1;
+        updateServiceQuantity(serviceId, current + 1);
+    };
+
+    // Hàm giảm số lượng
+    const decrementQuantity = (serviceId: string) => {
+        const current = serviceQuantities[serviceId] || 1;
+        updateServiceQuantity(serviceId, current - 1);
     };
 
     // Return selected Service objects from services array
@@ -368,25 +470,22 @@ export default function BookingForm({
     const setServiceApplyAll = (serviceId: string, applyAll: boolean) => {
         setSelectedServiceTargets((prev) => ({
             ...prev,
-            [serviceId]: applyAll
-                ? 'ALL'
-                : rooms
-                      .map((r) => r.roomNumber)
-                      .filter((num): num is string => num !== undefined),
+            [serviceId]: applyAll ? 'ALL' : rooms.map((r) => r.roomNumber),
         }));
     };
 
-    // Tính tổng chi phí dịch vụ
+    // Tính tổng chi phí dịch vụ - cập nhật để tính theo số lượng
     const calculateServiceCosts = () => {
         return getSelectedServiceObjects().reduce((sum, service) => {
             const targets = selectedServiceTargets[service.serviceID];
+            const quantity = serviceQuantities[service.serviceID] || 1;
             let factor = 1;
             if (!targets || targets === 'ALL') {
                 factor = rooms.length || 1;
             } else if (Array.isArray(targets)) {
                 factor = targets.length || 1;
             }
-            return sum + service.price * factor;
+            return sum + service.price * factor * quantity;
         }, 0);
     };
 
@@ -488,17 +587,27 @@ export default function BookingForm({
     };
 
     // Tính tổng chi phí phòng
-    const calculateRoomCosts = () => {
+    const calculateRoomCosts = async () => {
+        // HOURLY
         if (bookingType === 'HOURLY') {
-            // For hourly booking, calculate based on percentage
-            return rooms.reduce((sum, room) => {
+            return await rooms.reduce(async (sumPromise, room) => {
+                const sum = await sumPromise;
+
                 const basePrice = room.roomType?.basePrice || 0;
                 const ratePercentage = calculateHourlyRate(
                     duration,
                     hourlyCheckInDate,
                 );
-                // Công thức: (Giá phòng/đêm × Tổng %) / 100
-                const totalPrice = (basePrice * ratePercentage) / 100;
+
+                const roomTypeId = room.roomType?.roomTypeID;
+                if (!roomTypeId) return sum;
+
+                const price = await calculateRoomPriceAfterApplyPromotion(
+                    roomTypeId,
+                );
+
+                const totalPrice = (price * ratePercentage) / 100;
+
                 console.log(
                     `Room ${
                         room.roomNumber
@@ -506,15 +615,34 @@ export default function BookingForm({
                         0,
                     )} VND`,
                 );
+
                 return sum + totalPrice;
-            }, 0);
+            }, Promise.resolve(0));
         } else {
-            // For daily booking
-            return rooms.reduce(
-                (sum, room) => sum + (room.roomType?.basePrice || 0),
-                0,
-            );
+            // DAILY
+            return await rooms.reduce(async (sumPromise, room) => {
+                const sum = await sumPromise;
+
+                const roomTypeId = room.roomType?.roomTypeID;
+                if (!roomTypeId) return sum;
+
+                const price = await calculateRoomPriceAfterApplyPromotion(
+                    roomTypeId,
+                );
+                console.log('Price: ' + price);
+
+                return sum + price;
+            }, Promise.resolve(0));
         }
+    };
+
+    //Lấy giá phòng sau khi áp dụng khuyến mãi
+    const calculateRoomPriceAfterApplyPromotion = async (
+        roomTypeId: string,
+    ) => {
+        const today = new Date().toISOString().split('T')[0];
+
+        return await calculateDiscountedPrice(roomTypeId, today);
     };
 
     const handleSaveBooking = async () => {
@@ -577,12 +705,64 @@ export default function BookingForm({
             ci = new Date(hourlyCheckInDate);
             ci.setHours(hours, minutes, 0, 0);
             co = new Date(ci.getTime() + duration * 60 * 60 * 1000);
+
+            // Check if booking time is in the past
+            const now = new Date();
+            if (ci <= now) {
+                showErrorToast('Check-in time must be in the future.');
+                return;
+            }
+
+            // Check room availability for hourly bookings
+            try {
+                setLoading(true);
+                for (const room of rooms) {
+                    const conflicts = await checkRoomAvailability(
+                        room.roomNumber || '',
+                        ci.toISOString(),
+                        co.toISOString(),
+                    );
+
+                    if (conflicts && conflicts.length > 0) {
+                        const conflictDetails = conflicts
+                            .map((b) => {
+                                const checkIn = new Date(b.checkInDate);
+                                const checkOut = new Date(b.checkOutDate);
+                                return `${checkIn.toLocaleString('vi-VN', {
+                                    day: '2-digit',
+                                    month: '2-digit',
+                                    year: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                })} - ${checkOut.toLocaleString('vi-VN', {
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                })}`;
+                            })
+                            .join('; ');
+
+                        showErrorToast(
+                            `Room ${room.roomNumber} is already booked during this time. Conflicting bookings: ${conflictDetails}`,
+                        );
+                        setLoading(false);
+                        return;
+                    }
+                }
+                setLoading(false);
+            } catch (err) {
+                console.error('Error checking room availability:', err);
+                showErrorToast(
+                    'Cannot check room availability. Please try again.',
+                );
+                setLoading(false);
+                return;
+            }
         }
 
-        let checkInWithTime = new Date(checkInDate!);
+        let checkInWithTime = new Date(checkInDate);
         checkInWithTime.setHours(14, 0, 0, 0);
 
-        let checkOutWithTime = new Date(checkOutDate!);
+        let checkOutWithTime = new Date(checkOutDate);
         checkOutWithTime.setHours(12, 0, 0, 0);
 
         const formatLocalDateTime = (date: Date) => {
@@ -630,11 +810,12 @@ export default function BookingForm({
             checkInDate: formatLocalDateTime(checkInWithTime),
             checkOutDate: formatLocalDateTime(checkOutWithTime),
             numberOfGuests: booking.numberOfGuests || 1,
-            status: booking.status || 'PENDING',
+            status: 'WAITING',
             specialRequests: specialRequests,
             bookingDate: new Date().toISOString(),
             packageType: booking.packageType || 'Standard',
-            totalAmount,
+            totalAmount: await calculatedTotalAmount(),
+            invoiceType: 'ROOM_BOOKING',
             paymentStatus: 'PENDING',
             type: bookingType,
             duration: bookingType === 'HOURLY' ? duration : 0,
@@ -642,7 +823,7 @@ export default function BookingForm({
             customer: {
                 id: customer?.id || null,
             },
-            totalCost: totalAmount,
+            totalCost: await calculateServiceCosts(),
         };
 
         const bookingDetails = rooms.map((r: Room) => ({
@@ -657,14 +838,16 @@ export default function BookingForm({
         const bookingServicesWithRooms: any[] = [];
         getSelectedServiceObjects().forEach((s: Service) => {
             const targets = selectedServiceTargets[s.serviceID];
+            const quantity = serviceQuantities[s.serviceID] || 1;
+
             if (!targets || targets === 'ALL') {
                 // apply to every room in the booking
                 rooms.forEach((room) => {
                     bookingServicesWithRooms.push({
                         service: { serviceID: s.serviceID },
                         servicePrice: s.price,
-                        quantity: 1,
-                        totalAmount: s.price,
+                        quantity: quantity,
+                        totalAmount: s.price * quantity,
                         orderStatus: 'PLACE',
                         paymentMethod: selectedPaymentMethod,
                         room: { roomNumber: room.roomNumber },
@@ -675,8 +858,8 @@ export default function BookingForm({
                     bookingServicesWithRooms.push({
                         service: { serviceID: s.serviceID },
                         servicePrice: s.price,
-                        quantity: 1,
-                        totalAmount: s.price,
+                        quantity: quantity,
+                        totalAmount: s.price * quantity,
                         orderStatus: 'PLACE',
                         paymentMethod: selectedPaymentMethod,
                         room: { roomNumber },
@@ -743,16 +926,27 @@ export default function BookingForm({
         return diffDays > 0 ? diffDays : 1;
     };
 
-    const numberOfNights = calculateNights();
-    const totalRoomCosts =
-        bookingType === 'HOURLY'
-            ? calculateRoomCosts() // Hourly booking
-            : calculateRoomCosts() * numberOfNights; // Daily booking
-    const totalServiceCosts = calculateServiceCosts();
-    const subtotal = totalRoomCosts + totalServiceCosts;
+    //Tính tổng tiền trước giảm giá (rooms + services)
+    const calculateSubTotal = async () => {
+        const numberOfNights = calculateNights();
+        const roomCost = await calculateRoomCosts();
+
+        const totalRoomCosts = roomCost * numberOfNights;
+
+        // Không cần dòng này nữa vì đã có state discount
+        // const discountValue = calculateDiscount();roomCost * numberOfNights;
+
+        const totalServiceCosts = calculateServiceCosts();
+
+        const subtotal = totalRoomCosts + totalServiceCosts;
+
+        return subtotal;
+    };
 
     // Tính tổng tiền giảm giá từ vouchers
-    const calculateDiscount = () => {
+    const calculateDiscount = async () => {
+        const subtotal = await calculateSubTotal();
+
         if (!selectedVoucher || selectedVoucher.length === 0) return 0;
         let discount = 0;
 
@@ -772,7 +966,15 @@ export default function BookingForm({
     };
 
     const discountValue = calculateDiscount();
-    const totalAmount = subtotal - discountValue;
+
+    const calculatedTotalAmount = async () => {
+        let totalAmount =
+            (await calculateSubTotal()) - (await calculateDiscount());
+        if (totalAmount <= 0) {
+            totalAmount = 0;
+        }
+        return totalAmount;
+    };
 
     if (currentStep === 1) {
         return (
@@ -910,27 +1112,25 @@ export default function BookingForm({
                                         />
                                     </div>
 
-                                    <div className="bg-[#c9b8a8] text-white px-4 py-3 rounded-lg mt-6 flex items-center gap-2">
-                                        <span className="text-lg">
-                                            <TfiMore className="text-white" />
-                                        </span>
-                                        <h3 className="font-semibold">Other</h3>
-                                    </div>
+                                    {/* <div className="bg-[#c9b8a8] text-white px-4 py-3 rounded-lg mt-6 flex items-center gap-2">
+                    <span className="text-lg">
+                      <TfiMore className="text-white" />
+                    </span>
+                    <h3 className="font-semibold">Other</h3>
+                  </div>
 
-                                    <div>
-                                        <label className="block text-sm font-semibold text-gray-900 mb-2">
-                                            Promotion code
-                                        </label>
-                                        <input
-                                            type="text"
-                                            placeholder="Enter your promotion code (optional)"
-                                            value={promotionCode}
-                                            onChange={(e) =>
-                                                setPromotionCode(e.target.value)
-                                            }
-                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#c9b8a8]"
-                                        />
-                                    </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-900 mb-2">
+                      Promotion code
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Enter your promotion code (optional)"
+                      value={promotionCode}
+                      onChange={(e) => setPromotionCode(e.target.value)}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#c9b8a8]"
+                    />
+                  </div> */}
                                 </div>
                             </div>
                         </div>
@@ -946,6 +1146,7 @@ export default function BookingForm({
                                 onCheckInTimeChange={setCheckInTime}
                                 duration={duration}
                                 onDurationChange={setDuration}
+                                selectedRooms={selectedRoom}
                             />
                         </div>
 
@@ -1056,7 +1257,7 @@ export default function BookingForm({
                                                     selectedServices.includes(
                                                         service.serviceID,
                                                     )
-                                                        ? 'bg-gray-50'
+                                                        ? 'bg-gray-50 border-[#c9b8a8]'
                                                         : 'hover:bg-gray-50'
                                                 }`}
                                                 onClick={() =>
@@ -1099,16 +1300,112 @@ export default function BookingForm({
                                                 </div>
                                             </div>
 
-                                            {/* Room Target Selector (shown when service is selected) */}
+                                            {/* Quantity Selector và Room Target (shown when service is selected) */}
                                             {selectedServices.includes(
                                                 service.serviceID,
                                             ) && (
                                                 <div
-                                                    className="mt-3 p-3 bg-gray-50 rounded-md border border-gray-100"
+                                                    className="mt-3 p-4 bg-gray-50 rounded-md border border-gray-200"
                                                     onClick={(e) =>
                                                         e.stopPropagation()
                                                     }
                                                 >
+                                                    {/* Quantity Selector */}
+                                                    <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-200">
+                                                        <label className="text-sm font-medium text-gray-700">
+                                                            Quantity:
+                                                        </label>
+                                                        <div className="flex items-center gap-3">
+                                                            <button
+                                                                type="button"
+                                                                onClick={() =>
+                                                                    decrementQuantity(
+                                                                        service.serviceID,
+                                                                    )
+                                                                }
+                                                                disabled={
+                                                                    (serviceQuantities[
+                                                                        service
+                                                                            .serviceID
+                                                                    ] || 1) <= 1
+                                                                }
+                                                                className={`w-8 h-8 flex items-center justify-center rounded-full border transition ${
+                                                                    (serviceQuantities[
+                                                                        service
+                                                                            .serviceID
+                                                                    ] || 1) <= 1
+                                                                        ? 'border-gray-200 text-gray-300 cursor-not-allowed'
+                                                                        : 'border-[#c9b8a8] text-[#c9b8a8] hover:bg-[#c9b8a8] hover:text-white'
+                                                                }`}
+                                                            >
+                                                                <span className="text-lg font-bold">
+                                                                    −
+                                                                </span>
+                                                            </button>
+                                                            <input
+                                                                type="number"
+                                                                min="1"
+                                                                max="99"
+                                                                value={
+                                                                    serviceQuantities[
+                                                                        service
+                                                                            .serviceID
+                                                                    ] || 1
+                                                                }
+                                                                onChange={(e) =>
+                                                                    updateServiceQuantity(
+                                                                        service.serviceID,
+                                                                        parseInt(
+                                                                            e
+                                                                                .target
+                                                                                .value,
+                                                                        ) || 1,
+                                                                    )
+                                                                }
+                                                                className="w-16 text-center px-2 py-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#c9b8a8]"
+                                                            />
+                                                            <button
+                                                                type="button"
+                                                                onClick={() =>
+                                                                    incrementQuantity(
+                                                                        service.serviceID,
+                                                                    )
+                                                                }
+                                                                disabled={
+                                                                    (serviceQuantities[
+                                                                        service
+                                                                            .serviceID
+                                                                    ] || 1) >=
+                                                                    99
+                                                                }
+                                                                className={`w-8 h-8 flex items-center justify-center rounded-full border transition ${
+                                                                    (serviceQuantities[
+                                                                        service
+                                                                            .serviceID
+                                                                    ] || 1) >=
+                                                                    99
+                                                                        ? 'border-gray-200 text-gray-300 cursor-not-allowed'
+                                                                        : 'border-[#c9b8a8] text-[#c9b8a8] hover:bg-[#c9b8a8] hover:text-white'
+                                                                }`}
+                                                            >
+                                                                <span className="text-lg font-bold">
+                                                                    +
+                                                                </span>
+                                                            </button>
+                                                        </div>
+                                                        <span className="text-sm font-semibold text-[#c9b8a8]">
+                                                            {(
+                                                                service.price *
+                                                                (serviceQuantities[
+                                                                    service
+                                                                        .serviceID
+                                                                ] || 1)
+                                                            ).toLocaleString()}
+                                                            đ
+                                                        </span>
+                                                    </div>
+
+                                                    {/* Room Target Selector */}
                                                     <div className="flex items-center gap-3 mb-2">
                                                         <label className="flex items-center gap-2 cursor-pointer">
                                                             <input
@@ -1142,8 +1439,6 @@ export default function BookingForm({
                                                         {rooms.map((room) => {
                                                             const roomNumber =
                                                                 room.roomNumber;
-                                                            if (!roomNumber)
-                                                                return null;
                                                             const targets =
                                                                 selectedServiceTargets[
                                                                     service
@@ -1221,18 +1516,82 @@ export default function BookingForm({
 
                             <div className="space-y-3">
                                 {getSelectedServiceObjects().length > 0 ? (
-                                    getSelectedServiceObjects().map(
-                                        (service) => (
-                                            <div
-                                                key={service.serviceID}
-                                                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-                                            >
-                                                <span className="text-sm font-medium text-gray-900">
-                                                    • {service.serviceName}
+                                    <>
+                                        {getSelectedServiceObjects().map(
+                                            (service) => {
+                                                const quantity =
+                                                    serviceQuantities[
+                                                        service.serviceID
+                                                    ] || 1;
+                                                const targets =
+                                                    selectedServiceTargets[
+                                                        service.serviceID
+                                                    ];
+                                                const roomCount =
+                                                    !targets ||
+                                                    targets === 'ALL'
+                                                        ? rooms.length
+                                                        : Array.isArray(targets)
+                                                        ? targets.length
+                                                        : 1;
+                                                const totalPrice =
+                                                    service.price *
+                                                    quantity *
+                                                    roomCount;
+
+                                                return (
+                                                    <div
+                                                        key={service.serviceID}
+                                                        className="p-3 bg-gray-50 rounded-lg"
+                                                    >
+                                                        <div className="flex items-center justify-between">
+                                                            <span className="text-sm font-medium text-gray-900">
+                                                                {
+                                                                    service.serviceName
+                                                                }
+                                                            </span>
+                                                            <button
+                                                                onClick={() =>
+                                                                    toggleService(
+                                                                        service.serviceID,
+                                                                    )
+                                                                }
+                                                                className="text-red-500 hover:text-red-700 text-xs"
+                                                            >
+                                                                ✕
+                                                            </button>
+                                                        </div>
+                                                        <div className="flex items-center justify-between mt-1 text-xs text-gray-600">
+                                                            <span>
+                                                                x{quantity} •{' '}
+                                                                {roomCount} room
+                                                                {roomCount > 1
+                                                                    ? 's'
+                                                                    : ''}
+                                                            </span>
+                                                            <span className="font-semibold text-[#c9b8a8]">
+                                                                {totalPrice.toLocaleString()}
+                                                                đ
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            },
+                                        )}
+
+                                        {/* Total Service Cost */}
+                                        <div className="pt-3 mt-3 border-t border-gray-200">
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-sm font-semibold text-gray-900">
+                                                    Total Services:
+                                                </span>
+                                                <span className="text-sm font-bold text-[#c9b8a8]">
+                                                    {calculateServiceCosts().toLocaleString()}
+                                                    đ
                                                 </span>
                                             </div>
-                                        ),
-                                    )
+                                        </div>
+                                    </>
                                 ) : (
                                     <p className="text-sm text-gray-500 text-center py-4">
                                         No services selected
@@ -1365,11 +1724,28 @@ export default function BookingForm({
                                             {room.roomNumber}
                                         </span>
                                         <span className="text-[#c9b8a8] font-semibold">
-                                            {room.roomType?.basePrice?.toLocaleString() ||
-                                                '0'}{' '}
-                                            VND
-                                            {/* {bookingType === "HOURLY" && " /hour"} */}
-                                            /night
+                                            {(() => {
+                                                const roomPrice =
+                                                    roomPrices[
+                                                        room.roomNumber!
+                                                    ] || 0;
+                                                const basePrice =
+                                                    room.roomType?.basePrice ||
+                                                    0;
+                                                return (
+                                                    <>
+                                                        {basePrice >
+                                                            roomPrice && (
+                                                            <span className="line-through text-gray-500 mr-2">
+                                                                {basePrice.toLocaleString()}{' '}
+                                                                VND
+                                                            </span>
+                                                        )}
+                                                        {roomPrice.toLocaleString()}{' '}
+                                                        VND /night
+                                                    </>
+                                                );
+                                            })()}
                                         </span>
                                     </div>
                                 ))}
@@ -1407,8 +1783,8 @@ export default function BookingForm({
                                         Number of Nights:
                                     </label>
                                     <span className="text-gray-900 font-medium">
-                                        {numberOfNights}{' '}
-                                        {numberOfNights === 1
+                                        {calculateNights()}{' '}
+                                        {calculateNights() === 1
                                             ? 'night'
                                             : 'nights'}
                                     </span>
@@ -1475,13 +1851,12 @@ export default function BookingForm({
                                 </div>
                             </>
                         )}
-
                         <div className="flex justify-between items-center py-2 border-t border-gray-200 mt-4">
                             <label className="text-sm font-semibold text-gray-600">
                                 Total room costs:
                             </label>
                             <span className="text-[#c9b8a8] font-semibold">
-                                {totalRoomCosts.toLocaleString()} VND
+                                {roomCosts.toLocaleString()} VND
                             </span>
                         </div>
                     </div>
@@ -1498,32 +1873,48 @@ export default function BookingForm({
 
                     <div className="space-y-3">
                         {getSelectedServiceObjects().length > 0 ? (
-                            getSelectedServiceObjects().map((service) => (
-                                <div
-                                    key={service.serviceID}
-                                    className="flex justify-between items-center py-2 border-b border-gray-200"
-                                >
-                                    <span className="text-gray-900 font-medium">
-                                        • {service.serviceName} x1
-                                    </span>
-                                    <span className="text-gray-900 font-medium">
-                                        {service.price.toLocaleString()} VND
-                                    </span>
-                                </div>
-                            ))
+                            getSelectedServiceObjects().map((service) => {
+                                const quantity =
+                                    serviceQuantities[service.serviceID] || 1;
+                                const targets =
+                                    selectedServiceTargets[service.serviceID];
+                                const roomCount =
+                                    !targets || targets === 'ALL'
+                                        ? rooms.length
+                                        : Array.isArray(targets)
+                                        ? targets.length
+                                        : 1;
+                                const totalPrice =
+                                    service.price * quantity * roomCount;
+
+                                return (
+                                    <div
+                                        key={service.serviceID}
+                                        className="flex justify-between items-center py-2 border-b border-gray-200"
+                                    >
+                                        <span className="text-gray-900 font-medium">
+                                            • {service.serviceName} x{quantity}{' '}
+                                            ({roomCount} room
+                                            {roomCount > 1 ? 's' : ''})
+                                        </span>
+                                        <span className="text-gray-900 font-medium">
+                                            {totalPrice.toLocaleString()} VND
+                                        </span>
+                                    </div>
+                                );
+                            })
                         ) : (
                             <p className="text-gray-500 text-center py-4">
                                 No services selected
                             </p>
                         )}
                     </div>
-
                     <div className="flex justify-between items-center py-3 border-t border-gray-200 mt-4">
                         <label className="text-sm font-semibold text-gray-600">
                             Total service costs:
                         </label>
                         <span className="text-[#c9b8a8] font-semibold">
-                            {totalServiceCosts.toLocaleString()} VND
+                            {serviceCosts.toLocaleString()} VND
                         </span>
                     </div>
                 </div>
@@ -1584,25 +1975,22 @@ export default function BookingForm({
                                     : 'No vouchers available'}
                             </span>
                         </div>
-
                         <div className="flex justify-between items-center py-2 border-t border-gray-200 mt-4">
                             <label className="text-sm font-semibold text-gray-900">
                                 Total costs:
                             </label>
                             <span className="text-gray-900 font-semibold">
-                                {subtotal.toLocaleString()} VND
+                                {subTotal.toLocaleString()} VND
                             </span>
                         </div>
-
                         <div className="flex justify-between items-center py-2">
                             <label className="text-sm font-semibold text-gray-900">
                                 Discount value:
                             </label>
                             <span className="text-red-600 font-semibold">
-                                -{discountValue.toLocaleString()} VND
+                                -{discount.toLocaleString()} VND
                             </span>
                         </div>
-
                         <div className="flex justify-between items-center py-3 border-t border-gray-200 mt-4">
                             <label className="text-sm font-semibold text-gray-900">
                                 Total amount:
@@ -1635,46 +2023,46 @@ export default function BookingForm({
                             </div>
                         </div>
                     </div>
-                </div>
 
-                {/* Navigation Buttons */}
-                <div className="flex justify-between mt-8">
-                    <button
-                        onClick={handlePreviousStep}
-                        className="px-8 py-3 border border-gray-300 text-gray-900 font-semibold rounded-lg hover:bg-gray-50 transition"
-                    >
-                        Back
-                    </button>
-                    <div className="flex flex-col items-end">
-                        {error && (
-                            <div className="text-sm text-red-600 mb-3">
-                                {error}
-                            </div>
-                        )}
+                    {/* Navigation Buttons */}
+                    <div className="flex justify-between mt-8">
                         <button
-                            onClick={handleSaveBooking}
-                            disabled={loading}
-                            className={`px-8 py-3 text-white font-semibold rounded-lg transition ${
-                                loading
-                                    ? 'bg-gray-400 cursor-not-allowed'
-                                    : 'bg-[#c9b8a8] hover:bg-[#b8a896]'
-                            }`}
+                            onClick={handlePreviousStep}
+                            className="px-8 py-3 border border-gray-300 text-gray-900 font-semibold rounded-lg hover:bg-gray-50 transition"
                         >
-                            {loading ? 'Saving...' : 'Reserve'}
+                            Back
                         </button>
+                        <div className="flex flex-col items-end">
+                            {error && (
+                                <div className="text-sm text-red-600 mb-3">
+                                    {error}
+                                </div>
+                            )}
+                            <button
+                                onClick={handleSaveBooking}
+                                disabled={loading}
+                                className={`px-8 py-3 text-white font-semibold rounded-lg transition ${
+                                    loading
+                                        ? 'bg-gray-400 cursor-not-allowed'
+                                        : 'bg-[#c9b8a8] hover:bg-[#b8a896]'
+                                }`}
+                            >
+                                {loading ? 'Saving...' : 'Reserve'}
+                            </button>
+                        </div>
                     </div>
-                </div>
 
-                {/* Voucher Selection Modal */}
-                <CustomerVoucherModal
-                    isOpen={isVoucherModalOpen}
-                    onClose={() => setIsVoucherModalOpen(false)}
-                    availableVouchers={customerVouchers}
-                    onSelectVoucher={(vouchers) => {
-                        setSelectedVoucher(vouchers);
-                        setIsVoucherModalOpen(false);
-                    }}
-                />
+                    {/* Voucher Selection Modal */}
+                    <CustomerVoucherModal
+                        isOpen={isVoucherModalOpen}
+                        onClose={() => setIsVoucherModalOpen(false)}
+                        availableVouchers={customerVouchers}
+                        onSelectVoucher={(vouchers) => {
+                            setSelectedVoucher(vouchers);
+                            setIsVoucherModalOpen(false);
+                        }}
+                    />
+                </div>
             </div>
         );
     }
