@@ -67,15 +67,15 @@ export type ReportPeriod =
 
 // ====================== ServiceData (HEAD version) ======================
 export interface ServiceData {
-  date: string;
-  foodBeverage: number;
-  laundry: number;
-  spa: number;
-  transport: number;
-  tour: number;
-  others: number;
-  totalOrders: number;
-  avgOrderValue: number;
+    date: string;
+    foodBeverage: number;
+    laundry: number;
+    spa: number;
+    transport: number;
+    tour: number;
+    others: number;
+    totalOrders: number;
+    avgOrderValue: number;
 }
 
 // ====================== ReportTab (HEAD version) ======================

@@ -1,18 +1,18 @@
 /* eslint-disable */
 import React, { useState, useMemo, useEffect } from "react";
 import {
-  FaChartLine,
-  FaBed,
-  FaStar,
-  FaUsers,
-  FaCalendarCheck,
-  FaConciergeBell,
+    FaChartLine,
+    FaBed,
+    FaStar,
+    FaUsers,
+    FaCalendarCheck,
+    FaConciergeBell,
 } from "react-icons/fa";
 import type {
-  OccupancyData,
-  ReviewData,
-  ReportPeriod,
-  ServiceData,
+    OccupancyData,
+    ReviewData,
+    ReportPeriod,
+    ServiceData,
 } from "../../../types/Report";
 import OccupancyChart from "../../../components/report/OccupancyChart";
 import RoomTypeAnalysis from "../../../components/report/RoomTypeAnalysis";
@@ -32,6 +32,7 @@ import RevenueTab from "./components/RevenueTab";
 import LoyaltyTab from "./components/LoyaltyTab";
 import BookingsTab from "./components/BookingsTab";
 
+
 type ReportTab =
   | "revenue"
   | "occupancy"
@@ -43,8 +44,6 @@ type ReportTab =
 const ReportPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<ReportTab>("revenue");
   const [period, setPeriod] = useState<ReportPeriod>("monthly");
-  // const [startDate, setStartDate] = useState("2024-01-01");
-  // const [endDate, setEndDate] = useState("2024-12-31");
 
   // Get current date
   const today = new Date();

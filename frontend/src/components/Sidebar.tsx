@@ -7,6 +7,7 @@ import {
   FaUsers,
   FaChartLine,
   FaCog,
+  FaExclamationTriangle,
 } from "react-icons/fa";
 import { MdMeetingRoom } from "react-icons/md";
 import { RiInfoCardFill, RiDiscountPercentFill } from "react-icons/ri";
@@ -64,6 +65,11 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
       path: "/reservations",
     },
     { icon: <FaUsers />, label: "Guests", path: "/guests" },
+    {
+      icon: <FaExclamationTriangle />,
+      label: 'Incidents',
+      path: '/employee/incidents',
+    },
     { icon: <MdRoomService />, label: "Services", path: "/services" },
     {
       icon: <RiDiscountPercentFill />,

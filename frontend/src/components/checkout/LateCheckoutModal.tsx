@@ -6,9 +6,6 @@ import {
     calculateLateCheckoutFee,
     createLateCheckoutRequest,
 } from '../../services/lateCheckoutService';
-import { useNotificationContext } from '../../context/NotificationContextAPI';
-import { earlyCheckinNotificationService } from '../../services/earlyCheckinNotificationService';
-import type { LateCheckoutRequest } from '../../services/earlyCheckinNotificationService';
 
 import {
     Select,
@@ -24,7 +21,6 @@ type Props = {
 
 export default function LateCheckoutModal({ booking, onClose }: Props) {
     const toast = useToastContext();
-    const { refreshNotifications } = useNotificationContext();
     const [selectedTime, setSelectedTime] = useState('');
     const [fee, setFee] = useState<number | null>(null);
     const [loadingFee, setLoadingFee] = useState(false);
@@ -108,34 +104,6 @@ export default function LateCheckoutModal({ booking, onClose }: Props) {
                 requestTime: requestDateTime,
                 roomPrice,
             });
-
-            // Send notifications
-            try {
-                const notificationRequest: LateCheckoutRequest = {
-                    customerId: booking.customer.id,
-                    customerName:
-                        booking.customer.fullName ||
-                        booking.customer.name ||
-                        'Khách hàng',
-                    roomNumber:
-                        booking.bookingDetails?.[0]?.room?.roomNumber || 'N/A',
-                    bookingId: booking.bookingID,
-                    requestedTime: selectedTime,
-                    standardCheckoutTime: '12:00',
-                    reason: 'Yêu cầu checkout muộn từ khách hàng',
-                    userRole: 'CUSTOMER',
-                };
-
-                await earlyCheckinNotificationService.sendLateCheckoutRequest(
-                    notificationRequest,
-                );
-
-                await refreshNotifications();
-
-                console.log('✅ Late checkout notifications sent successfully');
-            } catch (notifError) {
-                console.error('⚠️ Failed to send notifications:', notifError);
-            }
 
             toast.success('Late checkout request sent!');
             onClose();

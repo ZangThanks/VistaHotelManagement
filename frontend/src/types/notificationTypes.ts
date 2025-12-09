@@ -1,40 +1,22 @@
 import { createContext } from 'react';
 
 export interface Notification {
-    id: string; // map từ _id
-    type: string;
-    category: string;
+    id: string;
     title: string;
     message: string;
-
-    fromUserId: string;
-    fromUserName: string;
-    fromUserType: string;
-
-    toUserId: string;
-    toUserType: string;
-
-    status: string;
-    priority: string;
-    needsAction: boolean;
-
-    isRead: boolean;
-    readAt?: string;
-
-    isRealtime: boolean;
-    deliveredAt: string;
-
-    dataJson?: string;
+    type: 'info' | 'success' | 'warning' | 'error';
+    timestamp: string;
+    read: boolean;
+    userId?: string;
+    actionUrl?: string;
 }
 
 export interface NotificationContextType {
     notifications: Notification[];
     unreadCount: number;
-
     addNotification: (
-        notification: Omit<Notification, 'id' | 'isRead' | 'readAt'>,
+        notification: Omit<Notification, 'id' | 'timestamp' | 'read'>,
     ) => void;
-
     markAsRead: (id: string) => void;
     markAllAsRead: () => void;
     removeNotification: (id: string) => void;

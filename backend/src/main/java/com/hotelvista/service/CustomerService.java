@@ -4,7 +4,6 @@ import com.hotelvista.model.CartBean;
 import com.hotelvista.model.Customer;
 import com.hotelvista.repository.CustomerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
@@ -17,11 +16,9 @@ public class CustomerService {
     @Autowired
     private CustomerRepository repo;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
     /**
      * Find all customers
+     * 
      * @return
      */
     public List<Customer> findAll() {
@@ -30,6 +27,7 @@ public class CustomerService {
 
     /**
      * Find customer by ID
+     * 
      * @param id
      * @return
      */
@@ -39,25 +37,24 @@ public class CustomerService {
 
     /**
      * Save customer
+     * 
      * @param customer
      */
     public Customer save(Customer customer) {
-
-        // UPDATE
-        Customer existing = repo.findById(customer.getId()).orElse(null);
-
-        if (existing != null) {
-            customer.setUserName(existing.getUserName());
-
-            if (customer.getCartBean() == null) {
-                customer.setCartBean(existing.getCartBean());
-            }
-        }
+        // Nếu khách hàng chưa có ID -> thêm mới
         if (customer.getId() == null || customer.getId().isEmpty()) {
             customer.setId(generateCustomerId());
             customer.setUserName(generateUserName(customer.getFullName()));
-            customer.setPassword(passwordEncoder.encode(customer.getPassword()));
-            return repo.save(customer);
+        } else {
+            // Edit: lấy dữ liệu cũ từ DB để giữ lại các trường không được sửa
+            Customer existing = repo.findById(customer.getId()).orElse(null);
+            if (existing != null) {
+                // Giữ nguyên username và các trường quan trọng khác
+                customer.setUserName(existing.getUserName());
+            } else {
+                // Nếu ID không tồn tại thật trong DB (tránh lỗi khi FE gửi nhầm)
+                customer.setUserName(generateUserName(customer.getFullName()));
+            }
         }
 
         return repo.save(customer);
@@ -65,6 +62,7 @@ public class CustomerService {
 
     /**
      * Tìm tất cả khách hàng có tên chứa chuỗi name (không phân biệt hoa thường)
+     * 
      * @param name
      * @return
      */
@@ -74,6 +72,7 @@ public class CustomerService {
 
     /**
      * Tìm khách hàng theo email
+     * 
      * @param email
      * @return
      */
@@ -83,6 +82,7 @@ public class CustomerService {
 
     /**
      * Tìm khách hàng theo số điện thoại
+     * 
      * @param phone
      * @return
      */
@@ -92,6 +92,7 @@ public class CustomerService {
 
     /**
      * Tìm khách hàng theo userName
+     * 
      * @param userName
      * @return
      */
@@ -101,6 +102,7 @@ public class CustomerService {
 
     /**
      * Kiểm tra tồn tại khách hàng theo id
+     * 
      * @param id
      * @return
      */
@@ -110,6 +112,7 @@ public class CustomerService {
 
     /**
      * Tìm mã khách hàng lớn nhất trong ngày theo tiền tố
+     * 
      * @param prefix
      * @return
      */
@@ -142,8 +145,9 @@ public class CustomerService {
     /**
      * Tạo username từ họ tên: bỏ dấu, viết thường, nối liền
      */
-    public String generateUserName(String fullName) {
-        if (fullName == null) return null;
+    private String generateUserName(String fullName) {
+        if (fullName == null)
+            return null;
         String normalized = removeVietnameseAccents(fullName);
         return normalized.toLowerCase().replaceAll("\\s+", "");
     }
@@ -151,13 +155,13 @@ public class CustomerService {
     /**
      * Hàm bỏ dấu tiếng Việt
      */
-    public String removeVietnameseAccents(String input) {
-        if (input == null) return null;
+    private String removeVietnameseAccents(String input) {
+        if (input == null)
+            return null;
         String normalized = java.text.Normalizer.normalize(input, java.text.Normalizer.Form.NFD);
         return normalized.replaceAll("\\p{InCombiningDiacriticalMarks}+", "")
                 .replaceAll("đ", "d")
                 .replaceAll("Đ", "D");
     }
-
 
 }

@@ -18,7 +18,8 @@ export interface Booking {
     | "PERCENTAGE_50"
     | "PAID"
     | "REFUNDED"
-    | "CANCELLED";
+    | "CANCELLED"
+      | "PARTIAL";
   invoiceType?: string | null;
   totalCost: number;
   type: "HOURLY" | "DAILY";

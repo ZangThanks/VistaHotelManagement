@@ -18,13 +18,30 @@ export default function CheckoutDetailsModal({
         )
         .join(', ');
 
-    const balanceDue =
-        booking.paymentStatus === 'PAID'
-            ? 0
-            : booking.paymentStatus === 'PARTIAL'
-            ? booking.totalAmount * 0.5
-            : booking.totalAmount;
+    // Calculate balance due based on payment status
+    const calculateBalanceDue = () => {
+        const totalAmount = booking.totalAmount || 0;
+        let amountPaid = 0;
 
+        switch (booking.paymentStatus) {
+            case 'PAID':
+                amountPaid = totalAmount;
+                break;
+            case 'PERCENTAGE_50':
+                amountPaid = totalAmount * 0.5;
+                break;
+            case 'PERCENTAGE_30':
+                amountPaid = totalAmount * 0.3;
+                break;
+            case 'PENDING':
+            default:
+                amountPaid = 0;
+        }
+
+        return totalAmount - amountPaid;
+    };
+
+    const balanceDue = calculateBalanceDue();
     const isCheckedOut = booking.status === 'CHECKED_OUT';
 
     return (

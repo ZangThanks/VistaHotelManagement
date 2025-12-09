@@ -371,9 +371,14 @@ export const getCompletedCheckouts = async (): Promise<Booking[]> => {
   }
 };
 
-export const getByRoom = async (roomNumber: string) => {
-  const response = await api.get(`/bookings/room/${roomNumber}`);
-  return response.data;
+export const getByRoom = async (roomNumber: string): Promise<Booking[]> => {
+    try {
+        const response = await api.get(`${ENDPOINT}/room/${roomNumber}`);
+        return Array.isArray(response.data) ? response.data : [];
+    } catch (error) {
+        console.error(`Error fetching bookings for room ${roomNumber}:`, error);
+        throw error;
+    }
 };
 
 // ========== ADD SERVICES TO BOOKING ==========
@@ -495,4 +500,5 @@ export default {
   addServicesToBooking,
   addServiceToBooking,
   checkRoomAvailability,
+    cancelBooking,
 };
