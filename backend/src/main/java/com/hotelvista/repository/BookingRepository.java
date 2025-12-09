@@ -119,6 +119,7 @@ public interface BookingRepository extends JpaRepository<Booking, String> {
             "AND b.checkInDate < :endDateTime")
     List<Booking> findByCheckInDateRange(@Param("startDateTime") LocalDateTime startDateTime,
                                          @Param("endDateTime") LocalDateTime endDateTime);
+
     /**
      * Tìm tất cả booking theo trạng thái và ngày đặt phòng
      *

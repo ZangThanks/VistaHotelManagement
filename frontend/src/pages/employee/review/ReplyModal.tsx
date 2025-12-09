@@ -58,7 +58,7 @@ export default function ReplyModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto px-3 py-2">
         <DialogTitle className="text-2xl text-gray-900">
           Reply to Review
         </DialogTitle>

@@ -73,18 +73,31 @@ const PaymentPage: React.FC = () => {
       console.log("Remaining time from API:", timeString);
 
       // Parse timeString (format có thể là "15 minutes", "14 minutes 30 seconds", etc.)
-      // Hoặc có thể là format khác tùy backend trả về
       const minutes = parseTimeString(timeString);
       setRemainingMinutes(minutes);
       console.log("Parsed remaining minutes:", minutes);
+
+      // Hiển thị timer nếu không phải UNLIMITED
+      if (minutes !== -1) {
+        setShowTimer(true);
+      } else {
+        setShowTimer(false);
+      }
     } catch (error) {
       console.error("Error fetching remaining time:", error);
-      // Giữ nguyên default 15 phút nếu lỗi
+      // Giữ nguyên default 15 phút nếu lỗi và hiển thị timer
+      setShowTimer(true);
     }
   };
 
   // Hàm parse chuỗi thời gian thành số phút
   const parseTimeString = (timeString: string): number => {
+    // Kiểm tra nếu là UNLIMITED thì trả về -1 để biết không cần hiển thị timer
+    if (timeString === "UNLIMITED") {
+      console.log("Payment time is unlimited - no timer needed");
+      return -1;
+    }
+
     // Xử lý format "HH:MM:SS" từ backend (ví dụ: "05:58:37")
     const timeMatch = timeString.match(/^(\d{2}):(\d{2}):(\d{2})$/);
 
@@ -159,8 +172,8 @@ const PaymentPage: React.FC = () => {
       // Lấy thời gian còn lại từ API
       await fetchRemainingTime();
 
-      // Bắt đầu đếm ngược thời gian thanh toán
-      setShowTimer(true);
+      // Bắt đầu đếm ngược thời gian thanh toán (chỉ khi không phải UNLIMITED)
+      // showTimer sẽ được set trong fetchRemainingTime
 
       //Bắt đầu polling kiểm tra trạng thái thanh toán
       startPaymentPolling();
@@ -484,15 +497,26 @@ const PaymentPage: React.FC = () => {
 
             <div className="mt-6 space-y-3">
               {paymentInfo.hasChoice && (
-                <button
-                  onClick={() => {
-                    URL.revokeObjectURL(imageUrl);
-                    setImageUrl("");
-                  }}
-                  className="w-full px-6 py-3 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition"
-                >
-                  Change Payment Option
-                </button>
+                <>
+                  <button
+                    onClick={() => {
+                      URL.revokeObjectURL(imageUrl);
+                      setImageUrl("");
+                      setShowTimer(false);
+                    }}
+                    className="w-full px-6 py-3 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition"
+                  >
+                    Change Payment Option
+                  </button>
+                  <button
+                    onClick={() => {
+                      navigate(`/customer/mybooking/${booking.bookingID}`);
+                    }}
+                    className="w-full px-6 py-3 border border-[#c9b8a8] text-[#c9b8a8] font-semibold rounded-lg hover:bg-[#c9b8a8] hover:text-white transition"
+                  >
+                    Pay Later - Go to My Booking
+                  </button>
+                </>
               )}
             </div>
           </div>

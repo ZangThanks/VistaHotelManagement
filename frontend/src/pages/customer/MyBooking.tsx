@@ -12,8 +12,12 @@ import {
   XCircle,
 } from "lucide-react";
 import Header from "../../components/Header";
-import { getBookingsByCustomerId } from "../../services/bookingService";
+import {
+  getBookingById,
+  getBookingsByCustomerId,
+} from "../../services/bookingService";
 import type { Booking } from "../../types/Booking";
+import { useToastContext } from "../../hooks/useToastContext";
 
 // Types from types folder
 type BookingStatus =
@@ -32,6 +36,7 @@ export default function MyBookingsPage() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>("");
+  const toast = useToastContext();
 
   // Get current user from localStorage or context
   const getCurrentUser = () => {
@@ -209,6 +214,29 @@ export default function MyBookingsPage() {
         .includes(searchQuery.toLowerCase());
     return matchesFilter && matchesSearch;
   });
+
+  const handleNavigate = (bookingId: string) => {
+    navigate(`/customer/reviews/${bookingId}`);
+  };
+
+  const handlePayment = async (bookingId: string) => {
+    try {
+      const booking = await getBookingById(bookingId);
+
+      if (!booking) {
+        toast.error("Cannot loading booking information. Please try again.");
+        return;
+      }
+
+      // Navigate to payment page with booking data in state
+      navigate(`/customer/payment`, {
+        state: { booking },
+      });
+    } catch (error) {
+      console.error("Error loading booking for payment:", error);
+      alert("Có lỗi xảy ra khi tải thông tin booking. Vui lòng thử lại.");
+    }
+  };
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: "#FAF8F5" }}>
@@ -580,6 +608,30 @@ export default function MyBookingsPage() {
                               View Details
                               <ChevronRight size={18} />
                             </button>
+
+                            {/* REVIEWS */}
+                            {booking.status === "CHECKED_OUT" && (
+                              <button
+                                className="flex-1 bg-black hover:bg-black/90 text-white py-3 px-6 rounded-2xl font-semibold transition-all duration-300 hover:shadow-lg flex items-center justify-center gap-2"
+                                onClick={() =>
+                                  handleNavigate(booking.bookingID)
+                                }
+                              >
+                                Reviews
+                              </button>
+                            )}
+                            {/* PAYMENT */}
+                            {booking.paymentStatus === "PENDING" &&
+                              booking.status === "WAITING" && (
+                                <button
+                                  className="flex-1 bg-white hover:bg-white/90 text-[#c3923c] py-3 px-6 rounded-2xl font-semibold transition-all duration-300 hover:shadow-lg flex items-center justify-center gap-2 border-2 border-[#c3923c]"
+                                  onClick={() =>
+                                    handlePayment(booking.bookingID)
+                                  }
+                                >
+                                  Make Payment
+                                </button>
+                              )}
                           </div>
                         </div>
                       </div>

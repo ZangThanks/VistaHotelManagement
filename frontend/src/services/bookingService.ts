@@ -459,9 +459,7 @@ export const cancelBooking = async (
 
 export const getBookingServicesByBookingId = async (bookingId: string) => {
   try {
-    const response = await api.get(
-      `${ENDPOINT}/booking-services/booking/${bookingId}`
-    );
+    const response = await api.get(`/booking-services/booking/${bookingId}`);
     return response.data;
   } catch (error) {
     console.error("Error fetching booking services:", error);
