@@ -237,16 +237,12 @@ public class LateCheckoutService {
 
             Customer customer = booking.getCustomer();
             if (customer != null) {
-                // ✅ LƯU Ý: Dùng đúng method để lấy ID
-                // Có thể là getId() hoặc getCustomerId() tùy model của bạn
                 dto.setCustomerId(customer.getId());  // hoặc customer.getId()
                 dto.setCustomerName(customer.getFullName());
                 dto.setCustomerEmail(customer.getEmail());
 
-                // ⭐ DEBUG: In ra để kiểm tra
-                System.out.println("✅ Setting customerId: " + customer.getId());
             } else {
-                System.out.println("❌ Customer is null for booking: " + booking.getBookingID());
+                System.out.println("Customer is null for booking: " + booking.getBookingID());
             }
 
             if (!booking.getBookingDetails().isEmpty()) {
