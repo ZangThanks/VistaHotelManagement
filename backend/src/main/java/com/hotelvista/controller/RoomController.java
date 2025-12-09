@@ -4,9 +4,11 @@ import com.hotelvista.model.Room;
 import com.hotelvista.service.RoomService;
 import com.hotelvista.util.ValidatorsUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -58,5 +60,22 @@ public class RoomController {
     @DeleteMapping("/delete/{id}")
     public void delete(@PathVariable String id) {
         service.delete(id);
+    }
+
+    @GetMapping("/available")
+    public ResponseEntity<List<Room>> findAvailableRooms(
+            @RequestParam("startDate")
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+            LocalDateTime startDate,
+
+            @RequestParam("endDate")
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+            LocalDateTime endDate
+    ) {
+        if (startDate.isAfter(endDate)) {
+            return ResponseEntity.badRequest().build();
+        }
+        List<Room> availableRooms = service.findAvailableRooms(startDate, endDate);
+        return ResponseEntity.ok(availableRooms);
     }
 }
