@@ -5,6 +5,10 @@ import FilterBar from "../../../../components/report/FilterBar";
 import BookingTrends from "../../../../components/report/BookingTrends";
 import BookingChart from "../../../../components/report/BookingChart";
 import { reportService } from "../../../../services/reportService";
+import {
+  exportBookingToPDF,
+  exportBookingToExcel,
+} from "../../../../utils/exportUtils";
 import { FaDownload, FaFilePdf, FaFileExcel } from "react-icons/fa";
 
 type Props = {
@@ -55,10 +59,15 @@ const BookingsTab: React.FC<Props> = ({
     fetchBookingData();
   }, [startDate, endDate, period]);
 
-  // Handle export (placeholder - implement as needed)
+  // Handle export
   const handleExport = (format: "pdf" | "excel") => {
-    // TODO: Implement booking export functionality
-    console.log(`Exporting bookings as ${format}`);
+    const dateRangeText = `${startDate} to ${endDate}`;
+
+    if (format === "pdf") {
+      exportBookingToPDF(bookingData, dateRangeText);
+    } else {
+      exportBookingToExcel(bookingData, dateRangeText);
+    }
     setShowExportMenu(false);
   };
 

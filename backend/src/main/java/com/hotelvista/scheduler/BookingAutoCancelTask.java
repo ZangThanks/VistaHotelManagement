@@ -2,6 +2,7 @@ package com.hotelvista.scheduler;
 
 import com.hotelvista.model.Booking;
 import com.hotelvista.model.enums.BookingStatus;
+import com.hotelvista.model.enums.PaymentStatus;
 import com.hotelvista.repository.BookingRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -27,6 +28,7 @@ public class BookingAutoCancelTask {
         );
         expiredBookings_8Hours.forEach(b -> {
             if (b.getCustomer().getReputationPoint() > 40 && b.getCustomer().getReputationPoint() <= 70) {
+                b.setPaymentStatus(PaymentStatus.PAID);
                 b.setStatus(BookingStatus.CANCELLED);
             }
         });
@@ -38,6 +40,7 @@ public class BookingAutoCancelTask {
         );
         expiredBookings_6Hours.forEach(b -> {
             if (b.getCustomer().getReputationPoint() >= 0 && b.getCustomer().getReputationPoint() <= 40) {
+                b.setPaymentStatus(PaymentStatus.PAID);
                 b.setStatus(BookingStatus.CANCELLED);
             }
         });

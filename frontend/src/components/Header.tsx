@@ -8,8 +8,13 @@ import {
   faUserCircle,
   faBookmark,
   faSignOutAlt,
+  faChartLine,
+  faTasks,
 } from "@fortawesome/free-solid-svg-icons";
 import { CiShoppingCart, CiSearch, CiMenuBurger } from "react-icons/ci";
+import { handleLogout } from "../services/authService";
+import ConfirmDialog from "./dialog/ConfirmDialog";
+import { useToastContext } from "../hooks/useToastContext";
 
 import type { NavItem } from "../types/Header";
 interface User {
@@ -17,6 +22,8 @@ interface User {
   userName: string;
   fullName?: string;
   email: string;
+  userRole?: string;
+  avatarUrl?: string | null;
 }
 
 const navItems: NavItem[] = [
@@ -29,11 +36,48 @@ const navItems: NavItem[] = [
   { label: "My bookings", path: "/customer/mybooking" },
 ];
 
+// Menu items based on user role
+const roleMenuItems = {
+  ADMIN: [
+    { label: "Dashboard", path: "/admin/dashboard", icon: faChartLine },
+    {
+      label: "Management",
+      path: "/admin/room-management",
+      icon: faTasks,
+    },
+    { label: "Profile", path: "/customer/profile", icon: faUserCircle },
+  ],
+  EMPLOYEE: [
+    {
+      label: "Dashboard",
+      path: "/employee/dashboard",
+      icon: faChartLine,
+    },
+    {
+      label: "Booking Management",
+      path: "/employee/booking-management",
+      icon: faTasks,
+    },
+    { label: "Profile", path: "/customer/profile", icon: faUserCircle },
+  ],
+  CUSTOMER: [
+    { label: "Profile", path: "/customer/profile", icon: faUserCircle },
+    {
+      label: "My Booking",
+      path: "/customer/mybooking",
+      icon: faBookmark,
+    },
+  ],
+};
+
 const Header: React.FC = () => {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+  const toast = useToastContext();
+
   // Check user login status
   useEffect(() => {
     const checkUserStatus = () => {
@@ -56,9 +100,16 @@ const Header: React.FC = () => {
     return () => window.removeEventListener("storage", checkUserStatus);
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem("user");
-    setUser(null);
+  const handleLogoutClick = () => {
+    setShowLogoutDialog(true);
+  };
+
+  const confirmLogout = () => {
+    const result = handleLogout();
+    if (result.success) {
+      toast.success(result.message || "Logged out successfully!");
+    }
+    setShowLogoutDialog(false);
     navigate("/auth/login");
   };
   const getLastTwoWords = (name: string): string => {
@@ -103,31 +154,36 @@ const Header: React.FC = () => {
           {user ? (
             // Logged in user menu
             <>
-              <div className="px-4 py-2 border-b border-white/10">
+              <div className="px-4 py-2 border-b border-white/10 flex items-center">
+                {user.avatarUrl && (
+                  <img
+                    src={user.avatarUrl}
+                    alt="Avatar"
+                    className="w-8 h-8 rounded-full mr-2"
+                  />
+                )}
                 <p className="text-sm text-white font-serif">
                   Hello, {getLastTwoWords(user.fullName || user.userName)}
                 </p>
               </div>
 
-              <Link
-                to="/customer/profile"
-                className="flex items-center px-4 py-2 text-sm text-white hover:bg-white/10 font-serif transition"
-              >
-                <FontAwesomeIcon icon={faUserCircle} className="mr-2 w-4" />
-                My Profile
-              </Link>
-
-              <Link
-                to="/customer/mybooking"
-                className="flex items-center px-4 py-2 text-sm text-white hover:bg-white/10 font-serif transition"
-              >
-                <FontAwesomeIcon icon={faBookmark} className="mr-2 w-4" />
-                My Booking
-              </Link>
+              {user.userRole &&
+                roleMenuItems[user.userRole as keyof typeof roleMenuItems]?.map(
+                  (item) => (
+                    <Link
+                      key={item.path}
+                      to={item.path}
+                      className="flex items-center px-4 py-2 text-sm text-white hover:bg-white/10 font-serif transition"
+                    >
+                      <FontAwesomeIcon icon={item.icon} className="mr-2 w-4" />
+                      {item.label}
+                    </Link>
+                  )
+                )}
 
               <button
-                onClick={handleLogout}
-                className="flex items-center w-full text-left px-4 py-2 text-sm text-white hover:bg-white/10 font-serif transition"
+                onClick={handleLogoutClick}
+                className="flex items-center w-full text-left px-4 py-2 text-sm text-white hover:bg-white/10 font-serif transition cursor-pointer"
               >
                 <FontAwesomeIcon icon={faSignOutAlt} className="mr-2 w-4" />
                 Logout
@@ -165,6 +221,18 @@ const Header: React.FC = () => {
       />
 
       <SearchSidebar isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
+
+      {/* Logout Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={showLogoutDialog}
+        onClose={() => setShowLogoutDialog(false)}
+        onConfirm={confirmLogout}
+        title="Confirm Logout"
+        message="Are you sure you want to logout from your account?"
+        type="warning"
+        confirmText="Logout"
+        cancelText="Cancel"
+      />
     </div>
   );
 };
