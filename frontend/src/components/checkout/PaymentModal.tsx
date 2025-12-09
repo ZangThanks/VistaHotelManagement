@@ -81,14 +81,25 @@ export default function PaymentModal({
                 setBookingDetails(booking.bookingDetails);
             }
 
-            const services = await getBookingServicesByBookingId(
-                paymentData.bookingId,
-            );
-            setBookingServices(services || []);
+            // TODO: Enable when backend implements this endpoint
+            // Try to fetch booking services, but don't fail if endpoint doesn't exist
+            // try {
+            //     const services = await getBookingServicesByBookingId(
+            //         paymentData.bookingId,
+            //     );
+            //     setBookingServices(services || []);
+            // } catch (serviceError) {
+            //     console.warn('Booking services endpoint not available, using empty array');
+            //     setBookingServices([]);
+            // }
+
+            // Temporary: Set empty services until backend is ready
+            setBookingServices([]);
 
             setLoading(false);
         } catch (error) {
             console.error('Error fetching booking data:', error);
+            setBookingServices([]);
             setLoading(false);
         }
     };
@@ -225,21 +236,46 @@ export default function PaymentModal({
     const handleAmountTenderedChange = (
         e: React.ChangeEvent<HTMLInputElement>,
     ) => {
+        // Remove all non-digit characters
         const value = e.target.value.replace(/[^0-9]/g, '');
+
+        // Store the raw number value
         setAmountTendered(value);
 
         try {
-            const tendered = parseFloat(value);
+            const tendered = parseFloat(value) || 0;
+            // Ensure balanceDue is a valid number
+            const balance =
+                typeof balanceDue === 'number' && !isNaN(balanceDue)
+                    ? balanceDue
+                    : 0;
 
-            if (!isNaN(tendered) && tendered >= balanceDue) {
-                const change = tendered - balanceDue;
+            console.log('=== PAYMENT CALCULATION ===');
+            console.log('Input value:', value);
+            console.log('Tendered (parsed):', tendered);
+            console.log('Balance Due:', balance);
+            console.log('Total:', total);
+            console.log('Room Charges:', roomCharges);
+            console.log('Comparison:', tendered >= balance);
+
+            if (tendered > 0 && tendered >= balance) {
+                const change = tendered - balance;
+                console.log('Change calculated:', change);
                 setChangeAmount(formatCurrency(change));
             } else {
+                console.log('Not enough money or zero input');
                 setChangeAmount('0');
             }
         } catch (error) {
+            console.error('Error calculating change:', error);
             setChangeAmount('0');
         }
+    };
+
+    // Format amount tendered for display
+    const formatAmountTenderedDisplay = (value: string): string => {
+        if (!value) return '';
+        return formatCurrency(parseFloat(value));
     };
 
     const formatCurrency = (amount: number): string => {
@@ -521,10 +557,13 @@ export default function PaymentModal({
                                 </label>
                                 <input
                                     type="text"
-                                    value={amountTendered}
+                                    value={formatAmountTenderedDisplay(
+                                        amountTendered,
+                                    )}
                                     onChange={handleAmountTenderedChange}
                                     placeholder={formatCurrency(balanceDue)}
-                                    className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#c9b8a8] focus:border-transparent"
+                                    disabled={loading || balanceDue === 0}
+                                    className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#c9b8a8] focus:border-transparent disabled:bg-gray-200 disabled:cursor-not-allowed"
                                 />
                                 <p className="text-xs text-gray-500 mt-1">
                                     Balance due: {formatCurrency(balanceDue)}{' '}

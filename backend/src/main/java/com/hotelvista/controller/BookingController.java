@@ -325,7 +325,16 @@ public class BookingController {
                 double remainingAmount = calculateRemainingAmount(booking);
 
                 if (remainingAmount > 0) {
-
+                    // Chỉ set PAID nếu đã thanh toán đủ (tức là paymentMethod = "cash" hoặc "bank")
+                    // Nếu paymentMethod = "vnpay", chờ webhook confirm
+                    if ("cash".equalsIgnoreCase(paymentMethod) || "bank".equalsIgnoreCase(paymentMethod)) {
+                        booking.setPaymentStatus(PaymentStatus.PAID);
+                    } else if ("vnpay".equalsIgnoreCase(paymentMethod)) {
+                        // Với VNPay, cần chờ webhook confirm, không tự động set PAID ở đây
+                        return ResponseEntity.badRequest().body("VNPay payment not yet confirmed");
+                    }
+                } else {
+                    // Nếu không còn tiền cần trả (remainingAmount = 0), đã paid rồi
                     booking.setPaymentStatus(PaymentStatus.PAID);
                 }
             }
