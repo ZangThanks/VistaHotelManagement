@@ -1,18 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import {
-    Eye,
-    Search,
-    Filter,
-    Calendar,
-    User,
-    CreditCard,
-    CheckCircle,
-    XCircle,
-    Clock,
-} from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Eye, Search, Calendar, User, CreditCard } from 'lucide-react';
 import { getAll } from '../../services/bookingService';
 import type { Booking } from '../../types/Booking';
+import BookingDetailModal from '../../components/booking/BookingDetailModal';
 
 type BookingStatus =
     | 'PENDING'
@@ -20,7 +10,16 @@ type BookingStatus =
     | 'CHECKED_IN'
     | 'CHECKED_OUT'
     | 'CANCELLED';
-type PaymentStatus = 'PENDING' | 'PAID' | 'REFUNDED' | 'PARTIAL';
+type PaymentStatus =
+    | 'PENDING'
+    | 'PAID'
+    | 'REFUNDED'
+    | 'PARTIAL'
+    | 'COMPLETED'
+    | 'PERCENTAGE_30'
+    | 'PERCENTAGE_50'
+    | 'FAILED'
+    | 'CANCELLED';
 
 // Helper functions for date ranges
 const getDefaultStartDate = () => {
@@ -35,10 +34,13 @@ const getDefaultEndDate = () => {
 };
 
 const ReservationList: React.FC = () => {
-    const navigate = useNavigate();
     const [bookings, setBookings] = useState<Booking[]>([]);
     const [filteredBookings, setFilteredBookings] = useState<Booking[]>([]);
     const [loading, setLoading] = useState(true);
+    const [selectedBooking, setSelectedBooking] = useState<Booking | null>(
+        null,
+    );
+    const [isModalOpen, setIsModalOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState<BookingStatus | 'ALL'>(
         'ALL',
@@ -148,16 +150,22 @@ const ReservationList: React.FC = () => {
             );
         }
 
-        // Filter by date range
+        // Filter by date range - based on BOOKING DATE (when booking was created)
         if (startDate) {
-            filtered = filtered.filter(
-                (b) => new Date(b.checkInDate) >= new Date(startDate),
-            );
+            filtered = filtered.filter((b) => {
+                const bookingDate = new Date(b.bookingDate)
+                    .toISOString()
+                    .split('T')[0];
+                return bookingDate >= startDate;
+            });
         }
         if (endDate) {
-            filtered = filtered.filter(
-                (b) => new Date(b.checkOutDate) <= new Date(endDate),
-            );
+            filtered = filtered.filter((b) => {
+                const bookingDate = new Date(b.bookingDate)
+                    .toISOString()
+                    .split('T')[0];
+                return bookingDate <= endDate;
+            });
         }
 
         setFilteredBookings(filtered);
@@ -179,8 +187,13 @@ const ReservationList: React.FC = () => {
         const colors = {
             PENDING: 'text-yellow-600',
             PAID: 'text-green-600',
+            COMPLETED: 'text-green-600',
             REFUNDED: 'text-blue-600',
             PARTIAL: 'text-orange-600',
+            PERCENTAGE_30: 'text-orange-600',
+            PERCENTAGE_50: 'text-orange-600',
+            FAILED: 'text-red-600',
+            CANCELLED: 'text-red-600',
         };
         return colors[status] || 'text-gray-600';
     };
@@ -432,7 +445,11 @@ const ReservationList: React.FC = () => {
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
-                                            {formatCurrency(booking.totalPrice)}
+                                            {formatCurrency(
+                                                booking.totalCost ||
+                                                    booking.totalAmount ||
+                                                    0,
+                                            )}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <span
@@ -455,11 +472,10 @@ const ReservationList: React.FC = () => {
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm">
                                             <button
-                                                onClick={() =>
-                                                    navigate(
-                                                        `/customer/mybooking/${booking.bookingID}`,
-                                                    )
-                                                }
+                                                onClick={() => {
+                                                    setSelectedBooking(booking);
+                                                    setIsModalOpen(true);
+                                                }}
                                                 className="inline-flex items-center px-3 py-1.5 bg-[#CCBDA3] text-white rounded-lg hover:bg-[#b8a88a] transition-colors"
                                             >
                                                 <Eye className="w-4 h-4 mr-1" />
@@ -506,6 +522,16 @@ const ReservationList: React.FC = () => {
                     </div>
                 </div>
             )}
+
+            {/* Booking Detail Modal */}
+            <BookingDetailModal
+                booking={selectedBooking}
+                isOpen={isModalOpen}
+                onClose={() => {
+                    setIsModalOpen(false);
+                    setSelectedBooking(null);
+                }}
+            />
         </div>
     );
 };
