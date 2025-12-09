@@ -1,11 +1,11 @@
 /* eslint-disable */
-import { axiosInstance } from "../config/api";
+import { api } from "./apiClient";
 import type { Customer } from "../types/Customer";
 const ENDPOINT = "/customers";
 
 export const getAll = async () => {
   try {
-    const response = await axiosInstance.get(ENDPOINT);
+    const response = await api.get(ENDPOINT);
     return response.data;
   } catch (error) {
     console.error("Error fetching customers:", error);
@@ -15,7 +15,7 @@ export const getAll = async () => {
 
 export const getById = async (id: string | number) => {
   try {
-    const response = await axiosInstance.get(`${ENDPOINT}/${id}`);
+    const response = await api.get(`${ENDPOINT}/${id}`);
     return response.data;
   } catch (error) {
     console.error(`Error fetching booking ${id}:`, error);
@@ -31,7 +31,7 @@ export const saveCustomer = async (
     console.log("CustomerService - Customer ID:", (customer as any).id);
     console.log("CustomerService - Customer Email:", customer.email);
 
-    const response = await axiosInstance.post(`${ENDPOINT}/save`, customer);
+    const response = await api.post(`${ENDPOINT}/save`, customer);
 
     console.log("CustomerService - Response status:", response.status);
     console.log("CustomerService - Response data:", response.data);
@@ -67,7 +67,7 @@ export const saveCustomer = async (
 
 export const searchByName = async (name: string) => {
   try {
-    const response = await axiosInstance.get(`${ENDPOINT}/search`, {
+    const response = await api.get(`${ENDPOINT}/search`, {
       params: { name },
     });
     return response.data;
@@ -79,7 +79,7 @@ export const searchByName = async (name: string) => {
 
 export const findByPhone = async (phone: string): Promise<Customer | null> => {
   try {
-    const response = await axiosInstance.get(
+    const response = await api.get(
       `${ENDPOINT}/by-phone/${encodeURIComponent(phone)}`
     );
     return response.data;
@@ -90,7 +90,7 @@ export const findByPhone = async (phone: string): Promise<Customer | null> => {
 
 export const findByEmail = async (email: string): Promise<Customer | null> => {
   try {
-    const response = await axiosInstance.get(
+    const response = await api.get(
       `${ENDPOINT}/by-email/${encodeURIComponent(email)}`
     );
     return response.data;

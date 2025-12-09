@@ -1,4 +1,4 @@
-import { axiosInstance } from '../config/api';
+import { api } from './apiClient';
 import type { Employee } from '../types/Employee';
 
 const ENDPOINT = '/employees';
@@ -6,7 +6,7 @@ const ENDPOINT = '/employees';
 // Lấy danh sách tất cả nhân viên
 export const getAll = async (): Promise<Employee[]> => {
     try {
-        const response = await axiosInstance.get(ENDPOINT);
+        const response = await api.get(ENDPOINT);
         return response.data;
     } catch (error) {
         console.error('Error fetching employees:', error);
@@ -17,7 +17,7 @@ export const getAll = async (): Promise<Employee[]> => {
 // Tìm kiếm nhân viên theo tên
 export const searchEmployees = async (name: string): Promise<Employee[]> => {
     try {
-        const response = await axiosInstance.get(`${ENDPOINT}/search`, {
+        const response = await api.get(`${ENDPOINT}/search`, {
             params: { name },
         });
         return response.data;
@@ -30,7 +30,7 @@ export const searchEmployees = async (name: string): Promise<Employee[]> => {
 // Lấy thông tin nhân viên theo ID
 export const getById = async (id: string): Promise<Employee> => {
     try {
-        const response = await axiosInstance.get(`${ENDPOINT}/${id}`);
+        const response = await api.get(`${ENDPOINT}/${id}`);
         return response.data;
     } catch (error) {
         console.error('Error fetching employee by ID:', error);
@@ -44,7 +44,7 @@ export const create = async (
 ): Promise<Employee> => {
     try {
         console.log('Creating new employee:', employee);
-        const response = await axiosInstance.post(`${ENDPOINT}/save`, employee);
+        const response = await api.post(`${ENDPOINT}/save`, employee);
         return response.data;
     } catch (error) {
         console.error('Error creating employee:', error);
@@ -61,10 +61,7 @@ export const update = async (
         console.log('Updating employee with ID:', id, 'Data:', employee);
         // Bao gồm ID trong employee data để backend biết đây là update
         const employeeWithId = { ...employee, id };
-        const response = await axiosInstance.post(
-            `${ENDPOINT}/save`,
-            employeeWithId,
-        );
+        const response = await api.post(`${ENDPOINT}/save`, employeeWithId);
         return response.data;
     } catch (error) {
         console.error('Error updating employee with ID:', id, error);
@@ -91,7 +88,7 @@ export const createOrUpdate = async (
 // Xóa nhân viên
 export const deleteEmployee = async (id: string): Promise<void> => {
     try {
-        await axiosInstance.delete(`${ENDPOINT}/${id}`);
+        await api.delete(`${ENDPOINT}/${id}`);
     } catch (error) {
         console.error('Error deleting employee:', error);
         throw error;
@@ -104,8 +101,8 @@ export const updateStatus = async (
     status: 'ACTIVE' | 'INACTIVE',
 ): Promise<Employee> => {
     try {
-        const response = await axiosInstance.patch(`${ENDPOINT}/${id}/status`, {
-            status,
+        const response = await api.patch(`${ENDPOINT}/${id}/status`, {
+          status,
         });
         return response.data;
     } catch (error) {

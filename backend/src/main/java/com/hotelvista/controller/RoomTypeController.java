@@ -6,6 +6,7 @@ import com.hotelvista.service.RoomTypeService;
 import com.hotelvista.util.ValidatorsUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -34,6 +35,7 @@ public class RoomTypeController {
     }
 
     @PostMapping("/save")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'EMPLOYEE')")
     public ResponseEntity<?> insertOrUpdate(@RequestBody RoomType roomType) {
         // Validate room type ID
         String idError = ValidatorsUtil.validateRoomTypeId(roomType.getRoomTypeID());
@@ -77,11 +79,13 @@ public class RoomTypeController {
     }
 
     @DeleteMapping("/delete/{id}")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'EMPLOYEE')")
     public void delete(@PathVariable String id) {
         service.delete(id);
     }
 
     @GetMapping("/discounted-price/{roomTypeId}")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'EMPLOYEE', 'CUSTOMER')")
     public Double calculateDiscountedPrice(@PathVariable("roomTypeId") String roomTypeId, @RequestParam LocalDate bookingDate) {
         Double price = service.calculateDiscountedPrice(roomTypeId, bookingDate);
         if (price <= 0.0) {

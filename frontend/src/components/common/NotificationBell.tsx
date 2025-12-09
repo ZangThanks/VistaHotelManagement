@@ -80,7 +80,7 @@ export default function NotificationBell({
             {/* Bell Icon */}
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className={bellColorClass}
+                className={`${bellColorClass} cursor-pointer`}
             >
                 <FaBell size={20} />
                 {unreadCount > 0 && (

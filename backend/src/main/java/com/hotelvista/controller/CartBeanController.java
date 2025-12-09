@@ -4,6 +4,7 @@
     import com.hotelvista.service.CartBeanService;
     import org.springframework.beans.factory.annotation.Autowired;
     import org.springframework.http.ResponseEntity;
+    import org.springframework.security.access.prepost.PreAuthorize;
     import org.springframework.web.bind.annotation.*;
 
     @RestController
@@ -13,11 +14,13 @@
         private CartBeanService service;
 
         @GetMapping("/customer/{id}")
+        @PreAuthorize("hasAnyAuthority('ADMIN', 'EMPLOYEE', 'CUSTOMER')")
         public CartBean getByCustomer_Id(@PathVariable("id") String id) {
             return service.getByCustomer_Id(id);
         }
 
         @PostMapping("/add/{customerId}/{roomNumber}")
+        @PreAuthorize("hasAnyAuthority('ADMIN', 'EMPLOYEE', 'CUSTOMER')")
         public ResponseEntity<String> addRoomToCart(@PathVariable("customerId") String customerId, 
                                                       @PathVariable("roomNumber") String roomNumber) {
             boolean success = service.addRoomToCart(customerId, roomNumber);
@@ -29,6 +32,7 @@
         }
 
         @DeleteMapping("/remove/{customerId}/{roomNumber}")
+        @PreAuthorize("hasAnyAuthority('ADMIN', 'EMPLOYEE', 'CUSTOMER')")
         public ResponseEntity<String> removeRoomFromCart(@PathVariable("customerId") String customerId,
                                                            @PathVariable("roomNumber") String roomNumber) {
             boolean success = service.removeRoomFromCart(customerId, roomNumber);

@@ -58,7 +58,7 @@ const HeaderHome: React.FC = () => {
   // Menu items based on user role
   const roleMenuItems = {
     ADMIN: [
-      { label: "Dashboard", path: "/admin/dashboard", icon: faChartLine },
+      { label: "Dashboard", path: "/admin", icon: faChartLine },
       {
         label: "Management",
         path: "/admin/room-management",
@@ -242,25 +242,27 @@ const HeaderHome: React.FC = () => {
                     </div>
                   </div>
 
-                  <Link
-                    to="/customer/profile"
-                    className="flex items-center px-4 py-2 text-sm text-white hover:bg-white/10 font-serif transition"
-                  >
-                    <FontAwesomeIcon icon={faUserCircle} className="mr-2 w-4" />
-                    Profile
-                  </Link>
-
-                  <Link
-                    to="/customer/mybooking"
-                    className="flex items-center px-4 py-2 text-sm text-white hover:bg-white/10 font-serif transition"
-                  >
-                    <FontAwesomeIcon icon={faBookmark} className="mr-2 w-4" />
-                    My Booking
-                  </Link>
+                  {/* Dynamic menu items based on user role */}
+                  {user.userRole &&
+                    roleMenuItems[
+                      user.userRole as keyof typeof roleMenuItems
+                    ]?.map((item) => (
+                      <Link
+                        key={item.path}
+                        to={item.path}
+                        className="flex items-center px-4 py-2 text-sm text-white hover:bg-white/10 font-serif transition"
+                      >
+                        <FontAwesomeIcon
+                          icon={item.icon}
+                          className="mr-2 w-4"
+                        />
+                        {item.label}
+                      </Link>
+                    ))}
 
                   <button
                     onClick={() => handleLogoutClick()}
-                    className="flex items-center w-full text-left px-4 py-2 text-sm text-white hover:bg-white/10 font-serif transition border-t border-white/10 mt-1"
+                    className="flex items-center w-full text-left px-4 py-2 text-sm text-white hover:bg-white/10 font-serif transition cursor-pointer"
                   >
                     <FontAwesomeIcon icon={faSignOutAlt} className="mr-2 w-4" />
                     Logout
@@ -289,7 +291,7 @@ const HeaderHome: React.FC = () => {
 
           {/* Reserve Button */}
           <Link
-            to="/customer/bookingPage"
+            to="/customer/cart"
             className="bg-white text-black px-3 py-1.5 sm:px-4 sm:py-2 lg:px-6 lg:py-2 rounded font-serif border border-transparent hover:bg-black/40 hover:text-white transition-all duration-300 ease-in-out text-xs sm:text-sm lg:text-base"
           >
             <span className="hidden sm:inline">Reserve</span>

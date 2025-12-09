@@ -2,6 +2,7 @@ package com.hotelvista.controller;
 
 import com.hotelvista.model.HourlyRatePolicy;
 import com.hotelvista.service.HourlyRatePolicyService;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,11 +17,13 @@ public class HourlyRatePolicyController {
     }
 
     @GetMapping("/base-rates")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'EMPLOYEE')")
     public List<HourlyRatePolicy> getAllPolicyBaseRates(){
         return service.getAllHourlyRatePolicy();
     }
 
     @PostMapping("/save")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'EMPLOYEE')")
     public void save(@RequestBody HourlyRatePolicy hourlyRatePolicy){
         service.save(hourlyRatePolicy);
     }

@@ -3,6 +3,7 @@ package com.hotelvista.controller;
 import com.hotelvista.model.BookingService;
 import com.hotelvista.service.BookingServiceService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,6 +20,7 @@ public class BookingServiceController {
     }
 
     @PostMapping("/save")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'EMPLOYEE', 'CUSTOMER')")
     public boolean save(@RequestBody BookingService bookingService) {
         return service.save(bookingService);
     }

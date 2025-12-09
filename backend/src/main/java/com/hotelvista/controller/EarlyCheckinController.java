@@ -6,6 +6,7 @@ import com.hotelvista.service.EarlyCheckinService;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -23,6 +24,7 @@ public class EarlyCheckinController {
      * Gửi yêu cầu check-in sớm
      */
     @PostMapping("/request")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'EMPLOYEE', 'CUSTOMER')")
     public Map<String, Object> requestEarlyCheckin(@RequestBody Map<String, Object> payload) {
 
         String bookingId = (String) payload.get("bookingId");
@@ -52,6 +54,7 @@ public class EarlyCheckinController {
      * Duyệt hoặc từ chối yêu cầu check-in sớm
      */
     @PutMapping("/approve/{id}")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'EMPLOYEE')")
     public Map<String, Object> approveRequest(
             @PathVariable("id") String requestId,
             @RequestParam("status") String status,
@@ -80,6 +83,7 @@ public class EarlyCheckinController {
      * Danh sách tất cả yêu cầu check-in sớm
      */
     @GetMapping
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'EMPLOYEE')")
     public List<EarlyCheckin> getAll() {
         return earlyCheckinService.findAll();
     }

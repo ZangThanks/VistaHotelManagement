@@ -9,6 +9,7 @@ import com.hotelvista.service.RoomTypeService;
 import com.hotelvista.service.WalkInService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -39,6 +40,7 @@ public class WalkInController {
      * Get available rooms for specific room type and dates
      */
     @GetMapping("/available-rooms")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'EMPLOYEE')")
     public ResponseEntity<?> getAvailableRooms(
             @RequestParam(required = false) String roomTypeId,
             @RequestParam String checkIn,
@@ -65,6 +67,7 @@ public class WalkInController {
      * Create walk-in booking
      */
     @PostMapping("/create-booking")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'EMPLOYEE', 'CUSTOMER')")
     public ResponseEntity<?> createWalkInBooking(@RequestBody WalkInBookingDTO dto) {
         try {
             // Validate required fields

@@ -120,60 +120,60 @@ const CustomCaptcha: React.FC<CustomCaptchaProps> = ({
     };
 
     return (
-        <div className={`space-y-3 ${className}`}>
-            <div className="flex items-center gap-3">
-                {/* Captcha Input */}
-                <div className="flex-1">
-                    <input
-                        type="text"
-                        value={userInput}
-                        onChange={(e) => handleInputChange(e.target.value)}
-                        placeholder="Nhập mã"
-                        maxLength={6}
-                        className={`w-full px-4 py-3 bg-white/10 border-2 rounded-lg text-white placeholder-white/50 focus:outline-none transition-all ${
-                            userInput
-                                ? isVerified
-                                    ? 'border-green-500 focus:border-green-500'
-                                    : 'border-red-500 focus:border-red-500'
-                                : 'border-white/40 focus:border-[#c3923c]'
-                        }`}
-                    />
-                </div>
+      <div className={`space-y-3 ${className}`}>
+        <div className="flex items-center gap-3">
+          {/* Captcha Input */}
+          <div className="flex-1">
+            <input
+              type="text"
+              value={userInput}
+              onChange={(e) => handleInputChange(e.target.value)}
+              placeholder="Nhập mã"
+              maxLength={6}
+              className={`w-full px-4 py-3 bg-white/10 border-2 rounded-lg text-white placeholder-white/50 focus:outline-none transition-all ${
+                userInput
+                  ? isVerified
+                    ? "border-green-500 focus:border-green-500"
+                    : "border-red-500 focus:border-red-500"
+                  : "border-white/40 focus:border-[#c3923c]"
+              }`}
+            />
+          </div>
 
-                {/* Refresh Button */}
-                <button
-                    type="button"
-                    onClick={generateCaptcha}
-                    className="p-3 bg-white/10 hover:bg-white/20 border border-white/40 rounded-lg transition-all group"
-                    title="Tạo mã mới"
-                >
-                    <RefreshCw className="w-5 h-5 text-white group-hover:rotate-180 transition-transform duration-500" />
-                </button>
+          {/* Refresh Button */}
+          <button
+            type="button"
+            onClick={generateCaptcha}
+            className="p-3 bg-white/10 hover:bg-white/20 border border-white/40 rounded-lg transition-all group"
+            title="Tạo mã mới"
+          >
+            <RefreshCw className="w-5 h-5 text-white group-hover:rotate-180 transition-transform duration-500" />
+          </button>
 
-                {/* Captcha Canvas */}
-                <div className="bg-white rounded-lg p-2 shadow-md">
-                    <canvas
-                        id="captcha-canvas"
-                        width="200"
-                        height="60"
-                        className="rounded"
-                    />
-                </div>
-            </div>
-
-            {/* Validation Message */}
-            {userInput && (
-                <p
-                    className={`text-xs transition-all ${
-                        isVerified ? 'text-green-400' : 'text-red-400'
-                    }`}
-                >
-                    {isVerified
-                        ? '✓ Mã xác thực đúng'
-                        : '✗ Mã xác thực không đúng'}
-                </p>
-            )}
+          {/* Captcha Canvas */}
+          <div className="bg-white rounded-lg p-2 shadow-md">
+            <canvas
+              id="captcha-canvas"
+              width="200"
+              height="60"
+              className="rounded"
+            />
+          </div>
         </div>
+
+        {/* Validation Message */}
+        {userInput && (
+          <p
+            className={`text-xs transition-all ${
+              isVerified ? "text-green-400" : "text-red-400"
+            }`}
+          >
+            {isVerified
+              ? "Correct authentication code"
+              : "Incorrect verification code"}
+          </p>
+        )}
+      </div>
     );
 };
 
