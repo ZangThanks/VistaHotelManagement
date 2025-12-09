@@ -542,8 +542,9 @@ const ReportPage: React.FC = () => {
                                     data={
                                         activeTab === 'services'
                                             ? serviceData
-                                            : undefined
+                                            : []
                                     }
+                                    onExport={handleExport}
                                 />
                             </div>
                         </div>
