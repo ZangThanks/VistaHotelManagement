@@ -18,6 +18,7 @@ public class CustomerService {
 
     /**
      * Find all customers
+     * 
      * @return
      */
     public List<Customer> findAll() {
@@ -26,6 +27,7 @@ public class CustomerService {
 
     /**
      * Find customer by ID
+     * 
      * @param id
      * @return
      */
@@ -35,6 +37,7 @@ public class CustomerService {
 
     /**
      * Save customer
+     * 
      * @param customer
      */
     public Customer save(Customer customer) {
@@ -57,10 +60,9 @@ public class CustomerService {
         return repo.save(customer);
     }
 
-
-
     /**
      * Tìm tất cả khách hàng có tên chứa chuỗi name (không phân biệt hoa thường)
+     * 
      * @param name
      * @return
      */
@@ -70,6 +72,7 @@ public class CustomerService {
 
     /**
      * Tìm khách hàng theo email
+     * 
      * @param email
      * @return
      */
@@ -79,6 +82,7 @@ public class CustomerService {
 
     /**
      * Tìm khách hàng theo số điện thoại
+     * 
      * @param phone
      * @return
      */
@@ -88,6 +92,7 @@ public class CustomerService {
 
     /**
      * Tìm khách hàng theo userName
+     * 
      * @param userName
      * @return
      */
@@ -97,6 +102,7 @@ public class CustomerService {
 
     /**
      * Kiểm tra tồn tại khách hàng theo id
+     * 
      * @param id
      * @return
      */
@@ -106,6 +112,7 @@ public class CustomerService {
 
     /**
      * Tìm mã khách hàng lớn nhất trong ngày theo tiền tố
+     * 
      * @param prefix
      * @return
      */
@@ -118,7 +125,7 @@ public class CustomerService {
      *
      * @return mã khách hàng mới
      */
-    private String generateCustomerId() {
+    public String generateCustomerId() {
         String datePart = new SimpleDateFormat("ddMMyy").format(new Date());
         String prefix = "CUS" + datePart;
 
@@ -139,7 +146,8 @@ public class CustomerService {
      * Tạo username từ họ tên: bỏ dấu, viết thường, nối liền
      */
     private String generateUserName(String fullName) {
-        if (fullName == null) return null;
+        if (fullName == null)
+            return null;
         String normalized = removeVietnameseAccents(fullName);
         return normalized.toLowerCase().replaceAll("\\s+", "");
     }
@@ -148,12 +156,12 @@ public class CustomerService {
      * Hàm bỏ dấu tiếng Việt
      */
     private String removeVietnameseAccents(String input) {
-        if (input == null) return null;
+        if (input == null)
+            return null;
         String normalized = java.text.Normalizer.normalize(input, java.text.Normalizer.Form.NFD);
         return normalized.replaceAll("\\p{InCombiningDiacriticalMarks}+", "")
                 .replaceAll("đ", "d")
                 .replaceAll("Đ", "D");
     }
-
 
 }

@@ -135,3 +135,6 @@ export const getPromotionById = async (promotionID: string) => {
     throw error;
   }
 };
+
+// Alias for compatibility
+export { getAllPromotions as getPromotions };

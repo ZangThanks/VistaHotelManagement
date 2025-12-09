@@ -174,20 +174,6 @@ VALUES ('CUS0412250001', 'TP.HCM', 'nguyenvana@gmail.com', 'Nguyễn Văn A', 'h
        ('CUS0412250004', 'TP.HCM', 'phamthic@gmail.com', 'Phạm Thị C', 'hashedpw4', '2025-10-20', '0934567890', 'phamthic',
         'CUSTOMER', '1992-03-10', 'FEMALE', 105000, 'PLATINUM');
 
--- EMPLOYEES (Using the specified names)
-INSERT INTO employees (employee_id, address, email, full_name, password, phone, user_name, user_role, department,
-                       hire_date, position, salary, status)
-VALUES ('EMP001', 'TP.HCM', 'duyen@vista.com', 'Nguyễn Thị Mỹ Duyên', 'hashedpw5', '0987654321', 'duyen', 'EMPLOYEE',
-        'Lễ tân', '2022-01-10', 'Receptionist', 9000000, 'ACTIVE'),
-       ('EMP002', 'TP.HCM', 'hiep@vista.com', 'Phan Phước Hiệp', 'hashedpw6', '0976543210', 'hiep', 'EMPLOYEE',
-        'Kỹ thuật', '2021-05-15', 'Technician', 12000000, 'ACTIVE'),
-       ('EMP003', 'TP.HCM', 'nhan@vista.com', 'Hồ Quang Nhân', 'hashedpw7', '0965432109', 'nhan', 'EMPLOYEE', 'Quản lý',
-        '2020-09-20', 'Manager', 18000000, 'ACTIVE'),
-       ('EMP004', 'TP.HCM', 'khoe@vista.com', 'Trần Đoàn Khỏe', 'hashedpw8', '0954321098', 'khoe', 'EMPLOYEE', 'Bảo vệ',
-        '2021-03-15', 'Security', 8500000, 'ACTIVE'),
-       ('EMP005', 'TP.HCM', 'vu@vista.com', 'Trần Long Vũ', 'hashedpw9', '0943210987', 'vu', 'EMPLOYEE', 'Nhà hàng',
-        '2022-02-01', 'F&B Manager', 15000000, 'ACTIVE');
-
 -- ADMINS
 INSERT INTO admins (admin_id, address, email, full_name, password, phone, user_name, user_role, admin_level)
 VALUES ('ADMIN001', 'TP.HCM', 'admin@vista.com', 'Admin Vista', '@admin', '0999999999', 'adminvista', 'ADMIN', 1);

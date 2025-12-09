@@ -155,6 +155,36 @@ export const getBookingsByCheckOutDateRange = async (startDate: string, endDate:
     return response.data;
 };
 
+export const getByRoom = async (roomNumber: string): Promise<Booking[]> => {
+    try {
+        const response = await api.get(`${ENDPOINT}/room/${roomNumber}`);
+        return Array.isArray(response.data) ? response.data : [];
+    } catch (error) {
+        console.error(`Error fetching bookings for room ${roomNumber}:`, error);
+        throw error;
+    }
+};
+
+export const generateBookingID = async (): Promise<string> => {
+    try {
+        const response = await api.get(`${ENDPOINT}/generate-id`);
+        return response.data;
+    } catch (error) {
+        console.error('Error generating booking ID:', error);
+        throw error;
+    }
+};
+
+export const overlapBookingExists = async (roomId: string): Promise<any[]> => {
+    try {
+        const response = await api.get(`${ENDPOINT}/overlap/${roomId}`);
+        return Array.isArray(response.data) ? response.data : [];
+    } catch (error) {
+        console.error(`Error checking overlap bookings for room ${roomId}:`, error);
+        throw error;
+    }
+};
+
 export const checkIn = async (bookingId: string): Promise<Booking> => {
     try {
         const response = await axiosInstance.put(`${ENDPOINT}/${bookingId}/check-in`);
@@ -223,6 +253,43 @@ export const confirmPayAtCheckout = async (bookingId: string): Promise<Booking> 
         return response.data;
     } catch (error) {
         console.error(`Error confirming pay at checkout for booking ${bookingId}:`, error);
+        throw error;
+    }
+};
+
+export const generateQRPayment = async (bookingId: string, paymentMethod: string): Promise<Blob> => {
+    try {
+        const response = await axiosInstance.get(`${ENDPOINT}/payment-qr/${bookingId}`, {
+            params: { method: paymentMethod },
+            responseType: 'blob'
+        });
+        return response.data;
+    } catch (error) {
+        console.error(`Error generating QR payment for booking ${bookingId}:`, error);
+        throw error;
+    }
+};
+
+export const searchBookings = async (keyword: string): Promise<Booking[]> => {
+    try {
+        const response = await api.get(`${ENDPOINT}/search`, {
+            params: { keyword }
+        });
+        return Array.isArray(response.data) ? response.data : [];
+    } catch (error) {
+        console.error(`Error searching bookings with keyword ${keyword}:`, error);
+        throw error;
+    }
+};
+
+export const processCheckout = async (bookingId: string, paymentMethod: string): Promise<any> => {
+    try {
+        const response = await api.post(`${ENDPOINT}/${bookingId}/checkout`, {
+            paymentMethod
+        });
+        return response.data;
+    } catch (error) {
+        console.error(`Error processing checkout for booking ${bookingId}:`, error);
         throw error;
     }
 };

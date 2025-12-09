@@ -5,6 +5,7 @@ import com.hotelvista.model.Customer;
 import com.hotelvista.service.CartBeanService;
 import com.hotelvista.service.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
