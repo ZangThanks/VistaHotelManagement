@@ -416,7 +416,11 @@ export default function BookingForm({
   const setServiceApplyAll = (serviceId: string, applyAll: boolean) => {
     setSelectedServiceTargets((prev) => ({
       ...prev,
-      [serviceId]: applyAll ? "ALL" : rooms.map((r) => r.roomNumber),
+      [serviceId]: applyAll
+        ? "ALL"
+        : rooms
+            .map((r) => r.roomNumber)
+            .filter((num): num is string => typeof num === "string"),
     }));
   };
 
@@ -685,10 +689,10 @@ export default function BookingForm({
       }
     }
 
-    let checkInWithTime = new Date(checkInDate);
+    let checkInWithTime = checkInDate ? new Date(checkInDate) : new Date();
     checkInWithTime.setHours(14, 0, 0, 0);
 
-    let checkOutWithTime = new Date(checkOutDate);
+    let checkOutWithTime = checkOutDate ? new Date(checkOutDate) : new Date();
     checkOutWithTime.setHours(12, 0, 0, 0);
 
     const formatLocalDateTime = (date: Date) => {
@@ -883,7 +887,7 @@ export default function BookingForm({
     return discount;
   };
 
-  const discountValue = calculateDiscount();
+  // const discountValue = calculateDiscount();
 
   const calculatedTotalAmount = async () => {
     let totalAmount = (await calculateSubTotal()) - (await calculateDiscount());

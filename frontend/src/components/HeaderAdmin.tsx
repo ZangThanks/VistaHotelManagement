@@ -21,7 +21,6 @@ interface UserData {
 
 const HeaderAdmin: React.FC<HeaderProps> = ({
   toggleSidebar,
-  isSidebarOpen,
 }) => {
     const [userData, setUserData] = useState<UserData | null>(null);
 

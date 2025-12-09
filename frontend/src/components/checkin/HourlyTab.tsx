@@ -1,31 +1,35 @@
 /* eslint-disable */
-import React from 'react';
 import { FaCheck, FaEye, FaClock } from 'react-icons/fa';
 import type { Booking } from '../../types/Booking';
 
-const formatTime = (dateString) => {
+const formatTime = (dateString: string | undefined) => {
     if (!dateString) return 'N/A';
     const date = new Date(dateString);
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 };
 
-const calculateDuration = (startDate: String, endDate: String) => {
-    if (!startDate || !endDate) return 'N/A';
+// const calculateDuration = (startDate: String, endDate: String) => {
+//     if (!startDate || !endDate) return 'N/A';
 
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    const diffMs = end - start;
-    const diffHrs = Math.round(diffMs / (1000 * 60 * 60));
+//     const start = new Date(startDate.toString());
+//     const end = new Date(endDate.toString());
+//     const diffMs = end.getTime() - start.getTime();
+//     const diffHrs = Math.round(diffMs / (1000 * 60 * 60));
 
-    return diffHrs + ' hours';
-};
+//     return diffHrs + ' hours';
+// };
 
 const isHourlyBooking = (booking: Booking) => {
     if (!booking) return false;
     return booking.type === 'HOURLY' && booking.duration < 24;
 };
 
-const HourlyTab = ({ onViewDetails, bookings = [] }) => {
+interface HourlyTabProps {
+    onViewDetails: (booking: any) => void;
+    bookings?: Booking[];
+}
+
+const HourlyTab = ({ onViewDetails, bookings = [] }: HourlyTabProps) => {
     const hourlyBookings = bookings
         .filter((booking: Booking) => isHourlyBooking(booking))
         .map((booking: Booking) => ({

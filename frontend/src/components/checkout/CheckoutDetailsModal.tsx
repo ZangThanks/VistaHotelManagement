@@ -19,10 +19,12 @@ export default function CheckoutDetailsModal({
         .join(', ');
 
     const balanceDue =
-        booking.paymentStatus === 'PAID'
+        booking.paymentStatus === 'COMPLETED'
             ? 0
-            : booking.paymentStatus === 'PARTIAL'
+            : booking.paymentStatus === 'PERCENTAGE_50'
             ? booking.totalAmount * 0.5
+            : booking.paymentStatus === 'PERCENTAGE_30'
+            ? booking.totalAmount * 0.7
             : booking.totalAmount;
 
     const isCheckedOut = booking.status === 'CHECKED_OUT';
@@ -188,10 +190,9 @@ export default function CheckoutDetailsModal({
                                 </span>
                                 <span
                                     className={`font-medium ${
-                                        booking.paymentStatus === 'PAID'
+                                        booking.paymentStatus === 'COMPLETED'
                                             ? 'text-green-600'
-                                            : booking.paymentStatus ===
-                                              'PARTIAL'
+                                            : booking.paymentStatus === 'PERCENTAGE_50' || booking.paymentStatus === 'PERCENTAGE_30'
                                             ? 'text-amber-600'
                                             : 'text-red-600'
                                     }`}

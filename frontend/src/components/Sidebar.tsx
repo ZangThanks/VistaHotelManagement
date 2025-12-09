@@ -6,7 +6,6 @@ import {
     FaCalendarAlt,
     FaUsers,
     FaChartLine,
-    FaCog,
 } from 'react-icons/fa';
 import { MdMeetingRoom } from 'react-icons/md';
 import { RiInfoCardFill, RiDiscountPercentFill } from 'react-icons/ri';

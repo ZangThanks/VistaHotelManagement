@@ -57,38 +57,38 @@ const HeaderHome: React.FC = () => {
     ];
 
     // Menu items based on user role
-    const roleMenuItems = {
-        ADMIN: [
-            { label: 'Dashboard', path: '/admin/dashboard', icon: faChartLine },
-            {
-                label: 'Management',
-                path: '/admin/room-management',
-                icon: faTasks,
-            },
-            { label: 'Profile', path: '/customer/profile', icon: faUserCircle },
-        ],
-        EMPLOYEE: [
-            {
-                label: 'Dashboard',
-                path: '/employee/dashboard',
-                icon: faChartLine,
-            },
-            {
-                label: 'Booking Management',
-                path: '/employee/booking-management',
-                icon: faTasks,
-            },
-            { label: 'Profile', path: '/customer/profile', icon: faUserCircle },
-        ],
-        CUSTOMER: [
-            { label: 'Profile', path: '/customer/profile', icon: faUserCircle },
-            {
-                label: 'My Booking',
-                path: '/customer/mybooking',
-                icon: faBookmark,
-            },
-        ],
-    };
+    // const roleMenuItems = {
+    //     ADMIN: [
+    //         { label: 'Dashboard', path: '/admin/dashboard', icon: faChartLine },
+    //         {
+    //             label: 'Management',
+    //             path: '/admin/room-management',
+    //             icon: faTasks,
+    //         },
+    //         { label: 'Profile', path: '/customer/profile', icon: faUserCircle },
+    //     ],
+    //     EMPLOYEE: [
+    //         {
+    //             label: 'Dashboard',
+    //             path: '/employee/dashboard',
+    //             icon: faChartLine,
+    //         },
+    //         {
+    //             label: 'Booking Management',
+    //             path: '/employee/booking-management',
+    //             icon: faTasks,
+    //         },
+    //         { label: 'Profile', path: '/customer/profile', icon: faUserCircle },
+    //     ],
+    //     CUSTOMER: [
+    //         { label: 'Profile', path: '/customer/profile', icon: faUserCircle },
+    //         {
+    //             label: 'My Booking',
+    //             path: '/customer/mybooking',
+    //             icon: faBookmark,
+    //         },
+    //     ],
+    // };
 
     const getLastTwoWords = (name: string): string => {
         if (!name) return '';

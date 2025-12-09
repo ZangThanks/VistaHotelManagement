@@ -23,7 +23,7 @@ interface RoomTableViewProps {
     rooms: Room[];
     onEdit: (room: Room) => void;
     onView: (room: Room) => void;
-    onDelete: (room: Room) => void;
+    onDelete?: (room: Room) => void;
 }
 
 const statusConfig = {
@@ -163,16 +163,18 @@ const RoomTableView: React.FC<RoomTableViewProps> = ({
                                         >
                                             <FaEdit className="text-lg" />
                                         </button>
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                onDelete(room);
-                                            }}
-                                            className="text-[#c62828] hover:text-[#b71c1c] transition-colors p-2 hover:bg-red-50 rounded-lg cursor-pointer"
-                                            title="Delete"
-                                        >
-                                            <FaTrashAlt className="text-lg" />
-                                        </button>
+                                        {onDelete && (
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    onDelete(room);
+                                                }}
+                                                className="text-[#c62828] hover:text-[#b71c1c] transition-colors p-2 hover:bg-red-50 rounded-lg cursor-pointer"
+                                                title="Delete"
+                                            >
+                                                <FaTrashAlt className="text-lg" />
+                                            </button>
+                                        )}
                                     </div>
                                 </td>
                             </motion.tr>

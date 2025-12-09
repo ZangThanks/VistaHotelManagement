@@ -1,4 +1,3 @@
-/* eslint-disable */
 import { FaCheck, FaEye, FaReceipt } from 'react-icons/fa';
 import type { Booking } from '../../types/Booking';
 

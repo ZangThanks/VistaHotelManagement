@@ -1,4 +1,3 @@
-import React from 'react';
 import { FaSearch, FaFilter } from 'react-icons/fa';
 
 function SearchFilter() {
