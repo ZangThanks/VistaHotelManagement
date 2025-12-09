@@ -10,7 +10,7 @@ import java.nio.charset.StandardCharsets;
 
 public class QRGenerateUtil {
     private static final String BANK_CORE = "MBBank";
-    private static final String ACCOUNT_NUMBER = "VQRQAFRFK5546";
+    private static final String ACCOUNT_NUMBER = "VQRQAFRFA2232";
 
     //VQRQAFMGQ4306 là tài khoản ảo trên SePay muốn test trên local thì tải ngrok - chạy ngrok http 8080
     //Cop link generated xong cấu hình lại webhook trên sepay

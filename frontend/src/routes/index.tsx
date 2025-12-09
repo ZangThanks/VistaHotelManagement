@@ -58,6 +58,7 @@ import ReplyReviewsPage from "../pages/employee/review/ReplyReviewPage.tsx";
 import AccessDenied403 from "../pages/error/AccessDenied403.tsx";
 import NotFound404 from "../pages/error/NotFound404.tsx";
 import ServerError500 from "../pages/error/ServerError500.tsx";
+
 export const router = createBrowserRouter([
   // OAuth
   {
@@ -91,6 +92,7 @@ export const router = createBrowserRouter([
       { path: "room-type-management", element: <RoomTypeManagement /> },
       { path: "support", element: <ChatSupport /> },
       { path: "reviews", element: <ReplyReviewsPage /> },
+      { path: "services", element: <ServiceManagement /> },
     ],
   },
 
