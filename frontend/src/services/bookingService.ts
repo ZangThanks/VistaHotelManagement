@@ -370,9 +370,14 @@ export const getCompletedCheckouts = async (): Promise<Booking[]> => {
   }
 };
 
-export const getByRoom = async (roomNumber: string) => {
-  const response = await api.get(`/bookings/room/${roomNumber}`);
-  return response.data;
+export const getByRoom = async (roomNumber: string): Promise<Booking[]> => {
+    try {
+        const response = await api.get(`${ENDPOINT}/room/${roomNumber}`);
+        return Array.isArray(response.data) ? response.data : [];
+    } catch (error) {
+        console.error(`Error fetching bookings for room ${roomNumber}:`, error);
+        throw error;
+    }
 };
 
 // ========== ADD SERVICES TO BOOKING ==========
@@ -458,9 +463,7 @@ export const cancelBooking = async (
 
 export const getBookingServicesByBookingId = async (bookingId: string) => {
   try {
-    const response = await api.get(
-      `${ENDPOINT}/booking-services/booking/${bookingId}`
-    );
+    const response = await api.get(`/booking-services/booking/${bookingId}`);
     return response.data;
   } catch (error) {
     console.error("Error fetching booking services:", error);
@@ -485,6 +488,23 @@ export const confirmPayAtCheckout = async (
   }
 };
 
+export const getRemainingTimeForPayment = async (
+  bookingId: string
+): Promise<string> => {
+  try {
+    const response = await api.get(
+      `${ENDPOINT}/remaining-payment-time/${bookingId}`
+    );
+    return response.data;
+  } catch (error) {
+    console.error(
+      `Error getting remaining time for payment for booking ${bookingId}:`,
+      error
+    );
+    throw error;
+  }
+};
+
 export default {
   getAll,
   getBookingById,
@@ -496,4 +516,6 @@ export default {
   addServicesToBooking,
   addServiceToBooking,
   checkRoomAvailability,
+  getRemainingTimeForPayment,
+  cancelBooking,
 };

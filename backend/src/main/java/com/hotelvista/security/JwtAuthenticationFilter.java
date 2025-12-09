@@ -75,6 +75,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getRequestURI();
+        return path.startsWith("/ws");
+    }
+
+
+
+
     /**
      * Lấy JWT token từ Authorization header.
      * Token phải có định dạng "Bearer [token]".

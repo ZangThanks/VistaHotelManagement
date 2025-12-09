@@ -1,5 +1,14 @@
+/* eslint-disable */
 import { useState, type JSX } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+
+interface ModernCalendarProps {
+    selected: Date;
+    onSelect: (d: Date) => void;
+    minDate?: Date;
+    maxDate?: Date;
+    excludedDates?: Date[];
+}
 
 // ==========================
 // Modern Calendar Component
@@ -7,10 +16,10 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 const ModernCalendar = ({
     selected,
     onSelect,
-}: {
-    selected: Date;
-    onSelect: (d: Date) => void;
-}) => {
+    minDate,
+    maxDate,
+    excludedDates = [],
+}: ModernCalendarProps) => {
     const [currentDate, setCurrentDate] = useState(new Date(selected));
 
     const months = [
@@ -62,6 +71,59 @@ const ModernCalendar = ({
         );
     };
 
+    const isDisabled = (d: number) => {
+        const date = new Date(
+            currentDate.getFullYear(),
+            currentDate.getMonth(),
+            d,
+        );
+        date.setHours(0, 0, 0, 0);
+
+        // Check minDate
+        if (minDate) {
+            const min = new Date(minDate);
+            min.setHours(0, 0, 0, 0);
+            if (date < min) return true;
+        }
+
+        // Check maxDate
+        if (maxDate) {
+            const max = new Date(maxDate);
+            max.setHours(0, 0, 0, 0);
+            if (date > max) return true;
+        }
+
+        // Check excludedDates
+        if (excludedDates.length > 0) {
+            const isExcluded = excludedDates.some((excludedDate) => {
+                const excluded = new Date(excludedDate);
+                excluded.setHours(0, 0, 0, 0);
+                return date.getTime() === excluded.getTime();
+            });
+            if (isExcluded) return true;
+        }
+
+        return false;
+    };
+
+    const handleDayClick = (day: number) => {
+        if (isDisabled(day)) return;
+        onSelect(
+            new Date(currentDate.getFullYear(), currentDate.getMonth(), day),
+        );
+    };
+
+    const canGoPrevMonth = () => {
+        if (!minDate) return true;
+        const prevMonth = new Date(
+            currentDate.getFullYear(),
+            currentDate.getMonth() - 1,
+            1,
+        );
+        const min = new Date(minDate.getFullYear(), minDate.getMonth(), 1);
+        return prevMonth >= min;
+    };
+
     const renderCalendarDays = () => {
         const days: JSX.Element[] = [];
 
@@ -82,28 +144,28 @@ const ModernCalendar = ({
         for (let day = 1; day <= daysInMonth; day++) {
             const isCurrentDay = isToday(day);
             const isSelectedDay = isSelected(day);
+            const disabled = isDisabled(day);
 
             days.push(
                 <button
                     key={day}
-                    onClick={() =>
-                        onSelect(
-                            new Date(
-                                currentDate.getFullYear(),
-                                currentDate.getMonth(),
-                                day,
-                            ),
-                        )
-                    }
+                    onClick={() => handleDayClick(day)}
+                    disabled={disabled}
                     className={`
                         w-8 h-8 rounded-lg text-xs font-light transition-all duration-200 
                         flex items-center justify-center
-                        hover:shadow-md
+                        ${
+                            disabled
+                                ? 'text-gray-300 cursor-not-allowed'
+                                : 'hover:shadow-md cursor-pointer'
+                        }
                         ${
                             isSelectedDay
                                 ? 'bg-black text-white shadow-lg scale-105 font-normal'
                                 : isCurrentDay
                                 ? 'bg-[#F5F0EB] text-black ring-1 ring-black/20'
+                                : disabled
+                                ? ''
                                 : 'bg-white hover:bg-[#F5F0EB] text-gray-700'
                         }
                     `}
@@ -132,7 +194,7 @@ const ModernCalendar = ({
     };
 
     return (
-        <div className="bg-white backdrop-blur-sm rounded-2xl shadow-lg  border-black/5 p-5 w-72">
+        <div className="bg-white backdrop-blur-sm rounded-2xl shadow-lg border-black/5 p-5 w-72">
             {/* Header */}
             <div className="flex items-center justify-between mb-5 pb-4 border-b border-black/10">
                 <button
@@ -144,7 +206,12 @@ const ModernCalendar = ({
                             ),
                         )
                     }
-                    className="w-8 h-8 rounded-full bg-[#F5F0EB] hover:bg-black hover:text-white text-black transition-all duration-300 flex items-center justify-center shadow hover:shadow-lg hover:scale-110"
+                    disabled={!canGoPrevMonth()}
+                    className={`w-8 h-8 rounded-full flex items-center justify-center shadow transition-all duration-300 ${
+                        canGoPrevMonth()
+                            ? 'bg-[#F5F0EB] hover:bg-black hover:text-white text-black hover:shadow-lg hover:scale-110'
+                            : 'bg-gray-100 text-gray-300 cursor-not-allowed'
+                    }`}
                 >
                     <ChevronLeft className="w-4 h-4" strokeWidth={1.5} />
                 </button>

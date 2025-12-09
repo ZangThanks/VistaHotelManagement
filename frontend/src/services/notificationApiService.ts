@@ -12,15 +12,15 @@ interface BackendNotification {
     id: string;
     type: 'REQUEST' | 'INFO' | 'ALERT' | 'SYSTEM';
     category:
-        | 'EARLY_CHECKIN'
-        | 'LATE_CHECKOUT'
-        | 'CANCELLATION'
-        | 'PAYMENT_ISSUE'
-        | 'MAINTENANCE'
-        | 'HOUSEKEEPING'
-        | 'PROMOTION'
-        | 'SECURITY'
-        | 'OTHER';
+    | 'EARLY_CHECKIN'
+    | 'LATE_CHECKOUT'
+    | 'CANCELLATION'
+    | 'PAYMENT_ISSUE'
+    | 'MAINTENANCE'
+    | 'HOUSEKEEPING'
+    | 'PROMOTION'
+    | 'SECURITY'
+    | 'OTHER';
     title: string;
     message: string;
     fromUserId?: string;
@@ -30,13 +30,13 @@ interface BackendNotification {
     toUserIds?: string[];
     toUserType?: 'CUSTOMER' | 'ADMIN' | 'EMPLOYEE';
     status:
-        | 'PENDING'
-        | 'APPROVED'
-        | 'REJECTED'
-        | 'CANCELLED'
-        | 'DISMISSED'
-        | 'SENT'
-        | 'FAILED';
+    | 'PENDING'
+    | 'APPROVED'
+    | 'REJECTED'
+    | 'CANCELLED'
+    | 'DISMISSED'
+    | 'SENT'
+    | 'FAILED';
     priority: 'LOW' | 'NORMAL' | 'HIGH' | 'URGENT';
     needsAction?: boolean;
     isRead: boolean;
@@ -76,28 +76,14 @@ class NotificationApiService {
             }
 
             const response = await fetch(
-                `${API_BASE_URL}/notifications?page=${page}&size=${size}`,
+                `${API_BASE_URL}/api/notifications?page=${page}&size=${size}`,
                 {
                     method: 'GET',
                     headers: this.getAuthHeaders(),
                 },
             );
 
-            console.log(
-                '📡 [API] GET /notifications - Status:',
-                response.status,
-                response.statusText,
-            );
-
             if (!response.ok) {
-                const errorText = await response.text();
-                console.error('❌ [API] Error response:', {
-                    status: response.status,
-                    statusText: response.statusText,
-                    body: errorText,
-                });
-
-                // Return empty data instead of throwing
                 return {
                     success: false,
                     message: `Error: ${response.status}`,
@@ -107,30 +93,17 @@ class NotificationApiService {
 
             const data = await response.json();
 
-            console.log('📦 [API] Response data:', {
+            // Extract content từ Spring Page
+            const content =
+                data?.data?.content ?? data?.content ?? data?.data ?? [];
+
+            return {
                 success: data.success,
                 message: data.message,
-                hasData: !!data.data,
-                dataType: typeof data.data,
-                dataKeys: data.data ? Object.keys(data.data) : [],
-                hasContent: data.data?.content ? true : false,
-                contentLength: data.data?.content?.length,
-                sampleNotification: data.data?.content?.[0],
-            });
-
-            // Ensure we always return proper structure
-            if (data.success && data.data) {
-                return data;
-            }
-
-            console.warn('⚠️ [API] Unexpected response structure:', data);
-            return {
-                success: false,
-                message: 'Invalid response structure',
-                data: { content: [] },
+                data: { content: Array.isArray(content) ? content : [] },
             };
         } catch (error) {
-            console.error('❌ [API] Error fetching notifications:', error);
+            console.error('API error fetching notifications:', error);
             return {
                 success: false,
                 message:
@@ -147,7 +120,7 @@ class NotificationApiService {
         try {
             const token = localStorage.getItem('token');
             if (!token) {
-                console.error('❌ [API] No token for unread notifications');
+                console.error('[API] No token for unread notifications');
                 return {
                     success: false,
                     message: 'No authentication token',
@@ -156,20 +129,15 @@ class NotificationApiService {
             }
 
             const response = await fetch(
-                `${API_BASE_URL}/notifications/unread`,
+                `${API_BASE_URL}/api/notifications/unread`,
                 {
                     method: 'GET',
                     headers: this.getAuthHeaders(),
                 },
             );
 
-            console.log(
-                '📡 [API] GET /notifications/unread - Status:',
-                response.status,
-            );
-
             if (!response.ok) {
-                console.error('❌ [API] Failed to fetch unread notifications');
+                console.error('API failed to fetch unread notifications');
                 return {
                     success: false,
                     message: `Error: ${response.status}`,
@@ -178,16 +146,10 @@ class NotificationApiService {
             }
 
             const data = await response.json();
-            console.log(
-                '📭 [API] Unread notifications:',
-                data.data?.length || 0,
-            );
+
             return data;
         } catch (error) {
-            console.error(
-                '❌ [API] Error fetching unread notifications:',
-                error,
-            );
+            console.error('[API] Error fetching unread notifications:', error);
             return {
                 success: false,
                 message:
@@ -201,7 +163,7 @@ class NotificationApiService {
     async getUnreadCount(): Promise<ApiResponse<number>> {
         try {
             const response = await fetch(
-                `${API_BASE_URL}/notifications/unread/count`,
+                `${API_BASE_URL}/api/notifications/unread/count`,
                 {
                     method: 'GET',
                     headers: this.getAuthHeaders(),
@@ -225,7 +187,7 @@ class NotificationApiService {
     ): Promise<ApiResponse<BackendNotification>> {
         try {
             const response = await fetch(
-                `${API_BASE_URL}/notifications/${notificationId}/read`,
+                `${API_BASE_URL}/api/notifications/${notificationId}/read`,
                 {
                     method: 'PUT',
                     headers: this.getAuthHeaders(),
@@ -247,7 +209,7 @@ class NotificationApiService {
     async markAllAsRead(): Promise<ApiResponse> {
         try {
             const response = await fetch(
-                `${API_BASE_URL}/notifications/read-all`,
+                `${API_BASE_URL}/api/notifications/read-all`,
                 {
                     method: 'PUT',
                     headers: this.getAuthHeaders(),
@@ -269,7 +231,7 @@ class NotificationApiService {
     async deleteNotification(notificationId: string): Promise<ApiResponse> {
         try {
             const response = await fetch(
-                `${API_BASE_URL}/notifications/${notificationId}`,
+                `${API_BASE_URL}/api/notifications/${notificationId}`,
                 {
                     method: 'DELETE',
                     headers: this.getAuthHeaders(),
@@ -292,7 +254,7 @@ class NotificationApiService {
         notification: Partial<BackendNotification>,
     ): Promise<ApiResponse<BackendNotification>> {
         try {
-            const response = await fetch(`${API_BASE_URL}/notifications`, {
+            const response = await fetch(`${API_BASE_URL}/api/notifications`, {
                 method: 'POST',
                 headers: this.getAuthHeaders(),
                 body: JSON.stringify(notification),

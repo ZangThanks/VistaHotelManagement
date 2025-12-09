@@ -68,4 +68,5 @@ public class ReportController {
         List<BookingReportDTO> report = reportService.getBookingReport(startDate, endDate, period);
         return ResponseEntity.ok(report);
     }
+
 }

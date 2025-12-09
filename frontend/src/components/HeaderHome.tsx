@@ -324,7 +324,7 @@ const HeaderHome: React.FC = () => {
 
       {/* Mobile Navigation Menu - Slide from Left */}
       <div
-        className={`lg:hidden fixed top-0 left-0 w-64 h-full bg-gradient-to-br from-black/98 via-slate-900/95 to-black/98 backdrop-blur-xl border-r border-white/20 shadow-2xl z-50 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${
+        className={`lg:hidden fixed top-0 left-0 w-64 h-full border-r border-white/20 shadow-2xl z-50 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] ${
           mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
         } overflow-hidden`}
         style={{

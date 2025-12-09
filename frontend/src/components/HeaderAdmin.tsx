@@ -5,8 +5,8 @@ import { FaBars, FaUserCircle, FaChevronRight } from "react-icons/fa";
 import NotificationBell from "./common/NotificationBell";
 
 interface HeaderProps {
-  toggleSidebar: () => void;
-  isSidebarOpen: boolean;
+    toggleSidebar: () => void;
+    isSidebarOpen: boolean;
 }
 
 interface UserData {
@@ -20,8 +20,8 @@ interface UserData {
 }
 
 const HeaderAdmin: React.FC<HeaderProps> = ({
-  toggleSidebar,
-  isSidebarOpen,
+    toggleSidebar,
+    isSidebarOpen,
 }) => {
   const [userData, setUserData] = useState<UserData | null>(null);
   const location = useLocation();

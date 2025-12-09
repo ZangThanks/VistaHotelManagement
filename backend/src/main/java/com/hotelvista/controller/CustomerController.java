@@ -24,6 +24,12 @@ import com.hotelvista.model.enums.MemberShipLevel;
 import com.hotelvista.model.enums.UserRole;
 import com.hotelvista.service.CartBeanService;
 import com.hotelvista.service.CustomerService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/customers")
@@ -52,7 +58,6 @@ public class CustomerController {
     public List<Customer> searchCustomers(@RequestParam String name) {
         return service.findAllByFullNameContainingIgnoreCase(name);
     }
-
 
     /**
      * Lấy thông tin khách hàng theo ID.

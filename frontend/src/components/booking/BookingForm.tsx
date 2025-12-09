@@ -104,6 +104,11 @@ export default function BookingForm({
     Record<string, string[] | "ALL">
   >({}); // e.g. { serviceId: "ALL" } or { serviceId: ["101","102"] }
 
+  // Thêm state cho số lượng dịch vụ
+  const [serviceQuantities, setServiceQuantities] = useState<
+    Record<string, number>
+  >({});
+
   const [selectedPaymentMethod, setSelectedPaymentMethod] =
     useState<PaymentMethod>(PAYMENT_METHODS[0]);
   const [rooms, setRooms] = useState<Room[]>([]);
@@ -379,6 +384,12 @@ export default function BookingForm({
           delete copy[serviceId];
           return copy;
         });
+        // remove quantity
+        setServiceQuantities((q) => {
+          const copy = { ...q };
+          delete copy[serviceId];
+          return copy;
+        });
         return prev.filter((id) => id !== serviceId);
       } else {
         // add service and default to ALL rooms
@@ -386,9 +397,36 @@ export default function BookingForm({
           ...t,
           [serviceId]: rooms.length <= 1 ? "ALL" : "ALL",
         }));
+        // set default quantity to 1
+        setServiceQuantities((q) => ({
+          ...q,
+          [serviceId]: 1,
+        }));
         return [...prev, serviceId];
       }
     });
+  };
+
+  // Hàm cập nhật số lượng dịch vụ
+  const updateServiceQuantity = (serviceId: string, quantity: number) => {
+    if (quantity < 1) quantity = 1;
+    if (quantity > 99) quantity = 99;
+    setServiceQuantities((prev) => ({
+      ...prev,
+      [serviceId]: quantity,
+    }));
+  };
+
+  // Hàm tăng số lượng
+  const incrementQuantity = (serviceId: string) => {
+    const current = serviceQuantities[serviceId] || 1;
+    updateServiceQuantity(serviceId, current + 1);
+  };
+
+  // Hàm giảm số lượng
+  const decrementQuantity = (serviceId: string) => {
+    const current = serviceQuantities[serviceId] || 1;
+    updateServiceQuantity(serviceId, current - 1);
   };
 
   // Return selected Service objects from services array
@@ -420,17 +458,18 @@ export default function BookingForm({
     }));
   };
 
-  // Tính tổng chi phí dịch vụ
+  // Tính tổng chi phí dịch vụ - cập nhật để tính theo số lượng
   const calculateServiceCosts = () => {
     return getSelectedServiceObjects().reduce((sum, service) => {
       const targets = selectedServiceTargets[service.serviceID];
+      const quantity = serviceQuantities[service.serviceID] || 1;
       let factor = 1;
       if (!targets || targets === "ALL") {
         factor = rooms.length || 1;
       } else if (Array.isArray(targets)) {
         factor = targets.length || 1;
       }
-      return sum + service.price * factor;
+      return sum + service.price * factor * quantity;
     }, 0);
   };
 
@@ -735,7 +774,7 @@ export default function BookingForm({
       numberOfGuests: booking.numberOfGuests || 1,
       status: "WAITING",
       specialRequests: specialRequests,
-      bookingDate: new Date().toISOString(),
+      bookingDate: formatLocalDateTime(new Date()),
       packageType: booking.packageType || "Standard",
       totalAmount: await calculatedTotalAmount(),
       invoiceType: "ROOM_BOOKING",
@@ -761,14 +800,16 @@ export default function BookingForm({
     const bookingServicesWithRooms: any[] = [];
     getSelectedServiceObjects().forEach((s: Service) => {
       const targets = selectedServiceTargets[s.serviceID];
+      const quantity = serviceQuantities[s.serviceID] || 1;
+
       if (!targets || targets === "ALL") {
         // apply to every room in the booking
         rooms.forEach((room) => {
           bookingServicesWithRooms.push({
             service: { serviceID: s.serviceID },
             servicePrice: s.price,
-            quantity: 1,
-            totalAmount: s.price,
+            quantity: quantity,
+            totalAmount: s.price * quantity,
             orderStatus: "PLACE",
             paymentMethod: selectedPaymentMethod,
             room: { roomNumber: room.roomNumber },
@@ -779,8 +820,8 @@ export default function BookingForm({
           bookingServicesWithRooms.push({
             service: { serviceID: s.serviceID },
             servicePrice: s.price,
-            quantity: 1,
-            totalAmount: s.price,
+            quantity: quantity,
+            totalAmount: s.price * quantity,
             orderStatus: "PLACE",
             paymentMethod: selectedPaymentMethod,
             room: { roomNumber },
@@ -1151,7 +1192,7 @@ export default function BookingForm({
                       <div
                         className={`flex items-center gap-4 p-4 border border-gray-200 rounded-lg transition cursor-pointer ${
                           selectedServices.includes(service.serviceID)
-                            ? "bg-gray-50"
+                            ? "bg-gray-50 border-[#c9b8a8]"
                             : "hover:bg-gray-50"
                         }`}
                         onClick={() => toggleService(service.serviceID)}
@@ -1181,12 +1222,80 @@ export default function BookingForm({
                         </div>
                       </div>
 
-                      {/* Room Target Selector (shown when service is selected) */}
+                      {/* Quantity Selector và Room Target (shown when service is selected) */}
                       {selectedServices.includes(service.serviceID) && (
                         <div
-                          className="mt-3 p-3 bg-gray-50 rounded-md border border-gray-100"
+                          className="mt-3 p-4 bg-gray-50 rounded-md border border-gray-200"
                           onClick={(e) => e.stopPropagation()}
                         >
+                          {/* Quantity Selector */}
+                          <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-200">
+                            <label className="text-sm font-medium text-gray-700">
+                              Quantity:
+                            </label>
+                            <div className="flex items-center gap-3">
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  decrementQuantity(service.serviceID)
+                                }
+                                disabled={
+                                  (serviceQuantities[service.serviceID] || 1) <=
+                                  1
+                                }
+                                className={`w-8 h-8 flex items-center justify-center rounded-full border transition ${
+                                  (serviceQuantities[service.serviceID] || 1) <=
+                                  1
+                                    ? "border-gray-200 text-gray-300 cursor-not-allowed"
+                                    : "border-[#c9b8a8] text-[#c9b8a8] hover:bg-[#c9b8a8] hover:text-white"
+                                }`}
+                              >
+                                <span className="text-lg font-bold">−</span>
+                              </button>
+                              <input
+                                type="number"
+                                min="1"
+                                max="99"
+                                value={
+                                  serviceQuantities[service.serviceID] || 1
+                                }
+                                onChange={(e) =>
+                                  updateServiceQuantity(
+                                    service.serviceID,
+                                    parseInt(e.target.value) || 1
+                                  )
+                                }
+                                className="w-16 text-center px-2 py-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#c9b8a8]"
+                              />
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  incrementQuantity(service.serviceID)
+                                }
+                                disabled={
+                                  (serviceQuantities[service.serviceID] || 1) >=
+                                  99
+                                }
+                                className={`w-8 h-8 flex items-center justify-center rounded-full border transition ${
+                                  (serviceQuantities[service.serviceID] || 1) >=
+                                  99
+                                    ? "border-gray-200 text-gray-300 cursor-not-allowed"
+                                    : "border-[#c9b8a8] text-[#c9b8a8] hover:bg-[#c9b8a8] hover:text-white"
+                                }`}
+                              >
+                                <span className="text-lg font-bold">+</span>
+                              </button>
+                            </div>
+                            <span className="text-sm font-semibold text-[#c9b8a8]">
+                              {(
+                                service.price *
+                                (serviceQuantities[service.serviceID] || 1)
+                              ).toLocaleString()}
+                              đ
+                            </span>
+                          </div>
+
+                          {/* Room Target Selector */}
                           <div className="flex items-center gap-3 mb-2">
                             <label className="flex items-center gap-2 cursor-pointer">
                               <input
@@ -1266,16 +1375,60 @@ export default function BookingForm({
 
               <div className="space-y-3">
                 {getSelectedServiceObjects().length > 0 ? (
-                  getSelectedServiceObjects().map((service) => (
-                    <div
-                      key={service.serviceID}
-                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-                    >
-                      <span className="text-sm font-medium text-gray-900">
-                        • {service.serviceName}
-                      </span>
+                  <>
+                    {getSelectedServiceObjects().map((service) => {
+                      const quantity =
+                        serviceQuantities[service.serviceID] || 1;
+                      const targets = selectedServiceTargets[service.serviceID];
+                      const roomCount =
+                        !targets || targets === "ALL"
+                          ? rooms.length
+                          : Array.isArray(targets)
+                          ? targets.length
+                          : 1;
+                      const totalPrice = service.price * quantity * roomCount;
+
+                      return (
+                        <div
+                          key={service.serviceID}
+                          className="p-3 bg-gray-50 rounded-lg"
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm font-medium text-gray-900">
+                              {service.serviceName}
+                            </span>
+                            <button
+                              onClick={() => toggleService(service.serviceID)}
+                              className="text-red-500 hover:text-red-700 text-xs"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                          <div className="flex items-center justify-between mt-1 text-xs text-gray-600">
+                            <span>
+                              x{quantity} • {roomCount} room
+                              {roomCount > 1 ? "s" : ""}
+                            </span>
+                            <span className="font-semibold text-[#c9b8a8]">
+                              {totalPrice.toLocaleString()}đ
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+
+                    {/* Total Service Cost */}
+                    <div className="pt-3 mt-3 border-t border-gray-200">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-semibold text-gray-900">
+                          Total Services:
+                        </span>
+                        <span className="text-sm font-bold text-[#c9b8a8]">
+                          {calculateServiceCosts().toLocaleString()}đ
+                        </span>
+                      </div>
                     </div>
-                  ))
+                  </>
                 ) : (
                   <p className="text-sm text-gray-500 text-center py-4">
                     No services selected
@@ -1525,19 +1678,32 @@ export default function BookingForm({
 
           <div className="space-y-3">
             {getSelectedServiceObjects().length > 0 ? (
-              getSelectedServiceObjects().map((service) => (
-                <div
-                  key={service.serviceID}
-                  className="flex justify-between items-center py-2 border-b border-gray-200"
-                >
-                  <span className="text-gray-900 font-medium">
-                    • {service.serviceName} x1
-                  </span>
-                  <span className="text-gray-900 font-medium">
-                    {service.price.toLocaleString()} VND
-                  </span>
-                </div>
-              ))
+              getSelectedServiceObjects().map((service) => {
+                const quantity = serviceQuantities[service.serviceID] || 1;
+                const targets = selectedServiceTargets[service.serviceID];
+                const roomCount =
+                  !targets || targets === "ALL"
+                    ? rooms.length
+                    : Array.isArray(targets)
+                    ? targets.length
+                    : 1;
+                const totalPrice = service.price * quantity * roomCount;
+
+                return (
+                  <div
+                    key={service.serviceID}
+                    className="flex justify-between items-center py-2 border-b border-gray-200"
+                  >
+                    <span className="text-gray-900 font-medium">
+                      • {service.serviceName} x{quantity} ({roomCount} room
+                      {roomCount > 1 ? "s" : ""})
+                    </span>
+                    <span className="text-gray-900 font-medium">
+                      {totalPrice.toLocaleString()} VND
+                    </span>
+                  </div>
+                );
+              })
             ) : (
               <p className="text-gray-500 text-center py-4">
                 No services selected

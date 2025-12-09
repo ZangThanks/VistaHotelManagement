@@ -58,6 +58,7 @@ import ReplyReviewsPage from "../pages/employee/review/ReplyReviewPage.tsx";
 import AccessDenied403 from "../pages/error/AccessDenied403.tsx";
 import NotFound404 from "../pages/error/NotFound404.tsx";
 import ServerError500 from "../pages/error/ServerError500.tsx";
+import ReservationList from "../pages/admin/ReservationList.tsx";
 
 export const router = createBrowserRouter([
   // OAuth
@@ -109,7 +110,6 @@ export const router = createBrowserRouter([
       { path: "checkout", element: <CheckOutManager /> },
       { path: "info", element: <NewsList /> },
       { path: "info/:id", element: <NewsDetail /> },
-      { path: "services", element: <ServiceManagement /> },
       { path: "room-management", element: <RoomManagement /> },
       { path: "room-type-management", element: <RoomTypeManagement /> },
       { path: "promotion-management", element: <PromotionManagement /> },
@@ -128,6 +128,7 @@ export const router = createBrowserRouter([
       { path: "customers", element: <CustomerList /> },
       { path: "incidents", element: <IncidentManagement /> },
       { path: "reviews", element: <ReplyReviewsPage /> },
+      { path: "reservations", element: <ReservationList /> },
     ],
   },
 

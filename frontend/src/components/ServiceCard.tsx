@@ -18,10 +18,10 @@ const ServiceCard: React.FC<{ service: Service }> = ({ service }) => {
                 </h4>
                 {/* <div className="flex items-center gap-3 text-xs mb-2">
                     <span className="flex items-center text-yellow-500">
-                         {service.rating ?? '—'}
+                        ⭐ {service.rating ?? '—'}
                     </span>
                     <span className="flex items-center text-gray-500">
-                         {service.duration ?? '—'}
+                        🕐 {service.duration ?? '—'}
                     </span>
                 </div> */}
 

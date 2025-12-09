@@ -60,7 +60,7 @@ export const createEarlyCheckinRequest = async (payload: {
 export const approveEarlyCheckin = async (
     requestId: string,
     status: 'APPROVED' | 'REJECTED',
-    staffName: string,
+    employeeId: string,
     bookingInfo?: {
         customerId: string;
         customerName: string;
@@ -69,9 +69,9 @@ export const approveEarlyCheckin = async (
     },
 ) => {
     try {
-        // 1. Call backend API to approve/reject
+        // 1. Call backend API to approve/reject with employeeId
         const res = await api.put(
-            `${ENDPOINT}/approve/${requestId}?status=${status}&staff=${staffName}`,
+            `${ENDPOINT}/approve/${requestId}?status=${status}&employeeId=${employeeId}`,
         );
 
         // 2. Send notification to customer
@@ -82,7 +82,7 @@ export const approveEarlyCheckin = async (
                     customerId: bookingInfo.customerId,
                     customerName: bookingInfo.customerName,
                     roomNumber: bookingInfo.roomNumber,
-                    approvedBy: staffName,
+                    approvedBy: employeeId,
                     approvedTime: bookingInfo.requestedTime,
                     isApproved: status === 'APPROVED',
                     reason:

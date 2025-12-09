@@ -53,33 +53,29 @@ const TomorrowTab = ({
     onViewDetails = () => {},
     bookings = [],
 }: TomorrowTabProps) => {
-    const tomorrowBookings = bookings
-        .filter((booking) => isTomorrowBooking(booking))
-        .map((booking) => ({
-            id: booking.bookingID,
-            guest: {
-                name: booking.customer?.fullName || 'Guest',
-                email: booking.customer?.email || 'No email',
-                image: 'https://randomuser.me/api/portraits/men/22.jpg',
-            },
-            room: `${
-                booking.bookingDetails?.[0]?.room?.roomNumber || 'N/A'
-            } - ${
-                booking.bookingDetails?.[0]?.room?.roomType?.typeName ||
-                'Standard'
-            }`,
-            checkInTime: formatCheckInTime(booking.checkInDate),
-            trustScore: getTrustScore(booking.customer?.loyaltyPoints),
-            paymentStatus: getPaymentStatus(booking.paymentStatus),
-        }));
+    // Remove filtering - already filtered in CheckInManager
+    const tomorrowBookings = bookings.map((booking) => ({
+        id: booking.bookingID,
+        guest: {
+            name: booking.customer?.fullName || 'Guest',
+            email: booking.customer?.email || 'No email',
+            image: 'https://randomuser.me/api/portraits/men/22.jpg',
+        },
+        room: `${booking.bookingDetails?.[0]?.room?.roomNumber || 'N/A'} - ${
+            booking.bookingDetails?.[0]?.room?.roomType?.typeName || 'Standard'
+        }`,
+        checkInTime: formatCheckInTime(booking.checkInDate),
+        trustScore: getTrustScore(booking.customer?.loyaltyPoints),
+        paymentStatus: getPaymentStatus(booking.paymentStatus),
+    }));
 
     const displayBookings = tomorrowBookings.length > 0 ? tomorrowBookings : [];
 
-    if (tomorrowBookings.length === 0 && bookings.length > 0) {
+    if (tomorrowBookings.length === 0) {
         return (
             <div className="p-10 text-center">
                 <p className="text-gray-500">
-                    No check-ins scheduled for tomorrow.
+                    No check-ins scheduled for this date.
                 </p>
             </div>
         );

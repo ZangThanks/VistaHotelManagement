@@ -30,44 +30,44 @@ export default function RoomCompareModal({
         }).format(price);
 
     const features = [
-        { key: 'typeName', label: 'Loại phòng', format: (v: string) => v },
+        { key: 'typeName', label: 'Room Type', format: (v: string) => v },
         {
             key: 'basePrice',
-            label: 'Giá / đêm',
+            label: 'Price / night',
             format: (v: number) => formatPrice(v),
         },
         {
             key: 'maxOccupancy',
-            label: 'Số người tối đa',
-            format: (v: number) => `${v} người`,
+            label: 'Max Occupancy',
+            format: (v: number) => `${v} guests`,
         },
         {
             key: 'roomSize',
-            label: 'Diện tích',
+            label: 'Room Size',
             format: (v: number) => `${v} m²`,
         },
         {
             key: 'bedType',
-            label: 'Loại giường',
-            format: (v: string) => v || 'Không có thông tin',
+            label: 'Bed Type',
+            format: (v: string) => v || 'No information',
         },
         {
             key: 'hasBalcony',
-            label: 'Ban công',
+            label: 'Balcony',
             format: (v: boolean) =>
                 v ? <Check size={20} /> : <Minus size={20} />,
         },
         {
             key: 'hasSeaView',
-            label: 'View biển',
+            label: 'Sea View',
             format: (v: boolean) =>
                 v ? <Check size={20} /> : <Minus size={20} />,
         },
-        { key: 'floor', label: 'Tầng', format: (v: number) => `Tầng ${v}` },
+        { key: 'floor', label: 'Floor', format: (v: number) => `Floor ${v}` },
         {
             key: 'description',
-            label: 'Mô tả',
-            format: (v: string) => v || 'Không có mô tả',
+            label: 'Description',
+            format: (v: string) => v || 'No description',
         },
     ];
 
@@ -95,6 +95,51 @@ export default function RoomCompareModal({
         ? features.filter((feature) => hasFeatureDifference(feature))
         : features;
 
+    // Helper function to determine if a value is the best (advantage)
+    const isBestValue = (feature: { key: string }, room: Room) => {
+        const values = rooms.map((r) => {
+            if (feature.key === 'floor') return r.floor;
+            if (feature.key === 'description') return null; // Skip description
+            return r.roomType?.[feature.key as keyof typeof r.roomType];
+        });
+
+        const currentValue =
+            feature.key === 'floor'
+                ? room.floor
+                : room.roomType?.[feature.key as keyof typeof room.roomType];
+
+        // Skip highlighting for certain fields
+        if (
+            feature.key === 'typeName' ||
+            feature.key === 'description' ||
+            feature.key === 'bedType'
+        )
+            return false;
+
+        // For price: lowest is best
+        if (feature.key === 'basePrice') {
+            const numValues = values.filter(
+                (v) => typeof v === 'number',
+            ) as number[];
+            return currentValue === Math.min(...numValues);
+        }
+
+        // For maxOccupancy and roomSize: highest is best
+        if (feature.key === 'maxOccupancy' || feature.key === 'roomSize') {
+            const numValues = values.filter(
+                (v) => typeof v === 'number',
+            ) as number[];
+            return currentValue === Math.max(...numValues);
+        }
+
+        // For boolean features (hasBalcony, hasSeaView): true is best
+        if (feature.key === 'hasBalcony' || feature.key === 'hasSeaView') {
+            return currentValue === true;
+        }
+
+        return false;
+    };
+
     return (
         <>
             {/* Minimized Button - Bottom Right Corner */}
@@ -108,10 +153,10 @@ export default function RoomCompareModal({
                         <Maximize2 size={20} />
                         <div className="flex flex-col items-start">
                             <span className="text-sm font-semibold">
-                                So sánh ({rooms.length})
+                                Compare ({rooms.length})
                             </span>
                             <span className="text-xs opacity-90">
-                                Click để mở rộng
+                                Click to expand
                             </span>
                         </div>
                     </div>
@@ -127,10 +172,10 @@ export default function RoomCompareModal({
                             <div className="flex items-center justify-between">
                                 <div>
                                     <h2 className="text-2xl font-semibold text-gray-800">
-                                        So sánh phòng
+                                        Room Comparison
                                     </h2>
                                     <p className="text-sm text-gray-500 mt-1">
-                                        Đang so sánh {rooms.length} phòng
+                                        Comparing {rooms.length} rooms
                                     </p>
                                 </div>
                                 <div className="flex items-center gap-2">
@@ -138,7 +183,7 @@ export default function RoomCompareModal({
                                         onClick={() => handleMinimize(true)}
                                         className="p-2 rounded-full hover:bg-gray-100 transition-colors"
                                         aria-label="Minimize"
-                                        title="Thu gọn"
+                                        title="Minimize"
                                     >
                                         <Minimize2
                                             size={20}
@@ -149,7 +194,7 @@ export default function RoomCompareModal({
                                         onClick={onClose}
                                         className="p-2 rounded-full hover:bg-gray-100 transition-colors"
                                         aria-label="Close"
-                                        title="Đóng"
+                                        title="Close"
                                     >
                                         <X
                                             size={24}
@@ -173,7 +218,7 @@ export default function RoomCompareModal({
                                         className="w-4 h-4 rounded border-gray-300 text-[#CCBDA3] focus:ring-[#CCBDA3] cursor-pointer"
                                     />
                                     <span className="text-sm text-gray-700 select-none">
-                                        Chỉ xem điểm khác biệt
+                                        Show differences only
                                     </span>
                                 </label>
                             </div>
@@ -182,10 +227,10 @@ export default function RoomCompareModal({
                         {/* Content - Scrollable */}
                         <div className="flex-1 overflow-y-auto overflow-x-auto custom-scrollbar">
                             <table className="w-full border-collapse">
-                                <thead className="sticky top-0 bg-gray-50 z-10">
+                                <thead className="bg-gray-50">
                                     <tr>
-                                        <th className="w-48 px-6 py-4 text-left text-sm font-semibold text-gray-700 border-b border-gray-200">
-                                            Đặc điểm
+                                        <th className="sticky left-0 w-40 px-4 py-4 text-left text-sm font-semibold text-gray-700 border-b border-gray-200 bg-gray-50 z-10">
+                                            Features
                                         </th>
                                         {rooms.map((room) => (
                                             <th
@@ -200,12 +245,12 @@ export default function RoomCompareModal({
                                                                 room.roomNumber,
                                                             )
                                                         }
-                                                        className="absolute -top-2 -right-2 p-1.5 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors shadow-lg"
+                                                        className="absolute -top-2 -right-2 p-1.5 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors shadow-lg z-10"
                                                         aria-label="Remove room"
                                                     >
                                                         <X size={16} />
                                                     </button>
-                                                    <div className="aspect-video rounded-lg overflow-hidden mb-3 bg-gray-100">
+                                                    <div className="w-full h-48 rounded-lg overflow-hidden mb-3 flex items-center justify-center">
                                                         {room.images &&
                                                         room.images.length >
                                                             0 ? (
@@ -220,10 +265,10 @@ export default function RoomCompareModal({
                                                                         ?.typeName ||
                                                                     room.roomNumber
                                                                 }
-                                                                className="w-full h-full object-cover"
+                                                                className="max-w-full max-h-full object-contain"
                                                             />
                                                         ) : (
-                                                            <div className="w-full h-full flex items-center justify-center text-gray-400">
+                                                            <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400">
                                                                 No image
                                                             </div>
                                                         )}
@@ -234,7 +279,7 @@ export default function RoomCompareModal({
                                                             room.roomNumber}
                                                     </h3>
                                                     <p className="text-sm text-gray-500">
-                                                        Phòng {room.roomNumber}
+                                                        Room {room.roomNumber}
                                                     </p>
                                                 </div>
                                             </th>
@@ -254,12 +299,11 @@ export default function RoomCompareModal({
                                                         className="text-green-500"
                                                     />
                                                     <p className="text-lg font-medium">
-                                                        Các phòng có thông tin
-                                                        giống nhau
+                                                        All rooms have identical
+                                                        information
                                                     </p>
                                                     <p className="text-sm">
-                                                        Không có điểm khác biệt
-                                                        nào
+                                                        No differences found
                                                     </p>
                                                 </div>
                                             </td>
@@ -275,7 +319,7 @@ export default function RoomCompareModal({
                                                             : 'bg-gray-50'
                                                     }
                                                 >
-                                                    <td className="px-6 py-4 text-sm font-medium text-gray-700 border-b border-gray-200">
+                                                    <td className="sticky left-0 px-4 py-4 text-sm font-medium text-gray-700 border-b border-gray-200 z-10 bg-inherit">
                                                         {feature.label}
                                                     </td>
                                                     {rooms.map((room) => {
@@ -300,16 +344,32 @@ export default function RoomCompareModal({
                                                                 ];
                                                         }
 
+                                                        const isAdvantage =
+                                                            showDifferencesOnly &&
+                                                            isBestValue(
+                                                                feature,
+                                                                room,
+                                                            );
+
                                                         return (
                                                             <td
                                                                 key={
                                                                     room.roomNumber
                                                                 }
-                                                                className="px-6 py-4 text-center text-sm text-gray-600 border-b border-l border-gray-200"
+                                                                className={`px-6 py-4 text-center text-sm border-b border-l border-gray-200 ${
+                                                                    isAdvantage
+                                                                        ? 'bg-green-50 text-green-700 font-semibold'
+                                                                        : 'text-gray-600'
+                                                                }`}
                                                             >
-                                                                <div className="flex items-center justify-center">
+                                                                <div className="flex items-center justify-center gap-1">
                                                                     {feature.format(
                                                                         value as never,
+                                                                    )}
+                                                                    {isAdvantage && (
+                                                                        <span className="text-green-600">
+                                                                            ✓
+                                                                        </span>
                                                                     )}
                                                                 </div>
                                                             </td>
@@ -330,10 +390,10 @@ export default function RoomCompareModal({
                                     onClick={onClose}
                                     className="px-6 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
                                 >
-                                    Đóng
+                                    Close
                                 </button>
                                 <button className="px-6 py-2.5 text-sm font-medium text-white bg-[#CCBDA3] rounded-lg hover:bg-[#b8a88a] transition-colors">
-                                    Đặt phòng
+                                    Book Now
                                 </button>
                             </div>
                         </div>

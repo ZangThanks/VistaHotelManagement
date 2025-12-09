@@ -68,7 +68,6 @@ public class EmployeeController {
      * Cập nhật avatar Employee
      */
     @PutMapping("/{id}/avatar")
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'EMPLOYEE')")
     public Employee updateEmployeeAvatar(@PathVariable String id, @RequestBody Map<String, String> body) {
         String avatarUrl = body.get("avatarUrl");
         Employee emp = service.findById(id);

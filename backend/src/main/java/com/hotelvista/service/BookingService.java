@@ -1,10 +1,7 @@
 package com.hotelvista.service;
 
 import com.hotelvista.exception.BadRequestException;
-import com.hotelvista.model.Booking;
-import com.hotelvista.model.BookingCancellation;
-import com.hotelvista.model.BookingDetail;
-import com.hotelvista.model.Room;
+import com.hotelvista.model.*;
 import com.hotelvista.model.enums.*;
 import com.hotelvista.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -201,7 +198,7 @@ public class BookingService {
     public List<Booking> findAllByCheckOutDateBetween(LocalDateTime startDate, LocalDateTime endDate) {
         return repo.findAllByCheckOutDateBetween(startDate, endDate);
     }
-
+    
     public List<Booking> findConflictingBookings(String roomNumber, LocalDateTime checkIn, LocalDateTime checkOut) {
         return repo.findConflictingBookings(roomNumber, checkIn, checkOut);
     }
@@ -221,7 +218,6 @@ public class BookingService {
 
         if (booking.getStatus() == BookingStatus.CANCELLED)
             throw new BadRequestException("Booking đã bị hủy trước đó");
-
 
         // Lấy dữ liệu từ JSON
         String cancelReason = (String) body.get("cancelReason");
@@ -303,6 +299,7 @@ public class BookingService {
 
         return cancellationRepo.save(cancel);
     }
+
     public String generateCancellationId(String bookingId) {
         return "C-" + bookingId;
     }

@@ -152,6 +152,18 @@ export const passwordChangedTemplate = (name: string) => `
   </div>
 `;
 
+export const sendBookingOfCheckoutTemplate = (name: string) => `
+  <div style="font-family:Arial;padding:20px;">
+    <h2 style="color:#c3923c;">Xin chào ${name},</h2>
+    <p>Mật khẩu tài khoản Vista Hotel của bạn đã được thay đổi thành công.</p>
+    <p>Nếu bạn KHÔNG thực hiện hành động này, vui lòng liên hệ ngay với bộ phận hỗ trợ.</p>
+
+    <div style="margin-top:20px;padding:15px;background:#f6f2e8;border-left:4px solid #c3923c;">
+      <p><strong>Vista Hotel Security Team</strong></p>
+    </div>
+  </div>
+`;
+
 export const confirmBookingEmail = (
   fullName: string,
   bookingID?: string,
@@ -331,3 +343,349 @@ export const confirmBookingEmail = (
 </body>
 </html>
 `;
+export const bookingReceipt = (paymentData: any) => {
+  const formatDate = (dateString: string) => {
+    if (!dateString) return "N/A";
+    return new Date(dateString).toLocaleDateString("vi-VN", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  return `
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hóa đơn thanh toán - ${paymentData.bookingId}</title>
+    <style>
+        @page {
+            size: A5;
+            margin: 10mm;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            max-width: 148mm;
+            margin: 0 auto;
+            padding: 10px;
+            line-height: 1.4;
+            font-size: 11px;
+        }
+        
+        .logo-container {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        
+        .logo-text {
+            font-size: 24px;
+            font-weight: bold;
+            color: #6b5430;
+            font-family: Georgia, serif;
+            font-style: italic;
+        }
+        
+        .invoice-header {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #333;
+        }
+        
+        .invoice-title {
+            font-size: 18px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        
+        .invoice-number {
+            font-size: 10px;
+            color: #666;
+            text-align: right;
+        }
+        
+        .invoice-info {
+            margin: 15px 0;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        
+        .invoice-info div {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 8px;
+            background-color: #f5f5f5;
+            border-radius: 3px;
+            gap: 15px;
+        }
+        
+        .invoice-info .label {
+            font-weight: bold;
+            white-space: nowrap;
+            min-width: 90px;
+        }
+        
+        .invoice-info .value {
+            text-align: right;
+            flex: 1;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            font-size: 10px;
+        }
+        
+        table thead {
+            background-color: #333;
+            color: white;
+        }
+        
+        table th, table td {
+            border: 1px solid #ddd;
+            padding: 6px 8px;
+            text-align: left;
+        }
+        
+        table th {
+            font-weight: bold;
+            font-size: 10px;
+        }
+        
+        table td.number {
+            text-align: right;
+        }
+        
+        table td.center {
+            text-align: center;
+        }
+        
+        .total-row {
+            background-color: #f9f9f9;
+            font-weight: bold;
+        }
+        
+        .payment-row {
+            background-color: #e8f5e9;
+            font-weight: bold;
+        }
+        
+        .signature-section {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 25px;
+            margin-bottom: 20px;
+        }
+        
+        .signature-box {
+            text-align: center;
+            width: 45%;
+        }
+        
+        .signature-box p {
+            margin: 3px 0;
+            font-size: 10px;
+            font-weight: bold;
+        }
+        
+        .signature-name {
+            font-size: 9px;
+            color: #666;
+            margin-top: 5px;
+            font-style: italic;
+        }
+        
+        .signature-line {
+            margin-top: 30px;
+            border-top: 1px solid #333;
+            padding-top: 3px;
+        }
+        
+        .footer-info {
+            text-align: center;
+            font-size: 10px;
+            color: #555;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #ddd;
+        }
+        
+        .footer-info p {
+            margin: 2px 0;
+        }
+        
+        .notes-section {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #fff9e6;
+            border: 1px solid #f0e68c;
+            border-radius: 3px;
+            font-size: 9px;
+        }
+        
+        .notes-section h3 {
+            margin: 0 0 6px 0;
+            font-size: 10px;
+            color: #856404;
+        }
+        
+        .notes-section ul {
+            margin: 3px 0;
+            padding-left: 15px;
+            color: #856404;
+        }
+        
+        .notes-section li {
+            margin: 3px 0;
+        }
+        
+        @media print {
+            body {
+                padding: 0;
+            }
+            
+            .no-print {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="logo-container">
+        <div class="logo-text">Vista Hotel</div>
+    </div>
+    
+    <div class="invoice-header">
+        <div class="invoice-title">Hóa Đơn</div>  
+    </div>
+    
+    <div class="invoice-info">
+        <div>
+            <span class="label">Số hóa đơn:</span>
+            <span class="value">${paymentData.bookingId}</span>
+        </div>
+        <div>
+            <span class="label">Ngày đặt phòng:</span>
+            <span class="value">${formatDate(paymentData.bookingDate)}</span>
+        </div>
+        <div>
+            <span class="label">Khách hàng:</span>
+            <span class="value">${paymentData.guestName}</span>
+        </div>
+        <div>
+            <span class="label">Phòng:</span>
+            <span class="value">${paymentData.roomNumber}</span>
+        </div>
+        <div>
+            <span class="label">Check-in dự kiến:</span>
+            <span class="value">${formatDate(paymentData.checkInDate)}</span>
+        </div>
+        <div>
+            <span class="label">Check-out dự kiến:</span>
+            <span class="value">${formatDate(paymentData.checkOutDate)}</span>
+        </div>
+        ${
+          paymentData.actualCheckInTime
+            ? `
+        <div>
+            <span class="label">Check-in thực tế:</span>
+            <span class="value">${formatDate(
+              paymentData.actualCheckInTime
+            )}</span>
+        </div>`
+            : ""
+        }
+        ${
+          paymentData.actualCheckOutTime
+            ? `
+        <div>
+            <span class="label">Check-out thực tế:</span>
+            <span class="value">${formatDate(
+              paymentData.actualCheckOutTime
+            )}</span>
+        </div>`
+            : ""
+        }
+    </div>
+    
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 30px;">#</th>
+                <th>Nội dung</th>
+                <th class="center" style="width: 60px;">SL</th>
+                <th class="number" style="width: 80px;">Đơn giá</th>
+                <th class="number" style="width: 90px;">Thành tiền</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="center">1</td>
+                <td>
+                    <div><strong>Tiền phòng</strong></div>
+                    <div style="font-size: 9px; color: #666;">Phòng ${
+                      paymentData.roomNumber
+                    }</div>
+                </td>
+                <td class="center">1</td>
+                <td class="number">${paymentData.totalAmount}</td>
+                <td class="number">${paymentData.totalAmount}</td>
+            </tr>
+            <tr class="total-row">
+                <td colspan="4" style="text-align: right; padding-right: 10px;">Tổng tiền</td>
+                <td class="number">${paymentData.totalAmount}</td>
+            </tr>
+            <tr class="payment-row">
+                <td colspan="4" style="text-align: right; padding-right: 10px;">Thanh toán</td>
+                <td class="number">${paymentData.balanceDue}</td>
+            </tr>
+            <tr>
+                <td colspan="4" style="text-align: right; padding-right: 10px; font-weight: bold;">Số tiền còn lại</td>
+                <td class="number" style="font-weight: bold;">${
+                  paymentData.balanceDue
+                }</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="signature-section">
+        <div class="signature-box">
+            <p>Lễ tân</p>
+            <div class="signature-name">
+              ${paymentData.employeeName}
+            </div>
+        </div>
+        <div class="signature-box">
+            <p>Khách hàng</p>
+            <div class="signature-name">${paymentData.guestName}</div>
+        </div>
+    </div>
+    
+    <div class="footer-info">
+        <p><strong>Vista Hotel - Premium Hotel</strong></p>
+        <p>112 Nguyễn Văn Trỗi, quận 2</p>
+        <p><strong>T:</strong> +84 98 348 06 83 | <strong>E:</strong> vistahotel@gmail.com</p>
+        <p>www.vistahotel.com</p>
+    </div>
+    
+    <div class="notes-section">
+        <h3>Lưu ý:</h3>
+        <ul>
+            <li><strong>Chính sách dành cho trẻ em và khách bổ sung (không bao gồm giường phụ):</strong></li>
+            <li>• Trẻ em dưới 5 tuổi: miễn phí. Tối đa 1 trẻ/phòng. Trẻ em thứ 2 trở đi phụ thu 70.000đ/trẻ/phòng/đêm.</li>
+            <li>• Trẻ em từ 6-11 tuổi phụ thu 150.000đ/trẻ/phòng/đêm.</li>
+        </ul>
+    </div>
+</body>
+</html>
+        `;
+};

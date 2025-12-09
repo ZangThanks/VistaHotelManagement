@@ -1,3 +1,4 @@
+
 package com.hotelvista.service;
 
 import com.hotelvista.model.Admin;

@@ -2,10 +2,12 @@ package com.hotelvista.service;
 
 import com.hotelvista.model.Booking;
 import com.hotelvista.model.EarlyCheckin;
+import com.hotelvista.model.Employee;
 import com.hotelvista.model.enums.ApprovalStatus;
 import com.hotelvista.repository.BookingRepository;
 import com.hotelvista.repository.EarlyCheckinRepository;
 
+import com.hotelvista.repository.EmployeeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -23,6 +25,8 @@ public class EarlyCheckinService {
     private EarlyCheckinRepository repo;
     @Autowired
     private BookingRepository bookingRepository;
+    @Autowired
+    private EmployeeRepository employeeRepository;
 
     /** Lấy tất cả yêu cầu */
     public List<EarlyCheckin> findAll() {
@@ -57,11 +61,23 @@ public class EarlyCheckinService {
     /**
      * Cập nhật trạng thái APPROVED / REJECTED
      */
-    public EarlyCheckin updateApprovalStatus(String requestId, ApprovalStatus status) {
+    public EarlyCheckin updateApprovalStatus(
+            String requestId,
+            ApprovalStatus status,
+            String employeeId
+    ) {
         EarlyCheckin ec = repo.findById(requestId).orElse(null);
         if (ec == null) return null;
 
         ec.setApprovalStatus(status);
+
+        if (employeeId != null && !employeeId.isEmpty()) {
+            Employee employee = employeeRepository.findById(employeeId).orElse(null);
+            if (employee != null) {
+                ec.setEmployee(employee);
+            }
+        }
+
         return repo.save(ec);
     }
 

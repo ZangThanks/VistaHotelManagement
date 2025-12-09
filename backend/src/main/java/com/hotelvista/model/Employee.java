@@ -8,7 +8,6 @@ import lombok.*;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Set;
 
 @Entity
 @Getter
@@ -44,14 +43,4 @@ public class Employee extends User {
     @JsonIgnore
     @OneToMany(mappedBy = "employee")
     private List<Booking> bookings;
-
-    @ToString.Exclude
-    @JsonIgnore
-    @OneToMany(mappedBy = "employee")
-    private Set<EarlyCheckin> earlyCheckins;
-
-    @ToString.Exclude
-    @JsonIgnore
-    @OneToMany(mappedBy = "employee")
-    private Set<LateCheckout> lateCheckouts;
 }

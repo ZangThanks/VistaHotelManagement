@@ -1,9 +1,5 @@
 import { notificationApiService } from './notificationApiService';
 
-// ============================================
-// EARLY CHECK-IN INTERFACES
-// ============================================
-
 // Interface cho early check-in request
 export interface EarlyCheckinRequest {
     customerId: string;
@@ -42,10 +38,6 @@ export interface PendingEarlyCheckinRequest {
     message: string;
 }
 
-// ============================================
-// LATE CHECKOUT INTERFACES
-// ============================================
-
 export interface LateCheckoutRequest {
     customerId: string;
     customerName: string;
@@ -68,10 +60,6 @@ export interface CheckoutApproval {
     reason?: string;
 }
 
-// ============================================
-// CANCEL BOOKING INTERFACES
-// ============================================
-
 export interface CancelBookingRequest {
     customerId: string;
     customerName: string;
@@ -93,14 +81,14 @@ class EarlyCheckinNotificationService {
     async sendEarlyCheckinRequest(request: EarlyCheckinRequest): Promise<void> {
         console.log('Sending early checkin request:', request);
         try {
-            // 1. Thông báo xác nhận cho khách hàng
+            // Thông báo xác nhận cho khách hàng
             console.log('Creating customer notification...');
             const customerResponse =
                 await notificationApiService.createNotification({
                     type: 'INFO',
                     category: 'EARLY_CHECKIN',
-                    title: 'Yêu cầu check-in sớm đã được gửi',
-                    message: `Bạn đã gửi yêu cầu check-in sớm cho phòng ${request.roomNumber} vào lúc ${request.requestedTime}. Chúng tôi sẽ xử lý và phản hồi sớm nhất có thể.`,
+                    title: 'Early Check-in Request Submitted',
+                    message: `You have requested early check-in for room ${request.roomNumber} at ${request.requestedTime}. We will process and respond as soon as possible.`,
                     toUserId: request.customerId,
                     toUserType: 'CUSTOMER',
                     priority: 'NORMAL',
@@ -119,31 +107,17 @@ class EarlyCheckinNotificationService {
                 });
             console.log('Customer notification created:', customerResponse);
 
-            // 2. Thông báo yêu cầu cho tất cả nhân viên (role EMPLOYEE)
-            console.log('👥 Creating employee notification...');
-
-            // IMPORTANT: Backend cần toUserId cụ thể, không chỉ toUserType
-            // Tạm thời gửi broadcast notification (toUserType) và hi vọng backend xử lý
-            // Hoặc cần API để lấy danh sách employee IDs
+            // Thông báo yêu cầu cho tất cả nhân viên (role EMPLOYEE)
+            console.log('Creating employee notification...');
 
             const employeeResponse =
                 await notificationApiService.createNotification({
                     type: 'REQUEST',
                     category: 'EARLY_CHECKIN',
-                    title: 'Yêu cầu check-in sớm mới',
-                    message: `Khách hàng ${
-                        request.customerName
-                    } yêu cầu check-in sớm cho phòng ${
-                        request.roomNumber
-                    }. Thời gian yêu cầu: ${
-                        request.requestedTime
-                    } (Tiêu chuẩn: ${request.standardCheckInTime}). Lý do: ${
-                        request.reason || 'Không có'
-                    }`,
-                    // Gửi cho tất cả nhân viên - backend PHẢI hỗ trợ toUserType
+                    title: 'New Early Check-in Request',
+                    message: `Customer ${request.customerName} has requested early check-in for room ${request.roomNumber}. Requested time: ${request.requestedTime}`,
+                    // Gửi cho tất cả nhân viên
                     toUserType: 'EMPLOYEE',
-                    // Nếu backend chưa hỗ trợ toUserType, cần thêm toUserId hoặc toUserIds
-                    // toUserIds: ['employee1', 'employee2', ...] // Lấy từ API
                     priority: 'HIGH',
                     needsAction: true,
                     status: 'PENDING',
@@ -172,7 +146,7 @@ class EarlyCheckinNotificationService {
             }
 
             console.log(
-                '🎉 Early checkin request notifications sent successfully',
+                'Early checkin request notifications sent successfully',
             );
         } catch (error) {
             console.error(
@@ -180,7 +154,7 @@ class EarlyCheckinNotificationService {
                 error,
             );
             throw new Error(
-                'Không thể gửi yêu cầu check-in sớm. Vui lòng thử lại.',
+                'Cannot process early check-in request. Please try again.',
             );
         }
     }
@@ -205,8 +179,8 @@ class EarlyCheckinNotificationService {
                 await notificationApiService.createNotification({
                     type: 'INFO',
                     category: 'EARLY_CHECKIN',
-                    title: 'Yêu cầu check-in sớm đã được phê duyệt',
-                    message: `Yêu cầu check-in sớm cho phòng ${approval.roomNumber} đã được phê duyệt bởi ${approval.approvedBy}. Bạn có thể check-in từ ${approval.approvedTime}. Chúc bạn có kỳ nghỉ vui vẻ!`,
+                    title: 'Early check-in request approved',
+                    message: `Early check-in request for room ${approval.roomNumber} has been approved. You can check in from ${approval.approvedTime}. Enjoy your stay!`,
                     toUserId: approval.customerId,
                     toUserType: 'CUSTOMER',
                     priority: 'HIGH',
@@ -227,8 +201,8 @@ class EarlyCheckinNotificationService {
                 await notificationApiService.createNotification({
                     type: 'ALERT',
                     category: 'EARLY_CHECKIN',
-                    title: 'Yêu cầu check-in sớm bị từ chối',
-                    message: `Rất tiếc, yêu cầu check-in sớm cho phòng ${approval.roomNumber} đã bị từ chối. Lý do: ${approval.reason}. Vui lòng liên hệ lễ tân để biết thêm thông tin.`,
+                    title: 'Early check-in request rejected',
+                    message: `We're sorry, but the early check-in request for room ${approval.roomNumber} has been rejected. Please contact the front desk for more information.`,
                     toUserId: approval.customerId,
                     toUserType: 'CUSTOMER',
                     priority: 'HIGH',
@@ -299,7 +273,6 @@ class EarlyCheckinNotificationService {
                 'Error marking related notifications as read:',
                 error,
             );
-            // Không throw error để không block việc gửi thông báo chính
         }
     }
 
@@ -317,8 +290,8 @@ class EarlyCheckinNotificationService {
             await notificationApiService.createNotification({
                 type: 'INFO',
                 category: 'OTHER',
-                title: 'Check-in thành công',
-                message: `Chào mừng bạn đến với Vista Hotel! Bạn đã check-in thành công vào phòng ${roomNumber} lúc ${actualCheckinTime}. Chúc bạn có kỳ nghỉ tuyệt vời!`,
+                title: 'Check in successful',
+                message: `Welcome to Vista Hotel! You have successfully checked in to room ${roomNumber} at ${actualCheckinTime}. Enjoy your stay!`,
                 toUserId: customerId,
                 toUserType: 'CUSTOMER',
                 priority: 'NORMAL',
@@ -338,8 +311,8 @@ class EarlyCheckinNotificationService {
             await notificationApiService.createNotification({
                 type: 'INFO',
                 category: 'OTHER',
-                title: 'Khách hàng đã check-in',
-                message: `Khách hàng ${customerName} đã check-in thành công vào phòng ${roomNumber} lúc ${actualCheckinTime}.`,
+                title: 'Customer Check-in Completed',
+                message: `Customer ${customerName} has successfully checked in to room ${roomNumber} at ${actualCheckinTime}.`,
                 toUserType: 'EMPLOYEE',
                 priority: 'LOW',
                 needsAction: false,
@@ -416,10 +389,6 @@ class EarlyCheckinNotificationService {
         }
     }
 
-    // ============================================
-    // LATE CHECKOUT METHODS
-    // ============================================
-
     /**
      * Khách hàng gửi yêu cầu checkout muộn
      * - Tạo thông báo xác nhận cho khách hàng
@@ -432,8 +401,8 @@ class EarlyCheckinNotificationService {
             await notificationApiService.createNotification({
                 type: 'INFO',
                 category: 'LATE_CHECKOUT',
-                title: 'Yêu cầu checkout muộn đã được gửi',
-                message: `Bạn đã gửi yêu cầu checkout muộn cho phòng ${request.roomNumber} vào lúc ${request.requestedTime}. Chúng tôi sẽ xử lý và phản hồi sớm nhất có thể.`,
+                title: 'Late Checkout Request Submitted',
+                message: `You have submitted a late checkout request for room ${request.roomNumber} at ${request.requestedTime}. We will process it and respond as soon as possible.`,
                 toUserId: request.customerId,
                 toUserType: 'CUSTOMER',
                 priority: 'NORMAL',
@@ -455,14 +424,14 @@ class EarlyCheckinNotificationService {
             await notificationApiService.createNotification({
                 type: 'REQUEST',
                 category: 'LATE_CHECKOUT',
-                title: 'Yêu cầu checkout muộn mới',
-                message: `Khách hàng ${
+                title: 'New Late Checkout Request',
+                message: `Customer ${
                     request.customerName
-                } yêu cầu checkout muộn cho phòng ${
+                } has requested a late checkout for room ${
                     request.roomNumber
-                }. Thời gian yêu cầu: ${request.requestedTime} (Tiêu chuẩn: ${
+                }. Requested time: ${request.requestedTime} (Standard: ${
                     request.standardCheckoutTime
-                }). Lý do: ${request.reason || 'Không có'}`,
+                }). Reason: ${request.reason || 'N/A'}`,
                 toUserType: 'EMPLOYEE',
                 priority: 'HIGH',
                 needsAction: true,
@@ -483,15 +452,15 @@ class EarlyCheckinNotificationService {
             });
 
             console.log(
-                '✅ Late checkout request notifications sent successfully',
+                'Late checkout request notifications sent successfully',
             );
         } catch (error) {
             console.error(
-                '❌ Error sending late checkout request notifications:',
+                'Error sending late checkout request notifications:',
                 error,
             );
             throw new Error(
-                'Không thể gửi yêu cầu checkout muộn. Vui lòng thử lại.',
+                'Unable to send late checkout request. Please try again.',
             );
         }
     }
@@ -515,8 +484,8 @@ class EarlyCheckinNotificationService {
                 await notificationApiService.createNotification({
                     type: 'INFO',
                     category: 'LATE_CHECKOUT',
-                    title: 'Yêu cầu checkout muộn đã được phê duyệt',
-                    message: `Yêu cầu checkout muộn cho phòng ${approval.roomNumber} đã được phê duyệt bởi ${approval.approvedBy}. Bạn có thể checkout vào lúc ${approval.approvedTime}. Chúc bạn có thêm thời gian nghỉ ngơi!`,
+                    title: 'Late Checkout Request Approved',
+                    message: `The late checkout request for room ${approval.roomNumber} has been approved. You may checkout at ${approval.approvedTime}. Enjoy your extended stay!`,
                     toUserId: approval.customerId,
                     toUserType: 'CUSTOMER',
                     priority: 'HIGH',
@@ -536,8 +505,8 @@ class EarlyCheckinNotificationService {
                 await notificationApiService.createNotification({
                     type: 'ALERT',
                     category: 'LATE_CHECKOUT',
-                    title: 'Yêu cầu checkout muộn bị từ chối',
-                    message: `Rất tiếc, yêu cầu checkout muộn cho phòng ${approval.roomNumber} đã bị từ chối. Lý do: ${approval.reason}. Vui lòng checkout đúng giờ quy định.`,
+                    title: 'Late Checkout Request Rejected',
+                    message: `We're sorry, the late checkout request for room ${approval.roomNumber} has been rejected. Please checkout on time.`,
                     toUserId: approval.customerId,
                     toUserType: 'CUSTOMER',
                     priority: 'HIGH',
@@ -560,10 +529,6 @@ class EarlyCheckinNotificationService {
         }
     }
 
-    // ============================================
-    // CANCEL BOOKING METHODS
-    // ============================================
-
     /**
      * Khách hàng hủy booking
      * - CHỈ tạo thông báo xác nhận cho khách hàng
@@ -573,29 +538,17 @@ class EarlyCheckinNotificationService {
         request: CancelBookingRequest,
     ): Promise<void> {
         console.log(
-            '📤 Sending cancel booking notification to customer:',
+            'Sending cancel booking notification to customer:',
             request,
         );
         try {
             // Thông báo xác nhận cho khách hàng
-            const checkInDate = new Date(
-                request.checkInDate,
-            ).toLocaleDateString('vi-VN');
-            const checkOutDate = new Date(
-                request.checkOutDate,
-            ).toLocaleDateString('vi-VN');
 
             await notificationApiService.createNotification({
                 type: 'INFO',
                 category: 'CANCELLATION',
-                title: '✅ Đã hủy booking thành công',
-                message: `Bạn đã hủy booking ${request.bookingId} (Phòng ${
-                    request.roomNumber
-                }) thành công. Thời gian: ${checkInDate} - ${checkOutDate}. Số tiền: ${request.totalAmount.toLocaleString(
-                    'vi-VN',
-                )}đ. Lý do: ${
-                    request.reason || 'Không rõ'
-                }. Vui lòng liên hệ lễ tân để được hỗ trợ thêm về chính sách hoàn tiền.`,
+                title: 'Booking Cancellation Successful',
+                message: `You have successfully cancelled booking ${request.bookingId} (Room ${request.roomNumber}) successfully. Please contact the front desk for further assistance with the refund policy.`,
                 toUserId: request.customerId,
                 toUserType: 'CUSTOMER',
                 priority: 'NORMAL',
@@ -616,15 +569,15 @@ class EarlyCheckinNotificationService {
             });
 
             console.log(
-                '✅ Cancel booking notification sent to customer successfully',
+                'Cancel booking notification sent to customer successfully',
             );
         } catch (error) {
             console.error(
-                '❌ Error sending cancel booking notification:',
+                'Error sending cancel booking notification:',
                 error,
             );
             throw new Error(
-                'Không thể gửi thông báo hủy booking. Vui lòng thử lại.',
+                'Unable to send booking cancellation notification. Please try again later.',
             );
         }
     }

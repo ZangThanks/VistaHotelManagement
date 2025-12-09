@@ -1,16 +1,25 @@
 import { useState } from 'react';
 
+interface SearchFilterProps {
+    onSearch: (keyword: string) => void;
+    onFilter: (status: string) => void;
+}
+
 export default function SearchFilter({
     onSearch,
-}: {
-    onSearch: (keyword: string) => void;
-}) {
+    onFilter,
+}: SearchFilterProps) {
     const [searchKeyword, setSearchKeyword] = useState('');
     const [filterStatus, setFilterStatus] = useState('all');
 
     const handleSearch = (value: string) => {
         setSearchKeyword(value);
         onSearch(value);
+    };
+
+    const handleFilterChange = (value: string) => {
+        setFilterStatus(value);
+        onFilter(value);
     };
 
     return (
@@ -29,7 +38,7 @@ export default function SearchFilter({
             <div className="flex items-center gap-3">
                 <select
                     value={filterStatus}
-                    onChange={(e) => setFilterStatus(e.target.value)}
+                    onChange={(e) => handleFilterChange(e.target.value)}
                     className="border border-cream rounded-md px-3 py-3 focus:border-gold focus:outline-none bg-white"
                 >
                     <option value="all">All Check-outs</option>
@@ -37,10 +46,6 @@ export default function SearchFilter({
                     <option value="completed">Completed</option>
                     <option value="late">Late Requests</option>
                 </select>
-
-                <button className="bg-black text-white px-4 py-3 rounded-md flex items-center gap-2 hover:bg-gray-800 transition">
-                    <i className="fas fa-filter"></i> Filter
-                </button>
             </div>
         </div>
     );

@@ -1,50 +1,56 @@
-import { useEffect, useState } from 'react';
 import {
     FaCalendarCheck,
     FaCheckCircle,
     FaClock,
     FaCalendarDay,
 } from 'react-icons/fa';
-import { getBookingsByCheckOutDate } from '../../services/bookingService';
 import type { Booking } from '../../types/Booking';
 
-export default function StatusCards() {
-    const [bookings, setBookings] = useState<Booking[]>([]);
-    const [loading, setLoading] = useState(true);
+interface StatusCardsProps {
+    bookings: Booking[];
+    currentDate: Date;
+}
 
-    useEffect(() => {
-        fetchTodayCheckouts();
-    }, []);
+export default function StatusCards({
+    bookings,
+    currentDate,
+}: StatusCardsProps) {
+    const today = new Date(currentDate);
+    today.setHours(0, 0, 0, 0);
 
-    const fetchTodayCheckouts = async () => {
-        try {
-            const today = new Date().toISOString().split('T')[0];
-            const data = await getBookingsByCheckOutDate(today);
-            setBookings(data);
-        } catch (error) {
-            console.error('Error fetching checkouts:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
+    const tomorrow = new Date(currentDate);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(0, 0, 0, 0);
 
-    const todayCheckouts = bookings.length;
+    // Today's checkouts (selected date)
+    const todayCheckouts = bookings.filter((b) => {
+        const checkOutDate = new Date(b.checkOutDate);
+        checkOutDate.setHours(0, 0, 0, 0);
+        return checkOutDate.getTime() === today.getTime();
+    }).length;
+
+    // Completed checkouts (all checked out)
     const completedCheckouts = bookings.filter(
         (b) => b.status === 'CHECKED_OUT',
     ).length;
-    const pendingCheckouts = bookings.filter(
-        (b) => b.status === 'CHECKED_IN',
-    ).length;
-    const lateCheckoutRequests = bookings.filter((b) => {
-        if (b.status === 'CHECKED_OUT') return false;
 
+    // Pending checkouts (checked in, should checkout today or tomorrow)
+    const pendingCheckouts = bookings.filter((b) => {
+        if (b.status !== 'CHECKED_IN') return false;
         const checkOutDate = new Date(b.checkOutDate);
-        const now = new Date();
-
         checkOutDate.setHours(0, 0, 0, 0);
-        now.setHours(0, 0, 0, 0);
+        return (
+            checkOutDate.getTime() === today.getTime() ||
+            checkOutDate.getTime() === tomorrow.getTime()
+        );
+    }).length;
 
-        return checkOutDate < now;
+    // Late checkout requests (checked in but past checkout date)
+    const lateCheckoutRequests = bookings.filter((b) => {
+        if (b.status !== 'CHECKED_IN') return false;
+        const checkOutDate = new Date(b.checkOutDate);
+        checkOutDate.setHours(0, 0, 0, 0);
+        return checkOutDate < today;
     }).length;
 
     const statusItems = [
@@ -52,28 +58,28 @@ export default function StatusCards() {
             icon: <FaCalendarCheck />,
             color: '#EC407A',
             bgColor: 'rgba(236, 64, 122, 0.1)',
-            count: loading ? '...' : todayCheckouts.toString(),
+            count: todayCheckouts.toString(),
             label: "Today's Check-outs",
         },
         {
             icon: <FaCheckCircle />,
             color: '#2196F3',
             bgColor: 'rgba(33, 150, 243, 0.1)',
-            count: loading ? '...' : completedCheckouts.toString(),
+            count: completedCheckouts.toString(),
             label: 'Completed Check-outs',
         },
         {
             icon: <FaClock />,
             color: '#FF9800',
             bgColor: 'rgba(255, 152, 0, 0.1)',
-            count: loading ? '...' : pendingCheckouts.toString(),
+            count: pendingCheckouts.toString(),
             label: 'Pending Check-outs',
         },
         {
             icon: <FaCalendarDay />,
             color: '#CCBDA3',
             bgColor: 'rgba(204, 189, 163, 0.1)',
-            count: loading ? '...' : lateCheckoutRequests.toString(),
+            count: lateCheckoutRequests.toString(),
             label: 'Late Check-out Requests',
         },
     ];

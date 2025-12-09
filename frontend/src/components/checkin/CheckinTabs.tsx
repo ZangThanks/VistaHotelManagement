@@ -9,22 +9,74 @@ interface CheckinTabsProps {
         early: number;
         hourly: number;
     };
+    selectedDate?: Date;
 }
 
 const CheckinTabs: React.FC<CheckinTabsProps> = ({
     activeTab,
     onTabChange,
     counts,
+    selectedDate,
 }) => {
+    const formatDate = (date: Date) => {
+        return date.toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+        });
+    };
+
+    const isToday = (date: Date) => {
+        const today = new Date();
+        return (
+            date.getDate() === today.getDate() &&
+            date.getMonth() === today.getMonth() &&
+            date.getFullYear() === today.getFullYear()
+        );
+    };
+
+    const isTomorrow = (date: Date) => {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        return (
+            date.getDate() === tomorrow.getDate() &&
+            date.getMonth() === tomorrow.getMonth() &&
+            date.getFullYear() === tomorrow.getFullYear()
+        );
+    };
+
+    const currentDate = selectedDate || new Date();
+    const nextDate = new Date(currentDate);
+    nextDate.setDate(nextDate.getDate() + 1);
+
+    // Only show hourly tab on today's date
+    const showHourlyTab = isToday(currentDate);
+
     const tabs = [
-        { id: 'today', label: "Today's Check-ins", count: counts?.today },
+        {
+            id: 'today',
+            label: isToday(currentDate)
+                ? "Today's Check-ins"
+                : formatDate(currentDate),
+            count: counts?.today,
+        },
         {
             id: 'tomorrow',
-            label: "Tomorrow's Check-ins",
+            label: isTomorrow(nextDate)
+                ? "Tomorrow's Check-ins"
+                : formatDate(nextDate),
             count: counts?.tomorrow,
         },
         { id: 'early', label: 'Early Check-in Requests', count: counts?.early },
-        { id: 'hourly', label: 'Hourly Bookings', count: counts?.hourly },
+        ...(showHourlyTab
+            ? [
+                  {
+                      id: 'hourly',
+                      label: 'Hourly Bookings',
+                      count: counts?.hourly,
+                  },
+              ]
+            : []),
     ];
 
     return (

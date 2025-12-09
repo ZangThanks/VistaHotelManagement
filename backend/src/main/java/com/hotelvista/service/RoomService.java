@@ -5,6 +5,7 @@ import com.hotelvista.repository.RoomRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -61,5 +62,9 @@ public class RoomService {
 
     public void save(Room room) {
 
+    }
+
+    public List<Room> findAvailableRooms(LocalDateTime startDate, LocalDateTime endDate) {
+        return roomRepo.findAvailableRooms(startDate, endDate);
     }
 }
