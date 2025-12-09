@@ -43,7 +43,7 @@ export const createRoom = async (roomData: Partial<Room>) => {
 };
 
 // Cập nhật phòng hiện có
-export const updateRoom = async (id: string, roomData: Partial<Room>) => {
+export const updateRoom = async (_id: string, roomData: Partial<Room>) => {
     try {
         const response = await api.post(`${ENDPOINT}/save`, roomData);
         return response.data;
@@ -167,15 +167,15 @@ export const updateRoomStatus = async (
 };
 
 export const roomService = {
-  getAll,
-  getAllRooms,
-  getById,
-  getRoomById,
-  createRoom,
-  updateRoom,
-  saveRoom,
-  deleteRoom,
-  getAllRoomTypes,
-  getNextRoomNumber,
-  updateRoomStatus,
+    getAll,
+    getAllRooms,
+    getById,
+    getRoomById,
+    createRoom,
+    updateRoom,
+    saveRoom,
+    deleteRoom,
+    getAllRoomTypes,
+    getNextRoomNumber,
+    updateRoomStatus,
 };

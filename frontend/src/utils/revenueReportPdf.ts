@@ -240,7 +240,8 @@ export const generateRevenueReportPdf = ({
             4: { halign: 'center', cellWidth: 20 },
             5: { halign: 'right', cellWidth: 28 },
         },
-        didParseCell: (cellData) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        didParseCell: (cellData: any) => {
             if (
                 cellData.row.index === tableData.length - 1 &&
                 cellData.section === 'body'
@@ -251,9 +252,11 @@ export const generateRevenueReportPdf = ({
             }
         },
         margin: { left: 15, right: 15 },
-    });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any);
 
     // Get the final Y position after table
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const finalY = (doc as any).lastAutoTable.finalY + 12;
 
     // === SUMMARY SECTION ===

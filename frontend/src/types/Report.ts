@@ -23,12 +23,13 @@ export interface OccupancyData {
 }
 
 export interface LoyaltyData {
-  month: string;
-  bronze: number;
-  silver: number;
-  gold: number;
-  platinum: number;
-  totalPoints: number;
+    month: string;
+    bronze: number;
+    silver: number;
+    gold: number;
+    platinum: number;
+    totalPoints: number;
+    redemptions?: number;
 }
 
 export interface ReviewData {
@@ -43,13 +44,13 @@ export interface ReviewData {
 }
 
 export interface BookingData {
-  period: string; // Match backend field name
-  totalBookings: number;
-  completedBookings: number;
-  cancelledBookings: number;
-  cancellationRate: number;
-  averageBookingValue: number;
-  totalRevenue: number;
+    period: string; // Match backend field name
+    totalBookings: number;
+    completedBookings: number;
+    cancelledBookings: number;
+    cancellationRate: number;
+    averageBookingValue: number;
+    totalRevenue: number;
 }
 
 export interface DateRange {
@@ -67,15 +68,15 @@ export type ReportPeriod =
 
 // ====================== ServiceData (HEAD version) ======================
 export interface ServiceData {
-  date: string;
-  foodBeverage: number;
-  laundry: number;
-  spa: number;
-  transport: number;
-  tour: number;
-  others: number;
-  totalOrders: number;
-  avgOrderValue: number;
+    date: string;
+    foodBeverage: number;
+    laundry: number;
+    spa: number;
+    transport: number;
+    tour: number;
+    others: number;
+    totalOrders: number;
+    avgOrderValue: number;
 }
 
 // ====================== ReportTab (HEAD version) ======================

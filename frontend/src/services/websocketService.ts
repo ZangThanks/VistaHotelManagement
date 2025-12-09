@@ -1,6 +1,7 @@
 /* eslint-disable */
 import { Client } from '@stomp/stompjs';
 import type { IMessage } from '@stomp/stompjs';
+// @ts-ignore - sockjs-client doesn't have types
 import SockJS from 'sockjs-client';
 
 const WS_URL = import.meta.env.VITE_WS_URL;
@@ -145,7 +146,7 @@ class WebSocketService {
         this.client.deactivate();
         this.client = null;
         this.connected = false;
-      
+
         console.log('WebSocket disconnected');
     }
 
