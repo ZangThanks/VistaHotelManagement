@@ -263,17 +263,6 @@ public class BookingService {
             roomRepo.save(room);
         }
 
-        // Nếu hủy dưới 3 ngày -> trừ 3 uy tín của khách
-        if (daysUntilCheckin < 3) {
-            Customer customer = booking.getCustomer();
-            if (customer != null) {
-                Integer rep = customer.getReputationPoint() != null ? customer.getReputationPoint() : 0;
-                rep = Math.max(0, rep - 3);
-                customer.setReputationPoint(rep);
-                customerRepo.save(customer);
-            }
-        }
-
         // Tạo bản ghi BookingCancellation
         BookingCancellation cancel = new BookingCancellation();
         cancel.setId(generateCancellationId(bookingId));
@@ -310,11 +299,10 @@ public class BookingService {
 
         return cancellationRepo.save(cancel);
     }
+
     public String generateCancellationId(String bookingId) {
         return "C-" + bookingId;
     }
-
-
 
 }
 

@@ -14,6 +14,7 @@ public class LateCheckoutDTO {
 
     private String bookingId;
 
+    private String customerId;
     private String customerName;
     private String customerEmail;
 

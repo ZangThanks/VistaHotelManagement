@@ -1,42 +1,41 @@
 /* eslint-disable */
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect } from "react";
 import {
-    FaChartLine,
-    FaBed,
-    FaStar,
-    FaUsers,
-    FaCalendarCheck,
-    FaConciergeBell,
-} from 'react-icons/fa';
+  FaChartLine,
+  FaBed,
+  FaStar,
+  FaUsers,
+  FaCalendarCheck,
+  FaConciergeBell,
+} from "react-icons/fa";
 import type {
-    OccupancyData,
-    LoyaltyData,
-    ReviewData,
-    BookingData,
-    ReportPeriod,
-    ServiceData,
-    RevenueData,
-} from '../../../types/Report';
-import OccupancyChart from '../../../components/report/OccupancyChart';
-import RoomTypeAnalysis from '../../../components/report/RoomTypeAnalysis';
-import LoyaltyChart from '../../../components/report/LoyaltyChart';
-import MembershipDistribution from '../../../components/report/MembershipDistribution';
-import ReviewChart from '../../../components/report/ReviewChart';
-import RatingBreakdown from '../../../components/report/RatingBreakdown';
-import SentimentAnalysis from '../../../components/report/SentimentAnalysis';
-import BookingTrends from '../../../components/report/BookingTrends';
-import BookingChart from '../../../components/report/BookingChart';
-import DateRangePicker from '../../../components/report/DateRangePicker';
-import FilterBar from '../../../components/report/FilterBar';
-import ExportButton from '../../../components/report/ExportButton';
-import OccupancyStats from '../../../components/report/OccupancyStats';
-import ServiceSummary from '../../../components/report/ServiceSummary';
-import ServiceChart from '../../../components/report/ServiceChart';
-import ServiceDistribution from '../../../components/report/ServiceDistribution';
-import PopularServices from '../../../components/report/PopularServices';
-import { reportService } from '../../../services/reportService';
-import RevenueTab from './components/RevenueTab';
-import { getRevenueData } from '../../../services/revenueReportService';
+  OccupancyData,
+  LoyaltyData,
+  ReviewData,
+  BookingData,
+  ReportPeriod,
+  ServiceData,
+  RevenueData,
+} from "../../../types/Report";
+import OccupancyChart from "../../../components/report/OccupancyChart";
+import RoomTypeAnalysis from "../../../components/report/RoomTypeAnalysis";
+import LoyaltyChart from "../../../components/report/LoyaltyChart";
+import MembershipDistribution from "../../../components/report/MembershipDistribution";
+import ReviewChart from "../../../components/report/ReviewChart";
+import RatingBreakdown from "../../../components/report/RatingBreakdown";
+import SentimentAnalysis from "../../../components/report/SentimentAnalysis";
+import BookingTrends from "../../../components/report/BookingTrends";
+import BookingChart from "../../../components/report/BookingChart";
+import DateRangePicker from "../../../components/report/DateRangePicker";
+import FilterBar from "../../../components/report/FilterBar";
+import ExportButton from "../../../components/report/ExportButton";
+import OccupancyStats from "../../../components/report/OccupancyStats";
+import ServiceSummary from "../../../components/report/ServiceSummary";
+import ServiceChart from "../../../components/report/ServiceChart";
+import ServiceDistribution from "../../../components/report/ServiceDistribution";
+import PopularServices from "../../../components/report/PopularServices";
+import { reportService } from "../../../services/reportService";
+import { getRevenueData } from "../../../services/revenueReportService";
 import LoyaltySummary from "../../../components/report/LoyaltySummary";
 import {
   exportLoyaltyToPDF,
@@ -46,7 +45,11 @@ import RevenueTab from "./components/RevenueTab";
 import LoyaltyTab from "./components/LoyaltyTab";
 import BookingsTab from "./components/BookingsTab";
 
-import {getCategoryRatings, getRatingTrend, getSentimentStats} from '../../../services/reviewService';
+import {
+  getCategoryRatings,
+  getRatingTrend,
+  getSentimentStats,
+} from "../../../services/reviewService";
 type ReportTab =
   | "revenue"
   | "occupancy"
@@ -72,20 +75,20 @@ const ReportPage: React.FC = () => {
   const [isLoadingServiceData, setIsLoadingServiceData] = useState(false);
   const [showDateFilter, setShowDateFilter] = useState(false);
 
-    const [revenueData, setRevenueData] = useState<RevenueData[]>([]);
-    const [revenueLoading, setRevenueLoading] = useState<boolean>(false);
-    const [revenueError, setRevenueError] = useState<string | null>(null);
+  const [revenueData, setRevenueData] = useState<RevenueData[]>([]);
+  const [revenueLoading, setRevenueLoading] = useState<boolean>(false);
+  const [revenueError, setRevenueError] = useState<string | null>(null);
 
-    const [reviewTrend, setReviewTrend] = useState([]);
-    const [categoryRatings, setCategoryRatings] = useState(null);
-    const [sentimentStats, setSentimentStats] = useState(null);
+  const [reviewTrend, setReviewTrend] = useState([]);
+  const [categoryRatings, setCategoryRatings] = useState(null);
+  const [sentimentStats, setSentimentStats] = useState(null);
 
-    // Auto update date range when period changes
-    useEffect(() => {
-        if (!showDateFilter) {
-            const today = new Date();
-            let start = new Date();
-            let end = new Date();
+  // Auto update date range when period changes
+  useEffect(() => {
+    if (!showDateFilter) {
+      const today = new Date();
+      let start = new Date();
+      let end = new Date();
 
       switch (period) {
         case "daily":
@@ -146,22 +149,22 @@ const ReportPage: React.FC = () => {
     }
   };
 
-    useEffect(() => {
-        const fetchRevenue = async () => {
-            setRevenueLoading(true);
-            setRevenueError(null);
-            try {
-                const data = await getRevenueData();
-                setRevenueData(Array.isArray(data) ? data : []);
-            } catch (e: any) {
-                setRevenueError(e?.message || 'Failed to load revenue data');
-                setRevenueData([]);
-            } finally {
-                setRevenueLoading(false);
-            }
-        };
-        fetchRevenue();
-    }, []);
+  useEffect(() => {
+    const fetchRevenue = async () => {
+      setRevenueLoading(true);
+      setRevenueError(null);
+      try {
+        const data = await getRevenueData();
+        setRevenueData(Array.isArray(data) ? data : []);
+      } catch (e: any) {
+        setRevenueError(e?.message || "Failed to load revenue data");
+        setRevenueData([]);
+      } finally {
+        setRevenueLoading(false);
+      }
+    };
+    fetchRevenue();
+  }, []);
 
   // Mock data - Occupancy
   const occupancyData: OccupancyData[] = useMemo(
@@ -242,24 +245,24 @@ const ReportPage: React.FC = () => {
     []
   );
 
-    // Mock data - Reviews
-    useEffect(() => {
-        // Load line chart
-        getRatingTrend().then((res) => {
-            // Backend returns: [{month: "2024-06", avgRating: 4.65}]
-            setReviewTrend(res || []);
-        });
+  // Mock data - Reviews
+  useEffect(() => {
+    // Load line chart
+    getRatingTrend().then((res) => {
+      // Backend returns: [{month: "2024-06", avgRating: 4.65}]
+      setReviewTrend(res || []);
+    });
 
-        // Load bar chart
-        getCategoryRatings().then((res) => {
-            setCategoryRatings(res);
-        });
+    // Load bar chart
+    getCategoryRatings().then((res) => {
+      setCategoryRatings(res);
+    });
 
-        // Load pie chart
-        getSentimentStats().then((res) => {
-            setSentimentStats(res);
-        });
-    }, []);
+    // Load pie chart
+    getSentimentStats().then((res) => {
+      setSentimentStats(res);
+    });
+  }, []);
 
   const tabs = [
     {
@@ -339,27 +342,27 @@ const ReportPage: React.FC = () => {
             activeTab={activeTab}
           />
         );
-        case 'reviews':
-            return (
-                <div className="space-y-6">
-                    <div className="bg-white p-6 rounded-lg shadow-sm border border-[#EBE3D7]">
-                        <h3 className="text-lg font-semibold mb-4">
-                            Average Rating Over Time
-                        </h3>
-                        {reviewTrend && reviewTrend.length > 0 ? (
-                            <ReviewChart data={reviewTrend} />
-                        ) : (
-                            <div className="flex items-center justify-center h-[400px] text-gray-400">
-                                No rating data available
-                            </div>
-                        )}
-                    </div>
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <RatingBreakdown data={categoryRatings} />
-                        <SentimentAnalysis data={sentimentStats} />
-                    </div>
+      case "reviews":
+        return (
+          <div className="space-y-6">
+            <div className="bg-white p-6 rounded-lg shadow-sm border border-[#EBE3D7]">
+              <h3 className="text-lg font-semibold mb-4">
+                Average Rating Over Time
+              </h3>
+              {reviewTrend && reviewTrend.length > 0 ? (
+                <ReviewChart data={reviewTrend} />
+              ) : (
+                <div className="flex items-center justify-center h-[400px] text-gray-400">
+                  No rating data available
                 </div>
-            );
+              )}
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <RatingBreakdown data={categoryRatings} />
+              <SentimentAnalysis data={sentimentStats} />
+            </div>
+          </div>
+        );
 
       case "bookings":
         return (
