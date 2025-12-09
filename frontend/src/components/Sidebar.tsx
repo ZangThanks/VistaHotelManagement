@@ -1,4 +1,3 @@
-/* eslint-disable*/
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
@@ -7,6 +6,7 @@ import {
     FaUsers,
     FaChartLine,
     FaCog,
+    FaExclamationTriangle,
 } from 'react-icons/fa';
 import { MdMeetingRoom } from 'react-icons/md';
 import { RiInfoCardFill, RiDiscountPercentFill } from 'react-icons/ri';
@@ -61,10 +61,23 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
         {
             icon: <FaCalendarAlt />,
             label: 'Reservations',
-            path: '/reservations',
+            path: '/admin/reservations',
         },
-        { icon: <FaUsers />, label: 'Guests', path: '/employee/customer/list' },
-        { icon: <MdRoomService />, label: 'Services', path: '/admin/services' },
+        {
+            icon: <FaUsers />,
+            label: 'Guests',
+            path: '/employee/customer/list',
+        },
+        {
+            icon: <FaExclamationTriangle />,
+            label: 'Incidents',
+            path: '/employee/incidents',
+        },
+        {
+            icon: <MdRoomService />,
+            label: 'Services',
+            path: '/admin/services',
+        },
         {
             icon: <RiDiscountPercentFill />,
             label: 'Promotions',
@@ -80,8 +93,16 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
             label: 'Vouchers',
             path: '/admin/voucher-management',
         },
-        { icon: <FaChartLine />, label: 'Reports', path: '/admin/reports' },
-        { icon: <FaCog />, label: 'Settings', path: '/settings' },
+        {
+            icon: <FaChartLine />,
+            label: 'Reports',
+            path: '/admin/reports',
+        },
+        {
+            icon: <FaCog />,
+            label: 'Settings',
+            path: '/settings',
+        },
     ];
 
     const getIconScale = (index: number) => {
