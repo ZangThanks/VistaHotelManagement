@@ -5,7 +5,6 @@ import { useNotificationContext } from '../../context/NotificationContextAPI';
 import { earlyCheckinNotificationService } from '../../services/earlyCheckinNotificationService';
 import type { CancelBookingRequest } from '../../services/earlyCheckinNotificationService';
 import { useToastContext } from '../../hooks/useToastContext';
-
 interface Props {
     booking: Booking | null;
     onClose: () => void;
