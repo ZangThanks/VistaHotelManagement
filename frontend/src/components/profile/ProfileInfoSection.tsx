@@ -71,13 +71,13 @@ const ProfileInfoSection: React.FC<ProfileInfoSectionProps> = ({
       className="bg-white rounded-xl shadow-md border border-cream p-6"
     >
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-[#ccbda3]">
+        <h2 className="text-2xl font-bold text-primary">
           Personal Information
         </h2>
         {!isEditing && (
           <button
             onClick={() => setIsEditing(true)}
-            className="inline-flex items-center gap-2 px-6 py-2 bg-[#ccbda3] text-white font-semibold rounded-lg shadow-lg hover:bg-[#b3a68f] transition-colors cursor-pointer"
+            className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-secondary transition-colors"
           >
             Edit
           </button>
@@ -87,7 +87,7 @@ const ProfileInfoSection: React.FC<ProfileInfoSectionProps> = ({
       {!isEditing ? (
         <div className="space-y-4">
           <div className="flex items-center gap-3 p-3 bg-light rounded-lg">
-            <FaUser className="text-gold text-xl" />
+            <FaUser className="text-primary text-xl" />
             <div>
               <p className="text-sm text-gray-600">Username</p>
               <p className="font-semibold text-gray-900">{profile.userName}</p>
@@ -95,7 +95,7 @@ const ProfileInfoSection: React.FC<ProfileInfoSectionProps> = ({
           </div>
 
           <div className="flex items-center gap-3 p-3 bg-light rounded-lg">
-            <FaUser className="text-gold text-xl" />
+            <FaUser className="text-primary text-xl" />
             <div>
               <p className="text-sm text-gray-600">Full Name</p>
               <p className="font-semibold text-gray-900">{profile.fullName}</p>
@@ -103,7 +103,7 @@ const ProfileInfoSection: React.FC<ProfileInfoSectionProps> = ({
           </div>
 
           <div className="flex items-center gap-3 p-3 bg-light rounded-lg">
-            <FaEnvelope className="text-gold text-xl" />
+            <FaEnvelope className="text-primary text-xl" />
             <div>
               <p className="text-sm text-gray-600">Email</p>
               <p className="font-semibold text-gray-900">{profile.email}</p>
@@ -111,7 +111,7 @@ const ProfileInfoSection: React.FC<ProfileInfoSectionProps> = ({
           </div>
 
           <div className="flex items-center gap-3 p-3 bg-light rounded-lg">
-            <FaPhone className="text-gold text-xl" />
+            <FaPhone className="text-primary text-xl" />
             <div>
               <p className="text-sm text-gray-600">Phone Number</p>
               <p className="font-semibold text-gray-900">{profile.phone}</p>
@@ -119,7 +119,7 @@ const ProfileInfoSection: React.FC<ProfileInfoSectionProps> = ({
           </div>
 
           <div className="flex items-center gap-3 p-3 bg-light rounded-lg">
-            <FaMapMarkerAlt className="text-gold text-xl" />
+            <FaMapMarkerAlt className="text-primary text-xl" />
             <div>
               <p className="text-sm text-gray-600">Address</p>
               <p className="font-semibold text-gray-900">
@@ -130,7 +130,7 @@ const ProfileInfoSection: React.FC<ProfileInfoSectionProps> = ({
 
           {profile.birthDate && (
             <div className="flex items-center gap-3 p-3 bg-light rounded-lg">
-              <FaCalendar className="text-gold text-xl" />
+              <FaCalendar className="text-primary text-xl" />
               <div>
                 <p className="text-sm text-gray-600">Birth Date</p>
                 <p className="font-semibold text-gray-900">
@@ -142,7 +142,7 @@ const ProfileInfoSection: React.FC<ProfileInfoSectionProps> = ({
 
           {profile.gender && (
             <div className="flex items-center gap-3 p-3 bg-light rounded-lg">
-              <FaVenusMars className="text-gold text-xl" />
+              <FaVenusMars className="text-primary text-xl" />
               <div>
                 <p className="text-sm text-gray-600">Gender</p>
                 <p className="font-semibold text-gray-900">
@@ -276,7 +276,7 @@ const ProfileInfoSection: React.FC<ProfileInfoSectionProps> = ({
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 px-4 py-2 bg-[#ccbda3] text-white rounded-lg hover:bg-[#b3a68f] transition-colors disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+              className="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-secondary transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
             >
               <FaSave />
               {loading ? "Saving..." : "Save Changes"}
@@ -284,7 +284,7 @@ const ProfileInfoSection: React.FC<ProfileInfoSectionProps> = ({
             <button
               type="button"
               onClick={handleCancel}
-              className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 cursor-pointer"
+              className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
             >
               <FaTimes />
               Cancel

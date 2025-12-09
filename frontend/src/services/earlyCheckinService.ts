@@ -1,6 +1,4 @@
 import { api } from './apiClient';
-import { earlyCheckinNotificationService } from './earlyCheckinNotificationService';
-import type { CheckinApproval } from './earlyCheckinNotificationService';
 
 const ENDPOINT = '/early-checkin';
 
@@ -61,48 +59,11 @@ export const approveEarlyCheckin = async (
     requestId: string,
     status: 'APPROVED' | 'REJECTED',
     staffName: string,
-    bookingInfo?: {
-        customerId: string;
-        customerName: string;
-        roomNumber: string;
-        requestedTime?: string;
-    },
 ) => {
     try {
-        // 1. Call backend API to approve/reject
         const res = await api.put(
             `${ENDPOINT}/approve/${requestId}?status=${status}&staff=${staffName}`,
         );
-
-        // 2. Send notification to customer
-        if (bookingInfo) {
-            try {
-                const approvalData: CheckinApproval = {
-                    requestId,
-                    customerId: bookingInfo.customerId,
-                    customerName: bookingInfo.customerName,
-                    roomNumber: bookingInfo.roomNumber,
-                    approvedBy: staffName,
-                    approvedTime: bookingInfo.requestedTime,
-                    isApproved: status === 'APPROVED',
-                    reason:
-                        status === 'REJECTED'
-                            ? 'Yêu cầu bị từ chối bởi nhân viên'
-                            : undefined,
-                };
-
-                await earlyCheckinNotificationService.processEarlyCheckinRequest(
-                    approvalData,
-                );
-                console.log(
-                    '✅ Notification sent to customer after approval/rejection',
-                );
-            } catch (notifError) {
-                console.error('⚠️ Failed to send notification:', notifError);
-                // Don't throw - approval already succeeded
-            }
-        }
-
         return res.data;
     } catch (error) {
         console.error('Error approving early checkin:', error);

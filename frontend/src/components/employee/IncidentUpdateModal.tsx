@@ -45,7 +45,7 @@ const IncidentUpdateModal: React.FC<IncidentUpdateModalProps> = ({
             setError(
                 err instanceof Error
                     ? err.message
-                    : 'Có lỗi xảy ra khi cập nhật trạng thái',
+                    : 'An error occurred while updating status',
             );
         } finally {
             setIsSubmitting(false);
@@ -58,7 +58,7 @@ const IncidentUpdateModal: React.FC<IncidentUpdateModalProps> = ({
                 {/* Header */}
                 <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
                     <h2 className="text-2xl font-bold text-gray-900">
-                        Cập nhật trạng thái sự cố
+                        Update Incident Status
                     </h2>
                     <button
                         onClick={onClose}
@@ -75,7 +75,7 @@ const IncidentUpdateModal: React.FC<IncidentUpdateModalProps> = ({
                         <div className="grid grid-cols-2 gap-4 mb-4">
                             <div>
                                 <p className="text-sm text-gray-500 mb-1">
-                                    Mã sự cố
+                                    Incident Code
                                 </p>
                                 <p className="font-semibold text-gray-900">
                                     {incident.id}
@@ -83,7 +83,7 @@ const IncidentUpdateModal: React.FC<IncidentUpdateModalProps> = ({
                             </div>
                             <div>
                                 <p className="text-sm text-gray-500 mb-1">
-                                    Khách hàng
+                                    Customer
                                 </p>
                                 <p className="font-semibold text-gray-900">
                                     {incident.customerName}
@@ -91,7 +91,7 @@ const IncidentUpdateModal: React.FC<IncidentUpdateModalProps> = ({
                             </div>
                             <div>
                                 <p className="text-sm text-gray-500 mb-1">
-                                    Mã đặt phòng
+                                    Booking ID
                                 </p>
                                 <p className="font-semibold text-gray-900">
                                     {incident.bookingId}
@@ -99,7 +99,7 @@ const IncidentUpdateModal: React.FC<IncidentUpdateModalProps> = ({
                             </div>
                             <div>
                                 <p className="text-sm text-gray-500 mb-1">
-                                    Ngày báo cáo
+                                    Report Date
                                 </p>
                                 <p className="font-semibold text-gray-900">
                                     {formatDate(incident.reportedDate)}
@@ -108,16 +108,16 @@ const IncidentUpdateModal: React.FC<IncidentUpdateModalProps> = ({
                         </div>
 
                         <div className="mb-4">
-                            <p className="text-sm text-gray-500 mb-1">
-                                Tiêu đề
-                            </p>
+                            <p className="text-sm text-gray-500 mb-1">Title</p>
                             <p className="font-semibold text-gray-900">
                                 {incident.title}
                             </p>
                         </div>
 
                         <div className="mb-4">
-                            <p className="text-sm text-gray-500 mb-1">Mô tả</p>
+                            <p className="text-sm text-gray-500 mb-1">
+                                Description
+                            </p>
                             <p className="text-gray-700 whitespace-pre-wrap">
                                 {incident.description}
                             </p>
@@ -127,7 +127,7 @@ const IncidentUpdateModal: React.FC<IncidentUpdateModalProps> = ({
                         {incident.imageUrl && (
                             <div className="mb-4">
                                 <p className="text-sm text-gray-500 mb-2">
-                                    Hình ảnh
+                                    Image
                                 </p>
                                 <a
                                     href={incident.imageUrl}
@@ -147,7 +147,7 @@ const IncidentUpdateModal: React.FC<IncidentUpdateModalProps> = ({
                         <div className="flex items-center gap-3">
                             <div>
                                 <p className="text-sm text-gray-500 mb-1">
-                                    Độ ưu tiên
+                                    Priority
                                 </p>
                                 <IncidentPriorityBadge
                                     priority={incident.priority}
@@ -155,7 +155,7 @@ const IncidentUpdateModal: React.FC<IncidentUpdateModalProps> = ({
                             </div>
                             <div>
                                 <p className="text-sm text-gray-500 mb-1">
-                                    Trạng thái hiện tại
+                                    Current Status
                                 </p>
                                 <IncidentStatusBadge status={incident.status} />
                             </div>
@@ -165,7 +165,7 @@ const IncidentUpdateModal: React.FC<IncidentUpdateModalProps> = ({
                         {incident.assignedTo && (
                             <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                                 <p className="text-xs text-blue-600 font-medium mb-1">
-                                    Ghi chú hiện tại:
+                                    Current Note:
                                 </p>
                                 <p className="text-sm text-gray-700 whitespace-pre-wrap">
                                     {incident.assignedTo}
@@ -177,7 +177,7 @@ const IncidentUpdateModal: React.FC<IncidentUpdateModalProps> = ({
                     <form onSubmit={handleSubmit}>
                         <div className="mb-6">
                             <label className="block text-sm font-medium text-gray-700 mb-3">
-                                Cập nhật trạng thái
+                                Update Status
                             </label>
                             <div className="space-y-3">
                                 <label className="flex items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-[#CCBDA3] transition-colors">
@@ -197,7 +197,7 @@ const IncidentUpdateModal: React.FC<IncidentUpdateModalProps> = ({
                                     <span className="ml-3 flex items-center gap-2">
                                         <IncidentStatusBadge status="PENDING" />
                                         <span className="text-sm text-gray-600">
-                                            - Đang chờ xử lý
+                                            - Awaiting processing
                                         </span>
                                     </span>
                                 </label>
@@ -219,7 +219,7 @@ const IncidentUpdateModal: React.FC<IncidentUpdateModalProps> = ({
                                     <span className="ml-3 flex items-center gap-2">
                                         <IncidentStatusBadge status="COMPLETED" />
                                         <span className="text-sm text-gray-600">
-                                            - Đã hoàn thành xử lý
+                                            - Processing completed
                                         </span>
                                     </span>
                                 </label>
@@ -241,7 +241,7 @@ const IncidentUpdateModal: React.FC<IncidentUpdateModalProps> = ({
                                     <span className="ml-3 flex items-center gap-2">
                                         <IncidentStatusBadge status="FAILED" />
                                         <span className="text-sm text-gray-600">
-                                            - Không thể xử lý
+                                            - Unable to process
                                         </span>
                                     </span>
                                 </label>
@@ -251,20 +251,21 @@ const IncidentUpdateModal: React.FC<IncidentUpdateModalProps> = ({
                         {/* Staff Note/Response */}
                         <div className="mb-6">
                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Ghi chú / Phản hồi cho khách hàng
+                                Note / Response to Customer
                                 <span className="text-gray-500 font-normal ml-2">
-                                    (Không bắt buộc)
+                                    (Optional)
                                 </span>
                             </label>
                             <textarea
                                 value={staffNote}
                                 onChange={(e) => setStaffNote(e.target.value)}
-                                placeholder="Nhập ghi chú xử lý, phản hồi cho khách hàng hoặc để trống nếu không cần..."
+                                placeholder="Enter processing notes, customer response or leave blank if not needed..."
                                 rows={4}
                                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#CCBDA3] focus:border-transparent resize-none"
                             />
                             <p className="text-xs text-gray-500 mt-1">
-                                Ghi chú này sẽ được lưu và khách hàng có thể xem
+                                This note will be saved and customers can view
+                                it
                             </p>
                         </div>
 
@@ -283,7 +284,7 @@ const IncidentUpdateModal: React.FC<IncidentUpdateModalProps> = ({
                                 className="px-6 py-2.5 border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 transition-colors"
                                 disabled={isSubmitting}
                             >
-                                Hủy
+                                Cancel
                             </button>
                             <button
                                 type="submit"
@@ -291,7 +292,7 @@ const IncidentUpdateModal: React.FC<IncidentUpdateModalProps> = ({
                                 className="px-6 py-2.5 bg-[#CCBDA3] text-white rounded-lg font-medium hover:bg-[#B8A890] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                             >
                                 <Save className="w-4 h-4" />
-                                {isSubmitting ? 'Đang cập nhật...' : 'Cập nhật'}
+                                {isSubmitting ? 'Updating...' : 'Update'}
                             </button>
                         </div>
                     </form>

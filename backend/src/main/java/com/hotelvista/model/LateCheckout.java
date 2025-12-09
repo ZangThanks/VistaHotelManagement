@@ -40,9 +40,4 @@ public class LateCheckout {
     @JsonIgnoreProperties({"lateCheckout", "earlyCheckin", "hibernateLazyInitializer", "handler"})
     @ToString.Exclude
     private Booking booking;
-
-    @ManyToOne
-    @ToString.Exclude
-    @JoinColumn(name = "employee_id")
-    private Employee employee;
 }
