@@ -4,6 +4,7 @@ import com.hotelvista.dto.ServiceReportDTO;
 import com.hotelvista.dto.report.BookingReportDTO;
 import com.hotelvista.dto.report.DashboardStatsDTO;
 import com.hotelvista.dto.report.LoyaltyReportDTO;
+import com.hotelvista.dto.report.RoomOccupancyReportDTO;
 import com.hotelvista.model.*;
 import com.hotelvista.model.BookingService;
 import com.hotelvista.model.enums.*;
@@ -33,6 +34,7 @@ public class ReportService {
 
     private final BookingServiceRepository bookingServiceRepository;
     private final ReportRepository reportRepository;
+    private final RoomRepository roomRepository;
 
 
     /**
@@ -664,5 +666,123 @@ public class ReportService {
                 Math.round(averageBookingValue * 100.0) / 100.0,
                 Math.round(totalRevenue * 100.0) / 100.0
         );
+    }
+    public List<RoomOccupancyReportDTO> getRoomOccupancyReport(LocalDate startDate, LocalDate endDate, ReportPeriod period) {
+        switch (period) {
+            case DAILY:
+                return getRoomOccupancyReportDaily(startDate, endDate);
+            case WEEKLY:
+                return getRoomOccupancyReportWeekly(startDate, endDate);
+            case MONTHLY:
+                return getRoomOccupancyReportMonthly(startDate, endDate);
+            case QUARTERLY:
+                return getRoomOccupancyReportQuarterly(startDate, endDate);
+            case YEARLY:
+                return getRoomOccupancyReportYearly(startDate, endDate);
+            default:
+                return getRoomOccupancyReportMonthly(startDate, endDate);
+        }
+    }
+
+    private List<RoomOccupancyReportDTO> getRoomOccupancyReportDaily(LocalDate startDate, LocalDate endDate) {
+        List<RoomOccupancyReportDTO> reports = new ArrayList<>();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM dd", Locale.ENGLISH);
+        for (LocalDate current = startDate; !current.isAfter(endDate); current = current.plusDays(1)) {
+            reports.add(createRoomOccupancyReport(current, current, formatter.format(current)));
+        }
+        return reports;
+    }
+
+    private List<RoomOccupancyReportDTO> getRoomOccupancyReportWeekly(LocalDate startDate, LocalDate endDate) {
+        List<RoomOccupancyReportDTO> reports = new ArrayList<>();
+        LocalDate current = startDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        while (!current.isAfter(endDate)) {
+            LocalDate weekEnd = current.plusDays(6);
+            if (weekEnd.isAfter(endDate)) weekEnd = endDate;
+            String label = "Week " + current.get(IsoFields.WEEK_OF_WEEK_BASED_YEAR) + " (" + current.format(DateTimeFormatter.ofPattern("MMM dd")) + ")";
+            reports.add(createRoomOccupancyReport(current, weekEnd, label));
+            current = current.plusWeeks(1);
+        }
+        return reports;
+    }
+
+    private List<RoomOccupancyReportDTO> getRoomOccupancyReportMonthly(LocalDate startDate, LocalDate endDate) {
+        List<RoomOccupancyReportDTO> reports = new ArrayList<>();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM yyyy", Locale.ENGLISH);
+        YearMonth startMonth = YearMonth.from(startDate);
+        YearMonth endMonth = YearMonth.from(endDate);
+        YearMonth current = startMonth;
+        while (!current.isAfter(endMonth)) {
+            LocalDate monthStart = current.atDay(1);
+            LocalDate monthEnd = current.atEndOfMonth();
+            if (monthStart.isBefore(startDate)) monthStart = startDate;
+            if (monthEnd.isAfter(endDate)) monthEnd = endDate;
+            reports.add(createRoomOccupancyReport(monthStart, monthEnd, formatter.format(monthStart)));
+            current = current.plusMonths(1);
+        }
+        return reports;
+    }
+
+    private List<RoomOccupancyReportDTO> getRoomOccupancyReportQuarterly(LocalDate startDate, LocalDate endDate) {
+        List<RoomOccupancyReportDTO> reports = new ArrayList<>();
+        LocalDate current = startDate.with(startDate.getMonth().firstMonthOfQuarter()).with(TemporalAdjusters.firstDayOfMonth());
+        while (!current.isAfter(endDate)) {
+            int quarter = current.get(IsoFields.QUARTER_OF_YEAR);
+            int year = current.getYear();
+            LocalDate quarterStart = current;
+            LocalDate quarterEnd = quarterStart.plusMonths(3).minusDays(1);
+            if (quarterStart.isBefore(startDate)) quarterStart = startDate;
+            if (quarterEnd.isAfter(endDate)) quarterEnd = endDate;
+            String label = "Q" + quarter + " " + year;
+            reports.add(createRoomOccupancyReport(quarterStart, quarterEnd, label));
+            current = current.plusMonths(3);
+        }
+        return reports;
+    }
+
+    private List<RoomOccupancyReportDTO> getRoomOccupancyReportYearly(LocalDate startDate, LocalDate endDate) {
+        List<RoomOccupancyReportDTO> reports = new ArrayList<>();
+        int startYear = startDate.getYear();
+        int endYear = endDate.getYear();
+        for (int year = startYear; year <= endYear; year++) {
+            LocalDate yearStart = LocalDate.of(year, 1, 1);
+            LocalDate yearEnd = LocalDate.of(year, 12, 31);
+            if (yearStart.isBefore(startDate)) yearStart = startDate;
+            if (yearEnd.isAfter(endDate)) yearEnd = endDate;
+            reports.add(createRoomOccupancyReport(yearStart, yearEnd, String.valueOf(year)));
+        }
+        return reports;
+    }
+
+    private RoomOccupancyReportDTO createRoomOccupancyReport(LocalDate startDate, LocalDate endDate, String periodLabel) {
+        LocalDateTime startDateTime = startDate.atStartOfDay();
+        LocalDateTime endDateTime = endDate.atTime(23, 59, 59);
+        int totalRooms = (int) roomRepository.count();
+        List<Booking> bookings = bookingRepository.findAll().stream()
+                .filter(b -> b.getStatus() != BookingStatus.CANCELLED)
+                .filter(b -> b.getCheckInDate().isBefore(endDateTime) && b.getCheckOutDate().isAfter(startDateTime))
+                .collect(Collectors.toList());
+        Set<String> bookedRoomNumbers = bookings.stream()
+                .flatMap(b -> b.getBookingDetails().stream())
+                .map(bd -> bd.getRoom().getRoomNumber())
+                .collect(Collectors.toSet());
+        int bookedRooms = bookedRoomNumbers.size();
+        double occupancyRate = totalRooms > 0 ? Math.round((bookedRooms * 100.0 / totalRooms) * 100.0) / 100.0 : 0.0;
+        double averageRate = bookings.stream()
+                .flatMap(b -> b.getBookingDetails().stream())
+                .filter(bd -> bookedRoomNumbers.contains(bd.getRoom().getRoomNumber()))
+                .mapToDouble(bd -> bd.getRoomPrice() != null ? bd.getRoomPrice() : 0.0)
+                .average().orElse(0.0);
+        double totalRevenue = bookings.stream()
+                .filter(b -> b.getStatus() == BookingStatus.CHECKED_OUT)
+                .flatMap(b -> b.getBookingDetails().stream())
+                .mapToDouble(bd -> {
+                    long nights = java.time.temporal.ChronoUnit.DAYS.between(
+                            bd.getBooking().getCheckInDate().toLocalDate(),
+                            bd.getBooking().getCheckOutDate().toLocalDate());
+                    return (bd.getRoomPrice() != null ? bd.getRoomPrice() : 0.0) * nights;
+                }).sum();
+        return new RoomOccupancyReportDTO(periodLabel, totalRooms, bookedRooms, occupancyRate,
+                Math.round(averageRate * 100.0) / 100.0, Math.round(totalRevenue * 100.0) / 100.0);
     }
 }

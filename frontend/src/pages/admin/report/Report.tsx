@@ -7,6 +7,8 @@ import {
   FaUsers,
   FaCalendarCheck,
   FaConciergeBell,
+  FaDoorOpen,
+  FaDollarSign,
 } from "react-icons/fa";
 import type {
   OccupancyData,
@@ -16,6 +18,7 @@ import type {
   ReportPeriod,
   ServiceData,
   RevenueData,
+  RoomOccupancyData,
 } from "../../../types/Report";
 import OccupancyChart from "../../../components/report/OccupancyChart";
 import RoomTypeAnalysis from "../../../components/report/RoomTypeAnalysis";
@@ -50,6 +53,17 @@ import {
   getRatingTrend,
   getSentimentStats,
 } from "../../../services/reviewService";
+import {
+  Bar,
+  CartesianGrid,
+  ComposedChart,
+  Legend,
+  Line,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 type ReportTab =
   | "revenue"
   | "occupancy"
@@ -74,6 +88,9 @@ const ReportPage: React.FC = () => {
   const [serviceData, setServiceData] = useState<ServiceData[]>([]);
   const [isLoadingServiceData, setIsLoadingServiceData] = useState(false);
   const [showDateFilter, setShowDateFilter] = useState(false);
+
+  const [occupancyData, setOccupancyData] = useState<RoomOccupancyData[]>([]);
+  const [isLoadingOccupancy, setIsLoadingOccupancy] = useState(false);
 
   const [revenueData, setRevenueData] = useState<RevenueData[]>([]);
   const [revenueLoading, setRevenueLoading] = useState<boolean>(false);
@@ -132,6 +149,12 @@ const ReportPage: React.FC = () => {
       fetchServiceReport();
     }
   }, [activeTab, startDate, endDate, period]);
+  // Fetch service report data from API
+  useEffect(() => {
+    if (activeTab === "occupancy") {
+      fetchOccupancyReport();
+    }
+  }, [activeTab, startDate, endDate, period]);
 
   const fetchServiceReport = async () => {
     try {
@@ -146,6 +169,22 @@ const ReportPage: React.FC = () => {
       console.error("Error fetching service report:", error);
     } finally {
       setIsLoadingServiceData(false);
+    }
+  };
+
+  const fetchOccupancyReport = async () => {
+    try {
+      setIsLoadingOccupancy(true);
+      const data = await reportService.getRoomOccupancyReport(
+        startDate,
+        endDate,
+        period.toUpperCase()
+      );
+      setOccupancyData(data);
+    } catch (error) {
+      console.error("Error fetching occupancy report:", error);
+    } finally {
+      setIsLoadingOccupancy(false);
     }
   };
 
@@ -165,85 +204,6 @@ const ReportPage: React.FC = () => {
     };
     fetchRevenue();
   }, []);
-
-  // Mock data - Occupancy
-  const occupancyData: OccupancyData[] = useMemo(
-    () => [
-      {
-        date: "Jan 2024",
-        totalRooms: 105,
-        occupiedRooms: 78,
-        occupancyRate: 74.3,
-      },
-      {
-        date: "Feb 2024",
-        totalRooms: 105,
-        occupiedRooms: 82,
-        occupancyRate: 78.1,
-      },
-      {
-        date: "Mar 2024",
-        totalRooms: 105,
-        occupiedRooms: 88,
-        occupancyRate: 83.8,
-      },
-      {
-        date: "Apr 2024",
-        totalRooms: 105,
-        occupiedRooms: 84,
-        occupancyRate: 80.0,
-      },
-      {
-        date: "May 2024",
-        totalRooms: 105,
-        occupiedRooms: 86,
-        occupancyRate: 81.9,
-      },
-      {
-        date: "Jun 2024",
-        totalRooms: 105,
-        occupiedRooms: 95,
-        occupancyRate: 90.5,
-      },
-      {
-        date: "Jul 2024",
-        totalRooms: 105,
-        occupiedRooms: 98,
-        occupancyRate: 93.3,
-      },
-      {
-        date: "Aug 2024",
-        totalRooms: 105,
-        occupiedRooms: 96,
-        occupancyRate: 91.4,
-      },
-      {
-        date: "Sep 2024",
-        totalRooms: 105,
-        occupiedRooms: 89,
-        occupancyRate: 84.8,
-      },
-      {
-        date: "Oct 2024",
-        totalRooms: 105,
-        occupiedRooms: 87,
-        occupancyRate: 82.9,
-      },
-      {
-        date: "Nov 2024",
-        totalRooms: 105,
-        occupiedRooms: 85,
-        occupancyRate: 81.0,
-      },
-      {
-        date: "Dec 2024",
-        totalRooms: 105,
-        occupiedRooms: 100,
-        occupancyRate: 95.2,
-      },
-    ],
-    []
-  );
 
   // Mock data - Reviews
   useEffect(() => {
@@ -321,15 +281,286 @@ const ReportPage: React.FC = () => {
       case "occupancy":
         return (
           <div className="space-y-6">
-            <OccupancyStats data={occupancyData} />
-            <div className="bg-white p-6 rounded-lg shadow-sm border border-[#EBE3D7]">
-              <h3 className="text-lg font-semibold mb-4">Occupancy Trends</h3>
-              <OccupancyChart data={occupancyData} />
+            {/* Filter Bar */}
+            <div className="bg-white p-4 rounded-lg shadow-sm border border-[#EBE3D7]">
+              <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
+                <FilterBar
+                  period={period}
+                  onPeriodChange={setPeriod}
+                  showDateFilter={showDateFilter}
+                  setShowDateFilter={setShowDateFilter}
+                />
+                {showDateFilter && (
+                  <DateRangePicker
+                    startDate={startDate}
+                    endDate={endDate}
+                    onStartDateChange={setStartDate}
+                    onEndDateChange={setEndDate}
+                  />
+                )}
+                <ExportButton activeTab={activeTab} />
+              </div>
             </div>
-            <RoomTypeAnalysis />
+
+            {isLoadingOccupancy ? (
+              <div className="flex items-center justify-center h-64">
+                <div className="text-center">
+                  <div className="inline-block w-8 h-8 border-4 border-[#CCBDA3] border-t-transparent rounded-full animate-spin"></div>
+                  <p className="mt-2 text-gray-600">Đang tải dữ liệu...</p>
+                </div>
+              </div>
+            ) : occupancyData.length === 0 ? (
+              <div className="bg-white p-12 rounded-lg shadow-sm border border-[#EBE3D7] text-center">
+                <p className="text-gray-500 text-lg">
+                  Không có dữ liệu trong khoảng thời gian này
+                </p>
+              </div>
+            ) : (
+              <>
+                {/* Stats Cards */}
+                <div className="grid grid-cols-1 gap-6 mb-6 lg:grid-cols-4">
+                  <div className="p-6 bg-white rounded-lg shadow-sm border border-[#EBE3D7]">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-sm font-medium text-gray-600">
+                        Average Occupancy
+                      </h3>
+                      <div className="p-2 bg-[#CCBDA3]/10 rounded-lg">
+                        <FaChartLine className="w-5 h-5 text-[#CCBDA3]" />
+                      </div>
+                    </div>
+                    <p className="text-3xl font-bold text-gray-900">
+                      {(
+                        occupancyData.reduce(
+                          (sum, item) => sum + item.occupancyRate,
+                          0
+                        ) / occupancyData.length
+                      ).toFixed(1)}
+                      %
+                    </p>
+                    <p className="mt-1 text-sm text-gray-500">
+                      Average for period
+                    </p>
+                  </div>
+
+                  <div className="p-6 bg-white rounded-lg shadow-sm border border-[#EBE3D7]">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-sm font-medium text-gray-600">
+                        Total Booked Rooms
+                      </h3>
+                      <div className="p-2 bg-green-50 rounded-lg">
+                        <FaBed className="w-5 h-5 text-green-600" />
+                      </div>
+                    </div>
+                    <p className="text-3xl font-bold text-gray-900">
+                      {occupancyData.reduce(
+                        (sum, item) => sum + item.bookedRooms,
+                        0
+                      )}
+                    </p>
+                    <p className="mt-1 text-sm text-gray-500">
+                      Out of {occupancyData[0]?.totalRooms || 0} rooms
+                    </p>
+                  </div>
+
+                  <div className="p-6 bg-white rounded-lg shadow-sm border border-[#EBE3D7]">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-sm font-medium text-gray-600">
+                        Average Rate
+                      </h3>
+                      <div className="p-2 bg-purple-50 rounded-lg">
+                        <FaDoorOpen className="w-5 h-5 text-purple-600" />
+                      </div>
+                    </div>
+                    <p className="text-3xl font-bold text-gray-900">
+                      $
+                      {(
+                        occupancyData.reduce(
+                          (sum, item) => sum + item.averageRate,
+                          0
+                        ) / occupancyData.length
+                      ).toFixed(0)}
+                    </p>
+                    <p className="mt-1 text-sm text-gray-500">
+                      Per room per night
+                    </p>
+                  </div>
+
+                  <div className="p-6 bg-white rounded-lg shadow-sm border border-[#EBE3D7]">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-sm font-medium text-gray-600">
+                        Total Revenue
+                      </h3>
+                      <div className="p-2 bg-yellow-50 rounded-lg">
+                        <FaDollarSign className="w-5 h-5 text-yellow-600" />
+                      </div>
+                    </div>
+                    <p className="text-3xl font-bold text-gray-900">
+                      $
+                      {occupancyData
+                        .reduce((sum, item) => sum + item.totalRevenue, 0)
+                        .toLocaleString()}
+                    </p>
+                    <p className="mt-1 text-sm text-gray-500">
+                      Revenue from rooms
+                    </p>
+                  </div>
+                </div>
+
+                {/* Chart */}
+                <div className="p-6 bg-white rounded-lg shadow-sm border border-[#EBE3D7]">
+                  <h3 className="mb-4 text-lg font-semibold text-gray-900">
+                    Room Occupancy Chart
+                  </h3>
+                  <ResponsiveContainer width="100%" height={400}>
+                    <ComposedChart data={occupancyData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#EBE3D7" />
+                      <XAxis dataKey="period" stroke="#6B7280" />
+                      <YAxis yAxisId="left" stroke="#6B7280" />
+                      <YAxis
+                        yAxisId="right"
+                        orientation="right"
+                        stroke="#6B7280"
+                      />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: "#FFF",
+                          border: "1px solid #EBE3D7",
+                          borderRadius: "8px",
+                        }}
+                      />
+                      <Legend />
+                      <Bar
+                        yAxisId="left"
+                        dataKey="totalRooms"
+                        fill="#D4C5B0"
+                        name="Total Rooms"
+                      />
+                      <Bar
+                        yAxisId="left"
+                        dataKey="bookedRooms"
+                        fill="#CCBDA3"
+                        name="Booked Rooms"
+                      />
+                      <Line
+                        yAxisId="right"
+                        type="monotone"
+                        dataKey="occupancyRate"
+                        stroke="#B8935F"
+                        strokeWidth={3}
+                        name="Occupancy (%)"
+                      />
+                    </ComposedChart>
+                  </ResponsiveContainer>
+                </div>
+
+                {/* Table */}
+                <div className="p-6 bg-white rounded-lg shadow-sm border border-[#EBE3D7]">
+                  <h3 className="mb-4 text-lg font-semibold text-gray-900">
+                    Room Occupancy Details
+                  </h3>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm text-left text-gray-600">
+                      <thead className="text-xs text-gray-700 uppercase bg-[#F5F0EB] border-b border-[#EBE3D7]">
+                        <tr>
+                          <th scope="col" className="px-6 py-3 font-semibold">
+                            Period
+                          </th>
+                          <th
+                            scope="col"
+                            className="px-6 py-3 text-center font-semibold"
+                          >
+                            Total Rooms
+                          </th>
+                          <th
+                            scope="col"
+                            className="px-6 py-3 text-center font-semibold"
+                          >
+                            Booked Rooms
+                          </th>
+                          <th
+                            scope="col"
+                            className="px-6 py-3 text-center font-semibold"
+                          >
+                            Occupancy (%)
+                          </th>
+                          <th
+                            scope="col"
+                            className="px-6 py-3 text-right font-semibold"
+                          >
+                            Avg Rate
+                          </th>
+                          <th
+                            scope="col"
+                            className="px-6 py-3 text-right font-semibold"
+                          >
+                            Revenue
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {occupancyData.map((item, index) => (
+                          <tr
+                            key={index}
+                            className="bg-white border-b border-[#EBE3D7] hover:bg-[#F5F0EB] transition"
+                          >
+                            <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
+                              {item.period}
+                            </td>
+                            <td className="px-6 py-4 text-center">
+                              {item.totalRooms}
+                            </td>
+                            <td className="px-6 py-4 text-center">
+                              {item.bookedRooms}
+                            </td>
+                            <td className="px-6 py-4 text-center">
+                              <span
+                                className={`font-semibold px-2 py-1 rounded ${
+                                  item.occupancyRate >= 80
+                                    ? "bg-green-50 text-green-600"
+                                    : item.occupancyRate >= 60
+                                    ? "bg-blue-50 text-blue-600"
+                                    : item.occupancyRate >= 40
+                                    ? "bg-yellow-50 text-yellow-600"
+                                    : "bg-red-50 text-red-600"
+                                }`}
+                              >
+                                {item.occupancyRate.toFixed(1)}%
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 text-right text-gray-700">
+                              ${item.averageRate.toFixed(2)}
+                            </td>
+                            <td className="px-6 py-4 text-right font-semibold text-[#B8935F]">
+                              ${item.totalRevenue.toLocaleString()}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  <div className="flex items-center gap-6 mt-4 text-xs flex-wrap">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                      <span className="text-gray-600">≥ 80%: Excellent</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                      <span className="text-gray-600">60-79%: Good</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                      <span className="text-gray-600">40-59%: Average</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                      <span className="text-gray-600">&lt; 40%: Low</span>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         );
-
       case "loyalty":
         return (
           <LoyaltyTab
