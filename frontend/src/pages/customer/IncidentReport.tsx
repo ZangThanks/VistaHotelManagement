@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Plus, Filter, Search, AlertCircle, RefreshCw } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import IncidentReportForm from '../../components/customer/IncidentReportForm';
 import IncidentCard from '../../components/customer/IncidentCard';
 import IncidentDetailModal from '../../components/customer/IncidentDetailModal';
@@ -30,10 +30,140 @@ interface UserData {
 
 const IncidentReport: React.FC = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     const [user, setUser] = useState<UserData | null>(null);
     const [userBookings, setUserBookings] = useState<Booking[]>([]);
     const [selectedBookingId, setSelectedBookingId] = useState<string>('');
+    const selectedBookingIdRef = useRef<string>(''); // Keep track of current selection
     const [incidents, setIncidents] = useState<IncidentReportType[]>([]);
+
+    // Helper to update both state and ref
+    const updateSelectedBookingId = useCallback((bookingId: string) => {
+        setSelectedBookingId(bookingId);
+        selectedBookingIdRef.current = bookingId;
+    }, []);
+
+    const { success, error } = useToast();
+
+    const loadUserBookings = useCallback(
+        async (customerId: string) => {
+            try {
+                console.log('🔄 Loading bookings for customer:', customerId);
+                const allBookings = await bookingService.getAll();
+
+                console.log(
+                    '📊 All bookings from API:',
+                    allBookings.length,
+                    'total',
+                );
+                console.log('👤 Looking for customer ID:', customerId);
+
+                // Get user info for matching
+                const userStr = localStorage.getItem('user');
+                const userData = userStr ? JSON.parse(userStr) : null;
+                const userEmail = userData?.email || user?.email;
+                const userFullName = userData?.fullName || user?.fullName;
+
+                console.log('📧 User email:', userEmail);
+                console.log('👤 User name:', userFullName);
+
+                // Filter bookings for this customer that are active (CHECKED_IN, CONFIRMED, or PENDING)
+                const userActiveBookings = allBookings.filter(
+                    (booking: Booking) => {
+                        const bookingCustomerId = booking.customer?.id;
+                        const bookingEmail = booking.customer?.email;
+                        const bookingFullName = booking.customer?.fullName;
+
+                        // Match by Customer ID
+                        const matchById =
+                            bookingCustomerId &&
+                            String(bookingCustomerId) === String(customerId);
+
+                        // Match by Email (nếu có)
+                        const matchByEmail =
+                            userEmail &&
+                            bookingEmail &&
+                            bookingEmail.toLowerCase() ===
+                                userEmail.toLowerCase();
+
+                        // Match by Full Name (tên khách hàng)
+                        const matchByName =
+                            userFullName &&
+                            bookingFullName &&
+                            bookingFullName.toLowerCase().trim() ===
+                                userFullName.toLowerCase().trim();
+
+                        // Allow CHECKED_IN, CONFIRMED, and PENDING bookings
+                        const allowedStatuses = [
+                            'CHECKED_IN',
+                            'CONFIRMED',
+                            'PENDING',
+                        ];
+                        const statusAllowed = allowedStatuses.includes(
+                            booking.status,
+                        );
+
+                        const isMatch =
+                            matchById || matchByEmail || matchByName;
+
+                        console.log(`📋 Booking ${booking.bookingID}:`, {
+                            bookingCustomerId,
+                            bookingEmail,
+                            bookingFullName,
+                            customerId,
+                            userEmail,
+                            userFullName,
+                            matchById,
+                            matchByEmail,
+                            matchByName,
+                            status: booking.status,
+                            statusAllowed,
+                            willShow: isMatch && statusAllowed,
+                        });
+
+                        // Show bookings that match user (by ID, email, or name) AND have allowed status
+                        return isMatch && statusAllowed;
+                    },
+                );
+
+                console.log(
+                    '✅ Found',
+                    userActiveBookings.length,
+                    'active bookings for user',
+                );
+                console.log(
+                    '📝 User bookings:',
+                    userActiveBookings.map((b) => ({
+                        id: b.bookingID,
+                        status: b.status,
+                        customer: b.customer?.fullName,
+                        room: b.bookingDetails?.[0]?.room?.roomNumber,
+                    })),
+                );
+
+                setUserBookings(userActiveBookings);
+
+                // Auto-select first booking if available AND no booking is currently selected
+                if (
+                    userActiveBookings.length > 0 &&
+                    !selectedBookingIdRef.current
+                ) {
+                    updateSelectedBookingId(userActiveBookings[0].bookingID);
+                } else {
+                    console.warn('⚠️ No active bookings found for this user.');
+                }
+
+                // Stop loading
+                setIsLoading(false);
+            } catch (err) {
+                console.error('❌ Error loading bookings:', err);
+                error('Không thể tải thông tin đặt phòng');
+                setIsLoading(false);
+            }
+        },
+        [selectedBookingIdRef, updateSelectedBookingId, error],
+    );
+
     const [filteredIncidents, setFilteredIncidents] = useState<
         IncidentReportType[]
     >([]);
@@ -60,7 +190,6 @@ const IncidentReport: React.FC = () => {
     >([]);
     const [showAutoRoomChangeSuggestion, setShowAutoRoomChangeSuggestion] =
         useState(false);
-    const { success, error } = useToast();
 
     // Check authentication and load user's bookings
 
@@ -86,6 +215,30 @@ const IncidentReport: React.FC = () => {
         }
     }, []);
 
+    // Handle navigation state from MyBookings page
+    useEffect(() => {
+        if (location.state) {
+            const { bookingId, roomNumber, roomId, booking } =
+                location.state as {
+                    bookingId?: string;
+                    roomNumber?: string;
+                    roomId?: string;
+                    booking?: Booking;
+                };
+
+            console.log('📍 Received navigation state:', location.state);
+
+            if (bookingId && booking) {
+                updateSelectedBookingId(bookingId);
+                setCurrentBooking(booking);
+                setShowForm(true); // Auto-open the incident report form
+
+                // Clear the navigation state after handling
+                window.history.replaceState({}, document.title);
+            }
+        }
+    }, [location.state]);
+
     // Auto-refresh bookings every 5 seconds to detect check-in status changes
 
     useEffect(() => {
@@ -100,7 +253,7 @@ const IncidentReport: React.FC = () => {
         }, 5000); // Refresh every 5 seconds
 
         return () => clearInterval(intervalId);
-    }, [user]);
+    }, [user, loadUserBookings]);
 
     // Check for incidents pending over 1 hour and suggest room change
     useEffect(() => {
@@ -157,117 +310,6 @@ const IncidentReport: React.FC = () => {
         selectedBookingId,
         showAutoRoomChangeSuggestion,
     ]);
-
-    const loadUserBookings = async (customerId: string) => {
-        try {
-            console.log('🔄 Loading bookings for customer:', customerId);
-            const allBookings = await bookingService.getAll();
-
-            console.log(
-                '📊 All bookings from API:',
-                allBookings.length,
-                'total',
-            );
-            console.log('👤 Looking for customer ID:', customerId);
-
-            // Get user info for matching
-            const userStr = localStorage.getItem('user');
-            const userData = userStr ? JSON.parse(userStr) : null;
-            const userEmail = userData?.email || user?.email;
-            const userFullName = userData?.fullName || user?.fullName;
-
-            console.log('📧 User email:', userEmail);
-            console.log('👤 User name:', userFullName);
-
-            // Filter bookings for this customer that are active (CHECKED_IN, CONFIRMED, or PENDING)
-            const userActiveBookings = allBookings.filter(
-                (booking: Booking) => {
-                    const bookingCustomerId = booking.customer?.id;
-                    const bookingEmail = booking.customer?.email;
-                    const bookingFullName = booking.customer?.fullName;
-
-                    // Match by Customer ID
-                    const matchById =
-                        bookingCustomerId &&
-                        String(bookingCustomerId) === String(customerId);
-
-                    // Match by Email (nếu có)
-                    const matchByEmail =
-                        userEmail &&
-                        bookingEmail &&
-                        bookingEmail.toLowerCase() === userEmail.toLowerCase();
-
-                    // Match by Full Name (tên khách hàng)
-                    const matchByName =
-                        userFullName &&
-                        bookingFullName &&
-                        bookingFullName.toLowerCase().trim() ===
-                            userFullName.toLowerCase().trim();
-
-                    // Allow CHECKED_IN, CONFIRMED, and PENDING bookings
-                    const allowedStatuses = [
-                        'CHECKED_IN',
-                        'CONFIRMED',
-                        'PENDING',
-                    ];
-                    const statusAllowed = allowedStatuses.includes(
-                        booking.status,
-                    );
-
-                    const isMatch = matchById || matchByEmail || matchByName;
-
-                    console.log(`📋 Booking ${booking.bookingID}:`, {
-                        bookingCustomerId,
-                        bookingEmail,
-                        bookingFullName,
-                        customerId,
-                        userEmail,
-                        userFullName,
-                        matchById,
-                        matchByEmail,
-                        matchByName,
-                        status: booking.status,
-                        statusAllowed,
-                        willShow: isMatch && statusAllowed,
-                    });
-
-                    // Show bookings that match user (by ID, email, or name) AND have allowed status
-                    return isMatch && statusAllowed;
-                },
-            );
-
-            console.log(
-                '✅ Found',
-                userActiveBookings.length,
-                'active bookings for user',
-            );
-            console.log(
-                '📝 User bookings:',
-                userActiveBookings.map((b) => ({
-                    id: b.bookingID,
-                    status: b.status,
-                    customer: b.customer?.fullName,
-                    room: b.bookingDetails?.[0]?.room?.roomNumber,
-                })),
-            );
-
-            setUserBookings(userActiveBookings);
-
-            // Auto-select first booking if available
-            if (userActiveBookings.length > 0) {
-                setSelectedBookingId(userActiveBookings[0].bookingID);
-            } else {
-                console.warn('⚠️ No active bookings found for this user.');
-            }
-
-            // Stop loading
-            setIsLoading(false);
-        } catch (err) {
-            console.error('❌ Error loading bookings:', err);
-            error('Không thể tải thông tin đặt phòng');
-            setIsLoading(false);
-        }
-    };
 
     const loadIncidents = useCallback(async () => {
         if (!user || !selectedBookingId) {
@@ -372,6 +414,13 @@ const IncidentReport: React.FC = () => {
     const filterIncidents = useCallback(() => {
         let filtered = incidents;
 
+        // Filter by selected booking (room)
+        if (selectedBookingId) {
+            filtered = filtered.filter(
+                (inc) => inc.bookingId === selectedBookingId,
+            );
+        }
+
         // Filter by status
         if (statusFilter !== 'ALL') {
             filtered = filtered.filter((inc) => inc.status === statusFilter);
@@ -392,7 +441,7 @@ const IncidentReport: React.FC = () => {
         }
 
         setFilteredIncidents(filtered);
-    }, [incidents, searchTerm, statusFilter]);
+    }, [incidents, searchTerm, statusFilter, selectedBookingId]);
 
     useEffect(() => {
         if (selectedBookingId) {
@@ -450,14 +499,14 @@ const IncidentReport: React.FC = () => {
                 '✅ Room change request submitted successfully:',
                 newRequest,
             );
-            success('Yêu cầu đổi phòng đã được gửi thành công');
+            success('Room change request submitted successfully');
             setShowRoomChangeForm(false);
 
             // Reload room change requests
             await loadMyRoomChangeRequests();
         } catch (err) {
             console.error('❌ Error submitting room change request:', err);
-            error('Có lỗi xảy ra khi gửi yêu cầu');
+            error('An error occurred while submitting the request');
             throw err;
         }
     };
@@ -588,7 +637,9 @@ const IncidentReport: React.FC = () => {
                                     <select
                                         value={selectedBookingId}
                                         onChange={(e) =>
-                                            setSelectedBookingId(e.target.value)
+                                            updateSelectedBookingId(
+                                                e.target.value,
+                                            )
                                         }
                                         className="w-full px-4 py-3 border-2 border-[#CCBDA3]/40 rounded-xl focus:ring-2 focus:ring-[#CCBDA3] focus:border-[#CCBDA3] bg-white text-gray-800 font-medium transition-all hover:border-[#CCBDA3] hover:shadow-md appearance-none cursor-pointer text-sm"
                                         style={{
@@ -1162,7 +1213,7 @@ const IncidentReport: React.FC = () => {
                         <div className="bg-white rounded-lg shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
                             <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 flex items-center justify-between">
                                 <h2 className="text-xl font-bold text-white">
-                                    Yêu cầu đổi phòng
+                                    Room Change Request
                                 </h2>
                                 <button
                                     onClick={() => setShowRoomChangeForm(false)}
