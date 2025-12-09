@@ -307,19 +307,19 @@ public class BookingController {
     @PostMapping("/{bookingId}/checkout")
     public ResponseEntity<?> processCheckout(
             @PathVariable String bookingId,
-            @RequestBody Map<String, String> request
+            @RequestBody String paymentMethod
     ) {
         try {
-            String paymentMethod = request.get("paymentMethod");
+//            String paymentMethod = request.get("paymentMethod");
             Booking booking = service.findById(bookingId);
 
             if (booking == null) {
                 return ResponseEntity.badRequest().body("Booking not found");
             }
 
-            if (booking.getStatus() != BookingStatus.CHECKED_IN) {
-                return ResponseEntity.badRequest().body("Booking must be checked in to checkout");
-            }
+//            if (booking.getStatus() != BookingStatus.CHECKED_IN) {
+//                return ResponseEntity.badRequest().body("Booking must be checked in to checkout");
+//            }
 
             if (booking.getPaymentStatus() != PaymentStatus.PAID) {
                 double remainingAmount = calculateRemainingAmount(booking);
