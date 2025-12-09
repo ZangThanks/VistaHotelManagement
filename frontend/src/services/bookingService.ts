@@ -110,7 +110,7 @@ export const cancelBookingPayment = async (
 export const convertToRoomBooking = (booking: Booking): RoomBooking[] => {
   console.log("Converting booking:", booking);
   console.log("Booking details:", booking.bookingDetails);
-  
+
   // Mỗi booking có thể có nhiều phòng trong bookingDetails
   const roomBookings = booking.bookingDetails.map((detail) => ({
     id: booking.bookingID,
@@ -134,7 +134,7 @@ export const convertToRoomBooking = (booking: Booking): RoomBooking[] => {
     numberOfGuests: booking.numberOfGuests,
     totalAmount: booking.totalAmount,
   }));
-  
+
   console.log("Converted room bookings:", roomBookings);
   return roomBookings;
 };
@@ -459,9 +459,7 @@ export const cancelBooking = async (
 
 export const getBookingServicesByBookingId = async (bookingId: string) => {
   try {
-    const response = await api.get(
-      `${ENDPOINT}/booking-services/booking/${bookingId}`
-    );
+    const response = await api.get(`/booking-services/booking/${bookingId}`);
     return response.data;
   } catch (error) {
     console.error("Error fetching booking services:", error);
@@ -470,17 +468,17 @@ export const getBookingServicesByBookingId = async (bookingId: string) => {
 };
 
 export const confirmPayAtCheckout = async (
-    bookingId: string
+  bookingId: string
 ): Promise<Booking> => {
   try {
     const response = await api.put(
-        `${ENDPOINT}/${bookingId}/confirm-pay-at-checkout`
+      `${ENDPOINT}/${bookingId}/confirm-pay-at-checkout`
     );
     return response.data;
   } catch (error) {
     console.error(
-        `Error confirming pay at checkout for booking ${bookingId}:`,
-        error
+      `Error confirming pay at checkout for booking ${bookingId}:`,
+      error
     );
     throw error;
   }
