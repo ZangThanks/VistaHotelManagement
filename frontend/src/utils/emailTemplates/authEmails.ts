@@ -333,6 +333,17 @@ export const confirmBookingEmail = (
 `;
 
 export const bookingReceipt = (paymentData: any) => {
+  const formatDate = (dateString: string) => {
+    if (!dateString) return "N/A";
+    return new Date(dateString).toLocaleDateString("vi-VN", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
   return `
 <!DOCTYPE html>
 <html lang="vi">
@@ -342,77 +353,85 @@ export const bookingReceipt = (paymentData: any) => {
     <title>Hóa đơn thanh toán - ${paymentData.bookingId}</title>
     <style>
         @page {
-            size: A4;
-            margin: 20mm;
+            size: A5;
+            margin: 10mm;
         }
         
         body {
             font-family: 'Arial', sans-serif;
-            max-width: 800px;
+            max-width: 148mm;
             margin: 0 auto;
-            padding: 20px;
-            line-height: 1.6;
+            padding: 10px;
+            line-height: 1.4;
+            font-size: 11px;
         }
         
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 30px;
-            border-bottom: 2px solid #333;
-            padding-bottom: 20px;
+        .logo-container {
+            text-align: center;
+            margin-bottom: 15px;
         }
         
-        .logo {
-            font-size: 32px;
+        .logo-text {
+            font-size: 24px;
             font-weight: bold;
+            color: #6b5430;
+            font-family: Georgia, serif;
             font-style: italic;
         }
         
-        .company-info {
-            text-align: right;
-            font-size: 14px;
-        }
-        
-        .company-info h2 {
-            margin: 0 0 5px 0;
-            font-size: 16px;
-        }
-        
-        .company-info p {
-            margin: 2px 0;
+        .invoice-header {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #333;
         }
         
         .invoice-title {
-            text-align: center;
-            font-size: 24px;
+            font-size: 18px;
             font-weight: bold;
-            margin: 30px 0;
             text-transform: uppercase;
         }
         
+        .invoice-number {
+            font-size: 10px;
+            color: #666;
+            text-align: right;
+        }
+        
         .invoice-info {
-            margin: 20px 0;
+            margin: 15px 0;
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 10px;
+            gap: 8px;
         }
         
         .invoice-info div {
             display: flex;
             justify-content: space-between;
-            padding: 8px;
+            padding: 6px 8px;
             background-color: #f5f5f5;
+            border-radius: 3px;
+            gap: 15px;
         }
         
         .invoice-info .label {
             font-weight: bold;
+            white-space: nowrap;
+            min-width: 90px;
+        }
+        
+        .invoice-info .value {
+            text-align: right;
+            flex: 1;
         }
         
         table {
             width: 100%;
             border-collapse: collapse;
-            margin: 30px 0;
+            margin: 15px 0;
+            font-size: 10px;
         }
         
         table thead {
@@ -422,12 +441,13 @@ export const bookingReceipt = (paymentData: any) => {
         
         table th, table td {
             border: 1px solid #ddd;
-            padding: 12px;
+            padding: 6px 8px;
             text-align: left;
         }
         
         table th {
             font-weight: bold;
+            font-size: 10px;
         }
         
         table td.number {
@@ -451,7 +471,8 @@ export const bookingReceipt = (paymentData: any) => {
         .signature-section {
             display: flex;
             justify-content: space-between;
-            margin-top: 50px;
+            margin-top: 25px;
+            margin-bottom: 20px;
         }
         
         .signature-box {
@@ -460,13 +481,60 @@ export const bookingReceipt = (paymentData: any) => {
         }
         
         .signature-box p {
-            margin: 5px 0;
+            margin: 3px 0;
+            font-size: 10px;
+            font-weight: bold;
+        }
+        
+        .signature-name {
+            font-size: 9px;
+            color: #666;
+            margin-top: 5px;
+            font-style: italic;
         }
         
         .signature-line {
-            margin-top: 60px;
+            margin-top: 30px;
             border-top: 1px solid #333;
-            padding-top: 5px;
+            padding-top: 3px;
+        }
+        
+        .footer-info {
+            text-align: center;
+            font-size: 10px;
+            color: #555;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #ddd;
+        }
+        
+        .footer-info p {
+            margin: 2px 0;
+        }
+        
+        .notes-section {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #fff9e6;
+            border: 1px solid #f0e68c;
+            border-radius: 3px;
+            font-size: 9px;
+        }
+        
+        .notes-section h3 {
+            margin: 0 0 6px 0;
+            font-size: 10px;
+            color: #856404;
+        }
+        
+        .notes-section ul {
+            margin: 3px 0;
+            padding-left: 15px;
+            color: #856404;
+        }
+        
+        .notes-section li {
+            margin: 3px 0;
         }
         
         @media print {
@@ -481,54 +549,71 @@ export const bookingReceipt = (paymentData: any) => {
     </style>
 </head>
 <body>
-    <div class="header">
-        <div class="logo">
-            Vista<br/>Hotel
-        </div>
-        <div class="company-info">
-            <h2>Vista Hotel - Premium Resort</h2>
-            <p>112 Nguyễn Văn Trỗi, quận 2</p>
-            <p><strong>T</strong> +84 98 348 06 83</p>
-            <p><strong>E</strong> vistahotel@gmail.com</p>
-            <p>www.vistahotel.com</p>
-        </div>
+    <div class="logo-container">
+        <div class="logo-text">Vista Hotel</div>
     </div>
     
-    <h1 class="invoice-title">Hóa Đơn</h1>
+    <div class="invoice-header">
+        <div class="invoice-title">Hóa Đơn</div>  
+    </div>
     
     <div class="invoice-info">
         <div>
             <span class="label">Số hóa đơn:</span>
-            <span>${paymentData.bookingId}</span>
+            <span class="value">${paymentData.bookingId}</span>
         </div>
         <div>
-            <span class="label">Ngày:</span>
-            <span>${new Date().toLocaleDateString("vi-VN", {
-              day: "2-digit",
-              month: "2-digit",
-              year: "numeric",
-              hour: "2-digit",
-              minute: "2-digit",
-            })}</span>
+            <span class="label">Ngày đặt phòng:</span>
+            <span class="value">${formatDate(paymentData.bookingDate)}</span>
         </div>
         <div>
             <span class="label">Khách hàng:</span>
-            <span>${paymentData.guestName}</span>
+            <span class="value">${paymentData.guestName}</span>
         </div>
         <div>
             <span class="label">Phòng:</span>
-            <span>${paymentData.roomNumber}</span>
+            <span class="value">${paymentData.roomNumber}</span>
         </div>
+        <div>
+            <span class="label">Check-in dự kiến:</span>
+            <span class="value">${formatDate(paymentData.checkInDate)}</span>
+        </div>
+        <div>
+            <span class="label">Check-out dự kiến:</span>
+            <span class="value">${formatDate(paymentData.checkOutDate)}</span>
+        </div>
+        ${
+          paymentData.actualCheckInTime
+            ? `
+        <div>
+            <span class="label">Check-in thực tế:</span>
+            <span class="value">${formatDate(
+              paymentData.actualCheckInTime
+            )}</span>
+        </div>`
+            : ""
+        }
+        ${
+          paymentData.actualCheckOutTime
+            ? `
+        <div>
+            <span class="label">Check-out thực tế:</span>
+            <span class="value">${formatDate(
+              paymentData.actualCheckOutTime
+            )}</span>
+        </div>`
+            : ""
+        }
     </div>
     
     <table>
         <thead>
             <tr>
-                <th style="width: 50px;">#</th>
+                <th style="width: 30px;">#</th>
                 <th>Nội dung</th>
-                <th class="center" style="width: 100px;">Số lượng</th>
-                <th class="number" style="width: 150px;">Đơn giá</th>
-                <th class="number" style="width: 150px;">Thành tiền</th>
+                <th class="center" style="width: 60px;">SL</th>
+                <th class="number" style="width: 80px;">Đơn giá</th>
+                <th class="number" style="width: 90px;">Thành tiền</th>
             </tr>
         </thead>
         <tbody>
@@ -536,7 +621,7 @@ export const bookingReceipt = (paymentData: any) => {
                 <td class="center">1</td>
                 <td>
                     <div><strong>Tiền phòng</strong></div>
-                    <div style="font-size: 0.9em; color: #666;">Phòng ${
+                    <div style="font-size: 9px; color: #666;">Phòng ${
                       paymentData.roomNumber
                     }</div>
                 </td>
@@ -545,29 +630,49 @@ export const bookingReceipt = (paymentData: any) => {
                 <td class="number">${paymentData.totalAmount}</td>
             </tr>
             <tr class="total-row">
-                <td colspan="4" style="text-align: right; padding-right: 20px;">Tổng tiền</td>
+                <td colspan="4" style="text-align: right; padding-right: 10px;">Tổng tiền</td>
                 <td class="number">${paymentData.totalAmount}</td>
             </tr>
             <tr class="payment-row">
-                <td colspan="4" style="text-align: right; padding-right: 20px;">Thanh toán (Bank Transfer)</td>
+                <td colspan="4" style="text-align: right; padding-right: 10px;">Thanh toán</td>
                 <td class="number">${paymentData.balanceDue}</td>
             </tr>
             <tr>
-                <td colspan="4" style="text-align: right; padding-right: 20px; font-weight: bold;">Số tiền còn lại</td>
-                <td class="number" style="font-weight: bold;">0 VND</td>
+                <td colspan="4" style="text-align: right; padding-right: 10px; font-weight: bold;">Số tiền còn lại</td>
+                <td class="number" style="font-weight: bold;">${
+                  paymentData.balanceDue
+                }</td>
             </tr>
         </tbody>
     </table>
-    
+
     <div class="signature-section">
         <div class="signature-box">
-            <p><strong>Lễ tân</strong></p>
-            <div class="signature-line"></div>
+            <p>Lễ tân</p>
+            <div class="signature-name">
+              ${paymentData.employeeName}
+            </div>
         </div>
         <div class="signature-box">
-            <p><strong>Khách hàng</strong></p>
-            <div class="signature-line"></div>
+            <p>Khách hàng</p>
+            <div class="signature-name">${paymentData.guestName}</div>
         </div>
+    </div>
+    
+    <div class="footer-info">
+        <p><strong>Vista Hotel - Premium Hotel</strong></p>
+        <p>112 Nguyễn Văn Trỗi, quận 2</p>
+        <p><strong>T:</strong> +84 98 348 06 83 | <strong>E:</strong> vistahotel@gmail.com</p>
+        <p>www.vistahotel.com</p>
+    </div>
+    
+    <div class="notes-section">
+        <h3>Lưu ý:</h3>
+        <ul>
+            <li><strong>Chính sách dành cho trẻ em và khách bổ sung (không bao gồm giường phụ):</strong></li>
+            <li>• Trẻ em dưới 5 tuổi: miễn phí. Tối đa 1 trẻ/phòng. Trẻ em thứ 2 trở đi phụ thu 70.000đ/trẻ/phòng/đêm.</li>
+            <li>• Trẻ em từ 6-11 tuổi phụ thu 150.000đ/trẻ/phòng/đêm.</li>
+        </ul>
     </div>
 </body>
 </html>

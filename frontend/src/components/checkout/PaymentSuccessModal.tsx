@@ -1,7 +1,7 @@
 /* eslint-disable */
-import { bookingReceipt } from "../../utils/emailTemplates/authEmails";
 import ModalContainer from "./ModalContainer";
 import { sendEmail } from "../../services/emailService";
+import { bookingReceipt } from "../../utils/emailTemplates/authEmails";
 
 export default function PaymentSuccessModal({
   paymentData,

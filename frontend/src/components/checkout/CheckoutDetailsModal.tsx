@@ -1,280 +1,291 @@
-import type { Booking } from '../../types/Booking';
+import { useEffect, useState } from "react";
+import type { Booking } from "../../types/Booking";
+import { bookingReceipt } from "../../utils/emailTemplates/authEmails";
+import imgLogo from "../../assets/images/logo.png";
 
 export default function CheckoutDetailsModal({
-    booking,
-    onClose,
-    onProceedToPayment,
+  booking,
+  onClose,
+  onProceedToPayment,
 }: {
-    booking: Booking;
-    onClose: () => void;
-    onProceedToPayment?: () => void;
+  booking: Booking;
+  onClose: () => void;
+  onProceedToPayment?: () => void;
 }) {
-    const roomInfo = (booking.bookingDetails ?? [])
-        .map(
-            (detail) =>
-                `${detail.room.roomNumber} - ${
-                    detail.room.roomType?.roomTypeName || ''
-                }`,
-        )
-        .join(', ');
+  const [paymentData, setPaymentData] = useState({
+    bookingId: "",
+    guestName: "",
+    guestEmail: "",
+    guestPhone: "",
+    guestImage: "",
+    roomNumber: "",
+    balanceDue: "",
+    totalAmount: "",
+    amountTendered: "",
+    changeAmount: "",
+  });
+  const roomInfo = (booking.bookingDetails ?? [])
+    .map(
+      (detail) =>
+        `${detail.room.roomNumber} - ${
+          detail.room.roomType?.roomTypeName || ""
+        }`
+    )
+    .join(", ");
 
-    const balanceDue =
-        booking.paymentStatus === 'PAID'
-            ? 0
-            : booking.paymentStatus === 'PARTIAL'
-            ? booking.totalAmount * 0.5
-            : booking.totalAmount;
+  const balanceDue =
+    booking.paymentStatus === "PAID"
+      ? 0
+      : booking.paymentStatus === "PARTIAL"
+      ? booking.totalAmount * 0.5
+      : booking.totalAmount;
 
-    const isCheckedOut = booking.status === 'CHECKED_OUT';
+  const isCheckedOut = booking.status === "CHECKED_OUT";
 
-    return (
-        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/60 p-4">
-            <div className="bg-white rounded-lg max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-                <div className="p-6">
-                    <div className="flex justify-between items-center mb-6">
-                        <h2 className="text-2xl font-semibold">
-                            {isCheckedOut
-                                ? 'Checkout Receipt'
-                                : 'Checkout Details'}
-                        </h2>
-                        <button
-                            onClick={onClose}
-                            className="text-gray-400 hover:text-gray-600 transition"
-                        >
-                            <i className="fas fa-times text-xl"></i>
-                        </button>
-                    </div>
+  useEffect(() => {
+    setPaymentData({
+      bookingId: booking.bookingID,
+      bookingDate: booking.bookingDate || "",
+      checkInDate: booking.checkInDate || "",
+      checkOutDate: booking.checkOutDate || "",
+      actualCheckInTime: booking.actualCheckInTime || "",
+      actualCheckOutTime: booking.actualCheckOutTime || "",
+      guestName: booking.customer?.fullName || "",
+      guestEmail: booking.customer?.email || "",
+      guestPhone: booking.customer?.phone || "",
+      guestImage: booking.customer?.avatarUrl || "",
+      roomNumber: roomInfo,
+      balanceDue: `${balanceDue.toLocaleString("vi-VN")} VND`,
+      totalAmount: `${booking.totalAmount.toLocaleString("vi-VN")} VND`,
+      amountTendered: "",
+      changeAmount: "",
+    });
+  }, []);
 
-                    {/* Guest Information */}
-                    <div className="mb-6">
-                        <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-                            <i className="fas fa-user text-gold"></i>
-                            Guest Information
-                        </h3>
-                        <div className="flex items-center gap-4 bg-gray-50 p-4 rounded-lg">
-                            <img
-                                src={
-                                    booking.customer?.avatarUrl ||
-                                    'https://ui-avatars.com/api/?name=' +
-                                        (booking.customer?.fullName || 'Guest')
-                                }
-                                alt={
-                                    booking.customer?.fullName
-                                        ? booking.customer?.fullName
-                                        : ''
-                                }
-                                className="w-20 h-20 rounded-full object-cover border-2 border-white shadow"
-                            />
-                            <div>
-                                <p className="font-medium text-lg">
-                                    {booking.customer?.fullName}
-                                </p>
-                                <p className="text-gray-600 text-sm flex items-center gap-2">
-                                    <i className="fas fa-envelope"></i>
-                                    {booking.customer?.email}
-                                </p>
-                                <p className="text-gray-600 text-sm flex items-center gap-2">
-                                    <i className="fas fa-phone"></i>
-                                    {booking.customer?.phone}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
+  const handlePrintReceipt = () => {
+    // Tạo nội dung HTML cho hóa đơn
+    const receiptHTML = bookingReceipt(paymentData);
 
-                    {/* Booking Information */}
-                    <div className="mb-6">
-                        <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-                            <i className="fas fa-calendar-check text-gold"></i>
-                            Booking Information
-                        </h3>
-                        <div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
-                            <div>
-                                <p className="text-gray-600 text-sm">
-                                    Booking ID
-                                </p>
-                                <p className="font-medium">
-                                    {booking.bookingID}
-                                </p>
-                            </div>
-                            <div>
-                                <p className="text-gray-600 text-sm">Room(s)</p>
-                                <p className="font-medium">{roomInfo}</p>
-                            </div>
-                            <div>
-                                <p className="text-gray-600 text-sm">
-                                    Check-in Date
-                                </p>
-                                <p className="font-medium">
-                                    {new Date(
-                                        booking.checkInDate,
-                                    ).toLocaleDateString('en-US', {
-                                        year: 'numeric',
-                                        month: 'short',
-                                        day: 'numeric',
-                                    })}
-                                </p>
-                            </div>
-                            <div>
-                                <p className="text-gray-600 text-sm">
-                                    Check-out Date
-                                </p>
-                                <p className="font-medium">
-                                    {new Date(
-                                        booking.checkOutDate,
-                                    ).toLocaleDateString('en-US', {
-                                        year: 'numeric',
-                                        month: 'short',
-                                        day: 'numeric',
-                                    })}
-                                </p>
-                            </div>
-                            <div>
-                                <p className="text-gray-600 text-sm">
-                                    Number of Guests
-                                </p>
-                                <p className="font-medium">
-                                    {booking.numberOfGuests}
-                                </p>
-                            </div>
-                            <div>
-                                <p className="text-gray-600 text-sm">
-                                    Package Type
-                                </p>
-                                <p className="font-medium">
-                                    {booking.packageType}
-                                </p>
-                            </div>
-                            <div>
-                                <p className="text-gray-600 text-sm">
-                                    Booking Type
-                                </p>
-                                <p className="font-medium">{booking.type}</p>
-                            </div>
-                            <div>
-                                <p className="text-gray-600 text-sm">
-                                    Duration
-                                </p>
-                                <p className="font-medium">
-                                    {booking.duration}{' '}
-                                    {booking.type === 'HOURLY'
-                                        ? 'hours'
-                                        : 'nights'}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
+    // Tạo cửa sổ mới để in
+    const printWindow = window.open("", "_blank", "width=800,height=600");
 
-                    {/* Payment Information */}
-                    <div className="mb-6">
-                        <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-                            <i className="fas fa-credit-card text-gold"></i>
-                            Payment Information
-                        </h3>
-                        <div className="bg-gradient-to-r from-gold/10 to-amber-50 rounded-lg p-4">
-                            <div className="flex justify-between mb-2">
-                                <span className="text-gray-600">
-                                    Total Amount:
-                                </span>
-                                <span className="font-medium">
-                                    {booking.totalAmount.toLocaleString(
-                                        'vi-VN',
-                                    )}{' '}
-                                    VND
-                                </span>
-                            </div>
-                            <div className="flex justify-between mb-2">
-                                <span className="text-gray-600">
-                                    Payment Status:
-                                </span>
-                                <span
-                                    className={`font-medium ${
-                                        booking.paymentStatus === 'PAID'
-                                            ? 'text-green-600'
-                                            : booking.paymentStatus ===
-                                              'PARTIAL'
-                                            ? 'text-amber-600'
-                                            : 'text-red-600'
-                                    }`}
-                                >
-                                    {booking.paymentStatus}
-                                </span>
-                            </div>
-                            {booking.specialRequests && (
-                                <div className="flex justify-between mb-2">
-                                    <span className="text-gray-600">
-                                        Special Requests:
-                                    </span>
-                                    <span className="font-medium text-sm">
-                                        {booking.specialRequests}
-                                    </span>
-                                </div>
-                            )}
-                            <div className="flex justify-between border-t border-gold/20 pt-2 mt-2">
-                                <span className="font-semibold">
-                                    Balance Due:
-                                </span>
-                                <span className="font-semibold text-lg text-gold">
-                                    {balanceDue.toLocaleString('vi-VN')} VND
-                                </span>
-                            </div>
-                        </div>
-                    </div>
+    if (printWindow) {
+      printWindow.document.write(receiptHTML);
+      printWindow.document.close();
 
-                    {/* Checkout Time */}
-                    {isCheckedOut && (
-                        <div className="mb-6 bg-green-50 p-4 rounded-lg">
-                            <div className="flex items-center gap-2 text-green-700">
-                                <i className="fas fa-check-circle text-xl"></i>
-                                <div>
-                                    <p className="font-semibold">
-                                        Checkout Completed
-                                    </p>
-                                    <p className="text-sm">
-                                        {new Date(
-                                            booking.checkOutDate,
-                                        ).toLocaleString('en-US')}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    )}
+      // Đợi nội dung load xong rồi mới in
+      printWindow.onload = () => {
+        printWindow.focus();
+        printWindow.print();
+        // Tự động đóng cửa sổ sau khi in (hoặc hủy in)
+        printWindow.onafterprint = () => {
+          printWindow.close();
+        };
+      };
+    } else {
+      alert(
+        "Không thể mở cửa sổ in. Vui lòng kiểm tra trình duyệt có chặn popup không."
+      );
+    }
+  };
 
-                    {/* Actions */}
-                    <div className="flex gap-3">
-                        <button
-                            onClick={onClose}
-                            className="flex-1 px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
-                        >
-                            Close
-                        </button>
-                        {booking.status === 'CHECKED_IN' &&
-                            onProceedToPayment && (
-                                <button
-                                    onClick={onProceedToPayment}
-                                    className="flex-1 px-6 py-3 bg-gold text-white rounded-lg hover:bg-gold/90 transition flex items-center justify-center gap-2"
-                                >
-                                    <i className="fas fa-arrow-right"></i>
-                                    Proceed to Payment
-                                </button>
-                            )}
-                        {booking.status === 'CHECKED_OUT' && (
-                            <button
-                                onClick={() => {
-                                    // TODO: Implement print receipt
-                                    console.log(
-                                        'Print receipt for:',
-                                        booking.bookingID,
-                                    );
-                                }}
-                                className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center justify-center gap-2"
-                            >
-                                <i className="fas fa-print"></i>
-                                Print Receipt
-                            </button>
-                        )}
-                    </div>
-                </div>
+  return (
+    <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/60 p-4">
+      <div className="bg-white rounded-lg max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-semibold">
+              {isCheckedOut ? "Checkout Receipt" : "Checkout Details"}
+            </h2>
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-600 transition"
+            >
+              <i className="fas fa-times text-xl"></i>
+            </button>
+          </div>
+
+          {/* Guest Information */}
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+              <i className="fas fa-user text-gold"></i>
+              Guest Information
+            </h3>
+            <div className="flex items-center gap-4 bg-gray-50 p-4 rounded-lg">
+              <img
+                src={
+                  booking.customer?.avatarUrl ||
+                  "https://ui-avatars.com/api/?name=" +
+                    (booking.customer?.fullName || "Guest")
+                }
+                alt={
+                  booking.customer?.fullName ? booking.customer?.fullName : ""
+                }
+                className="w-20 h-20 rounded-full object-cover border-2 border-white shadow"
+              />
+              <div>
+                <p className="font-medium text-lg">
+                  {booking.customer?.fullName}
+                </p>
+                <p className="text-gray-600 text-sm flex items-center gap-2">
+                  <i className="fas fa-envelope"></i>
+                  {booking.customer?.email}
+                </p>
+                <p className="text-gray-600 text-sm flex items-center gap-2">
+                  <i className="fas fa-phone"></i>
+                  {booking.customer?.phone}
+                </p>
+              </div>
             </div>
+          </div>
+
+          {/* Booking Information */}
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+              <i className="fas fa-calendar-check text-gold"></i>
+              Booking Information
+            </h3>
+            <div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-lg">
+              <div>
+                <p className="text-gray-600 text-sm">Booking ID</p>
+                <p className="font-medium">{booking.bookingID}</p>
+              </div>
+              <div>
+                <p className="text-gray-600 text-sm">Room(s)</p>
+                <p className="font-medium">{roomInfo}</p>
+              </div>
+              <div>
+                <p className="text-gray-600 text-sm">Check-in Date</p>
+                <p className="font-medium">
+                  {new Date(booking.checkInDate).toLocaleDateString("en-US", {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                  })}
+                </p>
+              </div>
+              <div>
+                <p className="text-gray-600 text-sm">Check-out Date</p>
+                <p className="font-medium">
+                  {new Date(booking.checkOutDate).toLocaleDateString("en-US", {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                  })}
+                </p>
+              </div>
+              <div>
+                <p className="text-gray-600 text-sm">Number of Guests</p>
+                <p className="font-medium">{booking.numberOfGuests}</p>
+              </div>
+              <div>
+                <p className="text-gray-600 text-sm">Package Type</p>
+                <p className="font-medium">{booking.packageType}</p>
+              </div>
+              <div>
+                <p className="text-gray-600 text-sm">Booking Type</p>
+                <p className="font-medium">{booking.type}</p>
+              </div>
+              <div>
+                <p className="text-gray-600 text-sm">Duration</p>
+                <p className="font-medium">
+                  {booking.duration}{" "}
+                  {booking.type === "HOURLY" ? "hours" : "nights"}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Payment Information */}
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+              <i className="fas fa-credit-card text-gold"></i>
+              Payment Information
+            </h3>
+            <div className="bg-gradient-to-r from-gold/10 to-amber-50 rounded-lg p-4">
+              <div className="flex justify-between mb-2">
+                <span className="text-gray-600">Total Amount:</span>
+                <span className="font-medium">
+                  {booking.totalAmount.toLocaleString("vi-VN")} VND
+                </span>
+              </div>
+              <div className="flex justify-between mb-2">
+                <span className="text-gray-600">Payment Status:</span>
+                <span
+                  className={`font-medium ${
+                    booking.paymentStatus === "PAID"
+                      ? "text-green-600"
+                      : booking.paymentStatus === "PARTIAL"
+                      ? "text-amber-600"
+                      : "text-red-600"
+                  }`}
+                >
+                  {booking.paymentStatus}
+                </span>
+              </div>
+              {booking.specialRequests && (
+                <div className="flex justify-between mb-2">
+                  <span className="text-gray-600">Special Requests:</span>
+                  <span className="font-medium text-sm">
+                    {booking.specialRequests}
+                  </span>
+                </div>
+              )}
+              <div className="flex justify-between border-t border-gold/20 pt-2 mt-2">
+                <span className="font-semibold">Balance Due:</span>
+                <span className="font-semibold text-lg text-gold">
+                  {balanceDue.toLocaleString("vi-VN")} VND
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Checkout Time */}
+          {isCheckedOut && (
+            <div className="mb-6 bg-green-50 p-4 rounded-lg">
+              <div className="flex items-center gap-2 text-green-700">
+                <i className="fas fa-check-circle text-xl"></i>
+                <div>
+                  <p className="font-semibold">Checkout Completed</p>
+                  <p className="text-sm">
+                    {new Date(booking.checkOutDate).toLocaleString("en-US")}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Actions */}
+          <div className="flex gap-3">
+            <button
+              onClick={onClose}
+              className="flex-1 px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
+            >
+              Close
+            </button>
+            {booking.status === "CHECKED_IN" && onProceedToPayment && (
+              <button
+                onClick={onProceedToPayment}
+                className="flex-1 px-6 py-3 bg-gold text-white rounded-lg hover:bg-gold/90 transition flex items-center justify-center gap-2"
+              >
+                <i className="fas fa-arrow-right"></i>
+                Proceed to Payment
+              </button>
+            )}
+            {booking.status === "CHECKED_OUT" && (
+              <button
+                onClick={() => {
+                  handlePrintReceipt();
+                }}
+                className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center justify-center gap-2"
+              >
+                <i className="fas fa-print"></i>
+                Print Receipt
+              </button>
+            )}
+          </div>
         </div>
-    );
+      </div>
+    </div>
+  );
 }

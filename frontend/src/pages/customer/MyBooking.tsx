@@ -234,7 +234,7 @@ export default function MyBookingsPage() {
       });
     } catch (error) {
       console.error("Error loading booking for payment:", error);
-      alert("Có lỗi xảy ra khi tải thông tin booking. Vui lòng thử lại.");
+      toast.error("Cannot loading booking information. Please try again.");
     }
   };
 

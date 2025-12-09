@@ -34,7 +34,7 @@ public class Booking {
     private LocalDateTime actualCheckInTime;
 
     @Column(name = "actual_check_out_time")
-    private LocalDateTime actualCheckoutTime;
+        private LocalDateTime actualCheckoutTime;
 
     @Column(name = "number_of_guests")
     private Integer numberOfGuests;
