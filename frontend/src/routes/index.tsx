@@ -6,8 +6,8 @@ import EmployeeLayout from '../layouts/EmployeeLayout';
 // import CustomerLayout from "../layouts/CustomerLayout";
 
 // Auth pages
-import Login from '../pages/auth/Login';
-import Register from '../pages/auth/Register';
+import Login from '../pages/auth/Login.tsx';
+import Register from '../pages/auth/Register.tsx';
 import ForgotPassword from '../pages/auth/ForgotPassword';
 import ResetPassword from '../pages/auth/ResetPassword';
 import OAuthSuccess from '../pages/auth/OAuthSuccess.tsx';
