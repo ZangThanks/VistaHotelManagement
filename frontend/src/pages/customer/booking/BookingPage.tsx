@@ -148,8 +148,6 @@ function BookingPage() {
           setCurrentStep={setCurrentStep}
         />
       </main>
-
-      <Footer />
     </div>
   );
 }
