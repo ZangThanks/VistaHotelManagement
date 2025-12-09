@@ -304,5 +304,13 @@ public class BookingService {
         return "C-" + bookingId;
     }
 
+    public List<Booking> findAllByStatusAndBookingDate(BookingStatus status, LocalDateTime bookingDate) {
+        return repo.findAllByStatusAndBookingDate(status, bookingDate);
+    }
+
+    public String getRemainingPaymentTime(String bookingId) {
+        return repo.getRemainingPaymentTime(bookingId);
+    }
+
 }
 

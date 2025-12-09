@@ -90,6 +90,8 @@ const Header: React.FC = () => {
           console.error("Error parsing user data:", error);
           localStorage.removeItem("user");
         }
+      } else {
+        setUser(null);
       }
     };
 
@@ -97,7 +99,14 @@ const Header: React.FC = () => {
 
     // Listen for storage changes (when user logs in/out in another tab)
     window.addEventListener("storage", checkUserStatus);
-    return () => window.removeEventListener("storage", checkUserStatus);
+    
+    // Listen for custom event when user data is updated in the same tab
+    window.addEventListener("userDataUpdated", checkUserStatus);
+    
+    return () => {
+      window.removeEventListener("storage", checkUserStatus);
+      window.removeEventListener("userDataUpdated", checkUserStatus);
+    };
   }, []);
 
   const handleLogoutClick = () => {

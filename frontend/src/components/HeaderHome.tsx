@@ -291,7 +291,7 @@ const HeaderHome: React.FC = () => {
 
           {/* Reserve Button */}
           <Link
-            to="/customer/bookingPage"
+            to="/customer/cart"
             className="bg-white text-black px-3 py-1.5 sm:px-4 sm:py-2 lg:px-6 lg:py-2 rounded font-serif border border-transparent hover:bg-black/40 hover:text-white transition-all duration-300 ease-in-out text-xs sm:text-sm lg:text-base"
           >
             <span className="hidden sm:inline">Reserve</span>

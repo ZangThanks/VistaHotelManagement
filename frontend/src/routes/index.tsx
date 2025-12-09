@@ -128,6 +128,7 @@ export const router = createBrowserRouter([
       { path: "customers", element: <CustomerList /> },
       { path: "incidents", element: <IncidentManagement /> },
       { path: "reviews", element: <ReplyReviewsPage /> },
+      { path: "services", element: <ServiceManagement /> },
       { path: "reservations", element: <ReservationList /> },
     ],
   },

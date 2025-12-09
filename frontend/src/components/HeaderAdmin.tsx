@@ -28,15 +28,39 @@ const HeaderAdmin: React.FC<HeaderProps> = ({
 
   useEffect(() => {
     // Lấy thông tin user từ localStorage
-    const userString = localStorage.getItem("user");
-    if (userString) {
-      try {
-        const user = JSON.parse(userString);
-        setUserData(user);
-      } catch (error) {
-        console.error("Error parsing user data:", error);
+    const loadUserData = () => {
+      const userString = localStorage.getItem("user");
+      if (userString) {
+        try {
+          const user = JSON.parse(userString);
+          setUserData(user);
+        } catch (error) {
+          console.error("Error parsing user data:", error);
+        }
       }
-    }
+    };
+
+    loadUserData();
+
+    // Listen for storage changes (when user data is updated in another tab or component)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "user") {
+        loadUserData();
+      }
+    };
+
+    // Listen for custom event when user data is updated in the same tab
+    const handleUserUpdate = () => {
+      loadUserData();
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    window.addEventListener("userDataUpdated", handleUserUpdate);
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("userDataUpdated", handleUserUpdate);
+    };
   }, []);
 
   // Lấy tên hiển thị (ưu tiên fullName, nếu không có thì dùng userName)
