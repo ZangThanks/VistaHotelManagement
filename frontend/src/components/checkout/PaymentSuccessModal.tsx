@@ -1,6 +1,6 @@
 /* eslint-disable */
 import ModalContainer from "./ModalContainer";
-import { sendEmail } from "../../services/emailService";
+import { sendEmail, type EmailPayload } from "../../services/emailService";
 
 export default function PaymentSuccessModal({
   paymentData,
@@ -19,10 +19,10 @@ export default function PaymentSuccessModal({
 
   const handleEmailReceipt = async () => {
     try {
-      const emailData = {
+      const emailData: EmailPayload = {
         to: paymentData.guestEmail,
         subject: `Payment Receipt - Booking ${paymentData.bookingId}`,
-        body: `
+        htmlContent: `
                     <h2>Payment Receipt</h2>
                     <p>Dear ${paymentData.guestName},</p>
                     <p>Thank you for your payment.</p>
@@ -40,7 +40,7 @@ export default function PaymentSuccessModal({
                 `,
       };
 
-      await sendEmail(emailData.to, emailData.subject, emailData.body);
+      await sendEmail(emailData);
       alert("Receipt has been emailed to the guest.");
     } catch (error) {
       console.error("Error sending email:", error);

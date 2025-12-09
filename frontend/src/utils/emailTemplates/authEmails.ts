@@ -152,6 +152,18 @@ export const passwordChangedTemplate = (name: string) => `
   </div>
 `;
 
+export const sendBookingOfCheckoutTemplate = (name: string) => `
+  <div style="font-family:Arial;padding:20px;">
+    <h2 style="color:#c3923c;">Xin chào ${name},</h2>
+    <p>Mật khẩu tài khoản Vista Hotel của bạn đã được thay đổi thành công.</p>
+    <p>Nếu bạn KHÔNG thực hiện hành động này, vui lòng liên hệ ngay với bộ phận hỗ trợ.</p>
+
+    <div style="margin-top:20px;padding:15px;background:#f6f2e8;border-left:4px solid #c3923c;">
+      <p><strong>Vista Hotel Security Team</strong></p>
+    </div>
+  </div>
+`;
+
 export const confirmBookingEmail = (
   fullName: string,
   bookingID?: string,
