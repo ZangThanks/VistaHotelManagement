@@ -95,7 +95,7 @@ const Header: React.FC = () => {
 
             <div className="ml-auto flex items-center gap-4">
                 {/* Notification Bell */}
-                <NotificationBell variant="light" />
+                <NotificationBell variant="dark" />
 
                 {/* User Menu */}
                 <div className="relative group">

@@ -94,26 +94,28 @@ public class LateCheckoutService {
     public LateCheckout updateApprovalStatus(
             String requestId,
             ApprovalStatus status,
-            String staffId,
-            String staffName
+            String employeeId
     ) {
         LateCheckout lc = repo.findById(requestId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy yêu cầu"));
 
         lc.setApprovalStatus(status);
 
-        // Fix: unwrap Optional
-        Employee employee = employeeRepository.findById(staffId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy nhân viên"));
-        lc.setEmployee(employee);
+        if (employeeId != null && !employeeId.isEmpty()) {
+            Employee employee = employeeRepository.findById(employeeId)
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy nhân viên: " + employeeId));
+            lc.setEmployee(employee);
+        }
 
         LateCheckout saved = repo.save(lc);
 
-        // Tạo notification
         Booking booking = saved.getBooking();
         String customerId = booking.getCustomer().getId();
-        String customerName = booking.getCustomer().getFullName();
         String roomNumber = booking.getBookingDetails().get(0).getRoom().getRoomNumber();
+
+        String staffName = saved.getEmployee() != null
+                ? saved.getEmployee().getFullName()
+                : "Nhân viên";
 
         Notification notification = new Notification();
         notification.setType(NotificationType.INFO);
@@ -125,11 +127,11 @@ public class LateCheckoutService {
                 : "Yêu cầu checkout muộn bị từ chối");
         notification.setMessage(String.format(
                 "[Mã NV: %s] [Mã KH: %s] Yêu cầu checkout muộn phòng %s đã được %s bởi %s",
-                staffId, customerId, roomNumber,
+                employeeId, customerId, roomNumber,
                 isApproved ? "phê duyệt" : "từ chối", staffName
         ));
 
-        notification.setFromUserId(staffId);
+        notification.setFromUserId(employeeId);
         notification.setFromUserName(staffName);
         notification.setToUserId(customerId);
         notification.setIsRealtime(true);

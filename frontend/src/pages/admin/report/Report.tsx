@@ -42,6 +42,7 @@ import {
   exportLoyaltyToPDF,
   exportLoyaltyToExcel,
 } from "../../../utils/exportUtils";
+import {getCategoryRatings, getRatingTrend, getSentimentStats} from '../../../services/reviewService';
 
 type ReportTab =
     | 'revenue'
@@ -72,7 +73,11 @@ const ReportPage: React.FC = () => {
 
     const [revenueData, setRevenueData] = useState<RevenueData[]>([]);
     const [revenueLoading, setRevenueLoading] = useState<boolean>(false);
-    const [revenueError, setRevenueError] = useState<string | null>(null);
+  const [revenueError, setRevenueError] = useState<string | null>(null);
+  
+  const [reviewTrend, setReviewTrend] = useState([]);
+  const [categoryRatings, setCategoryRatings] = useState(null);
+  const [sentimentStats, setSentimentStats] = useState(null);
 
     // Auto update date range when period changes
     useEffect(() => {
@@ -306,71 +311,23 @@ const ReportPage: React.FC = () => {
     };
 
     // Mock data - Reviews
-    const reviewData: ReviewData[] = useMemo(
-        () => [
-            {
-                date: 'Jan 2024',
-                averageRating: 4.3,
-                totalReviews: 142,
-                roomQuality: 4.5,
-                service: 4.4,
-                location: 4.2,
-                value: 4.1,
-                sentimentScore: 0.78,
-            },
-            {
-                date: 'Feb 2024',
-                averageRating: 4.4,
-                totalReviews: 158,
-                roomQuality: 4.6,
-                service: 4.5,
-                location: 4.3,
-                value: 4.2,
-                sentimentScore: 0.82,
-            },
-            {
-                date: 'Mar 2024',
-                averageRating: 4.5,
-                totalReviews: 175,
-                roomQuality: 4.7,
-                service: 4.6,
-                location: 4.4,
-                value: 4.3,
-                sentimentScore: 0.85,
-            },
-            {
-                date: 'Apr 2024',
-                averageRating: 4.4,
-                totalReviews: 165,
-                roomQuality: 4.6,
-                service: 4.5,
-                location: 4.3,
-                value: 4.2,
-                sentimentScore: 0.81,
-            },
-            {
-                date: 'May 2024',
-                averageRating: 4.5,
-                totalReviews: 170,
-                roomQuality: 4.7,
-                service: 4.6,
-                location: 4.4,
-                value: 4.3,
-                sentimentScore: 0.83,
-            },
-            {
-                date: 'Jun 2024',
-                averageRating: 4.6,
-                totalReviews: 188,
-                roomQuality: 4.8,
-                service: 4.7,
-                location: 4.5,
-                value: 4.4,
-                sentimentScore: 0.87,
-            },
-        ],
-        [],
-    );
+    useEffect(() => {
+        // Load line chart
+        getRatingTrend().then((res) => {
+            // Backend returns: [{month: "2024-06", avgRating: 4.65}]
+            setReviewTrend(res || []);
+        });
+
+        // Load bar chart
+        getCategoryRatings().then((res) => {
+            setCategoryRatings(res);
+        });
+
+        // Load pie chart
+        getSentimentStats().then((res) => {
+            setSentimentStats(res);
+        });
+    }, []);
 
     const tabs = [
         {
@@ -500,11 +457,17 @@ const ReportPage: React.FC = () => {
                             <h3 className="text-lg font-semibold mb-4">
                                 Average Rating Over Time
                             </h3>
-                            <ReviewChart data={reviewData} />
+                            {reviewTrend && reviewTrend.length > 0 ? (
+                                <ReviewChart data={reviewTrend} />
+                            ) : (
+                                <div className="flex items-center justify-center h-[400px] text-gray-400">
+                                    No rating data available
+                                </div>
+                            )}
                         </div>
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            <RatingBreakdown data={reviewData} />
-                            <SentimentAnalysis data={reviewData} />
+                            <RatingBreakdown data={categoryRatings} />
+                            <SentimentAnalysis data={sentimentStats} />
                         </div>
                     </div>
                 );
