@@ -76,7 +76,7 @@ class NotificationApiService {
             }
 
             const response = await fetch(
-                `${API_BASE_URL}/api/notifications?page=${page}&size=${size}`,
+                `${API_BASE_URL}/notifications?page=${page}&size=${size}`,
                 {
                     method: 'GET',
                     headers: this.getAuthHeaders(),
@@ -129,7 +129,7 @@ class NotificationApiService {
             }
 
             const response = await fetch(
-                `${API_BASE_URL}/api/notifications/unread`,
+                `${API_BASE_URL}/notifications/unread`,
                 {
                     method: 'GET',
                     headers: this.getAuthHeaders(),
@@ -163,7 +163,7 @@ class NotificationApiService {
     async getUnreadCount(): Promise<ApiResponse<number>> {
         try {
             const response = await fetch(
-                `${API_BASE_URL}/api/notifications/unread/count`,
+                `${API_BASE_URL}/notifications/unread/count`,
                 {
                     method: 'GET',
                     headers: this.getAuthHeaders(),
@@ -187,7 +187,7 @@ class NotificationApiService {
     ): Promise<ApiResponse<BackendNotification>> {
         try {
             const response = await fetch(
-                `${API_BASE_URL}/api/notifications/${notificationId}/read`,
+                `${API_BASE_URL}/notifications/${notificationId}/read`,
                 {
                     method: 'PUT',
                     headers: this.getAuthHeaders(),
@@ -209,7 +209,7 @@ class NotificationApiService {
     async markAllAsRead(): Promise<ApiResponse> {
         try {
             const response = await fetch(
-                `${API_BASE_URL}/api/notifications/read-all`,
+                `${API_BASE_URL}/notifications/read-all`,
                 {
                     method: 'PUT',
                     headers: this.getAuthHeaders(),
@@ -231,7 +231,7 @@ class NotificationApiService {
     async deleteNotification(notificationId: string): Promise<ApiResponse> {
         try {
             const response = await fetch(
-                `${API_BASE_URL}/api/notifications/${notificationId}`,
+                `${API_BASE_URL}/notifications/${notificationId}`,
                 {
                     method: 'DELETE',
                     headers: this.getAuthHeaders(),
@@ -254,7 +254,7 @@ class NotificationApiService {
         notification: Partial<BackendNotification>,
     ): Promise<ApiResponse<BackendNotification>> {
         try {
-            const response = await fetch(`${API_BASE_URL}/api/notifications`, {
+            const response = await fetch(`${API_BASE_URL}/notifications`, {
                 method: 'POST',
                 headers: this.getAuthHeaders(),
                 body: JSON.stringify(notification),
