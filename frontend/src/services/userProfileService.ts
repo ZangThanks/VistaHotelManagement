@@ -1,8 +1,5 @@
 import { api } from "./apiClient";
-import type {
-  UserProfile,
-  ProfileUpdateRequest,
-} from "../types/UserProfile";
+import type { UserProfile, ProfileUpdateRequest } from "../types/UserProfile";
 import type { Customer } from "../types/Customer";
 import type { Booking } from "../types/Booking";
 import { uploadImageToCloudinary } from "./cloudinaryService";
@@ -48,6 +45,7 @@ export const updateCustomerProfile = async (
 export const updateEmployeeProfile = async (
   employeeId: string,
   data: ProfileUpdateRequest
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<any> => {
   try {
     const response = await api.put(`${EMPLOYEE_ENDPOINT}/${employeeId}`, data);
@@ -64,6 +62,7 @@ export const updateEmployeeProfile = async (
 export const updateAdminProfile = async (
   adminId: string,
   data: ProfileUpdateRequest
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<any> => {
   try {
     const response = await api.put(`${ADMIN_ENDPOINT}/${adminId}`, data);
@@ -112,6 +111,7 @@ export const updateUserProfile = async (
   userId: string,
   userRole: string,
   data: ProfileUpdateRequest
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<any> => {
   try {
     let response;
@@ -168,6 +168,9 @@ export const getCurrentUserFromStorage = (): UserProfile | null => {
 export const updateUserInStorage = (user: UserProfile): void => {
   try {
     localStorage.setItem("user", JSON.stringify(user));
+    
+    // Dispatch custom event to notify other components about user data update
+    window.dispatchEvent(new Event("userDataUpdated"));
   } catch (error) {
     console.error("Error updating user in localStorage:", error);
   }

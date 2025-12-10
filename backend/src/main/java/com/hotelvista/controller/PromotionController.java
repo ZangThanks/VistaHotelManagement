@@ -6,6 +6,7 @@ import com.hotelvista.service.PromotionService;
 import com.hotelvista.util.ValidatorsUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -49,11 +50,13 @@ public class PromotionController {
     }
 
     @GetMapping("/{promotionID}")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public void deletePromotion(@PathVariable String promotionID){
         promotionService.deleteById(promotionID);
     }
 
     @PostMapping("/create")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<?> savePromotion(@RequestBody Promotion promotion){
         // Validate promotion ID
         String idError = ValidatorsUtil.validatePromotionId(promotion.getPromotionID());
@@ -92,6 +95,7 @@ public class PromotionController {
     }
 
     @PatchMapping("/{promotionID}/status")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<String> updatePromotionStatus(
         @PathVariable String promotionID,
         @RequestParam boolean active

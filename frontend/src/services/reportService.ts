@@ -1,5 +1,13 @@
 import { api } from './apiClient';
 
+import type {
+    OccupancyData,
+    LoyaltyData,
+    ReviewData,
+    BookingData,
+    ServiceData,
+} from '../types/Report';
+
 // =======================
 // DASHBOARD
 // =======================
@@ -82,18 +90,6 @@ export interface ServiceReportData {
     totalOrders: number;
     avgOrderValue: number;
 }
-
-// =======================
-// CÁC REPORT KHÁC
-// =======================
-
-import type {
-    OccupancyData,
-    LoyaltyData,
-    ReviewData,
-    BookingData,
-    ServiceData,
-} from '../types/Report';
 
 export const reportService = {
     // Revenue Report
@@ -186,7 +182,7 @@ export const reportService = {
         period: string = 'monthly',
     ): Promise<ServiceReportData[]> => {
         const response = await api.get<ServiceReportData[]>(
-            '/reports/services',
+            '/report/services',
             {
                 params: {
                     startDate,
@@ -198,6 +194,7 @@ export const reportService = {
         return response.data;
     },
 };
+
 
 //EXPORT DUY NHẤT
 export default reportService;

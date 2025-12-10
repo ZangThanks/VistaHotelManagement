@@ -7,6 +7,7 @@ import com.hotelvista.service.BookingDetailService;
 import com.hotelvista.service.BookingService;
 import com.hotelvista.service.RoomService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -38,6 +39,7 @@ public class BookingDetailController {
     }
 
     @PostMapping("/save")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'EMPLOYEE', 'CUSTOMER')")
     public boolean save(@RequestBody BookingDetail bookingDetail) {
         return service.save(bookingDetail);
     }
@@ -47,4 +49,6 @@ public class BookingDetailController {
     public List<BookingDetail> findAllByBooking_BookingID(@PathVariable("id") String bookingBookingID) {
         return service.findAllByBooking_BookingID(bookingBookingID);
     }
+
+
 }

@@ -3,6 +3,7 @@ package com.hotelvista.controller;
 import com.hotelvista.dto.RevenueReportDTO;
 import com.hotelvista.dto.RevenueReportProjection;
 import com.hotelvista.service.RevenueReportService;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -30,29 +31,35 @@ public class RevenueReportController {
 //    }
 
     @GetMapping("/daily-current-month")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public List<RevenueReportProjection> getDailyCurrentMonth() {
         return service.getDailyCurrentMonth();
     }
     @GetMapping("/weekly-current-month")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public List<RevenueReportProjection> getWeeklyCurrentMonth() {
         return service.getWeeklyCurrentMonth();
     }
 
     @GetMapping("/monthly")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public List<RevenueReportProjection> getMonthly(@RequestParam int year) {
         return service.getMonthlyInYear(year);
     }
 
     @GetMapping("/quarterly")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public List<RevenueReportProjection> getQuarterly(@RequestParam int year) {
         return service.getQuarterlyInYear(year);
     }
 
     @GetMapping("/yearly")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public List<RevenueReportProjection> getYearly() {
         return service.getYearlyRevenue();
     }
     @GetMapping("/by-date-range")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public List<RevenueReportProjection> getRevenueByDateRange(
             @RequestParam LocalDate fromDate,
             @RequestParam LocalDate toDate

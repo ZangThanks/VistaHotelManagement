@@ -51,17 +51,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 String userId = tokenProvider.getUserIdFromToken(jwt);
                 String userRole = tokenProvider.getUserRoleFromToken(jwt);
 
-                UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(
-                                userId,
-                                null,
-                                Collections.singletonList(new SimpleGrantedAuthority(userRole))
-                        );
+                // Validate userRole is not null or empty
+                if (StringUtils.hasText(userRole)) {
+                    UsernamePasswordAuthenticationToken authentication =
+                            new UsernamePasswordAuthenticationToken(
+                                    userId,
+                                    null,
+                                    Collections.singletonList(new SimpleGrantedAuthority(userRole))
+                            );
 
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
 
-                logger.debug("Set Authentication for user: {}", userId);
+                    logger.debug("Set Authentication for user: {} with role: {}", userId, userRole);
+                } else {
+                    logger.warn("UserRole is null or empty for userId: {}", userId);
+                }
             }
         } catch (Exception ex) {
             logger.error("Could not set user authentication", ex);

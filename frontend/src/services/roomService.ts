@@ -166,16 +166,33 @@ export const updateRoomStatus = async (
     }
 };
 
+// Lấy danh sách phòng trống theo khoảng thời gian (ISO datetime)
+export const getAvailableRooms = async (
+    startDate: string, // ISO datetime: YYYY-MM-DDTHH:mm:ss
+    endDate: string, // ISO datetime: YYYY-MM-DDTHH:mm:ss
+): Promise<Room[]> => {
+    try {
+        const response = await api.get(`${ENDPOINT}/available`, {
+            params: { startDate, endDate },
+        });
+        return Array.isArray(response.data) ? response.data : [];
+    } catch (error) {
+        console.error('Error fetching available rooms:', error);
+        throw error;
+    }
+};
+
 export const roomService = {
-  getAll,
-  getAllRooms,
-  getById,
-  getRoomById,
-  createRoom,
-  updateRoom,
-  saveRoom,
-  deleteRoom,
-  getAllRoomTypes,
-  getNextRoomNumber,
-  updateRoomStatus,
+    getAll,
+    getAllRooms,
+    getById,
+    getRoomById,
+    createRoom,
+    updateRoom,
+    saveRoom,
+    deleteRoom,
+    getAllRoomTypes,
+    getNextRoomNumber,
+    updateRoomStatus,
+    getAvailableRooms, // added
 };

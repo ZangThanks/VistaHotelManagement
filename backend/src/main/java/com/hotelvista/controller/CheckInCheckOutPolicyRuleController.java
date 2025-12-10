@@ -2,6 +2,7 @@ package com.hotelvista.controller;
 
 import com.hotelvista.model.CheckInCheckOutPolicyRule;
 import com.hotelvista.service.CheckInCheckOutPolicyRuleService;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,6 +22,7 @@ public class CheckInCheckOutPolicyRuleController {
     }
 
     @PostMapping("/save")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'EMPLOYEE')")
     public void save(@RequestBody CheckInCheckOutPolicyRule rule) {
         service.save(rule);
     }

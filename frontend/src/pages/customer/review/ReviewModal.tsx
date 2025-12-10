@@ -10,6 +10,7 @@ import {
   DialogTitle,
 } from "../../../components/dialog/Dialog";
 import StarRating from "../../../components/review/StarRating";
+import { formatNumber } from "../../../utils/formatters";
 
 interface ReviewModalProps {
   isOpen: boolean;
@@ -119,8 +120,9 @@ export default function ReviewModal({
             Rate Room {bookingDetail.room.roomNumber}
           </DialogTitle>
           <p className="text-sm text-gray-500 mt-1">
-            {bookingDetail.room.roomType?.typeName} • $
-            {bookingDetail.roomPrice.toFixed(2)}
+            {bookingDetail.room.roomType?.typeName} •{" "}
+            {formatNumber(bookingDetail.roomPrice)}
+            {" VND"}
           </p>
         </DialogHeader>
 

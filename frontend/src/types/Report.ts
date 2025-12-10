@@ -1,5 +1,4 @@
 // ====================== INTERFACES ======================
-
 export interface RevenueData {
     label: string;
     totalRevenue: number;
@@ -23,12 +22,12 @@ export interface OccupancyData {
 }
 
 export interface LoyaltyData {
-  month: string;
-  bronze: number;
-  silver: number;
-  gold: number;
-  platinum: number;
-  totalPoints: number;
+    month: string;
+    bronze: number;
+    silver: number;
+    gold: number;
+    platinum: number;
+    totalPoints: number;
 }
 
 export interface ReviewData {
@@ -43,13 +42,13 @@ export interface ReviewData {
 }
 
 export interface BookingData {
-  period: string; // Match backend field name
-  totalBookings: number;
-  completedBookings: number;
-  cancelledBookings: number;
-  cancellationRate: number;
-  averageBookingValue: number;
-  totalRevenue: number;
+    period: string; // Match backend field name
+    totalBookings: number;
+    completedBookings: number;
+    cancelledBookings: number;
+    cancellationRate: number;
+    averageBookingValue: number;
+    totalRevenue: number;
 }
 
 export interface DateRange {
@@ -57,7 +56,7 @@ export interface DateRange {
     endDate: string;
 }
 
-// ====================== ReportPeriod (PPH version) ======================
+// ====================== ReportPeriod ======================
 export type ReportPeriod =
     | 'daily'
     | 'weekly'
@@ -65,20 +64,20 @@ export type ReportPeriod =
     | 'quarterly'
     | 'yearly';
 
-// ====================== ServiceData (HEAD version) ======================
+// ====================== ServiceData ======================
 export interface ServiceData {
-  date: string;
-  foodBeverage: number;
-  laundry: number;
-  spa: number;
-  transport: number;
-  tour: number;
-  others: number;
-  totalOrders: number;
-  avgOrderValue: number;
+    date: string;
+    foodBeverage: number;
+    laundry: number;
+    spa: number;
+    transport: number;
+    tour: number;
+    others: number;
+    totalOrders: number;
+    avgOrderValue: number;
 }
 
-// ====================== ReportTab (HEAD version) ======================
+// ====================== ReportTab ======================
 export type ReportTab =
     | 'revenue'
     | 'occupancy'

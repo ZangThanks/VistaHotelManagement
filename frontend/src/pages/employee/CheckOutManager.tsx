@@ -177,6 +177,47 @@ export default function CheckOutManager() {
         setFilteredData(filtered);
     };
 
+    const handleFilter = (status: string) => {
+        // Map filter status to tab ID and change active tab
+        const statusToTab: { [key: string]: string } = {
+            all: 'today',
+            pending: 'today',
+            completed: 'completed',
+            late: 'late',
+        };
+
+        // Change active tab based on filter selection
+        if (statusToTab[status]) {
+            setActiveTab(statusToTab[status]);
+        }
+
+        // Also apply immediate filtering to current data
+        if (status === 'all') {
+            setFilteredData(checkoutData);
+            return;
+        }
+
+        const today = new Date(currentDate);
+        today.setHours(0, 0, 0, 0);
+
+        let filtered = checkoutData;
+
+        if (status === 'pending') {
+            filtered = checkoutData.filter((b) => b.status === 'CHECKED_IN');
+        } else if (status === 'completed') {
+            filtered = checkoutData.filter((b) => b.status === 'CHECKED_OUT');
+        } else if (status === 'late') {
+            filtered = checkoutData.filter((b) => {
+                if (b.status !== 'CHECKED_IN') return false;
+                const checkOutDate = new Date(b.checkOutDate);
+                checkOutDate.setHours(0, 0, 0, 0);
+                return checkOutDate < today;
+            });
+        }
+
+        setFilteredData(filtered);
+    };
+
     const handleProcessCheckout = (booking: Booking) => {
         const roomInfo = booking.bookingDetails
             .map(
@@ -199,7 +240,7 @@ export default function CheckOutManager() {
             bookingId: booking.bookingID,
             guestName: booking.customer?.fullName || '',
             guestEmail: booking.customer?.email || '',
-            guestPhone: booking.customer?.phone || '',
+            guestPhone: booking.customer?.phoneNumber || '',
             guestImage: booking.customer?.avatarUrl || '',
             roomNumber: roomInfo,
             balanceDue: `${balanceDue.toLocaleString('vi-VN')} VND`,
@@ -221,7 +262,23 @@ export default function CheckOutManager() {
         setShowPaymentModal(true);
     };
 
-    const handleConfirmPayment = async (paymentMethod: string) => {
+    const handleConfirmPayment = async (
+        paymentMethod: string,
+        amountTendered?: string,
+        changeAmount?: string,
+        notes?: string,
+    ) => {
+        // Update payment data with new values
+        if (amountTendered) {
+            setPaymentData((prev) => ({
+                ...prev,
+                amountTendered,
+                changeAmount: changeAmount || '0',
+                notes: notes || '',
+                paymentMethod,
+            }));
+        }
+
         if (paymentMethod === 'cash') {
             setShowPaymentModal(false);
             setShowCashConfirmationModal(true);
@@ -233,18 +290,16 @@ export default function CheckOutManager() {
                 );
                 setShowPaymentModal(false);
                 setShowPaymentSuccessModal(true);
-                setTimeout(() => {
-                    loadCheckoutData();
-                }, 2000);
+                // Reload data immediately
+                await loadCheckoutData();
             } catch (error) {
                 console.error('Payment error:', error);
             }
         } else {
             setShowPaymentModal(false);
             setShowPaymentSuccessModal(true);
-            setTimeout(() => {
-                loadCheckoutData();
-            }, 2000);
+            // Reload data immediately
+            await loadCheckoutData();
         }
     };
 
@@ -253,9 +308,8 @@ export default function CheckOutManager() {
             await bookingService.processCheckout(paymentData.bookingId, 'cash');
             setShowCashConfirmationModal(false);
             setShowPaymentSuccessModal(true);
-            setTimeout(() => {
-                loadCheckoutData();
-            }, 2000);
+            // Reload data immediately
+            await loadCheckoutData();
         } catch (error) {
             console.error('Cash payment error:', error);
         }
@@ -358,9 +412,15 @@ export default function CheckOutManager() {
                             </div>
                         </div>
 
-                        <StatusCards />
+                        <StatusCards
+                            bookings={checkoutData}
+                            currentDate={currentDate}
+                        />
 
-                        <SearchFilter onSearch={handleSearch} />
+                        <SearchFilter
+                            onSearch={handleSearch}
+                            onFilter={handleFilter}
+                        />
 
                         <CheckoutTabs
                             activeTab={activeTab}

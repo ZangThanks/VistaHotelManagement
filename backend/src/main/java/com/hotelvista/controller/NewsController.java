@@ -3,6 +3,7 @@ package com.hotelvista.controller;
 import com.hotelvista.model.News;
 import com.hotelvista.service.NewsService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,18 +28,21 @@ public class NewsController {
 
     /** Tạo tin mới */
     @PostMapping("/create")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'EMPLOYEE')")
     public News create(@RequestBody News news) {
         return service.createNews(news);
     }
 
     /** Cập nhật tin */
     @PutMapping("/update/{id}")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'EMPLOYEE')")
     public News update(@PathVariable("id") String id, @RequestBody News news) {
         return service.updateNews(id, news);
     }
 
     /** Xóa tin */
     @DeleteMapping("/delete/{id}")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'EMPLOYEE')")
     public boolean delete(@PathVariable("id") String id) {
         return service.deleteNews(id);
     }

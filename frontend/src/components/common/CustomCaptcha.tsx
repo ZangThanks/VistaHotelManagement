@@ -1,135 +1,122 @@
-import { useState, useEffect, useImperativeHandle, forwardRef } from "react";
-import { RefreshCw } from "lucide-react";
+import React, { useState, useEffect } from 'react';
+import { RefreshCw } from 'lucide-react';
 
 interface CustomCaptchaProps {
-  onVerify: (isValid: boolean) => void;
-  className?: string;
-  autoRefreshMinutes?: number; // Tự động refresh sau n phút (mặc định 2)
+    onVerify: (isValid: boolean) => void;
+    className?: string;
 }
 
-export interface CustomCaptchaRef {
-  refresh: () => void;
-}
-
-const CustomCaptcha = forwardRef<CustomCaptchaRef, CustomCaptchaProps>(
-  ({ onVerify, className = "", autoRefreshMinutes = 2 }, ref) => {
-    const [captchaText, setCaptchaText] = useState("");
-    const [userInput, setUserInput] = useState("");
+const CustomCaptcha: React.FC<CustomCaptchaProps> = ({
+    onVerify,
+    className = '',
+}) => {
+    const [captchaText, setCaptchaText] = useState('');
+    const [userInput, setUserInput] = useState('');
     const [isVerified, setIsVerified] = useState(false);
 
     // Generate random captcha text
     const generateCaptcha = () => {
-      const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
-      let text = "";
-      for (let i = 0; i < 6; i++) {
-        text += chars.charAt(Math.floor(Math.random() * chars.length));
-      }
-      setCaptchaText(text);
-      setUserInput("");
-      setIsVerified(false);
-      onVerify(false);
+        const chars =
+            'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
+        let text = '';
+        for (let i = 0; i < 6; i++) {
+            text += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        setCaptchaText(text);
+        setUserInput('');
+        setIsVerified(false);
+        onVerify(false);
     };
 
     useEffect(() => {
-      generateCaptcha();
-      // eslint-disable-next-line react-hooks/exhaustive-deps
+        generateCaptcha();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
-
-    // Tự động refresh captcha sau một khoảng thời gian
-    useEffect(() => {
-      if (autoRefreshMinutes > 0) {
-        const timer = setInterval(() => {
-          generateCaptcha();
-        }, autoRefreshMinutes * 60 * 1000);
-
-        return () => clearInterval(timer);
-      }
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [autoRefreshMinutes]);
-
-    // Expose refresh method qua ref
-    useImperativeHandle(ref, () => ({
-      refresh: generateCaptcha,
-    }));
 
     // Draw captcha on canvas
     useEffect(() => {
-      const canvas = document.getElementById(
-        "captcha-canvas"
-      ) as HTMLCanvasElement;
-      if (!canvas) return;
+        const canvas = document.getElementById(
+            'captcha-canvas',
+        ) as HTMLCanvasElement;
+        if (!canvas) return;
 
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
 
-      // Clear canvas
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+        // Clear canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Background with gradient
-      const gradient = ctx.createLinearGradient(
-        0,
-        0,
-        canvas.width,
-        canvas.height
-      );
-      gradient.addColorStop(0, "#f0f0f0");
-      gradient.addColorStop(1, "#e0e0e0");
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      // Add noise lines
-      for (let i = 0; i < 5; i++) {
-        ctx.strokeStyle = `rgba(${Math.random() * 100}, ${
-          Math.random() * 100
-        }, ${Math.random() * 100}, 0.3)`;
-        ctx.beginPath();
-        ctx.moveTo(Math.random() * canvas.width, Math.random() * canvas.height);
-        ctx.lineTo(Math.random() * canvas.width, Math.random() * canvas.height);
-        ctx.stroke();
-      }
-
-      // Draw captcha text
-      ctx.font = "bold 32px Arial";
-      ctx.textBaseline = "middle";
-
-      const charSpacing = canvas.width / (captchaText.length + 1);
-      for (let i = 0; i < captchaText.length; i++) {
-        const x = charSpacing * (i + 1);
-        const y = canvas.height / 2 + (Math.random() - 0.5) * 10;
-        const rotation = (Math.random() - 0.5) * 0.4;
-
-        ctx.save();
-        ctx.translate(x, y);
-        ctx.rotate(rotation);
-
-        // Random color for each character
-        const hue = Math.random() * 360;
-        ctx.fillStyle = `hsl(${hue}, 70%, 40%)`;
-        ctx.fillText(captchaText[i], 0, 0);
-
-        ctx.restore();
-      }
-
-      // Add noise dots
-      for (let i = 0; i < 50; i++) {
-        ctx.fillStyle = `rgba(${Math.random() * 255}, ${Math.random() * 255}, ${
-          Math.random() * 255
-        }, 0.3)`;
-        ctx.fillRect(
-          Math.random() * canvas.width,
-          Math.random() * canvas.height,
-          2,
-          2
+        // Background with gradient
+        const gradient = ctx.createLinearGradient(
+            0,
+            0,
+            canvas.width,
+            canvas.height,
         );
-      }
+        gradient.addColorStop(0, '#f0f0f0');
+        gradient.addColorStop(1, '#e0e0e0');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Add noise lines
+        for (let i = 0; i < 5; i++) {
+            ctx.strokeStyle = `rgba(${Math.random() * 100}, ${
+                Math.random() * 100
+            }, ${Math.random() * 100}, 0.3)`;
+            ctx.beginPath();
+            ctx.moveTo(
+                Math.random() * canvas.width,
+                Math.random() * canvas.height,
+            );
+            ctx.lineTo(
+                Math.random() * canvas.width,
+                Math.random() * canvas.height,
+            );
+            ctx.stroke();
+        }
+
+        // Draw captcha text
+        ctx.font = 'bold 32px Arial';
+        ctx.textBaseline = 'middle';
+
+        const charSpacing = canvas.width / (captchaText.length + 1);
+        for (let i = 0; i < captchaText.length; i++) {
+            const x = charSpacing * (i + 1);
+            const y = canvas.height / 2 + (Math.random() - 0.5) * 10;
+            const rotation = (Math.random() - 0.5) * 0.4;
+
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(rotation);
+
+            // Random color for each character
+            const hue = Math.random() * 360;
+            ctx.fillStyle = `hsl(${hue}, 70%, 40%)`;
+            ctx.fillText(captchaText[i], 0, 0);
+
+            ctx.restore();
+        }
+
+        // Add noise dots
+        for (let i = 0; i < 50; i++) {
+            ctx.fillStyle = `rgba(${Math.random() * 255}, ${
+                Math.random() * 255
+            }, ${Math.random() * 255}, 0.3)`;
+            ctx.fillRect(
+                Math.random() * canvas.width,
+                Math.random() * canvas.height,
+                2,
+                2,
+            );
+        }
     }, [captchaText]);
 
     // Verify captcha
     const handleInputChange = (value: string) => {
-      setUserInput(value);
-      const isValid = value.toLowerCase() === captchaText.toLowerCase();
-      setIsVerified(isValid);
-      onVerify(isValid);
+        setUserInput(value);
+        const isValid = value.toLowerCase() === captchaText.toLowerCase();
+        setIsVerified(isValid);
+        onVerify(isValid);
     };
 
     return (
@@ -181,14 +168,13 @@ const CustomCaptcha = forwardRef<CustomCaptchaRef, CustomCaptchaProps>(
               isVerified ? "text-green-400" : "text-red-400"
             }`}
           >
-            {isVerified ? "✓ Mã xác thực đúng" : "✗ Mã xác thực không đúng"}
+            {isVerified
+              ? "Correct authentication code"
+              : "Incorrect verification code"}
           </p>
         )}
       </div>
     );
-  }
-);
-
-CustomCaptcha.displayName = "CustomCaptcha";
+};
 
 export default CustomCaptcha;

@@ -6,6 +6,7 @@ import com.hotelvista.util.ValidatorsUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,6 +18,7 @@ public class PromotionTypeController {
     private PromotionTypeService promotionTypeService;
 
     @GetMapping
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<List<PromotionType>> findAll() {
         try {
             List<PromotionType> types = promotionTypeService.findAll();
@@ -28,6 +30,7 @@ public class PromotionTypeController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<PromotionType> findById(@PathVariable String id) {
         try {
             PromotionType type = promotionTypeService.findById(id);
@@ -42,6 +45,7 @@ public class PromotionTypeController {
     }
 
     @PostMapping("/create")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<PromotionType> save(@RequestBody PromotionType promotionType) {
         try {
             // Validate
@@ -69,6 +73,7 @@ public class PromotionTypeController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<PromotionType> update(
             @PathVariable String id,
             @RequestBody PromotionType promotionType) {
@@ -93,6 +98,7 @@ public class PromotionTypeController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable String id) {
         try {
             if (!promotionTypeService.exists(id)) {

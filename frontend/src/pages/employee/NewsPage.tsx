@@ -26,7 +26,7 @@ const NewsPage: React.FC = () => {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
-    // Hàm xử lý ngày đúng theo type
+    // 🔥 Hàm xử lý ngày đúng theo type
     const getValidDate = (item: any) => {
         // NEWS → dùng createdAt
         if (item.type === 'NEWS') {

@@ -22,7 +22,7 @@ export const Dialog: React.FC<DialogProps> = ({
       <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" />
 
       {/* Dialog Container */}
-      <div className="relative z-50 w-4xl" onClick={(e) => e.stopPropagation()}>
+      <div className="relative z-50 w-4xl ml-60" onClick={(e) => e.stopPropagation()}>
         {children}
       </div>
     </div>

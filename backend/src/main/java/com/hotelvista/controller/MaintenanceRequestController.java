@@ -5,6 +5,7 @@ import com.hotelvista.model.MaintenanceRequest;
 import com.hotelvista.model.enums.RequestStatus;
 import com.hotelvista.service.MaintenanceRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -33,21 +34,25 @@ public class MaintenanceRequestController {
     }
 
     @PostMapping("/save")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'EMPLOYEE')")
     public MaintenanceRequest insertOrUpdate(@RequestBody MaintenanceRequest request) {
         return service.insertOrUpdate(request);
     }
 
     @PostMapping("/create")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'EMPLOYEE')")
     public MaintenanceRequest createFromDTO(@RequestBody MaintenanceRequestDTO dto) {
         return service.insertFromDTO(dto);
     }
 
     @DeleteMapping("/delete/{id}")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'EMPLOYEE')")
     public void delete(@PathVariable String id) {
         service.delete(id);
     }
 
     @PutMapping("/update-status/{id}")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'EMPLOYEE')")
     public MaintenanceRequest updateStatus(
             @PathVariable String id,
             @RequestParam RequestStatus status) {

@@ -50,20 +50,6 @@ const LateCheckoutTab = ({ onViewDetails }: LateCheckoutTabProps) => {
     ) => {
         setProcessingId(id);
         try {
-            // Get employee ID from localStorage
-            const userData = localStorage.getItem('user');
-            let employeeId = 'STAFF001'; // default fallback
-
-            if (userData) {
-                try {
-                    const parsedUser = JSON.parse(userData);
-                    employeeId =
-                        parsedUser.id || parsedUser.employeeId || employeeId;
-                } catch (e) {
-                    console.error('Error parsing user data:', e);
-                }
-            }
-
             // Find the request to get booking info
             const request = requests.find((req) => req.requestID === id);
 
@@ -72,8 +58,8 @@ const LateCheckoutTab = ({ onViewDetails }: LateCheckoutTabProps) => {
                 return;
             }
 
-            // Call backend to approve/reject with employee ID
-            await approveLateCheckout(id, status, employeeId);
+            // Call backend to approve/reject
+            await approveLateCheckout(id, status);
 
             // Send notification to customer
             try {

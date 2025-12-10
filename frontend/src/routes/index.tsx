@@ -58,6 +58,8 @@ import ReplyReviewsPage from "../pages/employee/review/ReplyReviewPage.tsx";
 import AccessDenied403 from "../pages/error/AccessDenied403.tsx";
 import NotFound404 from "../pages/error/NotFound404.tsx";
 import ServerError500 from "../pages/error/ServerError500.tsx";
+import ReservationList from "../pages/admin/ReservationList.tsx";
+
 export const router = createBrowserRouter([
   // OAuth
   {
@@ -81,7 +83,7 @@ export const router = createBrowserRouter([
     path: "employee",
     element: <EmployeeLayout />,
     children: [
-      { path: "customer/list", element: <CustomerList /> },
+      { path: "customers", element: <CustomerList /> },
       { path: "incidents", element: <IncidentManagement /> },
       { path: "bookingPage", element: <BookingPage /> },
       { path: "newsPage", element: <NewsPage /> },
@@ -91,6 +93,10 @@ export const router = createBrowserRouter([
       { path: "room-type-management", element: <RoomTypeManagement /> },
       { path: "support", element: <ChatSupport /> },
       { path: "reviews", element: <ReplyReviewsPage /> },
+      { path: "services", element: <ServiceManagement /> },
+      { path: "checkin", element: <CheckInManager /> },
+      { path: "checkout", element: <CheckOutManager /> },
+      { path: "info", element: <NewsList /> },
     ],
   },
 
@@ -102,10 +108,8 @@ export const router = createBrowserRouter([
       { path: "", element: <Dashboard /> },
       { path: "checkin", element: <CheckInManager /> },
       { path: "checkout", element: <CheckOutManager /> },
-      { path: "info", element: <NewsList /> }, // NewsList thay InfoManagement
-      //{ path: 'info/manage', element: <NewsList /> }, // nếu bạn cần InfoManagement
+      { path: "info", element: <NewsList /> },
       { path: "info/:id", element: <NewsDetail /> },
-      { path: "services", element: <ServiceManagement /> },
       { path: "room-management", element: <RoomManagement /> },
       { path: "room-type-management", element: <RoomTypeManagement /> },
       { path: "promotion-management", element: <PromotionManagement /> },
@@ -116,11 +120,16 @@ export const router = createBrowserRouter([
       { path: "voucher-management", element: <VoucherManagement /> },
       { path: "bookingPage", element: <BookingPage /> },
       { path: "employees", element: <EmployeeList /> },
+      { path: "daily", element: <DailyWorkStatistics /> },
+
       { path: "pricing", element: <PricingManager /> },
-      // { path: 'employees/:id', element: <EmployeeDetail /> },
       { path: "profile", element: <UserProfilePage /> },
       { path: "reports", element: <ReportPage /> },
-      { path: "", element: <Dashboard /> },
+      { path: "customers", element: <CustomerList /> },
+      { path: "incidents", element: <IncidentManagement /> },
+      { path: "reviews", element: <ReplyReviewsPage /> },
+      { path: "services", element: <ServiceManagement /> },
+      { path: "reservations", element: <ReservationList /> },
     ],
   },
 

@@ -1,4 +1,3 @@
-/* eslint-disable */
 import { useState, useEffect, useMemo } from 'react';
 
 interface TimePickerProps {
@@ -13,7 +12,7 @@ interface TimePickerProps {
 export default function TimePicker({
     value,
     onChange,
-    label = 'Choose Time',
+    label = 'Chọn giờ',
     disabled = false,
     minTime = '00:00',
     maxTime = '23:59',
@@ -83,7 +82,7 @@ export default function TimePicker({
 
     // Format display time
     const formatDisplayTime = (time: string) => {
-        if (!time) return 'Choose Time...';
+        if (!time) return 'Chọn giờ...';
         const [h, m] = time.split(':');
         const hour = parseInt(h);
         const period = hour >= 12 ? 'PM' : 'AM';
@@ -104,7 +103,7 @@ export default function TimePicker({
                 disabled={disabled}
                 onClick={() => setShowDropdown(!showDropdown)}
                 className={`
-                    cursor-pointer w-full p-4 border-2 rounded-xl text-left transition-all duration-200 flex items-center justify-between group
+                    w-full p-4 border-2 rounded-xl text-left transition-all duration-200 flex items-center justify-between group
                     ${
                         disabled
                             ? 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed'
@@ -188,8 +187,8 @@ export default function TimePicker({
                                             px-3 py-1 text-xs rounded-lg border transition-colors
                                             ${
                                                 value === time
-                                                    ? 'bg-black text-white border-black'
-                                                    : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-black/10 hover:border-black hover:text-black'
+                                                    ? 'bg-blue-600 text-white border-blue-600'
+                                                    : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-blue-50 hover:border-blue-300'
                                             }
                                         `}
                                     >
@@ -231,7 +230,7 @@ export default function TimePicker({
                                         w-full px-4 py-2 text-left text-sm transition-colors flex items-center justify-between
                                         ${
                                             value === option.value
-                                                ? 'bg-black text-white'
+                                                ? 'bg-blue-600 text-white'
                                                 : 'hover:bg-gray-50 text-gray-700'
                                         }
                                     `}
@@ -257,6 +256,50 @@ export default function TimePicker({
                                 </div>
                             </div>
                         )}
+                    </div>
+
+                    {/* Manual Input */}
+                    <div className="p-3 border-t border-gray-100 bg-gray-50">
+                        <div className="text-xs font-medium text-gray-600 mb-2">
+                            Nhập thủ công
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <input
+                                type="number"
+                                min="0"
+                                max="23"
+                                value={hours}
+                                onChange={(e) => {
+                                    const h = e.target.value.padStart(2, '0');
+                                    setHours(h);
+                                }}
+                                className="w-16 px-2 py-1 text-center text-sm border rounded focus:outline-none focus:border-blue-500"
+                                placeholder="00"
+                            />
+                            <span className="text-gray-500">:</span>
+                            <input
+                                type="number"
+                                min="0"
+                                max="59"
+                                step="15"
+                                value={minutes}
+                                onChange={(e) => {
+                                    const m = e.target.value.padStart(2, '0');
+                                    setMinutes(m);
+                                }}
+                                className="w-16 px-2 py-1 text-center text-sm border rounded focus:outline-none focus:border-blue-500"
+                                placeholder="00"
+                            />
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    handleTimeSelect(`${hours}:${minutes}`)
+                                }
+                                className="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition-colors"
+                            >
+                                OK
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}

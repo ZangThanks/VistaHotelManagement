@@ -8,6 +8,7 @@ import com.hotelvista.service.VoucherService;
 import com.hotelvista.util.ValidatorsUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -48,6 +49,7 @@ public class VoucherController {
      * @return
      */
     @PostMapping("/create")
+    @PreAuthorize("hasAnyAuthority('ADMIN')")
     public ResponseEntity<?> saveVoucher(@RequestBody Voucher voucher) {
         // Validate voucher code
         String codeError = ValidatorsUtil.validateVoucherCode(voucher.getVoucherID());
@@ -106,6 +108,7 @@ public class VoucherController {
      * @param id
      * @return
      */
+    @PreAuthorize("hasAuthority('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteVoucher(@PathVariable String id) {
         return service.deleteById(id)
@@ -120,6 +123,7 @@ public class VoucherController {
      * @return
      */
     @PatchMapping("/{id}/status/{status}")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<String> toggleVoucherStatus(@PathVariable String id, @PathVariable boolean status) {
         return service.toggleActive(id, status)
                 ? ResponseEntity.ok("Cập nhật trạng thái voucher thành công")
@@ -127,6 +131,7 @@ public class VoucherController {
     }
 
     @GetMapping("/customerID={id}")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'EMPLOYEE', 'CUSTOMER')")
     public List<Voucher> findVouchersBy_CustomerID(@PathVariable String id) {
         return service.findVouchersBy_CustomerID(id);
     }
@@ -138,6 +143,7 @@ public class VoucherController {
      * @return
      */
     @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<?> updateVoucher(@PathVariable String id, @RequestBody Voucher voucher) {
         // Validate voucher code
         String codeError = ValidatorsUtil.validateVoucherCode(voucher.getVoucherID());
@@ -197,6 +203,7 @@ public class VoucherController {
      * @return DistributionResult với số lượng khách hàng khớp
      */
     @PostMapping("/preview-distribution")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<DistributionResultDTO> previewDistribution(
             @RequestBody DistributionCriteriaDTO criteria
             ) {
@@ -211,6 +218,7 @@ public class VoucherController {
      * @return DistributionResult với trạng thái thành công và số lượng
      */
     @PostMapping("/{id}/distribute")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<DistributionResultDTO> distributeVoucher(
             @PathVariable String id,
             @RequestBody DistributionCriteriaDTO criteria
@@ -226,6 +234,7 @@ public class VoucherController {
      * @return Danh sách lịch sử phân phối
      */
     @GetMapping("/distribution-history")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<List<DistributionHistoryDTO>> getDistributionHistory() {
         List<DistributionHistoryDTO> history = service.getDistributionHistory();
         return ResponseEntity.ok(history);

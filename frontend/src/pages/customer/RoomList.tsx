@@ -1,13 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { getAllRooms } from '../../services/roomService';
-import { overlapBookingExists } from '../../services/bookingService';
+import { getAllRooms, getAvailableRooms } from '../../services/roomService';
 import type { Room } from '../../types/Room';
 import RoomCard from '../../components/RoomCard';
 import Dropdown from '../../components/Dropdown';
 import RoomCompareBar from '../../components/customer/RoomCompareBar';
 import RoomCompareModal from '../../components/customer/RoomCompareModal';
-import Header from '../../components/Header'; 
-
+import Header from '../../components/Header';
+import ModernCalendar from '../../components/common/ModernCalendar';
 
 export default function RoomList() {
     const [rooms, setRooms] = useState<Room[]>([]);
@@ -27,8 +26,10 @@ export default function RoomList() {
     const [guests, setGuests] = useState(1);
     const [minPrice, setMinPrice] = useState<number | ''>('');
     const [maxPrice, setMaxPrice] = useState<number | ''>('');
-    const [checkIn, setCheckIn] = useState<string>('');
-    const [checkOut, setCheckOut] = useState<string>('');
+
+    // Date filters - sử dụng Date thay vì string
+    const [checkInDate, setCheckInDate] = useState<Date | null>(null);
+    const [checkOutDate, setCheckOutDate] = useState<Date | null>(null);
     const [roomAvailability, setRoomAvailability] = useState<
         Record<string, boolean>
     >({});
@@ -64,18 +65,14 @@ export default function RoomList() {
             .finally(() => setLoading(false));
     }, []);
 
-    // Check room availability when dates change
+    // Check room availability via API when dates change
     useEffect(() => {
-        const checkAvailability = async () => {
-            if (!checkIn || !checkOut) {
+        const fetchAvailable = async () => {
+            if (!checkInDate || !checkOutDate) {
                 setRoomAvailability({});
                 return;
             }
-
-            // Validate dates
-            const checkInDate = new Date(checkIn);
-            const checkOutDate = new Date(checkOut);
-
+            // Validate
             if (checkOutDate <= checkInDate) {
                 setError('Check-out date must be after check-in date');
                 setRoomAvailability({});
@@ -86,45 +83,50 @@ export default function RoomList() {
             setError(null);
 
             try {
-                const availabilityChecks = await Promise.all(
-                    rooms.map(async (room) => {
-                        try {
-                            const hasOverlap = await overlapBookingExists(
-                                room.roomNumber,
-                            );
-                            return {
-                                roomNumber: room.roomNumber,
-                                isAvailable: !hasOverlap,
-                            };
-                        } catch (err) {
-                            console.error(
-                                `Error checking availability for room ${room.roomNumber}:`,
-                                err,
-                            );
-                            return {
-                                roomNumber: room.roomNumber,
-                                isAvailable: true, // assume available on error
-                            };
-                        }
-                    }),
+                // Format ISO without milliseconds for backend compatibility
+                const toIsoNoMs = (d: Date) => {
+                    const pad = (n: number) => n.toString().padStart(2, '0');
+                    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(
+                        d.getDate(),
+                    )}T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(
+                        d.getSeconds(),
+                    )}`;
+                };
+                // Daily booking default window 14:00 → next day 12:00 (approx). If only date, set default times.
+                const ci = new Date(checkInDate);
+                ci.setHours(14, 0, 0, 0);
+                const co = new Date(checkOutDate);
+                co.setHours(12, 0, 0, 0);
+
+                const availableRooms = await getAvailableRooms(
+                    toIsoNoMs(ci),
+                    toIsoNoMs(co),
                 );
 
+                const availableSet = new Set<string>(
+                    (availableRooms || []).map((r) => r.roomNumber),
+                );
+
+                // Build availability map: true if room is in available list
                 const availabilityMap: Record<string, boolean> = {};
-                availabilityChecks.forEach((check) => {
-                    availabilityMap[check.roomNumber] = check.isAvailable;
+                rooms.forEach((r) => {
+                    availabilityMap[r.roomNumber] = availableSet.has(
+                        r.roomNumber,
+                    );
                 });
 
                 setRoomAvailability(availabilityMap);
             } catch (err) {
-                console.error('Error checking room availability:', err);
+                console.error('Error fetching available rooms:', err);
                 setError('Failed to check room availability');
+                setRoomAvailability({});
             } finally {
                 setCheckingAvailability(false);
             }
         };
 
-        checkAvailability();
-    }, [checkIn, checkOut, rooms]);
+        fetchAvailable();
+    }, [checkInDate, checkOutDate, rooms]);
 
     const roomTypes = useMemo(() => {
         const setType = new Set<string>();
@@ -146,7 +148,6 @@ export default function RoomList() {
     const filteredRooms = rooms.filter((r) => {
         const price = r.roomType?.basePrice ?? 0;
 
-        // If user selected one or more room types, only include rooms whose type is in selectedTypes.
         if (
             selectedTypes.length > 0 &&
             !selectedTypes.includes(r.roomType?.typeName ?? '')
@@ -161,12 +162,11 @@ export default function RoomList() {
         )
             return false;
 
-        // Filter by availability if dates are selected
-        if (checkIn && checkOut) {
+        // Date availability filter
+        if (checkInDate && checkOutDate) {
             const isAvailable = roomAvailability[r.roomNumber];
             if (isAvailable === false) return false;
         }
-
         return true;
     });
 
@@ -189,9 +189,32 @@ export default function RoomList() {
         setMinPrice('');
         setMaxPrice('');
         setSortOrder('');
-        setCheckIn('');
-        setCheckOut('');
+        setCheckInDate(null);
+        setCheckOutDate(null);
         setRoomAvailability({});
+        setError(null);
+    };
+
+    // Handler cho check-in date
+    const handleCheckInSelect = (date: Date) => {
+        setCheckInDate(date);
+        // Reset checkout nếu nó trước hoặc bằng ngày check-in mới
+        if (checkOutDate && checkOutDate <= date) {
+            setCheckOutDate(null);
+        }
+    };
+
+    // Handler cho check-out date
+    const handleCheckOutSelect = (date: Date) => {
+        if (!checkInDate) {
+            setError('Please select check-in date first');
+            return;
+        }
+        if (date <= checkInDate) {
+            setError('Check-out must be after check-in');
+            return;
+        }
+        setCheckOutDate(date);
         setError(null);
     };
 
@@ -234,7 +257,6 @@ export default function RoomList() {
         setIsModalMinimized(false);
     };
 
-    // Sort options for Dropdown
     const sortOptions = [
         { value: '', label: 'Default' },
         { value: 'price_asc', label: 'Price: Low → High' },
@@ -252,7 +274,6 @@ export default function RoomList() {
 
             <div
                 style={{
-                    background: 'var(--gradient-cream)',
                     fontFamily: 'var(--font-sans)',
                 }}
             >
@@ -263,17 +284,15 @@ export default function RoomList() {
                     </h5>
                     <p className="text-lg text-gray-600 leading-relaxed">
                         Our palatial suites extend over two exquisitely detailed
-                        floors, connected by grand staircases. Inspiring and
-                        intimate in equal measure.
+                        floors, connected by grand staircases.
                     </p>
                 </div>
 
                 <div className="container mx-auto px-6 py-10 grid grid-cols-12 gap-8">
-                    {/* SIDEBAR - Sticky on large screens */}
+                    {/* SIDEBAR */}
                     <aside className="col-span-12 lg:col-span-4 xl:col-span-3">
                         <div className="lg:sticky lg:top-24 lg:h-[calc(100vh-6rem)]">
                             <div className="h-full overflow-auto custom-scrollbar">
-                                {/* Filter Content */}
                                 <div className="px-5 py-4 space-y-6">
                                     {/* Header */}
                                     <div className="flex items-center justify-between">
@@ -295,8 +314,8 @@ export default function RoomList() {
                                         </div>
                                     )}
 
-                                    {checkIn &&
-                                        checkOut &&
+                                    {checkInDate &&
+                                        checkOutDate &&
                                         !checkingAvailability &&
                                         Object.keys(roomAvailability).length >
                                             0 && (
@@ -318,16 +337,12 @@ export default function RoomList() {
                                                         'accommodation',
                                                     )
                                                 }
-                                                className="flex items-center justify-between"
+                                                className="flex items-center justify-between cursor-pointer"
                                             >
                                                 <h4 className="text-sm font-medium text-gray-700">
                                                     Accommodation Options
                                                 </h4>
-
                                                 <button
-                                                    aria-expanded={
-                                                        openSections.accommodation
-                                                    }
                                                     className={`p-1 rounded-md transform transition-transform duration-200 ${
                                                         openSections.accommodation
                                                             ? 'rotate-180'
@@ -349,8 +364,6 @@ export default function RoomList() {
                                                     </svg>
                                                 </button>
                                             </div>
-
-                                            {/* Collapse Body */}
                                             <div
                                                 className={`transition-all duration-300 ease-in-out overflow-hidden ${
                                                     openSections.accommodation
@@ -371,13 +384,12 @@ export default function RoomList() {
                                                                     [],
                                                                 )
                                                             }
-                                                            className="h-5 w-5 rounded-sm border-2 border-gray-300 checked:bg-[#CCBDA3] checked:border-[#CCBDA3] focus:outline-none cursor-pointer"
+                                                            className="h-5 w-5 rounded-sm border-2 border-gray-300 checked:bg-[#CCBDA3] checked:border-[#CCBDA3]"
                                                         />
                                                         <span className="text-xs uppercase tracking-widest text-gray-700">
                                                             All
                                                         </span>
                                                     </label>
-
                                                     {roomTypes.map((t) => (
                                                         <label
                                                             key={t}
@@ -397,8 +409,7 @@ export default function RoomList() {
                                                                                 prev.includes(
                                                                                     t,
                                                                                 )
-                                                                            ) {
-                                                                                // untick
+                                                                            )
                                                                                 return prev.filter(
                                                                                     (
                                                                                         x,
@@ -406,8 +417,6 @@ export default function RoomList() {
                                                                                         x !==
                                                                                         t,
                                                                                 );
-                                                                            }
-                                                                            // tick: enforce max 2
                                                                             if (
                                                                                 prev.length >=
                                                                                 MAX_SELECTED_TYPES
@@ -424,7 +433,7 @@ export default function RoomList() {
                                                                         },
                                                                     )
                                                                 }
-                                                                className="h-5 w-5 rounded-sm border-2 border-gray-300 checked:bg-[#CCBDA3] checked:border-[#CCBDA3] focus:outline-none cursor-pointer"
+                                                                className="h-5 w-5 rounded-sm border-2 border-gray-300 checked:bg-[#CCBDA3] checked:border-[#CCBDA3]"
                                                             />
                                                             <span className="text-xs uppercase tracking-widest text-gray-700">
                                                                 {t}
@@ -437,22 +446,27 @@ export default function RoomList() {
 
                                         <div className="h-px bg-gray-100" />
 
-                                        {/* Check In */}
+                                        {/* Check In - Modern Calendar */}
                                         <section>
                                             <div
                                                 onClick={() =>
                                                     toggleSection('checkIn')
                                                 }
-                                                className="flex items-center justify-between"
+                                                className="flex items-center justify-between cursor-pointer"
                                             >
                                                 <h4 className="text-sm font-medium text-gray-700">
                                                     Check In
+                                                    {checkInDate && (
+                                                        <span className="ml-2 text-xs text-[#CCBDA3] font-normal">
+                                                            (
+                                                            {checkInDate.toLocaleDateString(
+                                                                'en-GB',
+                                                            )}
+                                                            )
+                                                        </span>
+                                                    )}
                                                 </h4>
-
                                                 <button
-                                                    aria-expanded={
-                                                        openSections.checkIn
-                                                    }
                                                     className={`p-1 rounded-md transform transition-transform duration-200 ${
                                                         openSections.checkIn
                                                             ? 'rotate-180'
@@ -478,25 +492,20 @@ export default function RoomList() {
                                             <div
                                                 className={`transition-all duration-300 ease-in-out overflow-hidden ${
                                                     openSections.checkIn
-                                                        ? 'max-h-40 opacity-100 translate-y-0'
+                                                        ? 'max-h-[500px] opacity-100 translate-y-0'
                                                         : 'max-h-0 opacity-0 -translate-y-2'
                                                 }`}
                                             >
-                                                <div className="mt-3">
-                                                    <input
-                                                        type="date"
-                                                        value={checkIn}
-                                                        min={
+                                                <div className="mt-3 flex justify-center">
+                                                    <ModernCalendar
+                                                        selected={
+                                                            checkInDate ||
                                                             new Date()
-                                                                .toISOString()
-                                                                .split('T')[0]
                                                         }
-                                                        onChange={(e) =>
-                                                            setCheckIn(
-                                                                e.target.value,
-                                                            )
+                                                        onSelect={
+                                                            handleCheckInSelect
                                                         }
-                                                        className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-[#CCBDA3] focus:border-[#CCBDA3]"
+                                                        minDate={new Date()}
                                                     />
                                                 </div>
                                             </div>
@@ -504,22 +513,27 @@ export default function RoomList() {
 
                                         <div className="h-px bg-gray-100" />
 
-                                        {/* Check Out */}
+                                        {/* Check Out - Modern Calendar */}
                                         <section>
                                             <div
                                                 onClick={() =>
                                                     toggleSection('checkOut')
                                                 }
-                                                className="flex items-center justify-between"
+                                                className="flex items-center justify-between cursor-pointer"
                                             >
                                                 <h4 className="text-sm font-medium text-gray-700">
                                                     Check Out
+                                                    {checkOutDate && (
+                                                        <span className="ml-2 text-xs text-[#CCBDA3] font-normal">
+                                                            (
+                                                            {checkOutDate.toLocaleDateString(
+                                                                'en-GB',
+                                                            )}
+                                                            )
+                                                        </span>
+                                                    )}
                                                 </h4>
-
                                                 <button
-                                                    aria-expanded={
-                                                        openSections.checkOut
-                                                    }
                                                     className={`p-1 rounded-md transform transition-transform duration-200 ${
                                                         openSections.checkOut
                                                             ? 'rotate-180'
@@ -545,42 +559,88 @@ export default function RoomList() {
                                             <div
                                                 className={`transition-all duration-300 ease-in-out overflow-hidden ${
                                                     openSections.checkOut
-                                                        ? 'max-h-40 opacity-100 translate-y-0'
+                                                        ? 'max-h-[500px] opacity-100 translate-y-0'
                                                         : 'max-h-0 opacity-0 -translate-y-2'
                                                 }`}
                                             >
-                                                <div className="mt-3">
-                                                    <input
-                                                        type="date"
-                                                        value={checkOut}
-                                                        min={
-                                                            checkIn
-                                                                ? new Date(
-                                                                      new Date(
-                                                                          checkIn,
-                                                                      ).getTime() +
-                                                                          86400000,
-                                                                  )
-                                                                      .toISOString()
-                                                                      .split(
-                                                                          'T',
-                                                                      )[0]
-                                                                : new Date()
-                                                                      .toISOString()
-                                                                      .split(
-                                                                          'T',
-                                                                      )[0]
-                                                        }
-                                                        onChange={(e) =>
-                                                            setCheckOut(
-                                                                e.target.value,
-                                                            )
-                                                        }
-                                                        className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-[#CCBDA3] focus:border-[#CCBDA3]"
-                                                    />
+                                                <div className="mt-3 flex justify-center">
+                                                    {!checkInDate ? (
+                                                        <div className="text-sm text-gray-500 py-4 text-center">
+                                                            Please select
+                                                            check-in date first
+                                                        </div>
+                                                    ) : (
+                                                        <ModernCalendar
+                                                            selected={
+                                                                checkOutDate ||
+                                                                new Date(
+                                                                    checkInDate.getTime() +
+                                                                        86400000,
+                                                                )
+                                                            }
+                                                            onSelect={
+                                                                handleCheckOutSelect
+                                                            }
+                                                            minDate={
+                                                                new Date(
+                                                                    checkInDate.getTime() +
+                                                                        86400000,
+                                                                )
+                                                            }
+                                                        />
+                                                    )}
                                                 </div>
                                             </div>
                                         </section>
+
+                                        <div className="h-px bg-gray-100" />
+
+                                        {/* Selected Date Summary */}
+                                        {(checkInDate || checkOutDate) && (
+                                            <div className="bg-[#F5F0EB] rounded-lg p-3">
+                                                <h4 className="text-xs font-medium text-gray-600 mb-2">
+                                                    Selected Dates
+                                                </h4>
+                                                <div className="flex justify-between text-sm">
+                                                    <div>
+                                                        <span className="text-gray-500">
+                                                            Check-in:
+                                                        </span>
+                                                        <p className="font-medium">
+                                                            {checkInDate?.toLocaleDateString(
+                                                                'en-GB',
+                                                            ) || '-'}
+                                                        </p>
+                                                    </div>
+                                                    <div className="text-right">
+                                                        <span className="text-gray-500">
+                                                            Check-out:
+                                                        </span>
+                                                        <p className="font-medium">
+                                                            {checkOutDate?.toLocaleDateString(
+                                                                'en-GB',
+                                                            ) || '-'}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                {checkInDate &&
+                                                    checkOutDate && (
+                                                        <div className="mt-2 pt-2 border-t border-gray-200 text-center">
+                                                            <span className="text-xs text-[#CCBDA3] font-medium">
+                                                                {Math.ceil(
+                                                                    (checkOutDate.getTime() -
+                                                                        checkInDate.getTime()) /
+                                                                        (1000 *
+                                                                            60 *
+                                                                            60 *
+                                                                            24),
+                                                                )}{' '}
+                                                                night(s)
+                                                            </span>
+                                                        </div>
+                                                    )}
+                                            </div>
+                                        )}
 
                                         <div className="h-px bg-gray-100" />
 
@@ -590,16 +650,12 @@ export default function RoomList() {
                                                 onClick={() =>
                                                     toggleSection('guests')
                                                 }
-                                                className="flex items-center justify-between mb-3"
+                                                className="flex items-center justify-between cursor-pointer mb-3"
                                             >
                                                 <h4 className="text-sm font-medium text-gray-700">
                                                     Guests
                                                 </h4>
-
                                                 <button
-                                                    aria-expanded={
-                                                        openSections.guests
-                                                    }
                                                     className={`p-1 rounded-md transform transition-transform duration-200 ${
                                                         openSections.guests
                                                             ? 'rotate-180'
@@ -621,7 +677,6 @@ export default function RoomList() {
                                                     </svg>
                                                 </button>
                                             </div>
-
                                             <div
                                                 className={`transition-all duration-300 ease-in-out overflow-hidden ${
                                                     openSections.guests
@@ -640,7 +695,7 @@ export default function RoomList() {
                                                             ),
                                                         )
                                                     }
-                                                    className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-[#CCBDA3] focus:border-[#CCBDA3]"
+                                                    className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-[#CCBDA3]"
                                                 />
                                             </div>
                                         </section>
@@ -653,16 +708,12 @@ export default function RoomList() {
                                                 onClick={() =>
                                                     toggleSection('price')
                                                 }
-                                                className="flex items-center justify-between mb-3"
+                                                className="flex items-center justify-between cursor-pointer mb-3"
                                             >
                                                 <h4 className="text-sm font-medium text-gray-700">
                                                     Price Range
                                                 </h4>
-
                                                 <button
-                                                    aria-expanded={
-                                                        openSections.price
-                                                    }
                                                     className={`p-1 rounded-md transform transition-transform duration-200 ${
                                                         openSections.price
                                                             ? 'rotate-180'
@@ -684,7 +735,6 @@ export default function RoomList() {
                                                     </svg>
                                                 </button>
                                             </div>
-
                                             <div
                                                 className={`transition-all duration-300 ease-in-out overflow-hidden ${
                                                     openSections.price
@@ -713,7 +763,7 @@ export default function RoomList() {
                                                                       ),
                                                             )
                                                         }
-                                                        className="w-1/2 rounded-md border border-gray-200 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-[#CCBDA3] focus:border-[#CCBDA3]"
+                                                        className="w-1/2 rounded-md border border-gray-200 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-[#CCBDA3]"
                                                     />
                                                     <input
                                                         type="number"
@@ -735,7 +785,7 @@ export default function RoomList() {
                                                                       ),
                                                             )
                                                         }
-                                                        className="w-1/2 rounded-md border border-gray-200 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-[#CCBDA3] focus:border-[#CCBDA3]"
+                                                        className="w-1/2 rounded-md border border-gray-200 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-[#CCBDA3]"
                                                     />
                                                 </div>
                                             </div>
@@ -744,12 +794,11 @@ export default function RoomList() {
                                 </div>
 
                                 {/* Sticky Footer */}
-                                <div className="sticky bottom-0 px-5 py-4 border-t border-gray-200">
+                                <div className="sticky bottom-0 px-5 py-4 border-t border-gray-200 bg-white">
                                     <button
-                                        onClick={() => {
-                                            // Apply filters logic here
-                                            console.log('Filters applied');
-                                        }}
+                                        onClick={() =>
+                                            console.log('Filters applied')
+                                        }
                                         className="w-full flex items-center justify-center gap-3 rounded-md border border-gray-300 px-4 py-3 text-sm font-medium tracking-widest uppercase hover:shadow-md hover:bg-gray-50 transition-all"
                                     >
                                         <svg
@@ -783,12 +832,12 @@ export default function RoomList() {
                                 </h2>
                                 <p className="text-sm text-gray-500 mt-1">
                                     {displayedRooms.length}{' '}
-                                    {checkIn && checkOut ? 'available' : ''}{' '}
+                                    {checkInDate && checkOutDate
+                                        ? 'available'
+                                        : ''}{' '}
                                     options · curated for comfort
                                 </p>
                             </div>
-
-                            {/* Sort Dropdown */}
                             <div className="w-full sm:w-auto">
                                 <Dropdown
                                     options={sortOptions}

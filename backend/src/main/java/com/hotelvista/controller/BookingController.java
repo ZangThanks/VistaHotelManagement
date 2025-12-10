@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -264,6 +265,7 @@ public class BookingController {
      * Lấy bookings khoảng thời gian
      */
     @GetMapping("/check-in-range")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'EMPLOYEE')")
     public List<Booking> findAllByCheckInDateRange(
             @RequestParam String startDate,
             @RequestParam String endDate
@@ -307,19 +309,19 @@ public class BookingController {
     @PostMapping("/{bookingId}/checkout")
     public ResponseEntity<?> processCheckout(
             @PathVariable String bookingId,
-            @RequestBody Map<String, String> request
+            @RequestBody String paymentMethod
     ) {
         try {
-            String paymentMethod = request.get("paymentMethod");
+//            String paymentMethod = request.get("paymentMethod");
             Booking booking = service.findById(bookingId);
 
             if (booking == null) {
                 return ResponseEntity.badRequest().body("Booking not found");
             }
 
-            if (booking.getStatus() != BookingStatus.CHECKED_IN) {
-                return ResponseEntity.badRequest().body("Booking must be checked in to checkout");
-            }
+//            if (booking.getStatus() != BookingStatus.CHECKED_IN) {
+//                return ResponseEntity.badRequest().body("Booking must be checked in to checkout");
+//            }
 
             if (booking.getPaymentStatus() != PaymentStatus.PAID) {
                 double remainingAmount = calculateRemainingAmount(booking);
@@ -515,6 +517,17 @@ public class BookingController {
         return ResponseEntity.ok(cancellation);
     }
 
+    @GetMapping("/status-and-date")
+    public List<Booking> findAllByStatusAndBookingDate(BookingStatus status, LocalDateTime bookingDate) {
+        return service.findAllByStatusAndBookingDate(BookingStatus.WAITING, LocalDateTime.now().minusMinutes(8));
+    }
+
+    @GetMapping("/remaining-payment-time/{bookingId}")
+    public String getRemainingPaymentTime(@PathVariable("bookingId") String bookingId) {
+        return service.getRemainingPaymentTime(bookingId);
+
+    }
+    
     @GetMapping(value = "/payment-qr-checkout/{bookingId}", produces = MediaType.IMAGE_PNG_VALUE)
     public ResponseEntity<byte[]> getPaymentQr(
             @PathVariable String bookingId
@@ -522,27 +535,56 @@ public class BookingController {
         try {
             Booking booking = service.findById(bookingId);
 
-            AtomicReference<Double> paymentAmount = new AtomicReference<>((double) 0);
-            if(booking != null) {
-                paymentAmount.set(calculateRemainingAmount(booking));
+            if (booking == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
             }
 
-            List<com.hotelvista.model.BookingService> listServiceDetail = bookingServiceService.findAllByBooking_BookingID(bookingId);
-            if(listServiceDetail != null) {
-                listServiceDetail.forEach((sd) -> {
-                    paymentAmount.updateAndGet(v -> v + sd.getTotalAmount());
-                    System.out.println(sd);
-                });
-            }
-            System.out.println("===================================SO TIEN: " + paymentAmount.get());
-            String qrUrl = QRGenerateUtil.buildVietQRUrl(bookingId, paymentAmount.get());
+            double totalAmount = booking.getTotalAmount();
+
+            double remainingAmount = calculateRemainingAmountCheckout(booking);
+
+            String qrUrl = QRGenerateUtil.buildVietQRUrl(bookingId, remainingAmount);
             byte[] qrImage = QRGenerateUtil.generateQrImage(qrUrl);
 
             return ResponseEntity.ok()
                     .contentType(MediaType.IMAGE_PNG)
                     .body(qrImage);
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Hàm tính số tiền còn lại dựa trên paymentStatus
+     */
+    private double calculateRemainingAmountCheckout(Booking booking) {
+        double totalAmount = booking.getTotalAmount();
+        String paymentStatus = booking.getPaymentStatus().name(); // Assuming enum
+
+        switch (paymentStatus) {
+            case "PAID":
+            case "COMPLETED":
+                return 0.0;
+
+            case "PERCENTAGE_30":
+                return totalAmount * 0.7;
+
+            case "PERCENTAGE_50":
+                return totalAmount * 0.5;
+
+            case "PARTIAL":
+                return totalAmount * 0.5;
+
+            case "PENDING":
+            case "FAILED":
+                return totalAmount;
+            case "REFUNDED":
+            case "CANCELLED":
+                return 0.0;
+
+            default:
+                return totalAmount;
         }
     }
 }

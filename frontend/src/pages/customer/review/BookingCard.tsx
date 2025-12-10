@@ -4,6 +4,7 @@ import type { Review } from "../../../types/Review";
 import type { Booking } from "../../../types/Booking";
 import type { BookingDetail } from "../../../types/BookingDetail";
 import { Card } from "../../../components/my-card/components/ui/card";
+import { formatNumber } from "../../../utils/formatters";
 
 interface BookingCardProps {
   booking: Booking;
@@ -69,7 +70,8 @@ export default function BookingCard({
         <div>
           <p className="text-sm text-gray-600">Total Amount</p>
           <p className="font-semibold text-gray-900">
-            ${booking.totalAmount.toFixed(2)}
+            {formatNumber(booking.totalAmount)}
+            {" VND"}
           </p>
         </div>
       </div>

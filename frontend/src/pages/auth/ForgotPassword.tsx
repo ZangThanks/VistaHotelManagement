@@ -281,14 +281,15 @@ const ForgotPassword: React.FC = () => {
                       ? "text-green-500"
                       : "text-[#c3923c]"
                   }
-                  className="bg-transparent text-white"
+                  textColor="text-white"
+                  iconColor="text-white/80"
+                  className="bg-transparent"
                 />
                 {identifierError && (
                   <p className="text-red-500 text-xs mt-1">{identifierError}</p>
                 )}
                 {identifierSuccess && !identifierError && (
                   <p className="text-green-500 text-xs mt-1">
-                    ✓{" "}
                     {detectInputType(identifier) === "email"
                       ? "Email"
                       : "Phone"}{" "}

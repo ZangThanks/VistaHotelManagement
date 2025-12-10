@@ -124,6 +124,7 @@ const ResetPassword: React.FC = () => {
       setTimeout(() => {
         navigate("/auth/login");
       }, 2500);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error("Reset password failed:", error);
       setLoading(false);
@@ -268,7 +269,9 @@ const ResetPassword: React.FC = () => {
                 ? "text-green-500"
                 : "text-[#c3923c]"
             }
-            className="bg-transparent text-white"
+            textColor="text-white"
+            iconColor="text-white/80"
+            className="bg-transparent"
           />
 
           {/* Password Strength Indicator */}
@@ -300,7 +303,7 @@ const ResetPassword: React.FC = () => {
             <p className="text-red-500 text-xs mt-1">{newPasswordError}</p>
           )}
           {newPasswordSuccess && !newPasswordError && (
-            <p className="text-green-500 text-xs mt-1">✓ Password is valid</p>
+            <p className="text-green-500 text-xs mt-1">Password is valid</p>
           )}
         </div>
 
@@ -346,13 +349,15 @@ const ResetPassword: React.FC = () => {
                 ? "text-green-500"
                 : "text-[#c3923c]"
             }
-            className="bg-transparent text-white"
+            textColor="text-white"
+            iconColor="text-white/80"
+            className="bg-transparent"
           />
           {confirmPasswordError && (
             <p className="text-red-500 text-xs mt-1">{confirmPasswordError}</p>
           )}
           {confirmPasswordSuccess && !confirmPasswordError && (
-            <p className="text-green-500 text-xs mt-1">✓ Passwords match</p>
+            <p className="text-green-500 text-xs mt-1">Passwords match</p>
           )}
         </div>
 
