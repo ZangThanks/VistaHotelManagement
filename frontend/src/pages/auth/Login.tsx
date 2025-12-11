@@ -112,7 +112,16 @@ const Login: React.FC = () => {
       toast.success("Login successful!", { duration: 2000 });
 
       setTimeout(() => {
-        navigate("/");
+        // Navigate based on user role
+        const userData = res.data as any;
+        const userRole = userData?.userRole;
+        if (userRole === "ADMIN") {
+          navigate("/admin/dashboard");
+        } else if (userRole === "EMPLOYEE") {
+          navigate("/employee/dashboard");
+        } else {
+          navigate("/");
+        }
       }, 1000);
     } else {
       setPasswordError(res.message);

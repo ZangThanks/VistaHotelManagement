@@ -17,13 +17,13 @@ public class HourlyRatePolicyController {
     }
 
     @GetMapping("/base-rates")
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'EMPLOYEE')")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public List<HourlyRatePolicy> getAllPolicyBaseRates(){
         return service.getAllHourlyRatePolicy();
     }
 
     @PostMapping("/save")
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'EMPLOYEE')")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public void save(@RequestBody HourlyRatePolicy hourlyRatePolicy){
         service.save(hourlyRatePolicy);
     }

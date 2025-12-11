@@ -168,7 +168,7 @@ export const getCurrentUserFromStorage = (): UserProfile | null => {
 export const updateUserInStorage = (user: UserProfile): void => {
   try {
     localStorage.setItem("user", JSON.stringify(user));
-    
+
     // Dispatch custom event to notify other components about user data update
     window.dispatchEvent(new Event("userDataUpdated"));
   } catch (error) {

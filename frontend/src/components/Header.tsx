@@ -99,10 +99,10 @@ const Header: React.FC = () => {
 
     // Listen for storage changes (when user logs in/out in another tab)
     window.addEventListener("storage", checkUserStatus);
-    
+
     // Listen for custom event when user data is updated in the same tab
     window.addEventListener("userDataUpdated", checkUserStatus);
-    
+
     return () => {
       window.removeEventListener("storage", checkUserStatus);
       window.removeEventListener("userDataUpdated", checkUserStatus);

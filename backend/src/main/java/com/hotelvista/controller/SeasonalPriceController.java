@@ -5,6 +5,7 @@ import com.hotelvista.model.SeasonalPrice;
 import com.hotelvista.service.SeasonalPriceService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -29,6 +30,7 @@ public class SeasonalPriceController {
     }
 
     @PostMapping("/save")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public void saveSeasonalPrice(@RequestBody SeasonalPrice price) {
         service.saveSeasonalPrice(price);
     }
@@ -55,6 +57,7 @@ public class SeasonalPriceController {
     }
 
     @PostMapping("/save-with-room-types")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<?> create(@RequestBody PriceDTO req) {
         try {
             SeasonalPrice sp = service.createOrUpdateSeasonPrice(req);
