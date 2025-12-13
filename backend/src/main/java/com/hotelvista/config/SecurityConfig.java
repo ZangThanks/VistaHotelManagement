@@ -73,6 +73,15 @@ public class SecurityConfig {
                 // Authorization rules - Simplified for method-level security
                 .authorizeHttpRequests(auth -> auth
                         // Public endpoints - không cần authentication
+
+
+
+
+
+
+
+
+
                         .requestMatchers(
                                 "/auth/**",
                                 "/oauth2/**",

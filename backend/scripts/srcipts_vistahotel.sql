@@ -427,3 +427,9 @@ VALUES
     ('RC003', 'B3005250028', 'STE301', 'STE302', 'Điều hòa không hoạt động tốt', '2024-06-20 15:00:00', 'PENDING', NULL, NULL, NULL);
 
 
+INSERT INTO room_images (room_id, images_url)
+VALUES ('STD102', 'https://res.cloudinary.com/dk8gvar3y/image/upload/v1763549637/hotel-room-5858067_1280_auoi0o.jpg'),
+       ('STD102', 'https://res.cloudinary.com/dk8gvar3y/image/upload/v1763548281/travel-1677347_1280_bxcvrh.jpg''),'),
+       ('STD102', 'https://res.cloudinary.com/dk8gvar3y/image/upload/v1765326150/pexels-photo-164595_ldxdih.jpg'),
+       ('STD102', 'https://res.cloudinary.com/dk8gvar3y/image/upload/v1765326134/pexels-photo-1838554_zgrpcj.jpg'),
+       ('STD102', 'https://res.cloudinary.com/dk8gvar3y/image/upload/v1765326092/pexels-photo-262048_fpdy6s.jpg')

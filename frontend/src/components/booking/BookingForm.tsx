@@ -1793,27 +1793,6 @@ export default function BookingForm({
                 {totalAmount.toLocaleString()} VND
               </span>
             </div>
-
-            <div className="mt-6 pt-4 border-t border-gray-200">
-              <label className="block text-sm font-semibold text-gray-900 mb-3">
-                Payment method:
-              </label>
-              <div className="flex flex-wrap gap-2">
-                {PAYMENT_METHODS.map((method) => (
-                  <button
-                    key={method}
-                    onClick={() => setSelectedPaymentMethod(method)}
-                    className={`px-4 py-2 rounded-lg font-medium text-sm transition ${
-                      selectedPaymentMethod === method
-                        ? "bg-[#c9b8a8] text-white"
-                        : "border border-gray-300 text-gray-900 hover:bg-gray-50"
-                    }`}
-                  >
-                    {method}
-                  </button>
-                ))}
-              </div>
-            </div>
           </div>
 
           {/* Navigation Buttons */}

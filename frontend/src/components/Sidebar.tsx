@@ -9,13 +9,17 @@ import {
   FaCog,
   FaExclamationTriangle,
 } from "react-icons/fa";
-import { MdMeetingRoom, MdRateReview  } from "react-icons/md";
+import { MdMeetingRoom, MdRateReview } from "react-icons/md";
 import { RiInfoCardFill, RiDiscountPercentFill } from "react-icons/ri";
 import { IoBagCheckOutline } from "react-icons/io5";
 import { LuMapPinCheckInside } from "react-icons/lu";
 import { cn } from "../utils/cn";
 import { MdRoomService, MdDiscount } from "react-icons/md";
-import { BiSolidCategory, BiSolidDiscount } from "react-icons/bi";
+import {
+  BiSolidCategory,
+  BiSolidDiscount,
+  BiSolidDollarCircle,
+} from "react-icons/bi";
 import { motion, AnimatePresence } from "framer-motion";
 import { createPortal } from "react-dom";
 
@@ -57,6 +61,11 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
       path: "/admin/room-type-management",
     },
     {
+      icon: <BiSolidDollarCircle />,
+      label: "Pricing",
+      path: "/admin/pricing",
+    },
+    {
       icon: <RiInfoCardFill />,
       label: "Information",
       path: "/admin/info",
@@ -81,15 +90,16 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
       label: "Reservations",
       path: "/admin/reservations",
     },
-    { 
-      icon: <FaUsers />, 
-      label: "Customers", 
-      path: "/admin/customers" 
+    {
+      icon: <FaUsers />,
+      label: "Customers",
+      path: "/admin/customers",
     },
-    { 
-      icon: <MdRoomService />, 
-      label: "Services", 
-      path: "/admin/services" },
+    {
+      icon: <MdRoomService />,
+      label: "Services",
+      path: "/admin/services",
+    },
     {
       icon: <MdRateReview />,
       label: "Reviews",
@@ -115,10 +125,10 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
       label: "Vouchers",
       path: "/admin/voucher-management",
     },
-    { 
-      icon: <FaChartLine />, 
-      label: "Reports", 
-      path: "/admin/reports" 
+    {
+      icon: <FaChartLine />,
+      label: "Reports",
+      path: "/admin/reports",
     },
   ];
 
