@@ -49,6 +49,7 @@ public class SeasonalPriceController {
         return service.getAllSeasonalPrices_RoomType();
     }
 
+
     @GetMapping("/room-types/{id}")
     public PriceDTO getSeasonalPrice_RoomTypeById(@PathVariable int id) {
         return service.getSeasonalPrice_RoomTypeById(id);

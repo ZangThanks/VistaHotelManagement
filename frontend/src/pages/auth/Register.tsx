@@ -315,13 +315,15 @@ const Register: React.FC = () => {
                 ? "text-green-500"
                 : "text-[#c3923c]"
             }
-            className="bg-transparent text-white"
+            textColor="text-white"
+            iconColor="text-white/80"
+            className="bg-transparent"
           />
           {userNameError && (
             <p className="text-red-500 text-xs mt-1">{userNameError}</p>
           )}
           {userNameSuccess && !userNameError && (
-            <p className="text-green-500 text-xs mt-1">✓ Username is valid</p>
+            <p className="text-green-500 text-xs mt-1">Username is valid</p>
           )}
         </div>
 
@@ -367,13 +369,15 @@ const Register: React.FC = () => {
                 ? "text-green-500"
                 : "text-[#c3923c]"
             }
-            className="bg-transparent text-white"
+            textColor="text-white"
+            iconColor="text-white/80"
+            className="bg-transparent"
           />
           {fullNameError && (
             <p className="text-red-500 text-xs mt-1">{fullNameError}</p>
           )}
           {fullNameSuccess && !fullNameError && (
-            <p className="text-green-500 text-xs mt-1">✓ Full name is valid</p>
+            <p className="text-green-500 text-xs mt-1">Full name is valid</p>
           )}
         </div>
 
@@ -419,13 +423,15 @@ const Register: React.FC = () => {
                 ? "text-green-500"
                 : "text-[#c3923c]"
             }
-            className="bg-transparent text-white"
+            textColor="text-white"
+            iconColor="text-white/80"
+            className="bg-transparent"
           />
           {emailError && (
             <p className="text-red-500 text-xs mt-1">{emailError}</p>
           )}
           {emailSuccess && !emailError && (
-            <p className="text-green-500 text-xs mt-1">✓ Email is valid</p>
+            <p className="text-green-500 text-xs mt-1">Email is valid</p>
           )}
         </div>
 
@@ -471,14 +477,16 @@ const Register: React.FC = () => {
                 ? "text-green-500"
                 : "text-[#c3923c]"
             }
-            className="bg-transparent text-white"
+            textColor="text-white"
+            iconColor="text-white/80"
+            className="bg-transparent"
           />
           {phoneError && (
             <p className="text-red-500 text-xs mt-1">{phoneError}</p>
           )}
           {phoneSuccess && !phoneError && (
             <p className="text-green-500 text-xs mt-1">
-              ✓ Phone number is valid
+              Phone number is valid
             </p>
           )}
         </div>
@@ -525,13 +533,15 @@ const Register: React.FC = () => {
                 ? "text-green-500"
                 : "text-[#c3923c]"
             }
-            className="bg-transparent text-white"
+            textColor="text-white"
+            iconColor="text-white/80"
+            className="bg-transparent"
           />
           {passwordError && (
             <p className="text-red-500 text-xs mt-1">{passwordError}</p>
           )}
           {passwordSuccess && !passwordError && (
-            <p className="text-green-500 text-xs mt-1">✓ Password is valid</p>
+            <p className="text-green-500 text-xs mt-1">Password is valid</p>
           )}
         </div>
 
@@ -577,13 +587,15 @@ const Register: React.FC = () => {
                 ? "text-green-500"
                 : "text-[#c3923c]"
             }
-            className="bg-transparent text-white"
+            textColor="text-white"
+            iconColor="text-white/80"
+            className="bg-transparent"
           />
           {confirmPasswordError && (
             <p className="text-red-500 text-xs mt-1">{confirmPasswordError}</p>
           )}
           {confirmPasswordSuccess && !confirmPasswordError && (
-            <p className="text-green-500 text-xs mt-1">✓ Passwords match</p>
+            <p className="text-green-500 text-xs mt-1">Passwords match</p>
           )}
         </div>
 

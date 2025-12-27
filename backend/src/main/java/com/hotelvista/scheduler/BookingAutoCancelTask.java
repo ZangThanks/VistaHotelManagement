@@ -28,6 +28,7 @@ public class BookingAutoCancelTask {
         );
         expiredBookings_8Hours.forEach(b -> {
             if (b.getCustomer().getReputationPoint() > 40 && b.getCustomer().getReputationPoint() <= 70) {
+                b.setPaymentStatus(PaymentStatus.PAID);
                 b.setStatus(BookingStatus.CANCELLED);
                 b.setPaymentStatus(PaymentStatus.FAILED);
             }
@@ -40,6 +41,7 @@ public class BookingAutoCancelTask {
         );
         expiredBookings_6Hours.forEach(b -> {
             if (b.getCustomer().getReputationPoint() >= 0 && b.getCustomer().getReputationPoint() <= 40) {
+                b.setPaymentStatus(PaymentStatus.PAID);
                 b.setStatus(BookingStatus.CANCELLED);
                 b.setPaymentStatus(PaymentStatus.FAILED);
             }

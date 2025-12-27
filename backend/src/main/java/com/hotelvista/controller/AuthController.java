@@ -217,8 +217,10 @@ public class AuthController {
         String accessToken = jwtTokenProvider.generateToken(
                 user.getId(),
                 user.getUserName(),
-                user.getUserRole().toString()
+                user.getUserRole().name()
         );
+
+        System.out.println("User role: " + user.getUserRole().name());
 
         String refreshToken = jwtTokenProvider.generateRefreshToken(user.getId());
 
@@ -263,7 +265,7 @@ public class AuthController {
             String newAccessToken = jwtTokenProvider.generateToken(
                     user.getId(),
                     user.getUserName(),
-                    user.getUserRole().toString()
+                    user.getUserRole().name()
             );
 
             return Map.of(

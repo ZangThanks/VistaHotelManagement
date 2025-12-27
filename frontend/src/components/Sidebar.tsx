@@ -1,5 +1,5 @@
 /* eslint-disable*/
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   FaTachometerAlt,
@@ -9,13 +9,17 @@ import {
   FaCog,
   FaExclamationTriangle,
 } from "react-icons/fa";
-import { MdMeetingRoom } from "react-icons/md";
+import { MdMeetingRoom, MdRateReview } from "react-icons/md";
 import { RiInfoCardFill, RiDiscountPercentFill } from "react-icons/ri";
 import { IoBagCheckOutline } from "react-icons/io5";
 import { LuMapPinCheckInside } from "react-icons/lu";
 import { cn } from "../utils/cn";
 import { MdRoomService, MdDiscount } from "react-icons/md";
-import { BiSolidCategory, BiSolidDiscount, BiSolidDollarCircle } from "react-icons/bi";
+import {
+  BiSolidCategory,
+  BiSolidDiscount,
+  BiSolidDollarCircle,
+} from "react-icons/bi";
 import { motion, AnimatePresence } from "framer-motion";
 import { createPortal } from "react-dom";
 
@@ -23,80 +27,157 @@ interface SidebarProps {
   className?: string;
 }
 
+interface User {
+  userRole?: string;
+}
+
 const Sidebar: React.FC<SidebarProps> = ({ className }) => {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
+  const [user, setUser] = useState<User | null>(null);
   const location = useLocation();
 
-  const menuItems = [
-      {
-          icon: <FaTachometerAlt />,
-          label: 'Dashboard',
-          path: '/admin',
-      },
-      {
-          icon: <MdMeetingRoom />,
-          label: 'Rooms',
-          path: '/admin/room-management',
-      },
-      {
-          icon: <BiSolidCategory />,
-          label: 'Room Types',
-          path: '/admin/room-type-management',
-      },
-      {
-          icon: <BiSolidDollarCircle />,
-          label: 'Pricing',
-          path: '/admin/pricing',
-      },
-      {
-          icon: <RiInfoCardFill />,
-          label: 'Information',
-          path: '/admin/info',
-      },
-      {
-          icon: <LuMapPinCheckInside />,
-          label: 'Check-in',
-          path: '/admin/checkin',
-      },
-      {
-          icon: <IoBagCheckOutline />,
-          label: 'Check-out',
-          path: '/admin/checkout',
-      },
-      {
-          icon: <FaCalendarAlt />,
-          label: 'Reservations',
-          path: '/admin/reservations',
-      },
-      { icon: <FaUsers />, label: 'Guests', path: '/employee/customer/list' },
-      {
-          icon: <FaExclamationTriangle />,
-          label: 'Incidents',
-          path: '/employee/incidents',
-      },
-      {
-          icon: <MdRoomService />,
-          label: 'Services',
-          path: '/employee/services',
-      },
-      {
-          icon: <RiDiscountPercentFill />,
-          label: 'Promotions',
-          path: '/admin/promotion-management',
-      },
-      {
-          icon: <MdDiscount />,
-          label: 'Promotion Types',
-          path: '/admin/promotion-type-management',
-      },
-      {
-          icon: <BiSolidDiscount />,
-          label: 'Vouchers',
-          path: '/admin/voucher-management',
-      },
-      { icon: <FaChartLine />, label: 'Reports', path: '/admin/reports' },
+  useEffect(() => {
+    const userStr = localStorage.getItem("user");
+    if (userStr) {
+      setUser(JSON.parse(userStr));
+    }
+  }, []);
+
+  const adminMenuItems = [
+    {
+      icon: <FaTachometerAlt />,
+      label: "Dashboard",
+      path: "/admin",
+    },
+    {
+      icon: <MdMeetingRoom />,
+      label: "Rooms",
+      path: "/admin/room-management",
+    },
+    {
+      icon: <BiSolidCategory />,
+      label: "Room Types",
+      path: "/admin/room-type-management",
+    },
+    {
+      icon: <BiSolidDollarCircle />,
+      label: "Pricing",
+      path: "/admin/pricing",
+    },
+    {
+      icon: <RiInfoCardFill />,
+      label: "Information",
+      path: "/admin/info",
+    },
+    {
+      icon: <LuMapPinCheckInside />,
+      label: "Check-in",
+      path: "/admin/checkin",
+    },
+    {
+      icon: <IoBagCheckOutline />,
+      label: "Check-out",
+      path: "/admin/checkout",
+    },
+    {
+      icon: <FaUsers />,
+      label: "Employees",
+      path: "/admin/employees",
+    },
+    {
+      icon: <FaCalendarAlt />,
+      label: "Reservations",
+      path: "/admin/reservations",
+    },
+    {
+      icon: <FaUsers />,
+      label: "Customers",
+      path: "/admin/customers",
+    },
+    {
+      icon: <MdRoomService />,
+      label: "Services",
+      path: "/admin/services",
+    },
+    {
+      icon: <MdRateReview />,
+      label: "Reviews",
+      path: "/admin/reviews",
+    },
+    {
+      icon: <FaExclamationTriangle />,
+      label: "Incidents",
+      path: "/admin/incidents",
+    },
+    {
+      icon: <RiDiscountPercentFill />,
+      label: "Promotions",
+      path: "/admin/promotion-management",
+    },
+    {
+      icon: <MdDiscount />,
+      label: "Promotion Types",
+      path: "/admin/promotion-type-management",
+    },
+    {
+      icon: <BiSolidDiscount />,
+      label: "Vouchers",
+      path: "/admin/voucher-management",
+    },
+    {
+      icon: <FaChartLine />,
+      label: "Reports",
+      path: "/admin/reports",
+    },
   ];
+
+  const employeeMenuItems = [
+    {
+      icon: <MdMeetingRoom />,
+      label: "Rooms",
+      path: "/employee/room-management",
+    },
+    {
+      icon: <BiSolidCategory />,
+      label: "Room Types",
+      path: "/employee/room-type-management",
+    },
+    { icon: <MdRoomService />, label: "Services", path: "/employee/services" },
+    {
+      icon: <RiInfoCardFill />,
+      label: "Information",
+      path: "/employee/info",
+    },
+    {
+      icon: <LuMapPinCheckInside />,
+      label: "Check-in",
+      path: "/employee/checkin",
+    },
+    {
+      icon: <IoBagCheckOutline />,
+      label: "Check-out",
+      path: "/employee/checkout",
+    },
+    {
+      icon: <FaUsers />,
+      label: "Customers",
+      path: "/employee/customers",
+    },
+    {
+      icon: <FaCalendarAlt />,
+      label: "Daily Work",
+      path: "/employee/daily",
+    },
+    {
+      icon: <MdRateReview />,
+      label: "Reviews",
+      path: "/employee/reviews",
+    },
+  ];
+
+  const menuItems =
+    user?.userRole === "EMPLOYEE" ? employeeMenuItems : adminMenuItems;
 
   const getIconScale = (index: number) => {
     if (hoveredIndex === null) return 1;

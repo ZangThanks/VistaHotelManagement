@@ -13,6 +13,7 @@ import com.hotelvista.service.ReviewService;
 import com.hotelvista.service.RoomService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -77,18 +78,21 @@ public class ReviewController {
 
     // 1. Biểu đồ đường
     @GetMapping("/ratings/trend")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<?> getRatingTrend() {
         return ResponseEntity.ok(reviewService.getRatingTrend());
     }
 
     // 2. Biểu đồ cột
     @GetMapping("/ratings/category")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<?> getCategoryRatings() {
         return ResponseEntity.ok(reviewService.getCategoryRatings());
     }
 
     // 3. Biểu đồ tròn
     @GetMapping("/ratings/sentiment")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<?> getSentiment() {
         return ResponseEntity.ok(reviewService.getSentiment());
     }

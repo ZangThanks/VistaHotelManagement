@@ -140,8 +140,8 @@ const PasswordChangeSection: React.FC<PasswordChangeSectionProps> = ({
       className="bg-white rounded-xl shadow-md border border-cream p-6"
     >
       <div className="flex items-center gap-3 mb-6">
-        <FaLock className="text-primary text-2xl" />
-        <h2 className="text-2xl font-bold text-primary">Change Password</h2>
+        <FaLock className="text-[#ccbda3] text-2xl" />
+        <h2 className="text-2xl font-bold text-[#ccbda3]">Change Password</h2>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -257,7 +257,7 @@ const PasswordChangeSection: React.FC<PasswordChangeSectionProps> = ({
         <button
           type="submit"
           disabled={loading}
-          className="w-full px-4 py-3 bg-primary text-white rounded-lg hover:bg-secondary transition-colors disabled:opacity-50 flex items-center justify-center gap-2 font-semibold"
+          className="w-full px-4 py-3 bg-[#ccbda3] text-white rounded-lg hover:bg-[#b3a68f] transition-colors disabled:opacity-50 flex items-center justify-center gap-2 font-semibold cursor-pointer"
         >
           <FaSave />
           {loading ? "Processing..." : "Change Password"}

@@ -707,6 +707,7 @@ const RoomManagement: React.FC = () => {
               rooms={paginatedRooms}
               onEdit={handleEdit}
               onView={handleView}
+              onDelete={() => {}}
             />
           ) : (
             <RoomTableView

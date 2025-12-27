@@ -5,6 +5,7 @@ import com.hotelvista.service.RoomTypePromotionService;
 import com.hotelvista.util.ValidatorsUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,6 +22,7 @@ public class RoomTypePromotionController {
     }
 
     @PostMapping("/create")
+    @PreAuthorize("hasAnyAuthority('ADMIN')")
     public ResponseEntity<?> save(@RequestBody RoomTypePromotion roomTypePromotion) {
         // Validate room type exists
         String roomTypeError = ValidatorsUtil.validateRequired(
@@ -82,6 +84,7 @@ public class RoomTypePromotionController {
     }
 
     @DeleteMapping("/delete")
+    @PreAuthorize("hasAnyAuthority('ADMIN')")
     public void deleteById(@RequestParam RoomTypePromotion.RoomTypePromotionId id){
         service.deleteById(id);
     }

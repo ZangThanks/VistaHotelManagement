@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { faEnvelope, faLock } from "@fortawesome/free-solid-svg-icons";
 import logoImage from "../../assets/images/logoWhite.png";
@@ -6,7 +6,6 @@ import googleLogo from "../../assets/images/google-logo.svg";
 import Button from "../../components/common/Button";
 import FloatingInput from "../../components/common/FloatingInput";
 import CustomCaptcha from "../../components/common/CustomCaptcha";
-import type { CustomCaptchaRef } from "../../components/common/CustomCaptcha";
 import { handleLogin } from "../../services/authService";
 import {
   validateEmailOrPhoneOrUsername,
@@ -26,7 +25,6 @@ const Login: React.FC = () => {
   const [shakeKey, setShakeKey] = useState(0);
   const [isCaptchaVerified, setIsCaptchaVerified] = useState(false);
   const [captchaError, setCaptchaError] = useState("");
-  const captchaRef = useRef<CustomCaptchaRef>(null);
   const navigate = useNavigate();
   const toast = useToastContext();
 
@@ -114,15 +112,24 @@ const Login: React.FC = () => {
       toast.success("Login successful!", { duration: 2000 });
 
       setTimeout(() => {
-        navigate("/");
+        // Navigate based on user role
+        const userData = res.data as any;
+        const userRole = userData?.userRole;
+        if (userRole === "ADMIN") {
+          navigate("/admin");
+        } else if (userRole === "EMPLOYEE") {
+          navigate("/employee/daily");
+        } else {
+          navigate("/");
+        }
       }, 1000);
     } else {
       setPasswordError(res.message);
       setPasswordSuccess(false);
       toast.error(res.message, { duration: 3000 });
       setIsCaptchaVerified(false);
-      // Tự động refresh captcha khi đăng nhập thất bại
-      captchaRef.current?.refresh();
+      // Reset captcha by incrementing shakeKey to force re-render
+      setShakeKey((prev) => prev + 1);
     }
   };
 
@@ -198,14 +205,15 @@ const Login: React.FC = () => {
                 ? "text-green-500"
                 : "text-[#c3923c]"
             }
-            className="bg-transparent text-white"
+            textColor="text-white"
+            iconColor="text-white/80"
+            className="bg-transparent"
           />
           {identifierError && (
             <p className="text-red-500 text-xs mt-1">{identifierError}</p>
           )}
           {identifierSuccess && !identifierError && (
             <p className="text-green-500 text-xs mt-1">
-              ✓{" "}
               {detectInputType(identifier) === "email"
                 ? "Email"
                 : detectInputType(identifier) === "phone"
@@ -258,13 +266,15 @@ const Login: React.FC = () => {
                 ? "text-green-500"
                 : "text-[#c3923c]"
             }
-            className="bg-transparent text-white"
+            textColor="text-white"
+            iconColor="text-white/80"
+            className="bg-transparent"
           />
           {passwordError && (
             <p className="text-red-500 text-xs mt-1">{passwordError}</p>
           )}
           {passwordSuccess && !passwordError && (
-            <p className="text-green-500 text-xs mt-1">✓ Password is valid</p>
+            <p className="text-green-500 text-xs mt-1">Password is valid</p>
           )}
         </div>
 
@@ -276,12 +286,10 @@ const Login: React.FC = () => {
           }`}
         >
           <CustomCaptcha
-            ref={captchaRef}
             onVerify={(isValid) => {
               setIsCaptchaVerified(isValid);
               if (isValid) setCaptchaError("");
             }}
-            autoRefreshMinutes={2}
             className="my-2"
           />
           {captchaError && (
