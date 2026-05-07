@@ -118,6 +118,12 @@ export const generateRevenueReportPdf = ({
         totals.bookingCount > 0
             ? Math.round(totals.totalRevenue / totals.bookingCount)
             : 0;
+    const totalRevenue = totals.totalRevenue;
+    const totalBookings = totals.bookingCount;
+    const totalAvgPerBooking = avgPerBooking;
+    const accentColor: [number, number, number] = [204, 189, 163];
+    const headerBg: [number, number, number] = [204, 189, 163];
+    const white: [number, number, number] = [255, 255, 255];
 
     // ============ HEADER ============
     doc.setFillColor(204, 189, 163); // #CCBDA3
@@ -255,17 +261,6 @@ export const generateRevenueReportPdf = ({
             3: { halign: 'right', cellWidth: 30 },
             4: { halign: 'center', cellWidth: 20 },
             5: { halign: 'right', cellWidth: 28 },
-        },
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        didParseCell: (cellData: any) => {
-            if (
-                cellData.row.index === tableData.length - 1 &&
-                cellData.section === 'body'
-            ) {
-                cellData.cell.styles.fillColor = totalRowBg;
-                cellData.cell.styles.fontStyle = 'bold';
-                cellData.cell.styles.textColor = darkText;
-            }
         },
         margin: { left: 15, right: 15 },
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
