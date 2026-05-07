@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaEdit, FaEye, FaTrashAlt, FaUsers, FaBed } from 'react-icons/fa';
+import { FaEdit, FaEye, FaUsers, FaBed } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import type { Room } from './RoomTableView';
 
@@ -7,7 +7,7 @@ interface RoomCardViewProps {
     rooms: Room[];
     onEdit: (room: Room) => void;
     onView: (room: Room) => void;
-    onDelete: (room: Room) => void;
+    onDelete?: (room: Room) => void;
 }
 
 const statusConfig = {
@@ -48,7 +48,6 @@ const RoomCardView: React.FC<RoomCardViewProps> = ({
     rooms,
     onEdit,
     onView,
-    onDelete,
 }) => {
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

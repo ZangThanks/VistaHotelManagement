@@ -4,7 +4,6 @@ import { getByRoom } from "../../services/bookingService";
 import type { Booking } from "../../types/Booking";
 import Dropdown from "../Dropdown";
 import { MdDangerous, MdDone } from "react-icons/md";
-import { IoMdInformationCircleOutline } from "react-icons/io";
 import { IoWarningOutline } from "react-icons/io5";
 
 interface HourlyBookingSelectorProps {

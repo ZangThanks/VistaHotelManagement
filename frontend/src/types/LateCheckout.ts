@@ -15,4 +15,9 @@ export interface LateCheckout {
 
     checkInDate: string;
     checkOutDate: string;
+
+    employee?: {
+        id: string;
+        fullName?: string;
+    };
 }

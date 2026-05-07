@@ -1,5 +1,5 @@
 /* eslint-disable */
-import React from 'react';
+// import React from 'react';
 import { FaEye, FaComment } from 'react-icons/fa';
 import type { Booking } from '../../types/Booking';
 
@@ -32,7 +32,7 @@ const getPaymentStatus = (status: any) => {
 const isTomorrowBooking = (booking: Booking) => {
     if (!booking.checkInDate) return false;
 
-    const today = new Date();
+    // const today = new Date();
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
 
@@ -56,6 +56,7 @@ const TomorrowTab = ({
     const tomorrowBookings = bookings
         .filter((booking) => isTomorrowBooking(booking))
         .map((booking) => ({
+            originalBooking: booking,
             id: booking.bookingID,
             guest: {
                 name: booking.customer?.fullName || 'Guest',
@@ -179,7 +180,7 @@ const TomorrowTab = ({
                             <td className="py-4 px-4">
                                 <div className="flex gap-1">
                                     <button
-                                        onClick={() => onViewDetails(booking)}
+                                        onClick={() => onViewDetails(booking.originalBooking)}
                                         className="w-8 h-8 rounded-full bg-[#F5F0EB] hover:bg-[#EBE3D7] transition flex items-center justify-center"
                                         title="View Details"
                                     >

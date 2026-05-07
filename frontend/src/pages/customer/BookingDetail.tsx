@@ -208,7 +208,7 @@ export default function BookingDetailPage() {
                 if (bookingRes.earlyCheckin) {
                     earlyRequest = {
                         requestID:
-                            bookingRes.earlyCheckin.requestID ||
+                            bookingRes.earlyCheckin.id ||
                             'booking-' + id,
                         requestTime: bookingRes.earlyCheckin.requestTime,
                         approvalStatus: bookingRes.earlyCheckin.approvalStatus,

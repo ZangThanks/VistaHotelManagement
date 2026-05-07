@@ -35,5 +35,14 @@ public interface NotificationRepository extends MongoRepository<Notification, St
     @Query("{'isRealtime': true, 'deliveredAt': null, 'status': {'$ne': 'FAILED'}}")
     List<Notification> findPendingRealtimeNotifications();
 
+    /**
+     * Tìm broadcast notifications chưa đọc theo UserRole
+     */
+    List<Notification> findByToUserIdIsNullAndToUserTypeAndIsReadFalse(UserRole toUserType);
 
+    /**
+     * Tìm broadcast notifications chưa đọc theo UserRole
+     * (toUserId = null, toUserType = role, isRead = false)
+     */
+    List<Notification> findByToUserIdIsNullAndToUserTypeAndIsReadFalseOrderByCreatedAtDesc(UserRole toUserType);
 }

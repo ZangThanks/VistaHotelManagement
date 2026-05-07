@@ -3,14 +3,14 @@ import { api } from './apiClient';
 
 const ENDPOINT = '/revenue';
 
-// Map frontend period → backend type
-const periodToType: Record<ReportPeriod, string> = {
-    daily: 'DAILY',
-    weekly: 'WEEKLY',
-    monthly: 'MONTHLY',
-    quarterly: 'QUARTERLY',
-    yearly: 'YEARLY',
-};
+// Map frontend period → backend type (commented out as not currently used)
+// const periodToType: Record<ReportPeriod, string> = {
+//     daily: 'DAILY',
+//     weekly: 'WEEKLY',
+//     monthly: 'MONTHLY',
+//     quarterly: 'QUARTERLY',
+//     yearly: 'YEARLY',
+// };
 
 interface RevenueReportProjection {
     year: number;
@@ -72,6 +72,7 @@ const transformProjectionToRevenueData = (
     type: string,
 ): RevenueData[] => {
     return projections.map((item) => ({
+        label: formatDateLabel(item, type),
         date: formatDateLabel(item, type),
         roomRevenue: item.roomRevenue ?? 0,
         serviceRevenue: item.serviceRevenue ?? 0,
@@ -81,15 +82,20 @@ const transformProjectionToRevenueData = (
 };
 
 // Helper function to transform API response to RevenueData format
-const transformRevenueData = (data: any[]): RevenueData[] => {
+const transformRevenueData = (
+    data: RevenueReportProjection[],
+): RevenueData[] => {
     return data.map((item) => ({
-        // Map fields from backend projection to frontend RevenueData
-        // Adjust field names based on your RevenueReportProjection
-        label: item.label || item.date || item.period || '',
-        totalRevenue: item.totalRevenue ?? item.revenue ?? item.total ?? 0,
-        bookingCount: item.bookingCount ?? item.count ?? 0,
-        // Add other fields as needed based on your RevenueData type
-        ...item,
+        label: `${item.year}${item.month ? `-${item.month}` : ''}${
+            item.day ? `-${item.day}` : ''
+        }`,
+        date: `${item.year}${item.month ? `-${item.month}` : ''}${
+            item.day ? `-${item.day}` : ''
+        }`,
+        roomRevenue: item.roomRevenue ?? 0,
+        serviceRevenue: item.serviceRevenue ?? 0,
+        totalRevenue: item.totalRevenue ?? 0,
+        bookingCount: item.bookingCount ?? 0,
     }));
 };
 
@@ -121,7 +127,7 @@ export const getRevenueData = async (): Promise<RevenueData[]> => {
         fromDateObj.setFullYear(fromDateObj.getFullYear() - 1);
         const fromDate = fromDateObj.toISOString().split('T')[0];
 
-        return await getRevenueByDateRange(fromDate, toDate, 'MONTHLY');
+        return await getRevenueByDateRange(fromDate, toDate);
     } catch (error) {
         console.error('Error fetching default revenue data:', error);
         throw error;

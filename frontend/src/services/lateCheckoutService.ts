@@ -25,11 +25,14 @@ export const createLateCheckoutRequest = async (payload: {
 export const approveLateCheckout = async (
     requestId: string,
     status: 'APPROVED' | 'REJECTED',
+    employeeId?: string,
 ) => {
     try {
-        const res = await api.put(
-            `${ENDPOINT}/approve/${requestId}?status=${status}`,
-        );
+        const url = employeeId
+            ? `${ENDPOINT}/approve/${requestId}?status=${status}&employeeId=${employeeId}`
+            : `${ENDPOINT}/approve/${requestId}?status=${status}`;
+
+        const res = await api.put(url);
         return res.data.data; // ⭐ BE trả { success, message, data }
     } catch (error) {
         console.error('Error approving late checkout:', error);

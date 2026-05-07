@@ -249,30 +249,73 @@ export const generateRevenueReportPdf = ({
         },
         tableWidth: pageWidth - 28,
         columnStyles: {
-            0: { halign: 'center' },
-            1: { halign: 'right' },
-            2: { halign: 'right' },
-            3: { halign: 'right' },
-            4: { halign: 'center' },
-            5: { halign: 'right' },
+            0: { halign: 'center', cellWidth: 28 },
+            1: { halign: 'right', cellWidth: 30 },
+            2: { halign: 'right', cellWidth: 30 },
+            3: { halign: 'right', cellWidth: 30 },
+            4: { halign: 'center', cellWidth: 20 },
+            5: { halign: 'right', cellWidth: 28 },
         },
-        // Áp dụng cùng columnStyles cho foot
-        didParseCell: (data) => {
-            if (data.section === 'foot') {
-                // Áp dụng cùng alignment như body
-                if (data.column.index === 0) {
-                    data.cell.styles.halign = 'center';
-                } else if (data.column.index === 4) {
-                    data.cell.styles.halign = 'center';
-                } else {
-                    data.cell.styles.halign = 'right';
-                }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        didParseCell: (cellData: any) => {
+            if (
+                cellData.row.index === tableData.length - 1 &&
+                cellData.section === 'body'
+            ) {
+                cellData.cell.styles.fillColor = totalRowBg;
+                cellData.cell.styles.fontStyle = 'bold';
+                cellData.cell.styles.textColor = darkText;
             }
         },
-        margin: { left: 14, right: 14 },
-    });
+        margin: { left: 15, right: 15 },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any);
 
-    yPos = (doc as any).lastAutoTable.finalY + 10;
+    // Get the final Y position after table
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const finalY = (doc as any).lastAutoTable.finalY + 12;
+
+    // === SUMMARY SECTION ===
+    const summaryY = finalY;
+    const boxWidth = (pageWidth - 45) / 3;
+
+    // Summary boxes with Vista Hotel colors
+    const summaries = [
+        {
+            label: 'Total Revenue',
+            value: totalRevenue.toLocaleString('vi-VN') + ' ₫',
+            bgColor: accentColor,
+        },
+        {
+            label: 'Total Bookings',
+            value: totalBookings.toString(),
+            bgColor: headerBg,
+        },
+        {
+            label: 'Avg. Per Booking',
+            value: totalAvgPerBooking.toLocaleString('vi-VN') + ' ₫',
+            bgColor: [160, 145, 120] as [number, number, number],
+        },
+    ];
+
+    summaries.forEach((item, index) => {
+        const x = 15 + index * (boxWidth + 7.5);
+        doc.setFillColor(...item.bgColor);
+        doc.roundedRect(x, summaryY, boxWidth, 18, 2, 2, 'F');
+
+        doc.setTextColor(...white);
+        doc.setFontSize(7);
+        doc.setFont('helvetica', 'normal');
+        doc.text(item.label, x + boxWidth / 2, summaryY + 6, {
+            align: 'center',
+        });
+
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        doc.text(item.value, x + boxWidth / 2, summaryY + 13, {
+            align: 'center',
+        });
+    });
 
     // ============ SIGNATURE SECTION ============
     const signatureY = Math.min(yPos + 10, pageHeight - 65);

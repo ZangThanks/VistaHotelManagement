@@ -5,12 +5,293 @@ import { useNotificationContext } from '../../context/NotificationContextAPI';
 import { earlyCheckinNotificationService } from '../../services/earlyCheckinNotificationService';
 import type { CancelBookingRequest } from '../../services/earlyCheckinNotificationService';
 import { useToastContext } from '../../hooks/useToastContext';
+import { sendEmail, type EmailPayload } from '../../services/emailService';
+
 interface Props {
     booking: Booking | null;
     onClose: () => void;
     onSuccess: () => void;
     onError?: (message: string) => void;
 }
+
+// ============================================
+// EMAIL TEMPLATE BUILDER
+// ============================================
+interface CancellationEmailData {
+    customerName: string;
+    customerEmail: string;
+    customerPhone?: string;
+    customerAddress?: string;
+    bookingId: string;
+    roomNumber: string;
+    checkInDate: string;
+    checkOutDate: string;
+    totalAmount: string;
+    reason: string;
+    refundAmount?: number;
+    paymentInfo?: {
+        method: string;
+        bankName?: string;
+        accountNumber?: string;
+        accountName?: string;
+        mobileNumber?: string;
+    };
+}
+
+const createCancellationEmailTemplate = (
+    data: CancellationEmailData,
+): EmailPayload => {
+    const htmlContent = `
+        <!DOCTYPE html>
+        <html lang="vi">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Booking Cancellation Confirmation</title>
+        </head>
+        <body style="margin: 0; padding: 0; background-color: #f5f5f5; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+            <div style="max-width: 650px; margin: 40px auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
+                
+                <!-- Header với màu chủ đạo #b9ad96 -->
+                <div style="background: linear-gradient(135deg, #b9ad96 0%, #a89981 100%); padding: 40px 30px; text-align: center; position: relative;">
+                    <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 600; letter-spacing: 0.5px;">
+                        Vista Hotel
+                    </h1>
+                    <p style="margin: 10px 0 0 0; color: rgba(255,255,255,0.9); font-size: 16px; font-weight: 300;">
+                        Booking Cancellation Confirmation
+                    </p>
+                </div>
+
+                <!-- Content -->
+                <div style="padding: 40px 35px;">
+                    
+                    <!-- Greeting -->
+                    <div style="margin-bottom: 30px;">
+                        <p style="font-size: 16px; color: #2c2c2c; margin: 0 0 10px 0; line-height: 1.6;">
+                            Dear <strong style="color: #b9ad96;">${
+                                data.customerName
+                            }</strong>,
+                        </p>
+                        <p style="font-size: 14px; color: #5a5a5a; margin: 0; line-height: 1.8;">
+                            We have received and successfully processed your booking cancellation request. Below are the details of the cancelled booking.
+                        </p>
+                    </div>
+
+                    <!-- Customer Information -->
+                    <div style="background: linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%); border-left: 4px solid #b9ad96; padding: 25px; border-radius: 8px; margin-bottom: 25px;">
+                        <h3 style="margin: 0 0 18px 0; color: #2c2c2c; font-size: 18px; font-weight: 600; display: flex; align-items: center;">
+                            Customer Information
+                        </h3>
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <tr>
+                                <td style="padding: 10px 0; color: #5a5a5a; font-size: 14px; width: 40%;"><strong>Full Name:</strong></td>
+                                <td style="padding: 10px 0; color: #2c2c2c; font-size: 14px; font-weight: 500;">${
+                                    data.customerName
+                                }</td>
+                            </tr>
+                            <tr style="border-top: 1px solid #e8e8e8;">
+                                <td style="padding: 10px 0; color: #5a5a5a; font-size: 14px;"><strong>Email:</strong></td>
+                                <td style="padding: 10px 0; color: #2c2c2c; font-size: 14px; font-weight: 500;">${
+                                    data.customerEmail
+                                }</td>
+                            </tr>
+                            ${
+                                data.customerPhone
+                                    ? `
+                            <tr style="border-top: 1px solid #e8e8e8;">
+                                <td style="padding: 10px 0; color: #5a5a5a; font-size: 14px;"><strong>Phone Number:</strong></td>
+                                <td style="padding: 10px 0; color: #2c2c2c; font-size: 14px; font-weight: 500;">${data.customerPhone}</td>
+                            </tr>
+                            `
+                                    : ''
+                            }
+                            ${
+                                data.customerAddress
+                                    ? `
+                            <tr style="border-top: 1px solid #e8e8e8;">
+                                <td style="padding: 10px 0; color: #5a5a5a; font-size: 14px;"><strong>Address:</strong></td>
+                                <td style="padding: 10px 0; color: #2c2c2c; font-size: 14px; font-weight: 500;">${data.customerAddress}</td>
+                            </tr>
+                            `
+                                    : ''
+                            }
+                        </table>
+                    </div>
+
+                    <!-- Booking Information -->
+                    <div style="background: linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%); border-left: 4px solid #b9ad96; padding: 25px; border-radius: 8px; margin-bottom: 25px;">
+                        <h3 style="margin: 0 0 18px 0; color: #2c2c2c; font-size: 18px; font-weight: 600; display: flex; align-items: center;">
+                            Booking Details
+                        </h3>
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <tr>
+                                <td style="padding: 10px 0; color: #5a5a5a; font-size: 14px; width: 40%;"><strong>Booking ID:</strong></td>
+                                <td style="padding: 10px 0; color: #b9ad96; font-size: 14px; font-weight: 600;">${
+                                    data.bookingId
+                                }</td>
+                            </tr>
+                            <tr style="border-top: 1px solid #e8e8e8;">
+                                <td style="padding: 10px 0; color: #5a5a5a; font-size: 14px;"><strong>Room Number:</strong></td>
+                                <td style="padding: 10px 0; color: #2c2c2c; font-size: 14px; font-weight: 500;">${
+                                    data.roomNumber
+                                }</td>
+                            </tr>
+                            <tr style="border-top: 1px solid #e8e8e8;">
+                                <td style="padding: 10px 0; color: #5a5a5a; font-size: 14px;"><strong>Check-in Date:</strong></td>
+                                <td style="padding: 10px 0; color: #2c2c2c; font-size: 14px; font-weight: 500;">${
+                                    data.checkInDate
+                                }</td>
+                            </tr>
+                            <tr style="border-top: 1px solid #e8e8e8;">
+                                <td style="padding: 10px 0; color: #5a5a5a; font-size: 14px;"><strong>Check-out Date:</strong></td>
+                                <td style="padding: 10px 0; color: #2c2c2c; font-size: 14px; font-weight: 500;">${
+                                    data.checkOutDate
+                                }</td>
+                            </tr>
+                            <tr style="border-top: 2px solid #b9ad96;">
+                                <td style="padding: 12px 0; color: #5a5a5a; font-size: 14px;"><strong>Total Amount:</strong></td>
+                                <td style="padding: 12px 0; color: #2c2c2c; font-size: 18px; font-weight: 700;">${
+                                    data.totalAmount
+                                } VNĐ</td>
+                            </tr>
+                            <tr style="border-top: 1px solid #e8e8e8;">
+                                <td style="padding: 10px 0; color: #5a5a5a; font-size: 14px; vertical-align: top;"><strong>Cancellation Reason:</strong></td>
+                                <td style="padding: 10px 0; color: #2c2c2c; font-size: 14px; line-height: 1.6;">${
+                                    data.reason
+                                }</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <!-- Refund Information (nếu có) -->
+                    ${
+                        data.refundAmount && data.refundAmount > 0
+                            ? `
+                    <div style="background: linear-gradient(135deg, #f0f8f0 0%, #e8f5e9 100%); border-left: 4px solid #4caf50; padding: 25px; border-radius: 8px; margin-bottom: 25px;">
+                        <h3 style="margin: 0 0 18px 0; color: #2e7d32; font-size: 18px; font-weight: 600; display: flex; align-items: center;">
+                          
+                            Refund Information
+                        </h3>
+                        
+                        <div style="background-color: white; padding: 20px; border-radius: 8px; margin-bottom: 15px; text-align: center; border: 2px dashed #4caf50;">
+                            <p style="margin: 0 0 5px 0; font-size: 13px; color: #5a5a5a; text-transform: uppercase; letter-spacing: 1px;">Refund Amount</p>
+                            <p style="margin: 0; font-size: 32px; color: #2e7d32; font-weight: 700;">
+                                ${data.refundAmount.toLocaleString(
+                                    'vi-VN',
+                                )} <span style="font-size: 18px;">VNĐ</span>
+                            </p>
+                        </div>
+
+                        <div style="background-color: white; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                            <p style="margin: 0; font-size: 13px; color: #5a5a5a; line-height: 1.8;">
+                                ⏱<strong>Processing Time:</strong> The refund will be credited to your account within <strong style="color: #2e7d32;">3-5 business days</strong> from the confirmation date.
+                            </p>
+                        </div>
+
+                        ${
+                            data.paymentInfo?.method === 'BANK_TRANSFER'
+                                ? `
+                        <div style="background-color: white; padding: 18px; border-radius: 8px;">
+                            <p style="margin: 0 0 12px 0; font-size: 14px; color: #2c2c2c; font-weight: 600;">
+                                Refund Method: Bank Transfer
+                            </p>
+                            <table style="width: 100%; font-size: 13px; color: #5a5a5a;">
+                                <tr>
+                                    <td style="padding: 6px 0; width: 35%;"><strong>Bank Name:</strong></td>
+                                    <td style="padding: 6px 0; color: #2c2c2c; font-weight: 500;">${data.paymentInfo.bankName}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 6px 0;"><strong>Account Number:</strong></td>
+                                    <td style="padding: 6px 0; color: #2c2c2c; font-weight: 500;">${data.paymentInfo.accountNumber}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 6px 0;"><strong>Account Holder:</strong></td>
+                                    <td style="padding: 6px 0; color: #2c2c2c; font-weight: 500;">${data.paymentInfo.accountName}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        `
+                                : data.paymentInfo
+                                ? `
+                        <div style="background-color: white; padding: 18px; border-radius: 8px;">
+                            <p style="margin: 0 0 12px 0; font-size: 14px; color: #2c2c2c; font-weight: 600;">
+                                Refund Method: ${data.paymentInfo.method}
+                            </p>
+                            <table style="width: 100%; font-size: 13px; color: #5a5a5a;">
+                                <tr>
+                                    <td style="padding: 6px 0; width: 35%;"><strong>Phone Number:</strong></td>
+                                    <td style="padding: 6px 0; color: #2c2c2c; font-weight: 500;">${data.paymentInfo.mobileNumber}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        `
+                                : ''
+                        }
+                    </div>
+                    `
+                            : ''
+                    }
+
+                    <!-- Contact Information -->
+                    <div style="background-color: #2c2c2c; color: white; padding: 25px; border-radius: 8px; margin-bottom: 25px;">
+                        <h3 style="margin: 0 0 15px 0; font-size: 16px; font-weight: 600; color: #b9ad96;">
+                            Need Assistance?
+                        </h3>
+                        <p style="margin: 0 0 12px 0; font-size: 14px; color: #e0e0e0; line-height: 1.6;">
+                            If you have any questions, please contact us:
+                        </p>
+                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                            <p style="margin: 0; font-size: 14px;">
+                                <span style="color: #b9ad96; font-weight: 600;">Hotline:</span> <br/>
+                                <a href="tel:1900xxxx" style="color: white; text-decoration: none;">1900-xxxx</a>
+                            </p>
+                            <p style="margin: 0; font-size: 14px;">
+                                <span style="color: #b9ad96; font-weight: 600;">Email:</span> 
+                                <a href="mailto:support@vistahotel.com" style="color: white; text-decoration: none;">support@vistahotel.com</a>
+                            </p>
+                            <p style="margin: 0; font-size: 14px;">
+                                <span style="color: #b9ad96; font-weight: 600;">🌐 Website:</span> 
+                                <a href="http://localhost:5173/" style="color: white; text-decoration: none;">www.vistahotel.com</a>
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Closing Message -->
+                    <div style="text-align: center; padding: 20px 0;">
+                        <p style="margin: 0 0 15px 0; font-size: 14px; color: #5a5a5a; line-height: 1.8;">
+                            We sincerely apologize for any inconvenience and hope to serve you again in the future.
+                        </p>
+                        <p style="margin: 0; font-size: 15px; color: #2c2c2c; font-weight: 600;">
+                            Best Regards,<br>
+                            <span style="color: #b9ad96; font-size: 16px;">Vista Hotel Team</span>
+                        </p>
+                    </div>
+
+                </div>
+
+                <!-- Footer -->
+                <div style="background-color: #f5f5f5; padding: 25px 35px; text-align: center; border-top: 1px solid #e0e0e0;">
+                    <p style="margin: 0 0 8px 0; font-size: 12px; color: #999;">
+                        This is an automated email. Please do not reply directly to this message.
+                    </p>
+                    <p style="margin: 0; font-size: 11px; color: #b0b0b0;">
+                        © 2025 Vista Hotel. All Rights Reserved.
+                    </p>
+                </div>
+
+            </div>
+        </body>
+        </html>
+            </p>
+        </div>
+    `;
+
+    return {
+        to: data.customerEmail,
+        subject: `[Vista Hotel] Xác nhận hủy đặt phòng #${data.bookingId}`,
+        htmlContent,
+    };
+};
 
 export default function CancelBookingModal({
     booking,
@@ -186,7 +467,7 @@ export default function CancelBookingModal({
                 }
             }
 
-            // ✅ Send notifications to customer & employee
+            // Send notifications to customer & employee
             try {
                 const notificationRequest: CancelBookingRequest = {
                     customerId: booking?.customer?.id || '',
@@ -209,7 +490,55 @@ export default function CancelBookingModal({
 
                 console.log('Cancel booking notifications sent successfully');
             } catch (notifError) {
-                console.error('⚠️ Failed to send notifications:', notifError);
+                console.error('Failed to send notifications:', notifError);
+            }
+
+            // GỬI EMAIL XÁC NHẬN HỦY BOOKING
+            try {
+                const customerEmail = booking?.customer?.email;
+
+                if (customerEmail) {
+                    // Prepare email data object
+                    const emailData: CancellationEmailData = {
+                        customerName:
+                            booking?.customer?.fullName || 'Quý khách',
+                        customerEmail: customerEmail,
+                        customerPhone: booking?.customer?.phone || undefined,
+                        customerAddress:
+                            booking?.customer?.address || undefined,
+                        bookingId: booking?.bookingID || '',
+                        roomNumber:
+                            booking?.bookingDetails?.[0]?.room?.roomNumber ||
+                            'N/A',
+                        checkInDate: new Date(
+                            booking?.checkInDate || '',
+                        ).toLocaleDateString('vi-VN'),
+                        checkOutDate: new Date(
+                            booking?.checkOutDate || '',
+                        ).toLocaleDateString('vi-VN'),
+                        totalAmount:
+                            booking?.totalAmount?.toLocaleString('vi-VN') ||
+                            '0',
+                        reason: reason.trim(),
+                        refundAmount:
+                            refundAmount > 0 ? refundAmount : undefined,
+                        paymentInfo: refundAmount > 0 ? paymentInfo : undefined,
+                    };
+
+                    // Generate email template and send
+                    const emailPayload =
+                        createCancellationEmailTemplate(emailData);
+                    await sendEmail(emailPayload);
+
+                    console.log('Cancellation email sent to:', customerEmail);
+                } else {
+                    console.warn(
+                        'No customer email found, skipping email notification',
+                    );
+                }
+            } catch (emailError) {
+                console.error('Failed to send cancellation email:', emailError);
+                // Không fail toàn bộ process nếu email lỗi
             }
 
             // Thông báo thành công
@@ -554,12 +883,6 @@ export default function CancelBookingModal({
                                                 'PAID' && (
                                                 <span className="text-[#b9ad96]">
                                                     Paid in full
-                                                </span>
-                                            )}
-                                            {booking.paymentStatus ===
-                                                'FAILED' && (
-                                                <span className="text-black">
-                                                    Payment failed
                                                 </span>
                                             )}
                                             {booking.paymentStatus ===

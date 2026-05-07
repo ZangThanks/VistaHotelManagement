@@ -21,7 +21,7 @@ interface BookingService {
 
 interface BookingDetail {
   room: {
-    roomNumber: string;
+    roomNumber: string | undefined;
     roomType: {
       typeName: string;
       basePrice: number;
@@ -56,7 +56,7 @@ export default function PaymentModal({
   const [qrCodeUrl, setQrCodeUrl] = useState("");
 
   const [paymentConfirmed, setPaymentConfirmed] = useState(false);
-  const pollingRef = useRef<NodeJS.Timeout | null>(null);
+  const pollingRef = useRef<number | null>(null);
 
   const [checklist, setChecklist] = useState({
     roomKeys: false,
@@ -285,7 +285,7 @@ export default function PaymentModal({
             <div>
               <span className="text-sm text-gray-500 block">Room(s)</span>
               <span className="font-semibold">
-                {bookingDetails.map((d) => d.room.roomNumber).join(", ") ||
+                {bookingDetails.map((d) => d.room.roomNumber || "N/A").join(", ") ||
                   "Loading..."}
               </span>
             </div>
@@ -317,7 +317,7 @@ export default function PaymentModal({
                     <tr key={index} className="border-b border-cream">
                       <td className="py-2 px-4">
                         {detail.room.roomType.typeName} - Room{" "}
-                        {detail.room.roomNumber}
+                        {detail.room.roomNumber || "N/A"}
                         {paymentData.bookingType === "HOURLY" && (
                           <span className="text-xs text-gray-500 ml-2">
                             ({paymentData.duration}h)

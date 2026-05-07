@@ -63,13 +63,13 @@ function ManualCheckinModal({ isOpen, onClose }: ManualCheckinModalProps) {
   const [checkInDate, setCheckInDate] = useState("");
   const [duration, setDuration] = useState("1");
   const [checkOutTime, setCheckOutTime] = useState("");
-  const [hourlyRate, setHourlyRate] = useState({ rate: 15, percentage: 15 });
+  const [, setHourlyRate] = useState({ rate: 15, percentage: 15 });
   const [hourlyAvailableRooms, setHourlyAvailableRooms] = useState<Room[]>([]);
   const [loadingHourlyRooms, setLoadingHourlyRooms] = useState(false);
 
   const [hourlyRateCalculation, setHourlyRateCalculation] =
     useState<HourlyRateCalculation | null>(null);
-  const [roomTypePrice, setRoomTypePrice] = useState<number>(0);
+  // const [, setRoomTypePrice] = useState<number>(0);
 
   // Booking search states
   const [searchKeyword, setSearchKeyword] = useState("");
@@ -80,7 +80,7 @@ function ManualCheckinModal({ isOpen, onClose }: ManualCheckinModalProps) {
 
   const [isSearchingCustomer, setIsSearchingCustomer] = useState(false);
   const [foundCustomer, setFoundCustomer] = useState<Customer | null>(null);
-  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [isCalculatingRate, setIsCalculatingRate] = useState(false);
 
   useEffect(() => {
@@ -576,7 +576,7 @@ function ManualCheckinModal({ isOpen, onClose }: ManualCheckinModalProps) {
         phone: walkInData.phone,
         address: walkInData.address || undefined,
         birthDate: walkInData.birthDate || undefined,
-        gender: walkInData.gender,
+        gender: walkInData.gender === "Select Gender" ? undefined : walkInData.gender,
         roomNumber: walkInData.roomNumber,
         checkInDate: toLocalDateTime(walkInData.checkInDate),
         checkOutDate: toLocalDateTime(walkInData.checkOutDate),

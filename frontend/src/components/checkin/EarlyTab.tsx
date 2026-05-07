@@ -43,6 +43,20 @@ const EarlyTab = ({ onViewDetails }: EarlyTabProps) => {
     ) => {
         setProcessingId(id);
         try {
+            // Get employee ID from localStorage
+            const userData = localStorage.getItem('user');
+            let employeeId = 'STAFF001'; // default fallback
+
+            if (userData) {
+                try {
+                    const parsedUser = JSON.parse(userData);
+                    employeeId =
+                        parsedUser.id || parsedUser.employeeId || employeeId;
+                } catch (e) {
+                    console.error('Error parsing user data:', e);
+                }
+            }
+
             // Find the request to get booking info
             const request = requests.find((req) => req.requestID === id);
 
@@ -62,7 +76,7 @@ const EarlyTab = ({ onViewDetails }: EarlyTabProps) => {
                 requestedTime: request.requestTime,
             };
 
-            await approveEarlyCheckin(id, status, 'Staff', bookingInfo);
+            await approveEarlyCheckin(id, status, employeeId, bookingInfo);
 
             setRequests((prev) =>
                 prev.map((req) =>
