@@ -1,7 +1,7 @@
 import type { RoomType } from "../types/RoomType";
 import { api } from "./apiClient";
 
-const ENDPOINT = "/room-types";
+const ENDPOINT = "/api/room-types";
 
 export const getAllRoomTypes = async () => {
   try {
