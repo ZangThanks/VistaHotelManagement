@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/customers")
@@ -174,5 +175,17 @@ public class CustomerController {
         }
         return ResponseEntity.notFound().build();
     }
-
+    /**
+     * Cập nhật avatar Customer
+     */
+    @PutMapping("/{customerId}/avatar")
+    public Customer updateCustomerAvatar(@PathVariable String customerId, @RequestBody Map<String, String> body) {
+        String avatarUrl = body.get("avatarUrl");
+        Customer cust = service.findById(customerId);
+        if (cust != null && avatarUrl != null) {
+            cust.setAvatarUrl(avatarUrl);
+            service.save(cust);
+        }
+        return cust;
+    }
 }

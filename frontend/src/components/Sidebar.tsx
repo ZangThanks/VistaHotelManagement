@@ -2,20 +2,21 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
-    FaTachometerAlt,
-    FaCalendarAlt,
-    FaUsers,
-    FaChartLine,
-} from 'react-icons/fa';
-import { MdMeetingRoom } from 'react-icons/md';
-import { RiInfoCardFill, RiDiscountPercentFill } from 'react-icons/ri';
-import { IoBagCheckOutline } from 'react-icons/io5';
-import { LuMapPinCheckInside } from 'react-icons/lu';
-import { cn } from '../utils/cn';
-import { MdRoomService, MdDiscount } from 'react-icons/md';
-import { BiSolidCategory, BiSolidDiscount } from 'react-icons/bi';
-import { motion, AnimatePresence } from 'framer-motion';
-import { createPortal } from 'react-dom';
+  FaTachometerAlt,
+  FaCalendarAlt,
+  FaUsers,
+  FaChartLine,
+  FaCog,
+} from "react-icons/fa";
+import { MdMeetingRoom } from "react-icons/md";
+import { RiInfoCardFill, RiDiscountPercentFill } from "react-icons/ri";
+import { IoBagCheckOutline } from "react-icons/io5";
+import { LuMapPinCheckInside } from "react-icons/lu";
+import { cn } from "../utils/cn";
+import { MdRoomService, MdDiscount } from "react-icons/md";
+import { BiSolidCategory, BiSolidDiscount, BiSolidDollarCircle } from "react-icons/bi";
+import { motion, AnimatePresence } from "framer-motion";
+import { createPortal } from "react-dom";
 
 interface SidebarProps {
     className?: string;
@@ -26,61 +27,68 @@ const Sidebar: React.FC<SidebarProps> = ({ className }) => {
     const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
     const location = useLocation();
 
-    const menuItems = [
-        {
-            icon: <FaTachometerAlt />,
-            label: 'Dashboard',
-            path: '/admin',
-        },
-        {
-            icon: <MdMeetingRoom />,
-            label: 'Rooms',
-            path: '/admin/room-management',
-        },
-        {
-            icon: <BiSolidCategory />,
-            label: 'Room Types',
-            path: '/admin/room-type-management',
-        },
-        {
-            icon: <RiInfoCardFill />,
-            label: 'Information',
-            path: '/admin/info',
-        },
-        {
-            icon: <LuMapPinCheckInside />,
-            label: 'Check-in',
-            path: '/admin/checkin',
-        },
-        {
-            icon: <IoBagCheckOutline />,
-            label: 'Check-out',
-            path: '/admin/checkout',
-        },
-        {
-            icon: <FaCalendarAlt />,
-            label: 'Reservations',
-            path: '/reservations',
-        },
-        { icon: <FaUsers />, label: 'Guests', path: '/employee/customer/list' },
-        { icon: <MdRoomService />, label: 'Services', path: '/services' },
-        {
-            icon: <RiDiscountPercentFill />,
-            label: 'Promotions',
-            path: '/admin/promotion-management',
-        },
-        {
-            icon: <MdDiscount />,
-            label: 'Promotion Types',
-            path: '/admin/promotion-type-management',
-        },
-        {
-            icon: <BiSolidDiscount />,
-            label: 'Vouchers',
-            path: '/admin/voucher-management',
-        },
-        { icon: <FaChartLine />, label: 'Reports', path: '/admin/reports' },
-    ];
+  const menuItems = [
+      {
+          icon: <FaTachometerAlt />,
+          label: 'Dashboard',
+          path: '/admin',
+      },
+      {
+          icon: <MdMeetingRoom />,
+          label: 'Rooms',
+          path: '/admin/room-management',
+      },
+      {
+          icon: <BiSolidCategory />,
+          label: 'Room Types',
+          path: '/admin/room-type-management',
+      },
+      {
+          icon: <BiSolidDollarCircle />,
+          label: 'Pricing',
+          path: '/admin/pricing',
+      },
+      {
+          icon: <RiInfoCardFill />,
+          label: 'Information',
+          path: '/admin/info',
+      },
+      {
+          icon: <LuMapPinCheckInside />,
+          label: 'Check-in',
+          path: '/admin/checkin',
+      },
+      {
+          icon: <IoBagCheckOutline />,
+          label: 'Check-out',
+          path: '/admin/checkout',
+      },
+      {
+          icon: <FaCalendarAlt />,
+          label: 'Reservations',
+          path: '/reservations',
+      },
+    { icon: <FaUsers />, label: 'Guests', path: '/employee/customer/list' },
+      
+      { icon: <MdRoomService />, label: 'Services', path: '/services' },
+      {
+          icon: <RiDiscountPercentFill />,
+          label: 'Promotions',
+          path: '/admin/promotion-management',
+      },
+      {
+          icon: <MdDiscount />,
+          label: 'Promotion Types',
+          path: '/admin/promotion-type-management',
+      },
+      {
+          icon: <BiSolidDiscount />,
+          label: 'Vouchers',
+          path: '/admin/voucher-management',
+      },
+      { icon: <FaChartLine />, label: 'Reports', path: '/admin/reports' },
+      { icon: <FaCog />, label: 'Settings', path: '/settings' },
+  ];
 
     const getIconScale = (index: number) => {
         if (hoveredIndex === null) return 1;

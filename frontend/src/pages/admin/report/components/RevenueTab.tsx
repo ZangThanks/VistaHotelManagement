@@ -12,7 +12,11 @@ import {
     getQuarterlyInYear,
     getYearlyRevenue,
 } from '../../../../services/revenueReportService';
-import { generateRevenueReportPdf } from '../../../../utils/revenueReportPdf';
+import {
+    generateRevenueReportPdf,
+    generateRevenueReportExcel,
+} from '../../../../utils/revenueReportPdf';
+import { FaDownload, FaFilePdf, FaFileExcel } from 'react-icons/fa';
 
 type Props = {
     startDate: string;
@@ -43,6 +47,7 @@ const RevenueTab: React.FC<Props> = ({
     const [selectedYear, setSelectedYear] = useState<number>(
         new Date().getFullYear(),
     );
+    const [showExportMenu, setShowExportMenu] = useState<boolean>(false);
 
     // Effective period for UI when Date Filter is on (force to daily view)
     const effectivePeriod: ReportPeriod = showDateFilter ? 'daily' : period;
@@ -126,6 +131,23 @@ const RevenueTab: React.FC<Props> = ({
             period: showDateFilter ? 'daily' : period,
             preparedBy: getUserFullName(),
         });
+        setShowExportMenu(false);
+    };
+
+    const handleExportExcel = async () => {
+        if (revenueData.length === 0) {
+            alert('No data to export');
+            return;
+        }
+
+        await generateRevenueReportExcel({
+            data: revenueData,
+            startDate,
+            endDate,
+            period: showDateFilter ? 'daily' : period,
+            preparedBy: getUserFullName(),
+        });
+        setShowExportMenu(false);
     };
 
     return (
@@ -195,32 +217,42 @@ const RevenueTab: React.FC<Props> = ({
                         )}
                     </div>
 
-                    {/* Export PDF Button */}
-                    <button
-                        onClick={handleExportPdf}
-                        disabled={revenueData.length === 0 || revenueLoading}
-                        className={`px-4 py-2 rounded-md font-medium transition flex items-center gap-2 ${
-                            revenueData.length === 0 || revenueLoading
-                                ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                                : 'bg-[#B8935F] text-white hover:bg-[#9A7A4D]'
-                        }`}
-                    >
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-4 w-4"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
+                    {/* Export Dropdown Button */}
+                    <div className="relative">
+                        <button
+                            onClick={() => setShowExportMenu(!showExportMenu)}
+                            disabled={
+                                revenueData.length === 0 || revenueLoading
+                            }
+                            className={`flex items-center gap-2 px-4 py-2 rounded-md font-medium transition ${
+                                revenueData.length === 0 || revenueLoading
+                                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                    : 'bg-[#CCBDA3] text-white hover:bg-[#b8ac94]'
+                            }`}
                         >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                            />
-                        </svg>
-                        Export PDF
-                    </button>
+                            <FaDownload className="h-4 w-4" />
+                            Export Report
+                        </button>
+
+                        {showExportMenu && (
+                            <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-[#EBE3D7] z-10">
+                                <button
+                                    onClick={handleExportPdf}
+                                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[#F5F0EB] transition text-left"
+                                >
+                                    <FaFilePdf className="text-red-500" />
+                                    <span>Export as PDF</span>
+                                </button>
+                                <button
+                                    onClick={handleExportExcel}
+                                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[#F5F0EB] transition border-t border-[#EBE3D7] text-left"
+                                >
+                                    <FaFileExcel className="text-green-600" />
+                                    <span>Export as Excel</span>
+                                </button>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
 

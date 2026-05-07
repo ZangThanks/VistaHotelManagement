@@ -426,4 +426,3 @@ VALUES
 ('RC002', 'B3207250030', 'STD101', 'STD102', 'Muốn chuyển sang phòng có view đẹp hơn', '2024-06-11 09:00:00', 'FAILED', 'Phòng yêu cầu đang được sử dụng', '2024-06-11 09:30:00', 'EMP001'),
 ('RC003', 'B3005250028', 'STE301', 'STE302', 'Điều hòa không hoạt động tốt', '2024-06-20 15:00:00', 'PENDING', NULL, NULL, NULL);
 
-

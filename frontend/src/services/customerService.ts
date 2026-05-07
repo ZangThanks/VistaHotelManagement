@@ -98,3 +98,5 @@ export const findByEmail = async (email: string): Promise<Customer | null> => {
     throw error;
   }
 };
+
+

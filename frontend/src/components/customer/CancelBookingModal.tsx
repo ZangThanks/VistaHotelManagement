@@ -303,6 +303,7 @@ export default function CancelBookingModal({
     const [reason, setReason] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [confirmed, setConfirmed] = useState(false);
+    const toast = useToastContext();
     const [paymentInfo, setPaymentInfo] = useState({
         method: 'BANK_TRANSFER',
         accountNumber: '',
@@ -311,7 +312,6 @@ export default function CancelBookingModal({
         mobileNumber: '',
     });
 
-    const toast = useToastContext();
 
     // Chặn scroll body khi modal mở và thêm ESC key
     useEffect(() => {
@@ -342,6 +342,16 @@ export default function CancelBookingModal({
         if (!reason.trim()) {
             toast.error('Vui lòng nhập lý do hủy');
             return;
+        }
+
+        // Extra confirmation for reputation penalty
+        if (willLoseReputation) {
+            const confirmWithPenalty = window.confirm(
+                'WARNING: Cancelling this booking will reduce your reputation by 3 points. This may affect your future booking privileges. Are you sure you want to proceed?',
+            );
+            if (!confirmWithPenalty) {
+                return;
+            }
         }
 
         setIsSubmitting(true);
